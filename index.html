@@ -361,11 +361,96 @@
     .card.hidden { display: none; }
     .section.section-hidden { display: none; }
 
-    /* ── Responsive ── */
-    @media (max-width: 600px) {
-      .hero { padding: 60px 16px 40px; }
-      .stats-row { gap: 20px; }
-      .cards-grid { grid-template-columns: 1fr; }
+    /* ══ RESPONSIVE ══ */
+
+    /* ── iPad 10 (820px portrait, 1180px landscape) ── */
+    @media (max-width: 1024px) {
+      .cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* ── iPad 10 portrait tight ── */
+    @media (max-width: 860px) {
+      .hero { padding: 64px 32px 48px; }
+      .main { padding: 0 20px 60px; }
+    }
+
+    /* ── iPhone 15 & small phones (≤ 430px) ── */
+    @media (max-width: 480px) {
+      /* Hero */
+      .hero {
+        padding: 52px 20px 36px;
+      }
+      .hero-badge {
+        font-size: 11px;
+        padding: 5px 13px;
+      }
+      .hero p {
+        font-size: 0.95rem;
+      }
+      .stats-row {
+        gap: 24px;
+        margin-top: 28px;
+      }
+      .stat-value { font-size: 1.5rem; }
+
+      /* Search */
+      .search-wrapper {
+        padding: 0 16px;
+        margin-bottom: 40px;
+      }
+      .search-box {
+        font-size: 1rem;       /* prevent iOS zoom on focus */
+        padding: 15px 18px 15px 46px;
+        border-radius: 12px;
+      }
+
+      /* Main */
+      .main { padding: 0 16px 60px; }
+
+      /* Section header */
+      .folder-icon { width: 40px; height: 40px; font-size: 18px; }
+      .section-title { font-size: 1rem; }
+      .section { margin-bottom: 36px; }
+
+      /* Cards — single column, bigger touch targets */
+      .cards-grid { grid-template-columns: 1fr; gap: 12px; }
+      .card {
+        padding: 16px 18px;
+        border-radius: 14px;
+        /* Remove hover transform on touch — use active instead */
+        transition: background 0.15s, border-color 0.15s;
+      }
+      .card:active {
+        background: var(--surface2);
+        border-color: rgba(255,255,255,0.14);
+        transform: scale(0.98);
+      }
+      .card-icon {
+        width: 36px; height: 36px;
+        font-size: 16px;
+        border-radius: 9px;
+      }
+      .card-title { font-size: 0.875rem; }
+      .card-sub   { font-size: 0.72rem; }
+      .card-arrow { font-size: 14px; }
+
+      /* Footer */
+      .footer { font-size: 0.75rem; padding: 20px 16px; }
+    }
+
+    /* ── Tiny phones (≤ 360px) ── */
+    @media (max-width: 360px) {
+      .hero { padding: 44px 16px 32px; }
+      .cards-grid { gap: 10px; }
+    }
+
+    /* ── Touch devices: disable hover transform (prevents stuck states) ── */
+    @media (hover: none) {
+      .card:hover { transform: none; }
+      .card:hover .card-icon { transform: none; }
+      .card:hover .card-arrow { transform: none; }
     }
   </style>
 </head>
