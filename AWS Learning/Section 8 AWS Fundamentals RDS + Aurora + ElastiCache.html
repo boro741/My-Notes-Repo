@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Databases &amp; Caching — RDS, Aurora, ElastiCache Notes</title>
+<style>
+  :root {
+    --accent: #d97706;       /* amber/orange accent */
+    --accent-light: #fef3c7;
+    --bg: #fafaf9;
+    --card-bg: #ffffff;
+    --border: #e7e5e4;
+    --text: #292524;
+    --text-light: #57534e;
+
+    --green: #16a34a;
+    --green-bg: #f0fdf4;
+    --red: #dc2626;
+    --red-bg: #fef2f2;
+    --amber: #d97706;
+    --amber-bg: #fffbeb;
+    --purple: #7c3aed;
+    --purple-bg: #f5f3ff;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0 20px;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 0 80px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  header h1 {
+    font-size: 2rem;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+
+  header p {
+    color: var(--text-light);
+    font-size: 1.05rem;
+    margin-top: 0;
+  }
+
+  header .accent-bar {
+    height: 4px;
+    width: 70px;
+    background: var(--accent);
+    margin: 18px auto 0;
+    border-radius: 2px;
+  }
+
+  nav.toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 26px;
+    margin-bottom: 36px;
+  }
+
+  nav.toc h2 {
+    margin-top: 0;
+    font-size: 1.05rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.85rem;
+  }
+
+  nav.toc ol {
+    margin: 10px 0 0;
+    padding-left: 20px;
+    columns: 2;
+    column-gap: 30px;
+  }
+
+  nav.toc li { margin-bottom: 8px; break-inside: avoid; }
+
+  nav.toc a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  nav.toc a:hover { color: var(--accent); text-decoration: underline; }
+
+  h2 { color: var(--text); }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 26px 30px;
+    margin-bottom: 26px;
+  }
+
+  .card-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 4px;
+  }
+
+  .badge {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+
+  .card-title h2 {
+    margin: 0;
+    font-size: 1.3rem;
+  }
+
+  .card > p, .card > ul, .card > ol { margin-top: 14px; }
+
+  code {
+    background: #f5f5f4;
+    border: 1px solid #e7e5e4;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.9em;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    color: #9a3412;
+  }
+
+  pre {
+    background: #1c1917;
+    color: #e7e5e4;
+    padding: 16px 18px;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-size: 0.87rem;
+  }
+
+  pre code {
+    background: none;
+    border: none;
+    color: inherit;
+    padding: 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.93rem;
+  }
+
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+
+  th {
+    background: #f5f5f4;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) td { background: #fcfcfb; }
+
+  .callout {
+    border-left: 4px solid var(--amber);
+    background: var(--amber-bg);
+    padding: 12px 18px;
+    border-radius: 6px;
+    margin: 16px 0;
+  }
+
+  .callout.tip { border-left-color: var(--green); background: var(--green-bg); }
+  .callout.warning { border-left-color: var(--red); background: var(--red-bg); }
+  .callout.key { border-left-color: var(--amber); background: var(--amber-bg); }
+
+  .callout strong.label {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+
+  .callout.tip strong.label { color: var(--green); }
+  .callout.warning strong.label { color: var(--red); }
+  .callout.key strong.label { color: var(--amber); }
+
+  .analogy {
+    border: 1.5px dashed var(--purple);
+    background: var(--purple-bg);
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin: 16px 0;
+  }
+
+  .analogy strong.label {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--purple);
+    margin-bottom: 4px;
+  }
+
+  .diagram {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fcfcfb;
+    padding: 16px;
+    margin: 18px 0 6px;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  .diagram svg { max-width: 100%; height: auto; }
+
+  .caption {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin: 4px 0 18px;
+    font-style: italic;
+  }
+
+  a { color: var(--accent); }
+
+  .back-to-top {
+    display: block;
+    text-align: center;
+    margin-top: 40px;
+    font-size: 0.9rem;
+  }
+
+  .cheatsheet {
+    border: 2px solid var(--accent);
+  }
+
+  /* ══ RESPONSIVE — iPhone 15 & iPad 10 ══ */
+  @media (max-width: 1024px) {
+    .container, .wrap { padding-left: 20px; padding-right: 20px; }
+    nav.toc ol { columns: 2; }
+  }
+  @media (max-width: 860px) {
+    .container, .wrap { padding: 20px 18px 60px; }
+    header h1 { font-size: 22px; }
+    nav.toc ol { columns: 1; }
+    .card { padding: 20px 22px; }
+    table { font-size: 13px; }
+    th, td { padding: 7px 9px; }
+  }
+  @media (max-width: 480px) {
+    .container, .wrap { padding: 16px 14px 50px; }
+    header h1 { font-size: 19px; line-height: 1.3; }
+    header p { font-size: 13px; }
+    nav.toc { padding: 14px 16px; border-radius: 10px; }
+    nav.toc ol { columns: 1; padding-left: 16px; }
+    nav.toc li { font-size: 14px; margin-bottom: 8px; }
+    .card { padding: 16px 16px; border-radius: 12px; margin-bottom: 18px; }
+    .card h2 { font-size: 1.1rem; flex-wrap: wrap; }
+    table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; font-size: 13px; white-space: nowrap; }
+    th, td { padding: 7px 10px; }
+    code { font-size: 12.5px; word-break: break-all; }
+    .callout, .analogy { padding: 10px 13px; font-size: 14px; }
+    ul, ol { padding-left: 18px; }
+    ul li, ol li { font-size: 14px; margin-bottom: 6px; }
+  }
+  @media (max-width: 360px) {
+    .container, .wrap { padding: 12px 12px 40px; }
+    .card h2 { font-size: 1rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header id="top">
+  <h1>AWS Databases &amp; Caching</h1>
+  <p>My notes on RDS, Aurora, ElastiCache &amp; MemoryDB — Section 8</p>
+  <div class="accent-bar"></div>
+</header>
+
+<nav class="toc">
+  <h2>Table of Contents</h2>
+  <ol>
+    <li><a href="#rds-overview">RDS Overview</a></li>
+    <li><a href="#read-replicas-multi-az">Read Replicas vs Multi-AZ</a></li>
+    <li><a href="#rds-hands-on">RDS Hands-On</a></li>
+    <li><a href="#aurora">Amazon Aurora</a></li>
+    <li><a href="#aurora-hands-on">Aurora Hands-On</a></li>
+    <li><a href="#security">RDS &amp; Aurora Security</a></li>
+    <li><a href="#rds-proxy">RDS Proxy</a></li>
+    <li><a href="#elasticache-overview">ElastiCache Overview</a></li>
+    <li><a href="#elasticache-hands-on">ElastiCache Hands-On</a></li>
+    <li><a href="#elasticache-strategies">ElastiCache Strategies</a></li>
+    <li><a href="#memorydb">MemoryDB for Redis</a></li>
+    <li><a href="#cheatsheet">Cheat Sheet</a></li>
+  </ol>
+</nav>
+
+<!-- 1. RDS OVERVIEW -->
+<section class="card" id="rds-overview">
+  <div class="card-title"><div class="badge">1</div><h2>Amazon RDS Overview</h2></div>
+
+  <p><strong>RDS</strong> = Relational Database Service. It's AWS's <em>managed</em> service for SQL databases. "Managed" is the key word — AWS handles the boring, risky operational work so you can just use the database.</p>
+
+  <p>Engines RDS supports (memorize this list — it comes up on the exam):</p>
+  <ul>
+    <li><code>PostgreSQL</code></li>
+    <li><code>MySQL</code></li>
+    <li><code>MariaDB</code></li>
+    <li><code>Oracle</code></li>
+    <li><code>Microsoft SQL Server</code></li>
+    <li><code>IBM DB2</code></li>
+    <li><code>Aurora</code> — AWS's own proprietary database engine (covered in its own section below)</li>
+  </ul>
+
+  <p>Why use RDS instead of just installing a database yourself on an EC2 instance? Because RDS gives you, for free (well, included):</p>
+  <ul>
+    <li>Automated provisioning + OS patching</li>
+    <li>Continuous backups + <strong>Point-in-Time Restore</strong> (roll back to a specific timestamp)</li>
+    <li>Monitoring dashboards</li>
+    <li>Read Replicas (scale reads)</li>
+    <li>Multi-AZ (disaster recovery)</li>
+    <li>Maintenance windows for upgrades</li>
+    <li>Vertical scaling (bigger instance type) and horizontal scaling (add read replicas)</li>
+    <li>Storage backed by EBS</li>
+  </ul>
+
+  <div class="callout warning">
+    <strong class="label">Don't forget</strong>
+    You cannot SSH into an RDS instance. It's a managed service — AWS owns the underlying EC2 box, not you. That's the trade-off for all the automation you get.
+  </div>
+
+  <h3>RDS Storage Auto Scaling</h3>
+  <p>You pick an initial storage size (say 20 GB) when creating the DB. If your app writes a lot of data and you're about to run out of space, RDS can automatically grow the storage for you — no downtime, no manual resizing.</p>
+
+  <p>Auto scaling kicks in when <strong>all</strong> of these are true:</p>
+  <ul>
+    <li>Free storage is less than 10% of allocated storage</li>
+    <li>The low-storage condition has lasted more than 5 minutes</li>
+    <li>At least 6 hours have passed since the last storage modification</li>
+  </ul>
+  <p>You also set a <strong>maximum storage threshold</strong> so it doesn't grow forever. Works across all RDS engines. Great for apps with unpredictable workloads.</p>
+
+  <div class="analogy">
+    <strong class="label">Analogy</strong>
+    Storage Auto Scaling is like a phone plan that automatically bumps your data allowance when you're about to hit your cap — instead of you manually calling to upgrade every time.
+  </div>
+</section>
+
+<!-- 2. READ REPLICAS VS MULTI-AZ -->
+<section class="card" id="read-replicas-multi-az">
+  <div class="card-title"><div class="badge">2</div><h2>RDS Read Replicas vs Multi-AZ</h2></div>
+
+  <div class="callout key">
+    <strong class="label">Exam key point</strong>
+    This is one of the most heavily tested topics. Read Replicas = scaling reads. Multi-AZ = disaster recovery. Don't mix them up.
+  </div>
+
+  <h3>Read Replicas</h3>
+  <p>Read Replicas help you scale <strong>reads</strong>. You can create up to <strong>15</strong> read replicas, and they can be:</p>
+  <ul>
+    <li>Within the same Availability Zone</li>
+    <li>Cross-AZ (different AZ, same region)</li>
+    <li>Cross-Region</li>
+  </ul>
+
+  <p>Replication from the main (source) database to the replicas is <strong>asynchronous</strong> — meaning replicas are <strong>eventually consistent</strong>. If your app reads from a replica right after a write, it might read slightly stale data because replication hasn't caught up yet.</p>
+
+  <p>A replica can also be <strong>promoted</strong> to become its own standalone database (it then leaves the replication relationship permanently).</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg">
+      <style>
+        .box { fill: #fff; stroke: #d97706; stroke-width: 2; rx: 8; }
+        .lbl { font: 13px sans-serif; fill: #292524; }
+        .sub { font: 11px sans-serif; fill: #57534e; }
+        .arrow { stroke: #57534e; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+        .dash { stroke-dasharray: 4 3; }
+      </style>
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#57534e"/>
+        </marker>
+      </defs>
+
+      <rect x="300" y="10" width="120" height="46" class="box"/>
+      <text x="360" y="38" text-anchor="middle" class="lbl">Application</text>
+
+      <rect x="300" y="110" width="120" height="46" class="box" style="stroke:#16a34a"/>
+      <text x="360" y="132" text-anchor="middle" class="lbl">Main DB</text>
+      <text x="360" y="146" text-anchor="middle" class="sub">(reads + writes)</text>
+
+      <rect x="120" y="200" width="130" height="46" class="box" style="stroke:#7c3aed"/>
+      <text x="185" y="222" text-anchor="middle" class="lbl">Read Replica 1</text>
+      <text x="185" y="236" text-anchor="middle" class="sub">reads only</text>
+
+      <rect x="470" y="200" width="130" height="46" class="box" style="stroke:#7c3aed"/>
+      <text x="535" y="222" text-anchor="middle" class="lbl">Read Replica 2</text>
+      <text x="535" y="236" text-anchor="middle" class="sub">reads only</text>
+
+      <path d="M360,56 L360,110" class="arrow"/>
+      <text x="374" y="86" class="sub">read + write</text>
+
+      <path d="M320,156 L200,200" class="arrow dash"/>
+      <path d="M410,156 L520,200" class="arrow dash"/>
+      <text x="245" y="185" class="sub">async replication</text>
+    </svg>
+  </div>
+  <p class="caption">One main database taking reads/writes, replicating asynchronously to two read replicas that only serve reads.</p>
+
+  <div class="callout warning">
+    <strong class="label">Important</strong>
+    Read Replicas only accept <code>SELECT</code> statements. You cannot run <code>INSERT</code>, <code>UPDATE</code>, or <code>DELETE</code> on them.
+  </div>
+
+  <p><strong>Classic use case:</strong> a production app hits the main DB. A new analytics/reporting team wants to run heavy queries on the same data. Instead of pointing them at the production DB (which would slow it down), spin up a Read Replica and point the reporting app there. Production stays fast and unaffected.</p>
+
+  <p><strong>Networking cost:</strong> replication traffic between the main DB and a replica in a <em>different AZ but same region</em> is <strong>free</strong> (RDS is a managed service, so AWS absorbs that cross-AZ cost). Replication to a <strong>cross-region</strong> replica <strong>does</strong> incur a network fee.</p>
+
+  <h3>Multi-AZ</h3>
+  <p>Multi-AZ is mainly for <strong>Disaster Recovery</strong>, not scaling. There's one Master (in AZ A) and one Standby (in AZ B). Replication here is <strong>synchronous</strong> — a write isn't considered complete until the standby has it too.</p>
+
+  <p>Your app connects to a single DNS name. If the Master fails (AZ outage, instance failure, storage failure), RDS automatically fails over to the standby — same DNS name, no code changes needed.</p>
+
+  <div class="callout warning">
+    <strong class="label">Don't forget</strong>
+    Nobody can read from or write to the standby directly. It exists purely as a failover target — it is <strong>not</strong> for scaling reads.
+  </div>
+
+  <div class="diagram">
+    <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+      <style>
+        .box2 { fill: #fff; stroke: #d97706; stroke-width: 2; rx: 8; }
+        .lbl2 { font: 13px sans-serif; fill: #292524; }
+        .sub2 { font: 11px sans-serif; fill: #57534e; }
+        .arrow2 { stroke: #57534e; stroke-width: 1.5; fill: none; marker-end: url(#arrow2); }
+      </style>
+      <defs>
+        <marker id="arrow2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#57534e"/>
+        </marker>
+      </defs>
+      <rect x="270" y="10" width="160" height="44" class="box2"/>
+      <text x="350" y="37" text-anchor="middle" class="lbl2">Application → 1 DNS name</text>
+
+      <rect x="130" y="120" width="150" height="50" class="box2" style="stroke:#16a34a"/>
+      <text x="205" y="145" text-anchor="middle" class="lbl2">Master (AZ-A)</text>
+      <text x="205" y="160" text-anchor="middle" class="sub2">reads + writes</text>
+
+      <rect x="420" y="120" width="150" height="50" class="box2" style="stroke:#dc2626"/>
+      <text x="495" y="145" text-anchor="middle" class="lbl2">Standby (AZ-B)</text>
+      <text x="495" y="160" text-anchor="middle" class="sub2">failover only</text>
+
+      <path d="M310,54 L220,120" class="arrow2"/>
+      <path d="M390,54 L470,120" class="arrow2"/>
+      <path d="M280,145 L420,145" class="arrow2"/>
+      <text x="350" y="138" text-anchor="middle" class="sub2">synchronous replication</text>
+    </svg>
+  </div>
+  <p class="caption">Multi-AZ: one DNS name, synchronous replication to a standby that only activates on failover.</p>
+
+  <div class="callout tip">
+    <strong class="label">Good to know</strong>
+    You <em>can</em> combine both — set up a Read Replica <em>and</em> make it Multi-AZ for disaster recovery. Common exam question.
+  </div>
+
+  <p>Switching a database from Single-AZ to Multi-AZ is a <strong>zero-downtime</strong> operation — just click "Modify" and enable Multi-AZ. Behind the scenes: RDS takes a snapshot of the main DB, restores it as a new standby, then establishes synchronous replication between the two.</p>
+</section>
+
+<!-- 3. RDS HANDS ON -->
+<section class="card" id="rds-hands-on">
+  <div class="card-title"><div class="badge">3</div><h2>Amazon RDS — Hands-On</h2></div>
+  <p>Quick walkthrough of creating an RDS database from the console:</p>
+  <ul>
+    <li><strong>Engine:</strong> chose MySQL for simplicity (Aurora, PostgreSQL, etc. also available)</li>
+    <li><strong>Template:</strong> Free Tier → only Single-AZ deployment available. Production template unlocks Multi-AZ instance (2 instances) or Multi-AZ cluster (3 instances)</li>
+    <li><strong>Credentials:</strong> self-managed password, or let <code>AWS Secrets Manager</code> manage it (more secure, but costs extra)</li>
+    <li><strong>Instance class:</strong> <code>db.t4g.micro</code> / <code>db.t3.micro</code> (free tier eligible)</li>
+    <li><strong>Storage:</strong> 20 GB, with the option to enable Storage Auto Scaling up to a max (e.g. 1000 GB)</li>
+    <li><strong>Connectivity:</strong> public access = yes (so you can connect from your laptop), new security group created, port <code>3306</code> (MySQL default)</li>
+  </ul>
+
+  <p>Connected using a MySQL client (SQL Electron) with the endpoint, port 3306, username <code>admin</code>, and the initial database name. Ran basic <code>CREATE TABLE</code> / <code>INSERT</code> / <code>SELECT</code> statements — just to prove the connection works (this SQL syntax itself is out of exam scope).</p>
+
+  <p>Other things doable straight from the console:</p>
+  <ul>
+    <li>Create a Read Replica directly, optionally as Multi-AZ</li>
+    <li>View monitoring metrics: CPU utilization, DB connection count, etc.</li>
+    <li>Take snapshots → restore to a point in time, or migrate a snapshot to a different region</li>
+  </ul>
+
+  <div class="callout tip">
+    <strong class="label">Cleanup steps</strong>
+    To delete an RDS instance: Modify → disable Delete/Termination Protection → Apply immediately → then Delete (optionally skip the final snapshot).
+  </div>
+</section>
+
+<!-- 4. AURORA -->
+<section class="card" id="aurora">
+  <div class="card-title"><div class="badge">4</div><h2>Amazon Aurora</h2></div>
+
+  <p>Aurora is AWS's own proprietary database engine (not open-source), built to be wire-compatible with <strong>PostgreSQL</strong> and <strong>MySQL</strong> — meaning your existing drivers just work.</p>
+
+  <p>Because it's cloud-optimized, Aurora claims:</p>
+  <ul>
+    <li><strong>5x</strong> performance over MySQL on RDS</li>
+    <li><strong>3x</strong> performance over PostgreSQL on RDS</li>
+    <li>~20% more expensive than RDS, but more cost-efficient at scale</li>
+  </ul>
+
+  <h3>Storage</h3>
+  <p>Aurora storage auto-grows: starts at 10 GB, scales automatically up to <strong>256 TB</strong>. You never manually manage disk sizing.</p>
+
+  <p>Every write is stored as <strong>6 copies across 3 AZs</strong>. Aurora only needs:</p>
+  <ul>
+    <li><strong>4 out of 6</strong> copies for a write to succeed</li>
+    <li><strong>3 out of 6</strong> copies for a read to succeed</li>
+  </ul>
+  <p>This means Aurora can lose an entire AZ and keep working. It also self-heals — corrupted data blocks get repaired automatically via peer-to-peer replication in the background, across hundreds of storage volumes (not just one).</p>
+
+  <p>Up to <strong>15 read replicas</strong>, replication lag typically <strong>sub-10ms</strong> (faster than MySQL replication). Failover is near-instant — much faster than RDS Multi-AZ failover.</p>
+
+  <h3>Writer &amp; Reader Endpoints</h3>
+  <p>There's one <strong>Master</strong> that takes all writes. If it fails, failover happens in under 30 seconds on average, and one of the read replicas gets promoted.</p>
+
+  <p>Because the Master can change after a failover, Aurora gives you a <strong>writer endpoint</strong> — a stable DNS name that always points at whichever instance is currently the master. Similarly, a <strong>reader endpoint</strong> automatically load-balances connections across all read replicas (load balancing happens at the <em>connection</em> level, not per-statement).</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg">
+      <style>
+        .b { fill: #fff; stroke: #d97706; stroke-width: 2; rx: 8; }
+        .l { font: 12.5px sans-serif; fill: #292524; }
+        .s { font: 10.5px sans-serif; fill: #57534e; }
+        .a { stroke: #57534e; stroke-width: 1.5; fill: none; marker-end: url(#arrow3); }
+      </style>
+      <defs>
+        <marker id="arrow3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#57534e"/>
+        </marker>
+      </defs>
+
+      <rect x="30" y="10" width="140" height="40" class="b"/>
+      <text x="100" y="34" text-anchor="middle" class="l">App (writes)</text>
+      <rect x="500" y="10" width="140" height="40" class="b"/>
+      <text x="570" y="34" text-anchor="middle" class="l">App (reads)</text>
+
+      <rect x="20" y="80" width="160" height="36" class="b" style="stroke:#7c3aed"/>
+      <text x="100" y="102" text-anchor="middle" class="l">Writer endpoint</text>
+      <rect x="490" y="80" width="160" height="36" class="b" style="stroke:#7c3aed"/>
+      <text x="570" y="102" text-anchor="middle" class="l">Reader endpoint</text>
+
+      <rect x="60" y="150" width="120" height="40" class="b" style="stroke:#16a34a"/>
+      <text x="120" y="174" text-anchor="middle" class="l">Master</text>
+
+      <rect x="290" y="150" width="120" height="40" class="b"/>
+      <text x="350" y="174" text-anchor="middle" class="l">Replica 1</text>
+      <rect x="500" y="150" width="120" height="40" class="b"/>
+      <text x="560" y="174" text-anchor="middle" class="l">Replica 2</text>
+
+      <rect x="150" y="240" width="400" height="44" class="b" style="stroke:#d97706"/>
+      <text x="350" y="266" text-anchor="middle" class="l">Shared, auto-expanding storage volume (6 copies / 3 AZs)</text>
+
+      <path d="M100,50 L100,80" class="a"/>
+      <path d="M570,50 L570,116" class="a"/>
+      <path d="M100,116 L120,150" class="a"/>
+      <path d="M570,116 L560,150" class="a"/>
+      <path d="M570,116 L350,150" class="a"/>
+      <path d="M120,190 L200,240" class="a"/>
+      <path d="M350,190 L350,240" class="a"/>
+      <path d="M560,190 L500,240" class="a"/>
+    </svg>
+  </div>
+  <p class="caption">Writer endpoint always tracks the current master; reader endpoint load-balances across all replicas. All instances share one auto-expanding storage volume.</p>
+
+  <p>Other Aurora features: automatic failover, backups, isolation/security, one-click ("push-button") scaling, zero-downtime patching, advanced monitoring, and <strong>Backtrack</strong> — rewind the database to any point in time without relying on backups (and you can change your mind about the target time and rewind again).</p>
+</section>
+
+<!-- 5. AURORA HANDS ON -->
+<section class="card" id="aurora-hands-on">
+  <div class="card-title"><div class="badge">5</div><h2>Amazon Aurora — Hands-On</h2></div>
+  <p>Key options seen while creating an Aurora cluster:</p>
+  <ul>
+    <li><strong>Engine:</strong> MySQL-compatible or PostgreSQL-compatible</li>
+    <li><strong>Storage config:</strong> <code>Aurora Standard</code> (cost-effective) vs <code>I/O-Optimized</code> (for high read/write workloads)</li>
+    <li><strong>Serverless v2:</strong> instead of picking an instance type, you set a min/max <strong>ACU</strong> (Aurora Capacity Unit) range and it scales automatically between them</li>
+    <li><strong>Availability:</strong> option to add an Aurora Replica (reader) in a different AZ for HA + fast failover + read scaling</li>
+    <li><strong>Local write forwarding:</strong> writes sent to a reader get auto-forwarded to the writer instance — simplifies connection management</li>
+    <li><strong>Authentication:</strong> username/password, IAM-based, or Kerberos-based</li>
+  </ul>
+
+  <p>After creation you get a <strong>regional cluster</strong> with separate writer and reader instances in different AZs, each with its own endpoint, plus the cluster-level writer/reader endpoints your app should actually use.</p>
+
+  <p>Extra console features worth knowing:</p>
+  <ul>
+    <li>Add more readers to scale read capacity</li>
+    <li>Create a cross-region read replica</li>
+    <li>Restore to a point in time</li>
+    <li><strong>Replica auto-scaling policy</strong> — e.g. "keep average replica utilization at 60%; scale between 1 and 15 replicas"</li>
+    <li><strong>Global database</strong> feature — add other AWS regions (requires a compatible instance size, e.g. "large")</li>
+  </ul>
+
+  <div class="callout tip">
+    <strong class="label">Cleanup steps</strong>
+    Delete order matters: delete the reader instance first, then the writer instance, and only then can you delete the whole cluster.
+  </div>
+</section>
+
+<!-- 6. SECURITY -->
+<section class="card" id="security">
+  <div class="card-title"><div class="badge">6</div><h2>RDS &amp; Aurora Security</h2></div>
+
+  <table>
+    <tr><th>Area</th><th>Details</th></tr>
+    <tr><td>Encryption at rest</td><td>Uses KMS. Must be set <strong>at launch time</strong>. If the master isn't encrypted, replicas can't be either.</td></tr>
+    <tr><td>Encrypting an existing unencrypted DB</td><td>Not a toggle — take a snapshot, then restore that snapshot as an encrypted database.</td></tr>
+    <tr><td>Encryption in-flight</td><td>Enabled by default (TLS). Clients use AWS-provided root certificates.</td></tr>
+    <tr><td>Authentication</td><td>Classic username/password, or IAM roles (e.g. an EC2 instance's IAM role can authenticate directly)</td></tr>
+    <tr><td>Network access</td><td>Controlled via Security Groups (ports, IPs, other SGs)</td></tr>
+    <tr><td>SSH access</td><td>Not possible (managed service) — unless using <strong>RDS Custom</strong></td></tr>
+    <tr><td>Audit logs</td><td>Can be enabled; expire after a while unless sent to <code>CloudWatch Logs</code> for long-term retention</td></tr>
+  </table>
+</section>
+
+<!-- 7. RDS PROXY -->
+<section class="card" id="rds-proxy">
+  <div class="card-title"><div class="badge">7</div><h2>RDS Proxy</h2></div>
+
+  <p>RDS Proxy sits between your application and your RDS/Aurora database and <strong>pools and shares connections</strong>. Instead of every app instance opening its own connection to the database, they all connect to the proxy, and the proxy maintains a smaller pool of actual connections to the database.</p>
+
+  <div class="analogy">
+    <strong class="label">Analogy</strong>
+    Think of RDS Proxy like a receptionist for the database. Instead of a hundred visitors all trying to squeeze through one office door at once, they check in with the receptionist, who manages a handful of open doors efficiently.
+  </div>
+
+  <p>Why it matters:</p>
+  <ul>
+    <li>Reduces stress on DB resources (CPU/RAM) by minimizing open connections and timeouts</li>
+    <li>Fully <strong>serverless</strong>, auto-scaling, and highly available across multiple AZs</li>
+    <li>Reduces <strong>failover time by up to 66%</strong> — the proxy absorbs the failover, so your app just keeps talking to the proxy without needing to handle reconnect logic itself</li>
+    <li>Supports MySQL, PostgreSQL, MariaDB, Microsoft SQL Server, and Aurora (MySQL/PostgreSQL)</li>
+    <li><strong>No application code changes</strong> needed — just point your connection string at the proxy instead of the DB</li>
+    <li>Can <strong>enforce IAM authentication</strong>, with credentials stored securely in <code>AWS Secrets Manager</code></li>
+    <li>RDS Proxy is <strong>never publicly accessible</strong> — only reachable from within your VPC</li>
+  </ul>
+
+  <div class="diagram">
+    <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+      <style>
+        .bx { fill: #fff; stroke: #d97706; stroke-width: 2; rx: 8; }
+        .lx { font: 12px sans-serif; fill: #292524; }
+        .sx { font: 10.5px sans-serif; fill: #57534e; }
+        .ax { stroke: #57534e; stroke-width: 1.5; fill: none; marker-end: url(#arrow4); }
+      </style>
+      <defs>
+        <marker id="arrow4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#57534e"/>
+        </marker>
+      </defs>
+      <rect x="10" y="20" width="90" height="34" class="bx"/><text x="55" y="42" text-anchor="middle" class="lx">Lambda 1</text>
+      <rect x="10" y="70" width="90" height="34" class="bx"/><text x="55" y="92" text-anchor="middle" class="lx">Lambda 2</text>
+      <rect x="10" y="120" width="90" height="34" class="bx"/><text x="55" y="142" text-anchor="middle" class="lx">Lambda N</text>
+
+      <rect x="220" y="70" width="160" height="50" class="bx" style="stroke:#7c3aed"/>
+      <text x="300" y="98" text-anchor="middle" class="lx">RDS Proxy</text>
+      <text x="300" y="112" text-anchor="middle" class="sx">pools connections</text>
+
+      <rect x="500" y="70" width="160" height="50" class="bx" style="stroke:#16a34a"/>
+      <text x="580" y="98" text-anchor="middle" class="lx">RDS / Aurora</text>
+      <text x="580" y="112" text-anchor="middle" class="sx">few pooled connections</text>
+
+      <path d="M100,37 L220,85" class="ax"/>
+      <path d="M100,87 L220,95" class="ax"/>
+      <path d="M100,137 L220,105" class="ax"/>
+      <path d="M380,95 L500,95" class="ax"/>
+    </svg>
+  </div>
+  <p class="caption">Many short-lived clients (e.g. Lambda functions) connect to RDS Proxy, which pools those connections down into far fewer actual database connections.</p>
+
+  <div class="callout tip">
+    <strong class="label">Common exam scenario</strong>
+    Lambda functions can spin up in huge numbers and open a connection each time — this floods a database with connections. RDS Proxy is the standard fix: Lambdas connect to the proxy, and the proxy pools those into a manageable number of real DB connections.
+  </div>
+</section>
+
+<!-- 8. ELASTICACHE OVERVIEW -->
+<section class="card" id="elasticache-overview">
+  <div class="card-title"><div class="badge">8</div><h2>ElastiCache Overview</h2></div>
+
+  <p>Just like RDS gives you managed relational databases, <strong>ElastiCache</strong> gives you managed <strong>Redis</strong> or <strong>Memcached</strong> — in-memory data stores with very high performance and low latency.</p>
+
+  <p>Main use cases:</p>
+  <ul>
+    <li><strong>Reduce database load</strong> for read-heavy workloads by caching common query results</li>
+    <li><strong>Make applications stateless</strong> by storing user session data in the cache instead of on a specific server</li>
+  </ul>
+
+  <p>AWS handles the same managed-service benefits as RDS: OS patching, setup, monitoring, failure recovery, backups.</p>
+
+  <div class="callout warning">
+    <strong class="label">Important</strong>
+    ElastiCache is not a switch you just flip on. It requires real <strong>application code changes</strong> — your app needs logic to check the cache before/after hitting the database.
+  </div>
+
+  <h3>Caching architecture (query caching)</h3>
+  <p>App checks ElastiCache first. If the data's there → <strong>cache hit</strong>, return it directly (database untouched). If not → <strong>cache miss</strong>, read from the database, then write the result into the cache so the next request for the same data is a hit.</p>
+
+  <p>Because data now lives in two places, you need a <strong>cache invalidation strategy</strong> so stale data doesn't get served — this is the fundamentally hard part of caching.</p>
+
+  <h3>Session storage architecture</h3>
+  <p>User logs in → session data gets written to ElastiCache. If the user's next request lands on a different server/instance of your app, that instance can still fetch the session from ElastiCache — so the user stays logged in. This is what "stateless application" means in practice.</p>
+
+  <h3>Redis vs Memcached</h3>
+  <table>
+    <tr><th></th><th>Redis</th><th>Memcached</th></tr>
+    <tr><td>High availability</td><td>Multi-AZ with auto-failover</td><td>No replication, no HA (except serverless version)</td></tr>
+    <tr><td>Scaling reads</td><td>Read replicas</td><td>Sharding across multiple nodes</td></tr>
+    <tr><td>Durability</td><td>AOF persistence; backup/restore (OSS version)</td><td>Backup/restore only on serverless version</td></tr>
+    <tr><td>Data structures</td><td>Supports sets, sorted sets (great for leaderboards)</td><td>Simpler key-value</td></tr>
+    <tr><td>Architecture</td><td>Node replicated to another node</td><td>Multiple nodes partitioning (sharding) data, multi-threaded</td></tr>
+  </table>
+
+  <div class="analogy">
+    <strong class="label">Analogy</strong>
+    Redis is like a small team with a backup member who has copies of everything — if the lead is out, the backup steps in with no data loss. Memcached is like splitting the work across many independent desks — fast and simple, but if one desk's drawer gets knocked over, that portion of the data is just gone.
+  </div>
+
+  <div class="callout key">
+    <strong class="label">Exam note</strong>
+    The exam rarely asks you to choose Redis vs Memcached directly, but it's useful reference knowledge for use-case-based questions.
+  </div>
+</section>
+
+<!-- 9. ELASTICACHE HANDS ON -->
+<section class="card" id="elasticache-hands-on">
+  <div class="card-title"><div class="badge">9</div><h2>ElastiCache — Hands-On</h2></div>
+  <p>Creating a cluster from the console:</p>
+  <ul>
+    <li><strong>Engine choice:</strong> Valkey (recommended Redis replacement), Memcached, or Redis OSS</li>
+    <li><strong>Deployment option:</strong> serverless, or node-based cluster</li>
+    <li><strong>Cluster mode disabled:</strong> single shard, one primary node, up to 5 read replicas. <strong>Cluster mode enabled:</strong> multiple shards across multiple servers</li>
+    <li><strong>Multi-AZ:</strong> for HA / automatic failover of the primary node (costs more)</li>
+    <li><strong>Subnet group:</strong> defines which subnets the cache can run in</li>
+    <li><strong>Encryption:</strong> at-rest (needs a KMS key) and in-transit; enabling in-transit unlocks access control via <code>Redis AUTH</code> token or a user group ACL</li>
+    <li><strong>Security groups</strong> control which applications can reach the cluster over the network</li>
+    <li>Backups, maintenance windows, and log export to CloudWatch — same idea as RDS</li>
+  </ul>
+
+  <p>Once created, you get a primary endpoint (and a reader endpoint if replicas exist) that your application code connects to.</p>
+
+  <div class="callout tip">
+    <strong class="label">Cleanup</strong>
+    Action → Delete on the cluster, skip the backup, type the cluster name to confirm.
+  </div>
+</section>
+
+<!-- 10. ELASTICACHE STRATEGIES -->
+<section class="card" id="elasticache-strategies">
+  <div class="card-title"><div class="badge">10</div><h2>ElastiCache Strategies</h2></div>
+
+  <p>Before caching anything, ask:</p>
+  <ol>
+    <li><strong>Is it safe to cache?</strong> Some data can tolerate being slightly stale (eventually consistent); some can't.</li>
+    <li><strong>Is caching effective for this data?</strong> Good fit: data that changes slowly and only a few keys are frequently requested. Bad fit: data that changes very fast and you need the full key space every time.</li>
+    <li><strong>Is the data structured correctly for caching?</strong> e.g. key-value pairs or pre-computed aggregations work well.</li>
+    <li><strong>Which caching design pattern fits best?</strong> — this is the main one, covered below.</li>
+  </ol>
+
+  <h3>Lazy Loading (a.k.a. Cache-Aside, Lazy Population)</h3>
+  <p>All three names mean the same strategy: <strong>only cache data that was actually requested</strong>.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg">
+      <style>
+        .by { fill: #fff; stroke: #d97706; stroke-width: 2; rx: 8; }
+        .ly { font: 12px sans-serif; fill: #292524; }
+        .sy { font: 10.5px sans-serif; fill: #57534e; }
+        .ay { stroke: #57534e; stroke-width: 1.5; fill: none; marker-end: url(#arrow5); }
+      </style>
+      <defs>
+        <marker id="arrow5" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#57534e"/>
+        </marker>
+      </defs>
+      <rect x="20" y="90" width="130" height="46" class="by"/><text x="85" y="118" text-anchor="middle" class="ly">Application</text>
+      <rect x="270" y="20" width="140" height="46" class="by" style="stroke:#7c3aed"/><text x="340" y="48" text-anchor="middle" class="ly">ElastiCache</text>
+      <rect x="270" y="150" width="140" height="46" class="by" style="stroke:#16a34a"/><text x="340" y="178" text-anchor="middle" class="ly">RDS</text>
+
+      <path d="M150,100 L270,55" class="ay"/>
+      <text x="200" y="70" class="sy">1. get</text>
+      <path d="M150,120 L270,175" class="ay"/>
+      <text x="185" y="160" class="sy">2. miss → read DB</text>
+      <path d="M410,175 L410,66" class="ay"/>
+      <text x="420" y="120" class="sy">3. write result to cache</text>
+    </svg>
+  </div>
+  <p class="caption">On a cache miss: read from RDS, then write the result into ElastiCache so the next identical request is a hit.</p>
+
+  <p><strong>Pros:</strong> only requested data gets cached (efficient), and if the cache is wiped it's not fatal — just slower until it "warms up" again (every read has to hit RDS and get re-cached).</p>
+  <p><strong>Cons:</strong> a cache miss costs <strong>3 network round trips</strong> (app→cache miss, app→DB read, app→cache write) — worse latency than going straight to the DB. Also risk of <strong>stale data</strong> if RDS is updated but the cache isn't.</p>
+
+  <p>Pseudocode:</p>
+  <pre><code>def get_user(user_id):
+    record = cache.get(user_id)
+    if record is None:
+        # Cache miss
+        record = db.query("SELECT * FROM users WHERE id = ?", user_id)
+        cache.set(user_id, record)
+    return record</code></pre>
+
+  <h3>Write Through</h3>
+  <p>Update (or add to) the cache <strong>at the same time</strong> you update the database.</p>
+
+  <p><strong>Pros:</strong> data in the cache is <strong>never stale</strong> — every RDS write is immediately mirrored to the cache. Users generally expect writes to take a little longer than reads anyway, so the extra cost is well-hidden.</p>
+  <p><strong>Cons:</strong> a <strong>write penalty</strong> — each write now needs 2 calls (DB + cache) instead of 1. Also, data is missing from the cache until it's actually written — so Write Through is usually combined with Lazy Loading to also handle reads. That combination can lead to <strong>cache churn</strong>: lots of data ends up cached that may never actually get read (a problem if your cache is small).</p>
+
+  <p>Pseudocode:</p>
+  <pre><code>def save_user(user_id, values):
+    record = db.query("UPDATE users SET ... WHERE id = ?", user_id, values)
+    cache.set(user_id, record)
+    return record</code></pre>
+
+  <h3>Cache Eviction &amp; TTL</h3>
+  <p>Caches have limited size, so data eventually gets evicted:</p>
+  <ul>
+    <li>Explicit deletion</li>
+    <li><strong>LRU</strong> (Least Recently Used) — evicted when memory is full and the item hasn't been touched recently</li>
+    <li><strong>TTL</strong> (Time To Live) — item auto-expires after a set duration (seconds to days depending on the data — leaderboards, comments, activity streams, etc.)</li>
+  </ul>
+  <p>If you're seeing too many evictions, your cache is undersized — scale it up or out.</p>
+
+  <div class="callout tip">
+    <strong class="label">Practical recommendations</strong>
+    Start with Lazy Loading — it's simple and works as a foundation for most read-heavy cases. Add Write Through only as a targeted optimization if staleness is a real problem. Use TTL almost everywhere except when Write Through is already keeping data fresh. And only cache data where staleness is acceptable — e.g. user profiles and blog content, not pricing or bank balances.
+  </div>
+
+  <div class="callout key">
+    <strong class="label">Worth remembering</strong>
+    "There are two hard things in Computer Science: cache invalidation, and naming things." Caching sounds simple but gets genuinely tricky fast.
+  </div>
+</section>
+
+<!-- 11. MEMORYDB -->
+<section class="card" id="memorydb">
+  <div class="card-title"><div class="badge">11</div><h2>Amazon MemoryDB for Redis</h2></div>
+
+  <p>A Redis-compatible, <strong>durable</strong>, in-memory <em>database</em> — not just a cache. The key difference from Redis/ElastiCache: Redis is designed as a cache with some durability bolted on; MemoryDB is designed to actually <strong>be</strong> your database, with a Redis-compatible API.</p>
+
+  <ul>
+    <li>Ultra-fast: over <strong>160 million requests/second</strong></li>
+    <li>Durable via a <strong>Multi-AZ transaction log</strong></li>
+    <li>Scales from tens of GB up to hundreds of TB</li>
+  </ul>
+
+  <p>Use cases: web/mobile apps, online gaming, media streaming — anywhere you have lots of microservices needing fast, Redis-compatible, durable data access.</p>
+
+  <div class="analogy">
+    <strong class="label">Analogy</strong>
+    ElastiCache Redis is a helpful sticky note next to your real filing cabinet (RDS). MemoryDB is the filing cabinet itself — just built to be blazingly fast, using the same Redis "language" you already know.
+  </div>
+</section>
+
+<!-- CHEAT SHEET -->
+<section class="card cheatsheet" id="cheatsheet">
+  <h2>Cheat Sheet</h2>
+
+  <h3>Key facts to remember</h3>
+  <ul>
+    <li>RDS engines: PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, IBM DB2, Aurora</li>
+    <li>No SSH into RDS/Aurora (managed service) — except RDS Custom</li>
+    <li>Storage Auto Scaling: triggers at &lt;10% free, lasting &gt;5 min, with 6h cooldown since last change</li>
+    <li>Read Replicas: up to 15, asynchronous, eventually consistent, <code>SELECT</code>-only, free replication within-region across AZs, paid cross-region</li>
+    <li>Multi-AZ: synchronous, one DNS name, automatic failover, standby is <strong>not</strong> for reads/writes, zero-downtime to enable</li>
+    <li>Aurora: 6 copies across 3 AZs, needs 4/6 for writes and 3/6 for reads, up to 15 replicas, sub-10ms replica lag, storage auto-grows to 256 TB, has writer + reader endpoints, Backtrack for point-in-time rewind</li>
+    <li>RDS Proxy: pools connections, cuts failover time up to 66%, enforces IAM auth, VPC-only (never public), no app code changes needed</li>
+    <li>ElastiCache: Redis (HA, replicas, durability, sorted sets) vs Memcached (sharding, multi-threaded, no HA except serverless)</li>
+    <li>Lazy Loading = cache-aside = only cache what's requested; Write Through = cache never stale but write penalty; combine both for reads + freshness</li>
+    <li>MemoryDB for Redis = a full durable database with a Redis API, not just a cache</li>
+  </ul>
+
+  <h3>Decision guide</h3>
+  <table>
+    <tr><th>Need</th><th>Use</th></tr>
+    <tr><td>Scale read throughput</td><td>Read Replicas (RDS) or Aurora Replicas</td></tr>
+    <tr><td>Disaster recovery / automatic failover</td><td>Multi-AZ (RDS) — built-in by default in Aurora</td></tr>
+    <tr><td>Too many DB connections from many clients (e.g. Lambda)</td><td>RDS Proxy</td></tr>
+    <tr><td>Reduce DB load for repeated reads</td><td>ElastiCache (Lazy Loading, maybe + Write Through)</td></tr>
+    <tr><td>Make app stateless across servers</td><td>Store sessions in ElastiCache</td></tr>
+    <tr><td>Need Redis API but as a real durable primary database</td><td>MemoryDB for Redis</td></tr>
+    <tr><td>Highest performance MySQL/PostgreSQL-compatible DB</td><td>Aurora</td></tr>
+  </table>
+
+  <h3>Mental model</h3>
+  <p>RDS takes the operational pain out of running a relational database — patching, backups, scaling — and gives you two separate levers: Read Replicas for scaling reads, and Multi-AZ for surviving failures. Aurora is RDS's more powerful, cloud-native cousin that bakes in fast self-healing storage and near-instant failover by design. RDS Proxy sits in front of any of these to keep connection counts sane. ElastiCache and MemoryDB then add a fast in-memory layer in front of (or instead of) your database — ElastiCache as a bolt-on cache your app has to explicitly manage (with real tradeoffs between speed and staleness), and MemoryDB as a durable, Redis-speaking database in its own right.</p>
+</section>
+
+<a class="back-to-top" href="#top">↑ Back to top</a>
+
+</div>
+</body>
+</html>
