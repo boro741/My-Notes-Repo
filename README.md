@@ -95,3 +95,4 @@ GitHub Pages will automatically redeploy in ~1 minute.
 ---
 
 *Built with ❤️ using pure HTML & CSS. No frameworks, no build step.*
+# My-Notes-Repo
