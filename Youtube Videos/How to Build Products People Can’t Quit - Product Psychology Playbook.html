@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Build Products People Can't Quit — Product Psychology Playbook</title>
+<style>
+  :root {
+    --accent: #d97706;
+    --accent-dark: #b45309;
+    --accent-light: #fff7ed;
+    --text: #1f2328;
+    --text-soft: #52565c;
+    --bg: #fafaf9;
+    --card-bg: #ffffff;
+    --border: #e7e3dc;
+    --green: #16a34a;
+    --green-bg: #f0fdf4;
+    --red: #dc2626;
+    --red-bg: #fef2f2;
+    --indigo: #6366f1;
+    --indigo-bg: #f5f3ff;
+    --code-bg: #f1efe9;
+    --th-bg: #f4f2ec;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  html[data-theme="dark"] {
+    --accent: #f59e0b;
+    --accent-dark: #fbbf24;
+    --accent-light: #2a2210;
+    --text: #e9e7e2;
+    --text-soft: #a8a29e;
+    --bg: #131418;
+    --card-bg: #1c1e23;
+    --border: #2d2f36;
+    --green: #4ade80;
+    --green-bg: #112318;
+    --red: #f87171;
+    --red-bg: #2a1414;
+    --indigo: #a5b4fc;
+    --indigo-bg: #1e1c30;
+    --code-bg: #26282e;
+    --th-bg: #24262c;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    transition: background 0.25s ease, color 0.25s ease;
+  }
+
+  #progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0%;
+    background: var(--accent);
+    z-index: 1000;
+    transition: width 0.1s ease-out;
+  }
+
+  .theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 999;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text);
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: background 0.25s ease, transform 0.15s ease;
+  }
+  .theme-toggle:hover { transform: scale(1.08); }
+
+  .float-top {
+    position: fixed;
+    bottom: 22px;
+    right: 22px;
+    z-index: 999;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .float-top.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .float-top:hover { background: var(--accent-dark); }
+
+  .reading-meta {
+    color: var(--text-soft);
+    font-size: 0.85rem;
+    margin-top: 8px;
+  }
+
+  .card {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.6s ease, transform 0.6s ease, background 0.25s ease, border-color 0.25s ease;
+  }
+  .card.visible { opacity: 1; transform: translateY(0); }
+
+  nav.toc a.active { color: var(--accent); font-weight: 700; }
+
+  .pull-quote {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: center;
+    color: var(--accent-dark);
+    max-width: 580px;
+    margin: 30px auto;
+    padding: 0 10px;
+  }
+  .pull-quote::before { content: "\201C"; }
+  .pull-quote::after { content: "\201D"; }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  header.page-header {
+    text-align: center;
+    padding: 10px 0 30px;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 30px;
+  }
+
+  header.page-header h1 {
+    font-size: 2rem;
+    margin: 0 0 10px;
+    color: var(--text);
+  }
+
+  header.page-header h1 span {
+    color: var(--accent);
+  }
+
+  header.page-header p {
+    color: var(--text-soft);
+    font-size: 1.05rem;
+    margin: 0;
+  }
+
+  nav.toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 25px;
+    margin-bottom: 35px;
+  }
+
+  nav.toc h2 {
+    margin-top: 0;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+  }
+
+  nav.toc ol {
+    columns: 2;
+    -webkit-columns: 2;
+    padding-left: 4px;
+    margin: 0;
+    list-style: none;
+  }
+
+  nav.toc li { margin-bottom: 8px; break-inside: avoid; }
+
+  nav.toc a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  nav.toc a:hover { color: var(--accent); text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    nav.toc ol { columns: 1; -webkit-columns: 1; }
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 30px;
+    margin-bottom: 28px;
+    scroll-margin-top: 20px;
+  }
+
+  .card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  }
+
+  .card h2 {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 1.3rem;
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+
+  .badge {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    font-weight: 700;
+    font-size: 1.15rem;
+  }
+
+  .card h3 {
+    font-size: 1.05rem;
+    color: var(--accent-dark);
+    margin-bottom: 8px;
+    margin-top: 22px;
+  }
+
+  .card p { margin: 10px 0; }
+
+  a { color: var(--accent); }
+
+  code {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.9em;
+    font-family: "SFMono-Regular", Consolas, Menlo, monospace;
+    color: var(--accent-dark);
+  }
+
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: var(--accent-light);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0;
+  }
+
+  .callout.tip { border-left-color: var(--green); background: var(--green-bg); }
+  .callout.warn { border-left-color: var(--red); background: var(--red-bg); }
+  .callout p { margin: 0; }
+  .callout strong.label {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+  .callout.tip strong.label { color: var(--green); }
+  .callout.warn strong.label { color: var(--red); }
+  .callout.key strong.label { color: var(--accent-dark); }
+
+  .analogy {
+    border: 1.5px dashed var(--indigo);
+    background: var(--indigo-bg);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0;
+  }
+  .analogy strong.label {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+    color: var(--indigo);
+  }
+  .analogy p { margin: 0; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.95rem;
+  }
+  th {
+    background: var(--th-bg);
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 2px solid var(--border);
+    color: var(--text);
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+
+  .diagram {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #fffdf9;
+    padding: 18px;
+    margin: 18px 0 6px;
+    text-align: center;
+    overflow-x: auto;
+  }
+  .diagram svg { max-width: 100%; height: auto; }
+  .caption {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-soft);
+    margin: 0 0 20px;
+    font-style: italic;
+  }
+
+  ul, ol.plain { padding-left: 22px; }
+  ul li, ol.plain li { margin-bottom: 6px; }
+
+  .cheat-sheet {
+    border: 2px solid var(--accent);
+  }
+
+  .back-to-top {
+    display: block;
+    text-align: center;
+    margin-top: 30px;
+    font-size: 0.95rem;
+    text-decoration: none;
+    color: var(--accent-dark);
+    font-weight: 600;
+  }
+  .back-to-top:hover { text-decoration: underline; }
+
+  .quote-block {
+    font-style: italic;
+    color: var(--text-soft);
+    margin: 10px 0;
+  }
+</style>
+<noscript><style>.card{opacity:1!important;transform:none!important;}</style></noscript>
+</head>
+<body>
+<div id="progress-bar"></div>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
+<div class="wrap" id="top">
+
+  <header class="page-header">
+    <h1>How to Build Products People <span>Can't Quit</span></h1>
+    <p>Notes from Nir Eyal's conversation on the Product Psychology Playbook — the Hook Model, why we quit, and how beliefs quietly run our lives.</p>
+    <p class="reading-meta" id="readingMeta"></p>
+  </header>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#gem">1. Why Good Products Still Fail (GEM)</a></li>
+      <li><a href="#hook-overview">2. The Hook Model — Overview</a></li>
+      <li><a href="#trigger">3. Step 1: Trigger</a></li>
+      <li><a href="#action">4. Step 2: Action</a></li>
+      <li><a href="#reward">5. Step 3: Variable Reward</a></li>
+      <li><a href="#investment">6. Step 4: Investment</a></li>
+      <li><a href="#motivation">7. The Carrot Is the Stick</a></li>
+      <li><a href="#habit-vs-routine">8. Habit vs Routine</a></li>
+      <li><a href="#quit">9. Why 99% of People Quit</a></li>
+      <li><a href="#beliefs">10. Limiting vs Liberating Beliefs</a></li>
+      <li><a href="#reality">11. You Don't See Reality As It Is</a></li>
+      <li><a href="#turnaround">12. How to Actually Change a Belief</a></li>
+      <li><a href="#brand">13. Beliefs, Placebo, and Brand</a></li>
+      <li><a href="#longevity">14. Beliefs and How Long You Live</a></li>
+      <li><a href="#cheatsheet">Cheat Sheet</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <div class="card" id="gem">
+    <h2><span class="badge">🎯</span>Why Good Products Still Fail (GEM)</h2>
+    <p>Every startup needs three things: <strong>G</strong>rowth (acquiring users), <strong>E</strong>ngagement (getting them to come back), and <strong>M</strong>onetization (making money sustainably). No startup has all three nailed at once — if it did, it wouldn't be a startup anymore, it'd be a proven company. You need at least two, with a real plan for the third.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="320,20 560,190 80,190" fill="none" stroke="#d97706" stroke-width="3"/>
+        <circle cx="320" cy="20" r="34" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="320" y="25" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2328">Growth</text>
+        <circle cx="560" cy="190" r="34" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="560" y="195" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2328">Monetize</text>
+        <circle cx="80" cy="190" r="34" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="80" y="195" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2328">Engage</text>
+      </svg>
+    </div>
+    <p class="caption">The three pillars a startup needs — most companies max out two and are still building the third.</p>
+
+    <p>Nir's focus is engagement, for a simple reason: you can buy growth, but you can't buy engagement. Ad spend on Meta, Google, or billboards gets you users. But if the product doesn't hold onto them, you're just funding a <code>leaky bucket</code> — pouring money into one side while users pour out the other. Engagement has to be designed into the product itself, and it has to be nailed before you pour money into growth.</p>
+
+    <p class="pull-quote">You can buy growth, but you can't buy engagement.</p>
+
+    <div class="callout warn">
+      <strong class="label">Don't forget this</strong>
+      <p>Buying growth for a leaky product is "throwing good money after bad." Fix retention before you scale acquisition.</p>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="card" id="hook-overview">
+    <h2><span class="badge">🔁</span>The Hook Model — Overview</h2>
+    <p>The framework behind Instagram, TikTok, Slack, Pinterest, and Fortnite. Four steps, repeated over and over, that turn a product into a habit: <strong>Trigger → Action → Variable Reward → Investment</strong>, and then back to Trigger again.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 640 400" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6 z" fill="#d97706"/>
+          </marker>
+        </defs>
+        <rect x="260" y="10" width="120" height="55" rx="10" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="320" y="43" text-anchor="middle" font-size="14" font-weight="700" fill="#1f2328">1. Trigger</text>
+
+        <rect x="470" y="150" width="130" height="55" rx="10" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="535" y="183" text-anchor="middle" font-size="14" font-weight="700" fill="#1f2328">2. Action</text>
+
+        <rect x="360" y="320" width="150" height="55" rx="10" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="435" y="353" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2328">3. Variable Reward</text>
+
+        <rect x="60" y="320" width="150" height="55" rx="10" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="135" y="353" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2328">4. Investment</text>
+
+        <rect x="40" y="150" width="130" height="55" rx="10" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="105" y="183" text-anchor="middle" font-size="14" font-weight="700" fill="#1f2328">(loops back)</text>
+
+        <path d="M370,55 C440,80 480,110 520,150" fill="none" stroke="#d97706" stroke-width="2.5" marker-end="url(#arrow1)"/>
+        <path d="M500,205 C480,250 460,285 460,315" fill="none" stroke="#d97706" stroke-width="2.5" marker-end="url(#arrow1)"/>
+        <path d="M360,345 C300,345 260,345 215,345" fill="none" stroke="#d97706" stroke-width="2.5" marker-end="url(#arrow1)"/>
+        <path d="M130,320 C120,270 130,220 120,205" fill="none" stroke="#d97706" stroke-width="2.5" marker-end="url(#arrow1)"/>
+        <path d="M135,150 C170,100 220,65 258,42" fill="none" stroke="#d97706" stroke-width="2.5" marker-end="url(#arrow1)"/>
+      </svg>
+    </div>
+    <p class="caption">The Hook Model cycle: each pass through the loop makes the product more habit-forming, and eventually the trigger comes from inside the user, not outside.</p>
+
+    <p>Miss even one of the four steps and the hook is "risky" — meaning it may not create a lasting habit. All four have to work together.</p>
+  </div>
+
+  <!-- 3 -->
+  <div class="card" id="trigger">
+    <h2><span class="badge">⚡</span>Step 1: Trigger</h2>
+    <p>A trigger is what cues you to use the product. There are two kinds:</p>
+    <ul>
+      <li><strong>External trigger</strong> — something in your environment tells you to act: a billboard, a notification, a physical product sitting on your counter.</li>
+      <li><strong>Internal trigger</strong> — a feeling pushes you to act on its own: hunger makes you open Zomato, not being able to see makes you think of a lens store.</li>
+    </ul>
+
+    <div class="callout key">
+      <strong class="label">Key point</strong>
+      <p>The moment a product moves from being an external trigger to an internal trigger — from "an ad told me to" to "I just felt like it" — that's when it becomes truly game-changing.</p>
+    </div>
+
+    <h3>Physical products get a free external trigger</h3>
+    <p>A skincare bottle or an inhaler sitting on your counter is itself the external trigger — you don't need a notification. Nir's asthma-inhaler example: patients needed to take two preventive puffs a day, but they only associated the inhaler with acute symptoms and kept it hidden in a bag. The fix wasn't an app or a redesign — it was a 50-cent stand that put the inhaler right next to the toothbrush, so brushing (twice a day, already a routine) became the trigger.</p>
+
+    <div class="analogy">
+      <strong class="label">Analogy</strong>
+      <p>Larry Page's "toothbrush test": at Google, he only wanted to build products people would use as often as a toothbrush — because the more frequently something is used, the more likely it becomes a habit. Nir's own bar is a bit lower: at minimum, once a week, or a habit is very hard to form.</p>
+    </div>
+
+    <p><strong>Average smartphone users check their home screen around 150 times a day</strong> — a sign of how deeply internal triggers (boredom, loneliness, anxiety) get wired to reaching for the phone.</p>
+  </div>
+
+  <!-- 4 -->
+  <div class="card" id="action">
+    <h2><span class="badge">👆</span>Step 2: Action</h2>
+    <p>The action is the <strong>simplest possible behavior done in anticipation of a reward</strong> — the easiest thing a user can do to relieve that internal itch. Bored → open TikTok. Lonely → tap a friend's face to call them. Simpler is better: opening an app, scrolling a feed, pushing play. The rule is simplify, simplify, simplify — the easier the action, the more likely someone repeats it.</p>
+  </div>
+
+  <!-- 5 -->
+  <div class="card" id="reward">
+    <h2><span class="badge">🎰</span>Step 3: Variable Reward</h2>
+    <p>This is "the engine of the hook model." The science behind it goes back over 75 years to B.F. Skinner's pigeon experiment.</p>
+
+    <div class="callout">
+      <strong class="label">The Skinner Box</strong>
+      <p>Pigeons pecked a disc for a food pellet. When Skinner ran low on pellets and started rewarding pecks only sometimes (a variable schedule), the pigeons pecked <em>more</em>, not less. Uncertainty about the reward increased engagement.</p>
+    </div>
+
+    <p>That's why cricket, gambling, the news, and endless social feeds are all compelling — you don't know what's coming next. Variability creates focus and pulls us back again and again, whether it's soothing an internal trigger (boredom, loneliness) or creating certainty where there wasn't any.</p>
+
+    <h3>Three flavors of variable reward</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 640 210" xmlns="http://www.w3.org/2000/svg">
+        <rect x="10" y="20" width="195" height="170" rx="12" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="107" y="55" text-anchor="middle" font-size="15" font-weight="700" fill="#1f2328">Rewards of the Tribe</text>
+        <text x="107" y="85" text-anchor="middle" font-size="12" fill="#52565c">Belonging, connection,</text>
+        <text x="107" y="103" text-anchor="middle" font-size="12" fill="#52565c">empathetic joy</text>
+        <text x="107" y="135" text-anchor="middle" font-size="11" fill="#52565c">e.g. community,</text>
+        <text x="107" y="150" text-anchor="middle" font-size="11" fill="#52565c">group chats,</text>
+        <text x="107" y="165" text-anchor="middle" font-size="11" fill="#52565c">social feeds</text>
+
+        <rect x="222" y="20" width="195" height="170" rx="12" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="319" y="55" text-anchor="middle" font-size="15" font-weight="700" fill="#1f2328">Rewards of the Hunt</text>
+        <text x="319" y="85" text-anchor="middle" font-size="12" fill="#52565c">Material, money,</text>
+        <text x="319" y="103" text-anchor="middle" font-size="12" fill="#52565c">information</text>
+        <text x="319" y="135" text-anchor="middle" font-size="11" fill="#52565c">e.g. slot machines,</text>
+        <text x="319" y="150" text-anchor="middle" font-size="11" fill="#52565c">bonuses,</text>
+        <text x="319" y="165" text-anchor="middle" font-size="11" fill="#52565c">deals/discounts</text>
+
+        <rect x="434" y="20" width="195" height="170" rx="12" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="531" y="55" text-anchor="middle" font-size="15" font-weight="700" fill="#1f2328">Rewards of the Self</text>
+        <text x="531" y="85" text-anchor="middle" font-size="12" fill="#52565c">Mastery, competency,</text>
+        <text x="531" y="103" text-anchor="middle" font-size="12" fill="#52565c">control</text>
+        <text x="531" y="135" text-anchor="middle" font-size="11" fill="#52565c">e.g. video game</text>
+        <text x="531" y="150" text-anchor="middle" font-size="11" fill="#52565c">levels, streaks,</text>
+        <text x="531" y="165" text-anchor="middle" font-size="11" fill="#52565c">achievements</text>
+      </svg>
+    </div>
+    <p class="caption">The three types of variable reward. Almost no product uses all three — but you need at least one.</p>
+
+    <div class="analogy">
+      <strong class="label">Analogy</strong>
+      <p>Email is "the mother of habit-forming technology" because it uniquely stacks all three: Tribe (who's it from?), Hunt (what's inside — spam or something important?), and Self (the itch to reach "inbox zero").</p>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <div class="card" id="investment">
+    <h2><span class="badge">📈</span>Step 4: Investment</h2>
+    <p>Most physical things depreciate with use — clothes wear out, cars age. Habit-forming digital products do the opposite: <strong>they appreciate the more you use them.</strong> The investment phase is where the user puts something in (data, followers, skill, content) that makes the product better next time.</p>
+
+    <p><strong>FitBod case study:</strong> the internal trigger for its users isn't "get a beach body" — it's <em>uncertainty at the gym</em> (not knowing what to do). Opening the app (action) instantly shows a workout plan (variable reward, changes each time). Every time you log your sets, reps, and weight, the app improves — tomorrow's plan is smarter because of what you logged today (investment). That loop is why Nir says he'll pay whatever they ask for the subscription.</p>
+
+    <div class="callout tip">
+      <strong class="label">Tip</strong>
+      <p>Nir predicts that thanks to AI-driven personalization, every product — even ones that historically couldn't "improve with use" like skincare — will eventually bolt on some form of investment phase (e.g. AI analyzing your skin and tailoring the next product for you).</p>
+    </div>
+  </div>
+
+  <!-- 7 -->
+  <div class="card" id="motivation">
+    <h2><span class="badge">🥕</span>The Carrot Is the Stick</h2>
+    <p>The old idea of motivation is "pursue pleasure, avoid pain" — carrots and sticks. Nir says that's wrong. fMRI research shows all motivation, even wanting something good, comes from a <strong>desire to escape discomfort</strong>. Craving itself is uncomfortable.</p>
+
+    <p class="pull-quote">The carrot is the stick.</p>
+
+    <div class="callout key">
+      <strong class="label">Why this matters for design</strong>
+      <p>This is why habit-forming products are built around negative internal states (boredom, loneliness, anxiety, uncertainty) rather than positive ones — that's the moment someone is actually looking for a solution.</p>
+    </div>
+
+    <div class="analogy">
+      <strong class="label">Analogy — the sleeping passenger</strong>
+      <p>A flight attendant wakes a sleeping passenger just to ask what he'd like to drink. Funny, but that's exactly what bad marketing does — pushing an offer on someone who isn't thirsty. You don't want the drink when you're asleep; you want it when you're thirsty. The fix is one word: <strong>context</strong> — couple the external trigger as tightly as possible to the moment the internal trigger (the itch) is actually felt.</p>
+    </div>
+
+    <h3>Finding the real itch — the "Five Whys"</h3>
+    <p>Borrowed from the Toyota Production System: keep asking "why" until you hit the underlying emotion. E.g. "I want to use a finance app" → why? → "to make money" → why? → "because I feel insecure." That deeper emotional layer (insecurity, boredom, loneliness) is the real internal trigger — and it should shape every product decision.</p>
+  </div>
+
+  <!-- 8 -->
+  <div class="card" id="habit-vs-routine">
+    <h2><span class="badge">🧠</span>Habit vs Routine (and How to Hijack One)</h2>
+    <p>Nir draws a sharp line that a lot of "habit" advice blurs: a <strong>habit</strong> is a behavior done with little or no conscious thought — around 40% of daily behavior, according to researcher Wendy Wood. A <strong>routine</strong> is a series of behaviors repeated frequently but which still requires effort and willpower (like hitting a new personal record at the gym).</p>
+
+    <table>
+      <tr><th></th><th>Habit</th><th>Routine</th></tr>
+      <tr><td>Effort needed</td><td>Little to none — automatic</td><td>Willpower and conscious effort</td></tr>
+      <tr><td>Trigger</td><td>Internal (a feeling)</td><td>Often external (alarm, reminder)</td></tr>
+      <tr><td>Example</td><td>Making chai on waking up</td><td>Going to the gym</td></tr>
+      <tr><td>Fragility</td><td>Sticky, self-sustaining</td><td>Easy to skip / abandon</td></tr>
+    </table>
+
+    <div class="callout">
+      <strong class="label">Key point</strong>
+      <p>Don't try to invent a brand-new behavior from nothing. Find an <strong>existing routine</strong> your customer already follows and attach your product to it — then use the hook loop to slowly turn that routine into an automatic habit.</p>
+    </div>
+
+    <p>Examples: Instagram didn't invent a new behavior — it hijacked the routine of reading the morning newspaper and turned it into checking a feed dozens of times a day. WhatsApp hijacked the routine of the "Sunday family call" and turned it into constant messaging.</p>
+  </div>
+
+  <!-- 9 -->
+  <div class="card" id="quit">
+    <h2><span class="badge">🚪</span>Why 99% of People Quit</h2>
+    <p>The number one reason people don't reach a goal is simple: <strong>they quit.</strong> Persistence doesn't guarantee success, but quitting guarantees failure. So the real question is why we quit — and the answer is a lack of motivation.</p>
+
+    <p>Classic economics treats motivation as a straight line: want the reward → do the behavior. Nir says it's actually a triangle of three things:</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 500 260" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="250,20 460,220 40,220" fill="none" stroke="#d97706" stroke-width="3"/>
+        <circle cx="250" cy="20" r="40" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="250" y="26" text-anchor="middle" font-size="14" font-weight="700" fill="#1f2328">Belief</text>
+        <circle cx="460" cy="220" r="40" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="460" y="226" text-anchor="middle" font-size="14" font-weight="700" fill="#1f2328">Benefit</text>
+        <circle cx="40" cy="220" r="40" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="40" y="226" text-anchor="middle" font-size="14" font-weight="700" fill="#1f2328">Behavior</text>
+      </svg>
+    </div>
+    <p class="caption">Sustained motivation needs all three corners: what to do (behavior), why (benefit), and belief that it's achievable — belief is the one people usually miss.</p>
+
+    <p>Even if you know exactly what to do and why, if you don't believe you can sustain it (or that the other party will hold up their end), motivation collapses.</p>
+  </div>
+
+  <!-- 10 -->
+  <div class="card" id="beliefs">
+    <h2><span class="badge">🔓</span>Limiting vs Liberating Beliefs</h2>
+    <ul>
+      <li><strong>Limiting belief</strong> — saps motivation, increases suffering.</li>
+      <li><strong>Liberating belief</strong> — increases motivation, decreases suffering.</li>
+    </ul>
+
+    <h3>Learned helplessness is our default, not something we learn</h3>
+    <p>Psychologists Seligman and Meyer's original "learned helplessness" theory said repeated failure teaches us to give up. Decades later, they reversed themselves: it's the opposite — <strong>helplessness is our default starting state</strong> (we're born helpless and dependent), not something failure teaches us. The brain's job isn't to make you thrive; it's to keep you alive, so it defaults to whatever you did before, because that's what kept you alive so far.</p>
+
+    <div class="callout warn">
+      <strong class="label">Don't forget this</strong>
+      <p>Evolution doesn't care if you're happy or fulfilled — only whether you survive and reproduce. That's why the brain keeps pulling you back toward old, "safe" beliefs even when they no longer serve you.</p>
+    </div>
+
+    <h3>Pain is not suffering</h3>
+    <p>Pain is just a signal. <strong>Suffering is the subjective interpretation</strong> we attach to that signal. Sore muscles after a workout feel good in that context; the exact same sensation appearing "out of nowhere" would send you to a hospital. Same signal, different meaning — the meaning is what creates (or removes) suffering.</p>
+  </div>
+
+  <!-- 11 -->
+  <div class="card" id="reality">
+    <h2><span class="badge">👁️</span>You Don't See Reality As It Is</h2>
+    <p>Your brain takes in roughly <strong>11 million bits of information per second</strong> (equivalent to reading all of War and Peace, twice a second) but conscious awareness can only process about <strong>50 bits</strong> — roughly one sentence per second. So what you experience as "reality" is a tiny simulation built from a keyhole of attention: about <code>0.000045%</code> of what's actually happening.</p>
+
+    <div class="callout">
+      <strong class="label">The checkerboard illusion</strong>
+      <p>Two squares on a checkerboard (A and B) look like different shades — one clearly darker. Proven side by side, they're the exact same color. Even after being shown the proof, square A still <em>looks</em> darker. The brain can't override its prior expectation of how checkerboards "should" look — proof of how strongly prior beliefs override raw reality, even when you know better.</p>
+    </div>
+
+    <p>The same effect explains the "coffer illusion," where people from industrialized environments tend to see squares in an image, while people from more rural settings tend to see circles — same image, different prior visual experience.</p>
+
+    <div class="callout key">
+      <strong class="label">Key point</strong>
+      <p>This is why people can't easily see their own limiting beliefs, even though they can spot everyone else's — just like you can't see your own face without a mirror. You need something outside yourself to reflect the belief back.</p>
+    </div>
+  </div>
+
+  <!-- 12 -->
+  <div class="card" id="turnaround">
+    <h2><span class="badge">🔄</span>How to Actually Change a Belief</h2>
+    <p>A <strong>fact</strong> is true whether you believe it or not. <strong>Faith</strong> needs no evidence and rarely changes. A <strong>belief</strong> sits in between — it's open to revision.</p>
+
+    <p class="pull-quote">Beliefs are tools, not truths.</p>
+
+    <h3>The technique: Byron Katy's four questions (inquiry-based stress reduction)</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 640 140" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6 z" fill="#d97706"/>
+          </marker>
+        </defs>
+        <rect x="10" y="30" width="140" height="70" rx="10" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="80" y="60" text-anchor="middle" font-size="12" font-weight="700" fill="#1f2328">1. Is it true?</text>
+        <rect x="170" y="30" width="140" height="70" rx="10" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="240" y="55" text-anchor="middle" font-size="12" font-weight="700" fill="#1f2328">2. Is it</text>
+        <text x="240" y="72" text-anchor="middle" font-size="12" font-weight="700" fill="#1f2328">absolutely true?</text>
+        <rect x="330" y="30" width="150" height="70" rx="10" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="405" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#1f2328">3. Who am I</text>
+        <text x="405" y="68" text-anchor="middle" font-size="11" font-weight="700" fill="#1f2328">when I hold</text>
+        <text x="405" y="84" text-anchor="middle" font-size="11" font-weight="700" fill="#1f2328">this belief?</text>
+        <rect x="500" y="30" width="130" height="70" rx="10" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="565" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#1f2328">4. Who would</text>
+        <text x="565" y="68" text-anchor="middle" font-size="11" font-weight="700" fill="#1f2328">I be without</text>
+        <text x="565" y="84" text-anchor="middle" font-size="11" font-weight="700" fill="#1f2328">this belief?</text>
+        <path d="M150,65 L168,65" stroke="#d97706" stroke-width="2.5" marker-end="url(#arrow2)"/>
+        <path d="M310,65 L328,65" stroke="#d97706" stroke-width="2.5" marker-end="url(#arrow2)"/>
+        <path d="M480,65 L498,65" stroke="#d97706" stroke-width="2.5" marker-end="url(#arrow2)"/>
+      </svg>
+    </div>
+    <p class="caption">Four questions applied to any belief that's causing you suffering — takes about 30 seconds.</p>
+
+    <p>Then comes <strong>the turnaround</strong>: ask "could the opposite also be true?" and write down a few alternative beliefs — a "portfolio of perspectives" you can try on, without needing to fully believe any one of them.</p>
+
+    <div class="analogy">
+      <strong class="label">Analogy — Nir's mom and the flowers</strong>
+      <p>Nir sent his mom flowers for her birthday; she said thanks but complained they were "half dead." His limiting belief: <em>"My mother is too judgmental and hard to please."</em> Running the turnaround, he generated three alternative beliefs: she was actually trying to protect him from a bad florist; he was the judgmental one for expecting effusive praise; and — the one that stung most — he was too judgmental toward himself, mislabeling his own feeling of having "messed up." None of the four beliefs is more "true" than another — but the first one required his mother to change (unlikely), while the other three were things he could act on himself, which increased his motivation to work on the relationship and decreased his suffering.</p>
+    </div>
+
+    <div class="callout tip">
+      <strong class="label">Tip</strong>
+      <p>Don't vent. Venting reinforces the belief you already hold about someone ("she always does this"), through the same believe → anticipate → feel → confirm loop that shapes brand perception. It locks in the story instead of loosening it.</p>
+    </div>
+  </div>
+
+  <!-- 13 -->
+  <div class="card" id="brand">
+    <h2><span class="badge">🍷</span>Beliefs, Placebo, and Brand</h2>
+    <p>A Stanford fMRI experiment (Baba Shiv) gave people the exact same wine twice — once labeled "cheap," once labeled "expensive." People rated the "expensive" wine as tastier, and brain scans showed <em>more actual blood flow to reward centers</em> — they weren't lying, they really did enjoy it more. Belief changed the real subjective experience.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 640 130" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6 z" fill="#d97706"/>
+          </marker>
+        </defs>
+        <rect x="10" y="35" width="130" height="55" rx="10" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="75" y="68" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2328">Believe</text>
+        <rect x="180" y="35" width="130" height="55" rx="10" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="245" y="68" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2328">Anticipate</text>
+        <rect x="350" y="35" width="130" height="55" rx="10" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="415" y="68" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2328">Feel</text>
+        <rect x="500" y="35" width="130" height="55" rx="10" fill="#fff7ed" stroke="#d97706" stroke-width="2"/>
+        <text x="565" y="68" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2328">Confirm</text>
+        <path d="M140,62 L178,62" stroke="#d97706" stroke-width="2.5" marker-end="url(#arrow3)"/>
+        <path d="M310,62 L348,62" stroke="#d97706" stroke-width="2.5" marker-end="url(#arrow3)"/>
+        <path d="M480,62 L498,62" stroke="#d97706" stroke-width="2.5" marker-end="url(#arrow3)"/>
+      </svg>
+    </div>
+    <p class="caption">The four-step loop behind brand perception — a belief about a product shapes what you anticipate, which shapes what you actually feel, which then confirms the original belief.</p>
+
+    <p>This is why Coca-Cola advertises to people who already drink Coke — not to win new drinkers, but to reinforce brand identity ("I'm a Coke person, not a Pepsi person"). It's also why an expensive bag, car, or team jersey feels like "worth it" even without 100x functional value: you're paying for the belief and the identity, and that experience is genuinely real to you, not a con.</p>
+  </div>
+
+  <!-- 14 -->
+  <div class="card" id="longevity">
+    <h2><span class="badge">⏳</span>Beliefs and How Long You Live</h2>
+    <p>A Yale study found that people with <strong>positive views about aging lived about 7.5 years longer on average</strong> — more than the measured effects of diet, exercise, or quitting smoking.</p>
+
+    <table>
+      <tr><th>Belief</th><th>Example statement</th></tr>
+      <tr><td>Negative view of aging</td><td>"Aging involves inevitable decline."</td></tr>
+      <tr><td>Positive view of aging</td><td>"Growth is possible at any age."</td></tr>
+    </table>
+
+    <p>Both statements are arguably "true" — but the belief someone defaults to changes real-world behavior: people with the positive view tend to take better care of their bodies, stay socially engaged, volunteer, eat better, and exercise more. The belief isn't magic — it changes biology <em>through behavior</em>. Nir is explicit that this is not "positive thinking and manifesting," which he says backfires; it's that belief shapes daily choices, which shape biology.</p>
+
+    <div class="callout key">
+      <strong class="label">Key point</strong>
+      <p>If you actually care about long-term health, the highest-leverage place to start isn't a diet or a workout plan — it's examining your beliefs about what's possible for you.</p>
+    </div>
+  </div>
+
+  <!-- Cheat sheet -->
+  <div class="card cheat-sheet" id="cheatsheet">
+    <h2><span class="badge">✅</span>Cheat Sheet</h2>
+
+    <h3>Key facts to remember</h3>
+    <ul>
+      <li>Startups need <strong>GEM</strong> (Growth, Engagement, Monetization) — engagement can't be bought, it must be designed in.</li>
+      <li>The <strong>Hook Model</strong>: Trigger → Action → Variable Reward → Investment, repeating in a loop.</li>
+      <li>External triggers (ads, notifications) should fade as internal triggers (feelings) take over.</li>
+      <li>Action should be as simple as possible — remove friction.</li>
+      <li>Variable reward is powered by uncertainty (Skinner's pigeons) and comes in 3 flavors: Tribe, Hunt, Self.</li>
+      <li>Investment makes a product appreciate with use instead of depreciate.</li>
+      <li>Motivation = Behavior + Benefit + <strong>Belief</strong> (the most overlooked corner).</li>
+      <li>Habits are automatic; routines still take willpower — attach new products to existing routines.</li>
+      <li>"The carrot is the stick" — all motivation is really about escaping discomfort.</li>
+      <li>You process 11 million bits/sec but consciously perceive only ~50 — reality is a simulation shaped by prior beliefs.</li>
+      <li>Beliefs are tools, not truths — use Byron Katy's 4 questions + the turnaround to loosen a limiting belief.</li>
+      <li>A 7.5-year longevity gain has been linked to simply holding a positive belief about aging.</li>
+    </ul>
+
+    <h3>Quick decision guide: is it a Habit or a Routine?</h3>
+    <table>
+      <tr><th>Ask yourself</th><th>If "yes" → Habit</th><th>If "no" → Routine</th></tr>
+      <tr><td>Do I do it with little/no conscious thought?</td><td>Automatic, low willpower</td><td>Needs reminders/effort</td></tr>
+      <tr><td>Do I feel weird skipping it?</td><td>Yes — it's wired in</td><td>Easy to skip</td></tr>
+      <tr><td>Design implication</td><td>Attach product to it — reinforce</td><td>Needs external triggers to survive</td></tr>
+    </table>
+
+    <h3>The one-paragraph mental model</h3>
+    <p>Building a product people can't quit means designing a loop — a trigger that reminds someone, an action that's dead simple, a reward that's just unpredictable enough to keep them curious, and an investment that makes the product smarter or more valuable every time they use it — and attaching that loop to a routine your customer already has, rather than inventing a new behavior from scratch. But the same psychology runs the other way, inside every person: their beliefs about themselves, not just facts about the world, quietly decide what they attempt, how long they persist, and even how healthy and long-lived they turn out to be — and the good news is that beliefs, unlike facts, can always be examined, questioned, and swapped for ones that serve you better.</p>
+  </div>
+
+  <a href="#top" class="back-to-top">↑ Back to top</a>
+
+</div>
+
+<button class="float-top" id="floatTop" aria-label="Back to top" title="Back to top">↑</button>
+
+<script>
+(function () {
+  // Reading time + word count
+  var wrap = document.querySelector('.wrap');
+  var words = wrap.innerText.trim().split(/\s+/).length;
+  var minutes = Math.max(1, Math.round(words / 220));
+  document.getElementById('readingMeta').textContent =
+    words.toLocaleString() + ' words · ~' + minutes + ' min read';
+
+  // Scroll progress bar
+  var bar = document.getElementById('progress-bar');
+  function updateProgress() {
+    var scrollTop = window.scrollY;
+    var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    var pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    bar.style.width = pct + '%';
+  }
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  updateProgress();
+
+  // Floating back-to-top button
+  var floatTop = document.getElementById('floatTop');
+  function toggleFloatTop() {
+    if (window.scrollY > 500) floatTop.classList.add('show');
+    else floatTop.classList.remove('show');
+  }
+  window.addEventListener('scroll', toggleFloatTop, { passive: true });
+  floatTop.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  toggleFloatTop();
+
+  // Dark mode toggle
+  var root = document.documentElement;
+  var themeToggle = document.getElementById('themeToggle');
+  var stored = null;
+  try { stored = localStorage.getItem('ppp-theme'); } catch (e) {}
+  var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var initial = stored || (prefersDark ? 'dark' : 'light');
+  applyTheme(initial);
+
+  function applyTheme(mode) {
+    if (mode === 'dark') {
+      root.setAttribute('data-theme', 'dark');
+      themeToggle.textContent = '☀️';
+    } else {
+      root.removeAttribute('data-theme');
+      themeToggle.textContent = '🌙';
+    }
+  }
+  themeToggle.addEventListener('click', function () {
+    var isDark = root.getAttribute('data-theme') === 'dark';
+    var next = isDark ? 'light' : 'dark';
+    applyTheme(next);
+    try { localStorage.setItem('ppp-theme', next); } catch (e) {}
+  });
+
+  // Reveal cards on scroll
+  var cards = document.querySelectorAll('.card');
+  if ('IntersectionObserver' in window) {
+    var revealObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+    cards.forEach(function (card) { revealObserver.observe(card); });
+
+    // Active TOC highlighting
+    var tocLinks = {};
+    document.querySelectorAll('nav.toc a').forEach(function (a) {
+      tocLinks[a.getAttribute('href').slice(1)] = a;
+    });
+    var tocObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var link = tocLinks[entry.target.id];
+        if (!link) return;
+        if (entry.isIntersecting) {
+          Object.values(tocLinks).forEach(function (l) { l.classList.remove('active'); });
+          link.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-40% 0px -55% 0px' });
+    cards.forEach(function (card) { if (card.id) tocObserver.observe(card); });
+  } else {
+    cards.forEach(function (card) { card.classList.add('visible'); });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 5 Notes: AWS Fundamentals - EC2</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --card: #f9fafb;
+    --accent: #d97706;      /* AWS-ish orange */
+    --accent-dark: #b45309;
+    --blue: #2563eb;
+    --green: #059669;
+    --purple: #7c3aed;
+    --red: #dc2626;
+    --code-bg: #f3f4f6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+  }
+  header.page-header {
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  header.page-header h1 {
+    margin: 0 0 6px 0;
+    font-size: 28px;
+    color: var(--accent-dark);
+  }
+  header.page-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+  }
+  nav.toc h2 {
+    margin-top: 0;
+    font-size: 16px;
+    color: var(--accent-dark);
+  }
+  nav.toc ol {
+    margin: 0;
+    padding-left: 20px;
+    columns: 2;
+  }
+  nav.toc li { margin-bottom: 6px; font-size: 14px; break-inside: avoid; }
+  nav.toc a { color: var(--blue); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  section.lecture {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-bottom: 26px;
+    background: #fff;
+    scroll-margin-top: 16px;
+  }
+  section.lecture h2 {
+    margin-top: 0;
+    font-size: 20px;
+    color: #111827;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 8px;
+  }
+  .lecture-num {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 2px 8px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  h3 { color: var(--accent-dark); font-size: 16px; margin-bottom: 6px; }
+
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: #fffbeb;
+    padding: 10px 16px;
+    margin: 14px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 14.5px;
+  }
+  .callout.tip {
+    border-left-color: var(--green);
+    background: #ecfdf5;
+  }
+  .callout.exam {
+    border-left-color: var(--red);
+    background: #fef2f2;
+  }
+  .callout.warn {
+    border-left-color: #ea580c;
+    background: #fff7ed;
+  }
+  .callout strong { color: inherit; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th {
+    background: var(--card);
+    color: var(--accent-dark);
+  }
+  tr:nth-child(even) td { background: #fcfcfd; }
+
+  code {
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  pre {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 14px 16px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 14px 0;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  pre code { background: none; padding: 0; color: inherit; }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 4px; }
+
+  dl { margin: 14px 0; }
+  dt { font-weight: 700; color: var(--accent-dark); margin-top: 10px; }
+  dd { margin-left: 0; margin-bottom: 6px; color: #374151; }
+
+  .diagram {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 16px 0;
+    text-align: center;
+    overflow-x: auto;
+  }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram-caption {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  .analogy {
+    background: #eef2ff;
+    border: 1px dashed #a5b4fc;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14.5px;
+    margin: 14px 0;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-left: 6px;
+  }
+  .badge.old { background: #e5e7eb; color: #4b5563; }
+  .badge.new { background: #dcfce7; color: #166534; }
+
+  .top-link { font-size: 12px; text-align: right; }
+  .top-link a { color: var(--muted); text-decoration: none; }
+  .top-link a:hover { text-decoration: underline; }
+
+  hr.section-break {
+    border: none;
+    border-top: 2px dashed var(--border);
+    margin: 36px 0;
+  }
+
+  .summary-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 14px;
+  }
+  .summary-box h3 { color: var(--green); margin-top: 0; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="page-header">
+    <h1>Section 5 — AWS Fundamentals: EC2</h1>
+    <p>My notes while watching Stephane Maarek's Udemy course · Simple English, diagrams included, no dark theme.</p>
+  </header>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#s1">1. AWS Budget &amp; Billing Setup</a></li>
+      <li><a href="#s2">2. What is EC2?</a></li>
+      <li><a href="#s3">3. What Can You Customize on an Instance?</a></li>
+      <li><a href="#s4">4. Bootstrapping with EC2 User Data</a></li>
+      <li><a href="#s5">5. EC2 Pricing Models</a></li>
+      <li><a href="#s6">6. Hands-On: Launch Your First EC2 Instance</a></li>
+      <li><a href="#s7">7. Instance Lifecycle: Stop vs Terminate</a></li>
+      <li><a href="#s8">8. Connecting via SSH</a></li>
+      <li><a href="#lsummary">Cheat Sheet</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <section class="lecture" id="s1">
+    <h2><span class="lecture-num">1</span>AWS Budget &amp; Billing Setup</h2>
+
+    <p>Before creating any AWS resources, set up billing alerts so you never get a surprise bill. AWS is pay-as-you-go — you're billed for what you use, but mistakes (like forgetting to terminate an instance) happen to everyone.</p>
+
+    <h3>Accessing the billing console</h3>
+    <p>Click your account name (top right) → <strong>Billing and Cost Management</strong>.</p>
+
+    <div class="callout warn">
+      <strong>IAM users can't see billing by default.</strong> Even with admin permissions, an IAM user won't see billing info until the <em>root account</em> enables it: log in as root → Account settings → "IAM user and role access to billing information" → Edit → activate.
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 620 150" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="55" width="150" height="50" rx="10" fill="#fcd34d" stroke="#d97706" stroke-width="2"/>
+        <text x="95" y="76" text-anchor="middle" font-size="12" font-weight="bold">Root Account</text>
+        <text x="95" y="92" text-anchor="middle" font-size="10">(email login)</text>
+
+        <line x1="170" y1="80" x2="280" y2="80" stroke="#9ca3af" stroke-width="2"/>
+        <text x="225" y="65" text-anchor="middle" font-size="10" fill="#6b7280">enables billing access</text>
+
+        <rect x="280" y="55" width="150" height="50" rx="10" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="355" y="76" text-anchor="middle" font-size="12" font-weight="bold">IAM Setting</text>
+        <text x="355" y="92" text-anchor="middle" font-size="10">billing access = ON</text>
+
+        <line x1="430" y1="80" x2="540" y2="80" stroke="#9ca3af" stroke-width="2"/>
+        <text x="485" y="65" text-anchor="middle" font-size="10" fill="#6b7280">can now view</text>
+
+        <rect x="540" y="55" width="70" height="50" rx="10" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="575" y="82" text-anchor="middle" font-size="11" font-weight="bold">IAM User</text>
+      </svg>
+      <div class="diagram-caption">Root account grants billing visibility once; after that, IAM users can view (but shouldn't necessarily manage) billing.</div>
+    </div>
+
+    <div class="callout exam">
+      <strong>Security best practice:</strong> Use the root account only for billing/account management. Use IAM users for everyday work — this limits the damage if IAM credentials leak.
+    </div>
+
+    <h3>Billing dashboard basics</h3>
+    <dl>
+      <dt>Month-to-Date Cost</dt><dd>Total spend so far this month</dd>
+      <dt>Forecasted Cost</dt><dd>Estimated total for the month based on current usage</dd>
+      <dt>Last Month's Cost</dt><dd>Total spend from the previous month</dd>
+    </dl>
+
+    <h3>Cost breakdown &amp; Free Tier monitoring</h3>
+    <ul>
+      <li><strong>Bills → Charges by Service</strong> — see exactly which service is costing money (e.g. EC2 instances $20, EBS volumes $8, NAT Gateway $12)</li>
+      <li><strong>Free Tier page</strong> — shows current usage vs. free limits, plus a forecast. If the forecast turns <strong>red</strong>, you're about to exceed the free tier and get charged — stop/terminate resources immediately</li>
+    </ul>
+
+    <h3>Setting up two layers of budget alerts</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 640 130" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="20" width="590" height="30" rx="6" fill="#fecaca" stroke="#dc2626" stroke-width="1.5"/>
+        <text x="30" y="40" font-size="12" font-weight="bold" fill="#7f1d1d">Layer 1 — Zero Spend Budget: alerts the instant ANY charge appears (threshold $0.01)</text>
+
+        <rect x="20" y="70" width="590" height="30" rx="6" fill="#fed7aa" stroke="#ea580c" stroke-width="1.5"/>
+        <text x="30" y="90" font-size="12" font-weight="bold" fill="#7c2d12">Layer 2 — Monthly Cost Budget: alerts at 85% and 100% of your set limit (e.g. $10)</text>
+      </svg>
+      <div class="diagram-caption">Two independent safety nets — one catches accidental charges early, the other tracks your overall monthly spend.</div>
+    </div>
+
+    <div class="callout tip">
+      <strong>Course tip:</strong> If you terminate instances after each lab, you should stay within the free tier (EC2 micro instances are free for 750 hours/month for a new account).
+    </div>
+
+    <h3>After every hands-on lab, do this:</h3>
+    <ol>
+      <li>Check <strong>Free Tier</strong> page — still within limits?</li>
+      <li>Check <strong>Bills → Charges by Service</strong> — anything unexpected?</li>
+      <li>Confirm budget alerts are configured</li>
+      <li><strong>Terminate</strong> resources you're not using</li>
+    </ol>
+  </section>
+
+  <!-- 2 -->
+  <section class="lecture" id="s2">
+    <h2><span class="lecture-num">2</span>What is EC2?</h2>
+
+    <p><strong>EC2 = Elastic Compute Cloud.</strong> It's AWS's core Infrastructure-as-a-Service (IaaS) offering — you rent virtual machines on demand instead of buying physical servers.</p>
+
+    <div class="callout tip">
+      <strong>Core idea:</strong> Pay only for what you use, for as long as you use it. Scale up instantly when traffic grows, scale down when it shrinks.
+    </div>
+
+    <h3>EC2 isn't one thing — it's a family of services</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 640 260" xmlns="http://www.w3.org/2000/svg">
+        <rect x="255" y="100" width="130" height="60" rx="10" fill="#fcd34d" stroke="#d97706" stroke-width="2"/>
+        <text x="320" y="125" text-anchor="middle" font-size="12" font-weight="bold">EC2</text>
+        <text x="320" y="142" text-anchor="middle" font-size="11">Instance</text>
+
+        <line x1="320" y1="100" x2="320" y2="40" stroke="#9ca3af" stroke-width="2"/>
+        <rect x="230" y="10" width="180" height="40" rx="8" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="320" y="35" text-anchor="middle" font-size="11">EBS — persistent storage</text>
+
+        <line x1="255" y1="130" x2="140" y2="130" stroke="#9ca3af" stroke-width="2"/>
+        <rect x="20" y="105" width="120" height="40" rx="8" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="80" y="130" text-anchor="middle" font-size="11">ELB — traffic</text>
+
+        <line x1="385" y1="130" x2="500" y2="130" stroke="#9ca3af" stroke-width="2"/>
+        <rect x="500" y="105" width="120" height="40" rx="8" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+        <text x="560" y="130" text-anchor="middle" font-size="11">ASG — scaling</text>
+
+        <line x1="320" y1="160" x2="320" y2="220" stroke="#9ca3af" stroke-width="2"/>
+        <rect x="230" y="220" width="180" height="40" rx="8" fill="#fed7aa" stroke="#ea580c" stroke-width="2"/>
+        <text x="320" y="245" text-anchor="middle" font-size="11">AMI — instance template</text>
+      </svg>
+      <div class="diagram-caption">The EC2 "family": the instance itself, plus EBS (storage), ELB (traffic distribution), ASG (auto-scaling) and AMI (templates) all work together.</div>
+    </div>
+
+    <dl>
+      <dt>EC2 Instances</dt><dd>Virtual machines you rent to run your applications</dd>
+      <dt>EBS Volumes</dt><dd>Virtual hard drives attached to instances for persistent storage</dd>
+      <dt>Elastic Load Balancer (ELB)</dt><dd>Distributes incoming traffic across multiple instances</dd>
+      <dt>Auto Scaling Groups (ASG)</dt><dd>Automatically adds/removes instances based on demand</dd>
+    </dl>
+
+    <div class="callout tip">
+      <strong>Why this matters:</strong> Nearly every company on AWS uses EC2 in some form. Understanding EC2 well means understanding the core of cloud infrastructure.
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="lecture" id="s3">
+    <h2><span class="lecture-num">3</span>What Can You Customize on an Instance?</h2>
+
+    <p>When launching an EC2 instance, you control almost everything about it:</p>
+
+    <table>
+      <tr><th>Setting</th><th>What it controls</th></tr>
+      <tr><td>Operating System</td><td>Linux (most popular in the cloud), Windows, or macOS</td></tr>
+      <tr><td>CPU &amp; Cores</td><td>Compute power — from 1 core to 96+ cores</td></tr>
+      <tr><td>RAM</td><td>Memory available to the instance</td></tr>
+      <tr><td>Storage</td><td>Network storage (EBS) or local hardware storage (Instance Store)</td></tr>
+      <tr><td>Network Card</td><td>Speed/type of network interface</td></tr>
+      <tr><td>Public IP Address</td><td>Whether it's reachable from the internet</td></tr>
+      <tr><td>Security Groups</td><td>Firewall — inbound/outbound traffic rules</td></tr>
+      <tr><td>Bootstrap Script (User Data)</td><td>Commands that run automatically at first boot</td></tr>
+    </table>
+
+    <div class="callout tip">
+      <strong>The power of EC2:</strong> Configure a machine exactly how you need it, spin it up in seconds, use it, shut it down when done — no physical hardware to maintain.
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="lecture" id="s4">
+    <h2><span class="lecture-num">4</span>Bootstrapping with EC2 User Data</h2>
+
+    <p><strong>Bootstrapping</strong> = automating setup tasks when a machine first starts. <strong>EC2 User Data</strong> is a script that runs <em>once</em>, right when the instance first launches, and never again.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 640 130" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="60" cy="65" r="10" fill="#d97706"/>
+        <text x="60" y="100" text-anchor="middle" font-size="11">Instance Launch</text>
+
+        <line x1="70" y1="65" x2="290" y2="65" stroke="#9ca3af" stroke-width="2"/>
+        <rect x="120" y="35" width="220" height="60" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+        <text x="230" y="60" text-anchor="middle" font-size="11" font-weight="bold">User Data script runs</text>
+        <text x="230" y="78" text-anchor="middle" font-size="10">(once, with root privileges)</text>
+
+        <line x1="340" y1="65" x2="570" y2="65" stroke="#9ca3af" stroke-width="2"/>
+        <circle cx="580" cy="65" r="10" fill="#059669"/>
+        <text x="580" y="100" text-anchor="middle" font-size="11">Instance Ready</text>
+      </svg>
+      <div class="diagram-caption">User Data runs exactly once at boot — never again on reboot or restart.</div>
+    </div>
+
+    <h3>What you typically do with it</h3>
+    <ul>
+      <li>Install software updates/patches</li>
+      <li>Install applications (web servers, databases, etc.)</li>
+      <li>Download config files from the internet</li>
+      <li>Start services automatically</li>
+      <li>Clone Git repositories</li>
+      <li>Set up monitoring agents</li>
+    </ul>
+
+    <div class="callout warn">
+      <strong>Trade-off:</strong> The more you put in User Data, the longer the instance takes to boot. Balance automation against startup speed.
+    </div>
+
+    <div class="callout exam">
+      <strong>Remember:</strong> User Data scripts run with <strong>root privileges</strong> — you never need to prefix commands with <code>sudo</code>.
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="lecture" id="s5">
+    <h2><span class="lecture-num">5</span>EC2 Pricing Models</h2>
+
+    <p>AWS offers several ways to pay for EC2, each suited to a different kind of workload.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg">
+        <text x="10" y="20" font-size="11" fill="#374151">Discount vs. On-Demand price →</text>
+
+        <text x="10" y="45" font-size="11">On-Demand</text>
+        <rect x="140" y="32" width="10" height="18" fill="#9ca3af"/>
+        <text x="160" y="46" font-size="10" fill="#6b7280">0%</text>
+
+        <text x="10" y="75" font-size="11">Capacity Reservation</text>
+        <rect x="140" y="62" width="10" height="18" fill="#9ca3af"/>
+        <text x="160" y="76" font-size="10" fill="#6b7280">0% (guarantees capacity, not price)</text>
+
+        <text x="10" y="105" font-size="11">Convertible Reserved</text>
+        <rect x="140" y="92" width="230" height="18" fill="#93c5fd"/>
+        <text x="380" y="106" font-size="10" fill="#6b7280">~66%</text>
+
+        <text x="10" y="135" font-size="11">Savings Plans (1yr)</text>
+        <rect x="140" y="122" width="245" height="18" fill="#60a5fa"/>
+        <text x="395" y="136" font-size="10" fill="#6b7280">~70%</text>
+
+        <text x="10" y="165" font-size="11">Reserved (1yr, all upfront)</text>
+        <rect x="140" y="152" width="250" height="18" fill="#3b82f6"/>
+        <text x="400" y="166" font-size="10" fill="#6b7280">~72%</text>
+
+        <text x="10" y="195" font-size="11">Spot Instances</text>
+        <rect x="140" y="182" width="315" height="18" fill="#059669"/>
+        <text x="465" y="196" font-size="10" fill="#6b7280">up to 90%</text>
+      </svg>
+      <div class="diagram-caption">Roughly how much you can save vs. On-Demand — but remember, bigger discounts usually mean less flexibility (Spot can be interrupted anytime).</div>
+    </div>
+
+    <h3>1. On-Demand</h3>
+    <p>Pay by the second, no commitment. Best for: development/testing, unpredictable workloads, short-term projects, learning AWS.</p>
+    <div class="analogy">🏨 <strong>Hotel analogy:</strong> Walk in anytime, pay full price. No planning needed, maximum flexibility.</div>
+
+    <h3>2. Reserved Instances</h3>
+    <p>Commit to 1 or 3 years for up to <strong>72% discount</strong>. Best for steady-state workloads (databases, always-on web servers).</p>
+    <dl>
+      <dt>What you reserve</dt><dd>Instance type, Region, Tenancy, Operating System</dd>
+      <dt>Payment options</dt><dd>All Upfront (~72% off), Partial Upfront (~66% off), No Upfront (~65% off)</dd>
+    </dl>
+    <div class="callout tip"><strong>Convertible Reserved Instances:</strong> Slightly less discount (~66%) but let you change instance type/family/OS/tenancy later — good if requirements might shift.</div>
+    <div class="analogy">🏨 Book the same room for a year — big discount for long-term commitment.</div>
+
+    <h3>3. Savings Plans</h3>
+    <p>Commit to spending a fixed <strong>$/hour</strong> for 1–3 years, get up to <strong>70% discount</strong> — but you can mix instance types/sizes/OS as long as you stay within that hourly spend.</p>
+    <div class="analogy">🏨 Tell the hotel "I'll spend $300/month" — they discount you, but you can pick different room types as long as you stay in budget.</div>
+
+    <h3>4. Spot Instances</h3>
+    <p>Bid on unused AWS capacity for up to <strong>90% discount</strong>. Best for batch jobs, data analysis, image processing — anything fault-tolerant.</p>
+    <div class="callout warn"><strong>Critical limitation:</strong> AWS can terminate your Spot instance anytime the price rises above your bid. Never use Spot for critical apps or databases.</div>
+    <div class="analogy">🏨 Last-minute hotel sale on empty rooms — amazing price, but you can get kicked out if someone pays more.</div>
+
+    <h3>5. Dedicated Hosts</h3>
+    <p>An entire physical server dedicated to you — the most expensive option. Best for compliance requirements or bring-your-own-license software billed per socket/core.</p>
+    <dl>
+      <dt>Dedicated Host</dt><dd>You get the physical server itself, full visibility, can reuse server-bound licenses</dd>
+      <dt>Dedicated Instance</dt><dd>Runs on hardware dedicated to you, but you don't control which physical server (may share with other instances in your account)</dd>
+    </dl>
+    <div class="analogy">🏨 Rent the entire building for yourself. Maximum privacy, maximum cost.</div>
+
+    <h3>6. Capacity Reservations</h3>
+    <p>Reserve on-demand capacity in a specific AZ — no discount, but guarantees the capacity is there when you need it. Charged at on-demand rates whether you launch instances or not. Combine with Reserved Instances/Savings Plans to also get a discount.</p>
+    <div class="analogy">🏨 Reserve a specific room for a specific night — pay full price even if you don't show up, but the room is guaranteed.</div>
+
+    <h3>Choosing the right option</h3>
+    <table>
+      <tr><th>Workload</th><th>Best choice</th><th>Why</th></tr>
+      <tr><td>Dev, testing, learning</td><td>On-Demand</td><td>Unpredictable, start/stop often</td></tr>
+      <tr><td>Production DB (constant traffic)</td><td>Reserved Instances</td><td>Predictable 24/7 usage, save up to 72%</td></tr>
+      <tr><td>Flexible web app + DB mix</td><td>Savings Plans</td><td>Consistent $/hr spend, flexible instance types</td></tr>
+      <tr><td>Batch processing, analytics</td><td>Spot Instances</td><td>Tolerates interruption, save up to 90%</td></tr>
+      <tr><td>Compliance-regulated workload</td><td>Dedicated Host</td><td>Needs physical server isolation</td></tr>
+    </table>
+
+    <div class="callout exam">
+      <strong>Exam tip:</strong> Exam scenarios test whether you can match a workload description to a pricing model. E.g. "database running 24/7 with predictable demand" → Reserved Instance.
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="lecture" id="s6">
+    <h2><span class="lecture-num">6</span>Hands-On: Launch Your First EC2 Instance</h2>
+
+    <p><strong>Goal:</strong> launch an Amazon Linux instance, bootstrap a simple web server via User Data, and understand the launch parameters.</p>
+
+    <ol>
+      <li><strong>EC2 Console</strong> → Instances → <strong>Launch Instances</strong></li>
+      <li><strong>Name</strong> it, e.g. "My First Instance" (becomes the Name tag)</li>
+      <li><strong>Choose an AMI:</strong> Amazon Linux 2 (Quick Start) — free-tier eligible, 64-bit x86</li>
+      <li><strong>Instance type:</strong> <code>t2.micro</code> — free-tier eligible (1 vCPU, 1 GB RAM, burstable)</li>
+      <li><strong>Key pair:</strong> create a new one (e.g. <code>my-ec2-key</code>), download the <code>.pem</code> file — needed for SSH</li>
+      <li><strong>Security group:</strong> allow the traffic below</li>
+      <li><strong>Storage:</strong> default 8 GB EBS (gp3), delete-on-termination enabled</li>
+      <li><strong>User Data</strong> (under Advanced Details) — paste the bootstrap script below</li>
+      <li>Review, confirm <code>t2.micro</code> + HTTP allowed, click <strong>Launch Instance</strong></li>
+    </ol>
+
+    <table>
+      <tr><th>Type</th><th>Protocol</th><th>Port</th><th>Source</th><th>Purpose</th></tr>
+      <tr><td>SSH</td><td>TCP</td><td>22</td><td>Your IP (or <code>0.0.0.0/0</code> for learning only)</td><td>Terminal access</td></tr>
+      <tr><td>HTTP</td><td>TCP</td><td>80</td><td><code>0.0.0.0/0</code></td><td>Web traffic</td></tr>
+      <tr><td>HTTPS</td><td>TCP</td><td>443</td><td><code>0.0.0.0/0</code></td><td>Encrypted web traffic (optional)</td></tr>
+    </table>
+
+    <div class="callout warn">
+      <strong>Security note:</strong> <code>0.0.0.0/0</code> means "anywhere on the internet." Fine for learning, but in production restrict SSH to your own IP only.
+    </div>
+
+    <h3>The bootstrap script</h3>
+    <pre><code>#!/bin/bash
+yum update -y
+yum install -y httpd
+systemctl start httpd
+systemctl enable httpd
+echo "&lt;h1&gt;My First AWS Web Server!&lt;/h1&gt;" &gt; /var/www/html/index.html</code></pre>
+
+    <dl>
+      <dt><code>#!/bin/bash</code></dt><dd>Shebang — run this as a bash script</dd>
+      <dt><code>yum update -y</code></dt><dd>Update all packages (yum = Amazon Linux's package manager; -y = auto-yes to prompts)</dd>
+      <dt><code>yum install -y httpd</code></dt><dd>Install Apache web server (httpd = HTTP daemon)</dd>
+      <dt><code>systemctl start httpd</code></dt><dd>Start Apache immediately</dd>
+      <dt><code>systemctl enable httpd</code></dt><dd>Make Apache start automatically on every future boot</dd>
+    </dl>
+
+    <div class="callout tip">
+      <strong>Why <code>enable</code> matters:</strong> Without it, Apache stops for good if the instance reboots. <code>enable</code> is essential for production reliability.
+    </div>
+
+    <h3>Verify it worked</h3>
+    <ul>
+      <li>Wait for status <strong>Running</strong>, copy the <strong>Public IPv4 address</strong></li>
+      <li>Paste into your browser (e.g. <code>http://52.123.45.67</code>)</li>
+      <li>You should see "My First AWS Web Server!"</li>
+    </ul>
+  </section>
+
+  <!-- 7 -->
+  <section class="lecture" id="s7">
+    <h2><span class="lecture-num">7</span>Instance Lifecycle: Stop vs Terminate</h2>
+
+    <div class="diagram">
+      <svg viewBox="0 0 640 160" xmlns="http://www.w3.org/2000/svg">
+        <rect x="30" y="55" width="130" height="50" rx="10" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="95" y="85" text-anchor="middle" font-size="12" font-weight="bold">Running</text>
+
+        <line x1="160" y1="70" x2="290" y2="70" stroke="#9ca3af" stroke-width="2"/>
+        <text x="225" y="60" text-anchor="middle" font-size="10" fill="#6b7280">Stop</text>
+        <line x1="290" y1="95" x2="160" y2="95" stroke="#9ca3af" stroke-width="2"/>
+        <text x="225" y="112" text-anchor="middle" font-size="10" fill="#6b7280">Start</text>
+
+        <rect x="290" y="55" width="130" height="50" rx="10" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+        <text x="355" y="85" text-anchor="middle" font-size="12" font-weight="bold">Stopped</text>
+
+        <line x1="160" y1="45" x2="480" y2="45" stroke="#dc2626" stroke-width="2" stroke-dasharray="4"/>
+        <text x="320" y="32" text-anchor="middle" font-size="10" fill="#dc2626">Terminate (from either state)</text>
+
+        <rect x="480" y="55" width="130" height="50" rx="10" fill="#fecaca" stroke="#dc2626" stroke-width="2"/>
+        <text x="545" y="85" text-anchor="middle" font-size="12" font-weight="bold">Terminated</text>
+        <text x="545" y="130" text-anchor="middle" font-size="10" fill="#6b7280">Permanent — cannot undo</text>
+      </svg>
+      <div class="diagram-caption">Running ↔ Stopped is reversible. Terminated is final — the instance is gone for good.</div>
+    </div>
+
+    <table>
+      <tr><th>State</th><th>Description</th><th>Charged?</th></tr>
+      <tr><td><strong>Running</strong></td><td>Active, can accept traffic</td><td>✅ Yes — every second</td></tr>
+      <tr><td><strong>Stopped</strong></td><td>Powered off but still exists (like a shut-down PC)</td><td>❌ No compute charge, but EBS storage still costs</td></tr>
+      <tr><td><strong>Terminated</strong></td><td>Permanently deleted</td><td>❌ No</td></tr>
+      <tr><td><strong>Stopping / Starting</strong></td><td>Transitioning between states</td><td>❌ Usually not charged</td></tr>
+    </table>
+
+    <div class="callout tip"><strong>STOP</strong> = power off, keep the machine and its config — you can start it again later. You lose compute charges but keep storage costs.</div>
+    <div class="callout exam"><strong>TERMINATE</strong> = permanently delete. No more charges at all. Use this when you're completely done with an instance.</div>
+
+    <div class="callout warn">
+      <strong>For this course:</strong> Always <strong>terminate</strong> instances after finishing a lab to avoid ongoing charges. Use "stop" only for a short pause (e.g. overnight).
+    </div>
+
+    <p><strong>How to stop/terminate:</strong> EC2 → Instances → select instance → <em>Instance State</em> dropdown → choose Stop or Terminate → confirm.</p>
+  </section>
+
+  <!-- 8 -->
+  <section class="lecture" id="s8">
+    <h2><span class="lecture-num">8</span>Connecting via SSH (Optional)</h2>
+
+    <p>To log in and run commands directly on your instance, you need the <code>.pem</code> key file and the instance's public IP.</p>
+
+    <pre><code># On macOS/Linux terminal:
+chmod 400 /path/to/my-ec2-key.pem
+ssh -i /path/to/my-ec2-key.pem ec2-user@YOUR_PUBLIC_IP
+
+# Example:
+ssh -i ~/Downloads/my-ec2-key.pem ec2-user@52.123.45.67</code></pre>
+
+    <dl>
+      <dt><code>chmod 400</code></dt><dd>Restrict file permissions so only you can read the key (required by SSH)</dd>
+      <dt><code>ec2-user</code></dt><dd>Default username for Amazon Linux (Ubuntu uses <code>ubuntu</code>, Debian uses <code>admin</code>, etc.)</dd>
+    </dl>
+
+    <div class="callout tip">
+      <strong>Windows users:</strong> Use PuTTY or WSL with the SSH command above — you may need to convert the <code>.pem</code> to <code>.ppk</code> with PuTTYgen.
+    </div>
+
+    <div class="callout warn">
+      <strong>Never share your <code>.pem</code> file</strong> — anyone who has it can log into your instances. Treat it like a password.
+    </div>
+  </section>
+
+  <hr class="section-break">
+
+  <!-- Summary -->
+  <section class="lecture" id="lsummary">
+    <h2>📋 Cheat Sheet</h2>
+
+    <div class="summary-box">
+      <h3>Key facts to remember</h3>
+      <ul>
+        <li>EC2 User Data runs <strong>once</strong>, at first boot, with <strong>root</strong> privileges</li>
+        <li><code>t2.micro</code> = free tier eligible: 1 vCPU, 1 GB RAM</li>
+        <li>Security groups: EC2 instance should only accept traffic on the ports it actually needs (80/443/22)</li>
+        <li>Root volume: deleted by default when instance is terminated (Delete on Termination = enabled)</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>Pricing model quick reference</h3>
+      <table>
+        <tr><th>Model</th><th>Discount</th><th>Best for</th></tr>
+        <tr><td>On-Demand</td><td>0%</td><td>Unpredictable/short-term</td></tr>
+        <tr><td>Reserved (1-3yr)</td><td>Up to 72%</td><td>Steady-state (databases)</td></tr>
+        <tr><td>Savings Plans</td><td>Up to 70%</td><td>Flexible instance types, fixed $/hr spend</td></tr>
+        <tr><td>Spot</td><td>Up to 90%</td><td>Fault-tolerant batch jobs</td></tr>
+        <tr><td>Dedicated Host</td><td>Varies</td><td>Compliance / BYOL</td></tr>
+        <tr><td>Capacity Reservation</td><td>0%</td><td>Guarantee capacity exists in an AZ</td></tr>
+      </table>
+    </div>
+
+    <div class="summary-box">
+      <h3>Mental model recap</h3>
+      <ul>
+        <li><strong>EC2</strong> = rent a virtual machine, configure it exactly how you want, pay only while running</li>
+        <li><strong>User Data</strong> = automation script that runs once, at first launch</li>
+        <li><strong>Stop</strong> = pause (reversible) · <strong>Terminate</strong> = delete forever</li>
+        <li>Always terminate lab instances when done to avoid ongoing charges</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="top-link"><a href="#top">↑ Back to top</a></div>
+
+</div>
+</body>
+</html>

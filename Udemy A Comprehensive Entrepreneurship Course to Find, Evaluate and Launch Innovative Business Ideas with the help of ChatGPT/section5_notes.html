@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 5 Notes — Marketing Plan with ChatGPT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #F7F7F4;
+    --paper-raised: #FFFFFF;
+    --ink: #232320;
+    --ink-soft: #55534C;
+    --teal: #0F6659;
+    --teal-deep: #0A423B;
+    --teal-tint: #E5F2EF;
+    --gold: #B7862C;
+    --gold-tint: #FBF2E2;
+    --line: #E3E1D8;
+    --rule: #D8D6CB;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body{
+    margin:0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.6;
+    font-size: 16px;
+  }
+
+  h1,h2,h3,h4{
+    font-family: 'Fraunces', Georgia, serif;
+    color: var(--teal-deep);
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  /* ---------- Layout ---------- */
+  .page{
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 40px;
+  }
+
+  @media (max-width: 880px){
+    .page{ grid-template-columns: 1fr; }
+    .toc{ position: static !important; order: 2; }
+  }
+
+  /* ---------- Header / Hero ---------- */
+  .hero{
+    grid-column: 1 / -1;
+    padding: 56px 8px 32px;
+    border-bottom: 2px solid var(--rule);
+    margin-bottom: 8px;
+  }
+  .hero .eyebrow{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal);
+    font-weight: 500;
+  }
+  .hero h1{
+    font-size: 40px;
+    font-weight: 700;
+    margin: 10px 0 14px;
+    max-width: 720px;
+  }
+  .hero p.sub{
+    max-width: 640px;
+    color: var(--ink-soft);
+    font-size: 16.5px;
+    margin: 0;
+  }
+
+  /* the "recurring formula" banner */
+  .formula{
+    grid-column: 1 / -1;
+    background: var(--teal-deep);
+    color: #F2F7F6;
+    border-radius: var(--radius);
+    padding: 26px 30px;
+    margin: 4px 0 28px;
+  }
+  .formula h2{
+    color: #fff;
+    font-size: 19px;
+    margin-bottom: 14px;
+  }
+  .formula-steps{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .formula-step{
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 8px;
+    padding: 12px 16px;
+    flex: 1 1 220px;
+    font-size: 14.5px;
+  }
+  .formula-step b{
+    display:block;
+    font-family:'Fraunces', serif;
+    font-size: 15.5px;
+    color: #E9C77B;
+    margin-bottom: 4px;
+  }
+  .formula-arrow{
+    align-self:center;
+    color: rgba(255,255,255,0.5);
+    font-size: 18px;
+    padding: 0 2px;
+  }
+
+  /* ---------- Table of contents ---------- */
+  .toc{
+    position: sticky;
+    top: 24px;
+    align-self: start;
+    padding-top: 8px;
+  }
+  .toc-title{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .toc a{
+    display:block;
+    font-size: 13.8px;
+    color: var(--ink);
+    text-decoration: none;
+    padding: 6px 0 6px 14px;
+    border-left: 2px solid var(--line);
+    transition: border-color .15s, color .15s;
+  }
+  .toc a:hover, .toc a.b2b{
+    border-left-color: var(--teal);
+    color: var(--teal-deep);
+  }
+  .toc .num{
+    font-family:'JetBrains Mono', monospace;
+    color: var(--teal);
+    margin-right: 6px;
+    font-size: 12px;
+  }
+  .toc .divider{
+    margin: 14px 0 8px 14px;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  /* ---------- Main content ---------- */
+  main{ min-width: 0; }
+
+  .lecture{
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 28px 30px 26px;
+    margin-bottom: 22px;
+    scroll-margin-top: 20px;
+  }
+
+  .lecture-head{
+    display:flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .lecture-head .lnum{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: #fff;
+    background: var(--teal);
+    padding: 2px 9px;
+    border-radius: 5px;
+    flex-shrink: 0;
+  }
+  .lecture-head h2{
+    font-size: 21px;
+    font-weight: 600;
+  }
+
+  .lecture > p.deck{
+    color: var(--ink-soft);
+    font-size: 14.5px;
+    margin: 2px 0 18px;
+    font-style: italic;
+  }
+
+  .lecture h4{
+    font-size: 12.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    margin: 18px 0 8px;
+  }
+  .lecture h4:first-of-type{ margin-top: 4px; }
+
+  .lecture ul{
+    margin: 0 0 4px;
+    padding-left: 20px;
+  }
+  .lecture li{ margin-bottom: 5px; font-size: 15px; }
+  .lecture li b{ color: var(--ink); }
+
+  /* prompt box */
+  .prompt{
+    background: var(--teal-tint);
+    border: 1px solid #CFE6E1;
+    border-left: 4px solid var(--teal);
+    border-radius: 7px;
+    padding: 13px 16px;
+    margin: 6px 0 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13.3px;
+    color: #0B3F38;
+    white-space: pre-wrap;
+  }
+  .prompt .tag{
+    display:block;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 6px;
+  }
+
+  /* AI output box */
+  .output{
+    background: #FAFAF8;
+    border: 1px dashed var(--rule);
+    border-radius: 7px;
+    padding: 12px 16px;
+    margin: 0 0 14px;
+    font-size: 14.3px;
+    color: var(--ink-soft);
+  }
+  .output .tag{
+    display:block;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #918F84;
+    margin-bottom: 6px;
+  }
+
+  /* takeaway callout */
+  .takeaway{
+    background: var(--gold-tint);
+    border: 1px solid #EEDBAE;
+    border-radius: 7px;
+    padding: 13px 16px;
+    margin-top: 14px;
+    font-size: 14.3px;
+  }
+  .takeaway .tag{
+    display:block;
+    font-weight: 700;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 5px;
+  }
+
+  /* prompt-list lectures (42,44,46,52) get a lighter card style */
+  .lecture.list-lecture{
+    background: #FCFCFA;
+  }
+  .plist{
+    margin: 0 0 16px;
+  }
+  .plist .group-label{
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--teal-deep);
+    margin: 14px 0 6px;
+  }
+  .plist .group-label:first-child{ margin-top: 2px; }
+
+  /* section divider labels inside TOC content (B2C / B2B) */
+  .part-divider{
+    grid-column: 1/-1;
+    display:flex;
+    align-items:center;
+    gap: 12px;
+    margin: 6px 0 4px;
+  }
+  .part-divider .lbl{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    white-space: nowrap;
+  }
+  .part-divider .ln{ height:1px; background: var(--rule); flex:1; }
+
+  footer{
+    grid-column: 1/-1;
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 13px;
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+    margin-top: 10px;
+  }
+
+  code.inline{
+    background: var(--teal-tint);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9em;
+    color: var(--teal-deep);
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="eyebrow">My Course Notes · Lecture 38–52</div>
+    <h1>Create and Execute Your Marketing Plan with ChatGPT</h1>
+    <p class="sub">This whole section teaches <b>one repeating idea</b>: don't ask ChatGPT for content directly. First make it "become" your customer, get the customer's real pain points, and only then ask for the marketing content. Everything below — Facebook ads, YouTube scripts, emails, cold outreach, LinkedIn messages — is just that one idea applied to a different channel.</p>
+  </div>
+
+  <div class="formula">
+    <h2>🔁 The formula that repeats in every lecture</h2>
+    <div class="formula-steps">
+      <div class="formula-step"><b>1. Define the segment</b>Pick ONE type of customer (e.g. the elderly user, the caregiver, or a retirement home manager). Never write for "everyone" at once.</div>
+      <div class="formula-arrow">→</div>
+      <div class="formula-step"><b>2. Role-play prompt</b>"Put yourself in the shoes of [that person]. Describe your daily struggles / pain points."</div>
+      <div class="formula-arrow">→</div>
+      <div class="formula-step"><b>3. Generate content</b>Now ask for the ad, email, script, or message — and tell it to use the pain points above.</div>
+      <div class="formula-arrow">→</div>
+      <div class="formula-step"><b>4. Push it further</b>Regenerate, ask for a shorter/friendlier/less-salesy version. First draft is never the final one.</div>
+    </div>
+  </div>
+
+  <nav class="toc">
+    <div class="toc-title">Jump to a lecture</div>
+    <a href="#l38"><span class="num">38</span>Go-to-market outline</a>
+    <a href="#l39"><span class="num">39</span>The magic prompt ⭐</a>
+    <a href="#l40"><span class="num">40</span>Best social channels</a>
+    <a href="#l41"><span class="num">41</span>Facebook / Instagram post</a>
+    <a href="#l42"><span class="num">42</span>Prompt list: ad copy</a>
+    <a href="#l43"><span class="num">43</span>YouTube video marketing</a>
+    <a href="#l44"><span class="num">44</span>Prompt list: video</a>
+    <a href="#l45"><span class="num">45</span>Email campaign</a>
+    <a href="#l46"><span class="num">46</span>Prompt list: email</a>
+    <a href="#l47"><span class="num">47</span>Sales funnel</a>
+    <div class="divider">B2B track</div>
+    <a href="#l48"><span class="num">48</span>List B2B leads</a>
+    <a href="#l49"><span class="num">49</span>Magic prompt for B2B</a>
+    <a href="#l50"><span class="num">50</span>Cold email</a>
+    <a href="#l51"><span class="num">51</span>LinkedIn post/message</a>
+    <a href="#l52"><span class="num">52</span>Prompt list: B2B</a>
+  </nav>
+
+  <main>
+
+    <!-- 38 -->
+    <section class="lecture" id="l38">
+      <div class="lecture-head"><span class="lnum">38</span><h2>Create your Go-To-Market Outline with ChatGPT</h2></div>
+      <p class="deck">A go-to-market plan is just your roadmap for actually launching the business.</p>
+
+      <h4>The trick used here</h4>
+      <ul>
+        <li>Instead of asking a plain question, we ask ChatGPT to <b>play a role</b> — the CEO of our own startup.</li>
+        <li>Give it 3 things: (1) what your product does, (2) what stage you're at (e.g. "I have a working MVP"), (3) what you want next (e.g. "get my first 100 paying customers").</li>
+      </ul>
+
+      <div class="prompt"><span class="tag">Prompt used</span>Assume that you're a CEO of a startup creating [an AI assistant for elderly people]. You have a functional [MVP]. The next step is getting paying customers. Outline a brief go-to-market plan to get to the first 100 paying customers.</div>
+
+      <h4>What ChatGPT gave back (a broad outline)</h4>
+      <ul>
+        <li>Identify your target market</li>
+        <li>Conduct market research</li>
+        <li>Develop marketing materials (website, social pages, brochures)</li>
+        <li>Find early adopters, offer incentives</li>
+        <li>Leverage partnerships (e.g. senior centers, retirement communities)</li>
+        <li>Attend events (health fairs, senior expos)</li>
+        <li>Gather feedback and refine the strategy</li>
+      </ul>
+
+      <div class="takeaway"><span class="tag">Key takeaway</span>This is only a high-level outline. The rest of this section takes each bullet point above and goes deep into it — that's literally the syllabus for lectures 39–52.</div>
+    </section>
+
+    <!-- 39 -->
+    <section class="lecture" id="l39">
+      <div class="lecture-head"><span class="lnum">39</span><h2>⭐ Use this Magic Prompt Before Every ChatGPT Conversation</h2></div>
+      <p class="deck">This is the single most important lecture in the section — everything after this reuses it.</p>
+
+      <h4>Why you need it</h4>
+      <ul>
+        <li>ChatGPT's own plan said "identify your target market" — you should already have this from earlier lectures (customer segments, ideal customer persona, lean canvas).</li>
+        <li>Different segments feel different pain. Example for an AI assistant for elderly people: <b>caregivers</b> (who buy it), <b>the elderly themselves</b> (who use it), and <b>B2B buyers</b> (retirement homes, clinics) — three completely different messages are needed.</li>
+        <li>The course focuses on just one segment at a time to keep examples simple, but in real life you repeat this process separately for each segment.</li>
+      </ul>
+
+      <h4>The magic prompt</h4>
+      <div class="prompt"><span class="tag">Prompt used</span>Put yourself in the shoes of a potential user of such a product. Describe your daily struggles that could be solved using this AI assistant in detail. Describe all the pain points.</div>
+      <p style="font-size:14.3px;color:var(--ink-soft);margin:-8px 0 14px;">Notice it says <b>"user"</b> specifically — not the caregiver, not the retirement home manager. Be precise about which person you're asking ChatGPT to become.</p>
+
+      <div class="output"><span class="tag">ChatGPT's answer (playing the elderly user)</span>Pain points: memory loss, physical challenges, loneliness, safety concerns, communication difficulties.<br>How the assistant helps: reminders &amp; scheduling, physical assistance, companionship, safety monitoring, communication support.</div>
+
+      <h4>Now turn those pain points into content</h4>
+      <div class="prompt"><span class="tag">Follow-up prompt</span>Now craft a Facebook post copy targeted at this audience based on the previous pain points.</div>
+      <div class="output"><span class="tag">Result</span>"Are you tired of struggling with memory loss, physical challenges and loneliness? Do you worry about your safety and communication difficulties? Our new AI assistant is here to help... Learn more and sign up today."</div>
+
+      <div class="takeaway"><span class="tag">Golden rule</span>Before you ask ChatGPT for <b>any</b> marketing content — a post, a script, an email, anything — run the "put yourself in the shoes of..." prompt first. Content built on real pain points always beats content built on a generic product description.</div>
+    </section>
+
+    <!-- 40 -->
+    <section class="lecture" id="l40">
+      <div class="lecture-head"><span class="lnum">40</span><h2>Find the Best Social Media Channels with ChatGPT</h2></div>
+      <p class="deck">Once ChatGPT is "in character" as your customer, ask it where that customer actually spends time.</p>
+
+      <div class="prompt"><span class="tag">Prompt used</span>List 5 social media channels that would be the most efficient to reach this audience.</div>
+
+      <ul>
+        <li><b>Facebook</b> — largest platform, has a strong share of older users, precise ad targeting by age/interest.</li>
+        <li><b>YouTube</b> — older adults increasingly use it.</li>
+        <li><b>Instagram</b> — mainly younger, but the older-user share is growing.</li>
+        <li><b>Twitter</b> — listed too, though the instructor was skeptical of this one.</li>
+        <li><b>LinkedIn</b> — good for elderly people still working, and also useful for reaching B2B partners like retirement homes.</li>
+      </ul>
+
+      <div class="takeaway"><span class="tag">Key takeaway</span>Treat this list as a starting point, not gospel. ChatGPT can be wrong or generic — sanity-check its picks against what you already know about your audience (or quick real research).</div>
+    </section>
+
+    <!-- 41 -->
+    <section class="lecture" id="l41">
+      <div class="lecture-head"><span class="lnum">41</span><h2>Craft a Facebook or Instagram Post with ChatGPT</h2></div>
+
+      <h4>Step 1 — ask for the ad copy</h4>
+      <div class="prompt"><span class="tag">Prompt used</span>Now create an ad copy for Facebook for this product based on the pain points you described.</div>
+
+      <h4>Step 2 — ask for a separate headline</h4>
+      <div class="prompt"><span class="tag">Prompt used</span>Write a headline for such a Facebook ad.</div>
+      <ul>
+        <li>Don't like the result? Click <b>Regenerate response</b> — ChatGPT keeps every version so you can flip left/right and compare.</li>
+        <li>Still not targeted enough? Push it further: <i>"rewrite the headline and clearly target elderly people who experience these struggles."</i></li>
+      </ul>
+
+      <h4>What about images?</h4>
+      <p style="font-size:14.5px;color:var(--ink-soft);margin:2px 0 4px;">Visuals for the post are covered later in the course using AI image generation — ChatGPT can even help you write the image-generation prompt. This lecture stays text-only on purpose.</p>
+
+      <div class="takeaway"><span class="tag">Key takeaway</span>Split the work into small requests — ad body, then headline, then a rewrite — instead of one giant prompt. Small, iterative asks give you more control and better results.</div>
+    </section>
+
+    <!-- 42 -->
+    <section class="lecture list-lecture" id="l42">
+      <div class="lecture-head"><span class="lnum">42</span><h2>Prompt List — Ad / Post Copy</h2></div>
+      <p class="deck">Reference prompts to reuse for any social platform.</p>
+      <div class="plist">
+        <div class="group-label">If you already have a landing page</div>
+        <div class="prompt">Write me a [Facebook/other social media] [ad copy/post] based on this landing page: [paste the landing page text here].</div>
+
+        <div class="group-label">General ad / post copy</div>
+        <div class="prompt">Create an effective [Facebook/other social media] [ad copy/post] to promote [product/service] for [audience]. Make it [playful/emotional/persuasive/...] and mention these benefits: [benefit 1, benefit 2,...]. Add a compelling call to action.</div>
+
+        <div class="group-label">Headline brainstorm</div>
+        <div class="prompt">Brainstorm 20 compelling headlines for a [Facebook/other social media] ad promoting [product] for [audience].</div>
+
+        <div class="group-label">Broadest version</div>
+        <div class="prompt">I am creating a [Facebook/other social media] ad campaign for [product/service] and need to write a copy that will grab the attention of potential customers. Come up with a headline and an ad copy that will persuade them to make a purchase.</div>
+      </div>
+    </section>
+
+    <!-- 43 -->
+    <section class="lecture" id="l43">
+      <div class="lecture-head"><span class="lnum">43</span><h2>Use ChatGPT for Video Marketing on YouTube</h2></div>
+
+      <h4>Step 1 — get content ideas first (don't jump to a script)</h4>
+      <div class="prompt"><span class="tag">Prompt used</span>Come up with five video content ideas for YouTube for this product, which would be the most engaging to watch.</div>
+      <ul>
+        <li>Demo video</li>
+        <li>Customer testimonials</li>
+        <li>How-to videos</li>
+        <li>Educational videos</li>
+        <li>Q&amp;A videos with the team</li>
+      </ul>
+
+      <h4>Step 2 — pick one idea, then ask for the script</h4>
+      <div class="prompt"><span class="tag">Prompt used</span>Write a script for a 2-minute demo video, including the pain points and value propositions of our AI assistant.</div>
+      <div class="output"><span class="tag">Result (shortened)</span>[Opening shot: elderly person struggling with daily tasks] Voiceover: "As we age, daily tasks can become more challenging..." → shows pain points → "That's why we've developed an AI system specifically designed for elderly people..."</div>
+
+      <div class="takeaway"><span class="tag">Key takeaway</span>Don't trust the exact time estimate — one page of script tends to run closer to 2.5 minutes, not 2. Treat ChatGPT's script as a first draft/outline for you to tighten, and always run lecture 39's "shoes of the customer" prompt before asking for the script, so the pain points feed straight in.</div>
+    </section>
+
+    <!-- 44 -->
+    <section class="lecture list-lecture" id="l44">
+      <div class="lecture-head"><span class="lnum">44</span><h2>Prompt List — Videos and Video Ads</h2></div>
+      <div class="plist">
+        <div class="group-label">YouTube video script</div>
+        <div class="prompt">Write a super engaging YouTube video script on [topic]. Mention the following [benefits]: [benefit 1, benefit 2...]. Use a [joyful/playful/friendly/professional/serious/tense...] tone. Add an [engaging question to the audience/call to action...].</div>
+
+        <div class="group-label">Video title</div>
+        <div class="prompt">Create 5 attention-grabbing headlines for this text: [paste the transcript of the video]
+
+Write 5 [attention-grabbing/clickbait...] titles for a YouTube video on [topic].</div>
+
+        <div class="group-label">Video description (SEO)</div>
+        <div class="prompt">Write a [100 word/400 word...] YouTube video description that includes the right keywords and phrases to help my video rank higher in search results for [topic].</div>
+
+        <div class="group-label">Video ad script</div>
+        <div class="prompt">Write a super engaging YouTube/Facebook video ad script for [product/service] based on the [audience] pain points. Mention the following benefits: [benefit 1, benefit 2...].</div>
+      </div>
+    </section>
+
+    <!-- 45 -->
+    <section class="lecture" id="l45">
+      <div class="lecture-head"><span class="lnum">45</span><h2>Design an Email Marketing Campaign with ChatGPT</h2></div>
+
+      <h4>Step 1 — brainstorm email types, not just product emails</h4>
+      <p style="font-size:14.5px;color:var(--ink-soft);margin:2px 0 10px;">A real email campaign gives value, not constant selling. So first ask for a wide list of ideas:</p>
+      <div class="prompt"><span class="tag">Prompt used</span>List 20 ideas of emails that could be sent and that would grab the attention of this audience. The emails don't need to only focus on the product.</div>
+      <ul>
+        <li>Welcome email (first email to new subscribers)</li>
+        <li>Pain-point series (one email per pain point)</li>
+        <li>Customer success stories</li>
+        <li>Product demo video</li>
+        <li>Customer testimonials</li>
+        <li>Educational content (e.g. memory tips, mobility, safety)</li>
+        <li>Holiday / seasonal greetings</li>
+        <li>Community events</li>
+      </ul>
+
+      <h4>Step 2 — write one specific email</h4>
+      <div class="prompt"><span class="tag">Prompt used</span>Write one email for #6 — educational content. Include the email title and the body.</div>
+      <div class="output"><span class="tag">Result</span>Title: "Tips for Maintaining Memory as You Age." Body opens with "Dear [subscriber's first name]..." then lists: exercise, stay socially active, challenge your brain, get enough sleep, eat a healthy diet.</div>
+
+      <div class="takeaway"><span class="tag">Key takeaway</span>You can keep pushing: "make it longer," "make it more intriguing," or "turn this into a 2-email series, send the second one a few days later." Build the whole campaign this way — ideas first, then write each one, then chain them into a sequence.</div>
+    </section>
+
+    <!-- 46 -->
+    <section class="lecture list-lecture" id="l46">
+      <div class="lecture-head"><span class="lnum">46</span><h2>Prompt List — Email Marketing Campaign</h2></div>
+      <div class="plist">
+        <div class="group-label">Email sequence ideas</div>
+        <div class="prompt">I need to create an email marketing campaign promoting [product/service] for [audience]. List [20] ideas of email types that could be sent and that would grab the attention of this audience.</div>
+
+        <div class="group-label">Email subject lines</div>
+        <div class="prompt">Write [10] [attention-grabbing/catchy...] email subjects for [type of email generated with the previous prompt].</div>
+
+        <div class="group-label">Email body</div>
+        <div class="prompt">Write a marketing email based on this subject: [paste the subject line]. Use a [friendly/serious...] tone. Include the pain points of the [audience] and how our [product] can help them.</div>
+
+        <div class="group-label">More ideas</div>
+        <div class="prompt">Write an effective subject line for re-engaging inactive subscribers or customers.
+
+Write a subject line that incorporates the fear of missing out (FOMO) principle or a sense of urgency.</div>
+      </div>
+    </section>
+
+    <!-- 47 -->
+    <section class="lecture" id="l47">
+      <div class="lecture-head"><span class="lnum">47</span><h2>Putting It All Together: Design a Sales Funnel with ChatGPT</h2></div>
+      <p class="deck">This lecture connects everything from lectures 40–46 into one structured journey.</p>
+
+      <h4>Step 1 — ask broadly first</h4>
+      <div class="prompt"><span class="tag">Prompt used</span>Define the steps of an online sales funnel for [the product described above].</div>
+      <div class="output"><span class="tag">Result (too vague on its own)</span>Awareness → Interest → Consideration → Purchase → Post-purchase.</div>
+
+      <h4>Step 2 — ask again, but demand specifics</h4>
+      <div class="prompt"><span class="tag">Prompt used</span>Give me a precise example of a sales funnel and list all the steps, including which social media and marketing strategies to use.</div>
+      <ul>
+        <li><b>Awareness</b> — Facebook ad campaign targeting people 65+ interested in senior living, caregiving, or elder tech.</li>
+        <li><b>Interest</b> — click-through to a landing page with testimonials, features, and a free demo signup.</li>
+        <li><b>Consideration</b> — a follow-up email series building trust and positioning the product as helpful.</li>
+        <li><b>Purchase</b> — simple checkout, clear pricing, satisfaction guarantee, plus retargeting ads for people who didn't convert.</li>
+      </ul>
+
+      <div class="takeaway"><span class="tag">Key takeaway</span>Every stage of this funnel is just a channel you already learned in lectures 40–46, now arranged into one path. A different audience segment (like a B2B buyer) needs its own, different funnel — don't reuse the same one for everyone.</div>
+    </section>
+
+    <div class="part-divider"><span class="lbl">B2B track starts here</span><span class="ln"></span></div>
+
+    <!-- 48 -->
+    <section class="lecture" id="l48">
+      <div class="lecture-head"><span class="lnum">48</span><h2>ChatGPT for B2B — Generate a List of Business Leads</h2></div>
+      <p class="deck">Use this whole track if your product sells to businesses too (or only to businesses), not just individual consumers.</p>
+
+      <h4>Step 1 — what types of B2B customers exist?</h4>
+      <div class="prompt"><span class="tag">Prompt used</span>Assume that you're the CEO of a startup creating an AI assistant for elderly people. You have a functional MVP. The next step is getting B2B customers. List potential B2B customers that could be interested in such a product.</div>
+      <div class="output"><span class="tag">Result</span>Retirement homes, home health care agencies, insurance companies, hospitals and clinics, pharmacies, non-profit organizations, government agencies, senior living communities.</div>
+
+      <h4>Step 2 — turn ChatGPT into "Google on steroids"</h4>
+      <div class="prompt"><span class="tag">Prompt used</span>List 20 existing retirement homes or retirement home chains that currently operate in the US.</div>
+      <p style="font-size:14.3px;color:var(--ink-soft);margin:-6px 0 14px;">This gives you real, named companies to reach out to instead of manually searching Google — just swap in the type of customer and the country you want.</p>
+
+      <h4>Step 3 — how to reach them, and where they gather</h4>
+      <div class="prompt"><span class="tag">Prompt used</span>What is the best way or channel to reach such customers and promote our product to them?</div>
+      <ul>
+        <li>Trade shows and conferences</li>
+        <li>Online advertising</li>
+        <li>Email marketing</li>
+        <li>Referral programs</li>
+        <li>Partnerships</li>
+        <li>Direct mail</li>
+        <li>Content marketing</li>
+        <li>Social media</li>
+      </ul>
+      <div class="prompt"><span class="tag">Follow-up</span>List 10 trade shows and conferences like this in the US.</div>
+
+      <div class="takeaway"><span class="tag">Key takeaway</span>ChatGPT can make mistakes, especially with names and facts — always double-check that the companies and events it lists are real before you rely on them (the instructor spot-checked a few and they did exist).</div>
+    </section>
+
+    <!-- 49 -->
+    <section class="lecture" id="l49">
+      <div class="lecture-head"><span class="lnum">49</span><h2>The Magic Prompt for B2B Research</h2></div>
+      <p class="deck">Same technique as lecture 39, applied to a business buyer instead of an individual.</p>
+
+      <ul>
+        <li>Every type of B2B lead has <b>different</b> pain points — a retirement home doesn't feel the same pressure as an insurance company or a hospital. Craft a separate message for each type.</li>
+      </ul>
+
+      <div class="prompt"><span class="tag">Prompt used</span>Put yourself in the shoes of the manager of such a retirement home. Describe your daily struggles that could be solved using this AI assistant for elderly people. Describe all the pain points.</div>
+
+      <div class="output"><span class="tag">Result (playing the retirement home manager)</span>Managing medications, managing appointments, communication with residents, responding to emergencies, monitoring resident health, providing entertainment for residents with limited mobility/cognitive decline, and reducing staff burnout.</div>
+
+      <div class="takeaway"><span class="tag">Key takeaway</span>Only once you have these B2B-specific pain points should you move on to writing the cold email or LinkedIn message — same rule as the B2C side, just pointed at a business role instead of a person.</div>
+    </section>
+
+    <!-- 50 -->
+    <section class="lecture" id="l50">
+      <div class="lecture-head"><span class="lnum">50</span><h2>Write a Cold Email with ChatGPT</h2></div>
+
+      <div class="prompt"><span class="tag">Prompt used</span>Now craft a cold outreach email to such a company that would attract their interest to see a demo of our product. Include the title and the body.</div>
+
+      <div class="output"><span class="tag">First draft</span>Subject: "Introducing our AI assistant for elderly care and enhancing your retirement home's care services." Body: addresses "the manager" directly, lists their pain points (heavy workload, high volume of requests), then presents the solution and asks for a brief demo.</div>
+      <p style="font-size:14.3px;color:var(--ink-soft);margin:-6px 0 14px;">The instructor liked the body but felt the subject line was too generic/salesy — so he pushed further:</p>
+
+      <div class="prompt"><span class="tag">Iteration 1</span>Write another subject, more relatable, less traditional.</div>
+      <div class="output"><span class="tag">Result</span>"Improve care services in your retirement home with our assistant for elderly care."</div>
+
+      <div class="prompt"><span class="tag">Iteration 2</span>A less salesy subject.</div>
+      <div class="output"><span class="tag">Result</span>"Enhancing elderly care services at [Retirement Home Name]." — calling out the company's actual name makes it feel personal and far less like a mass email.</div>
+
+      <div class="takeaway"><span class="tag">Key takeaway</span>Define the customer → get their pain points → get a first draft → then keep asking for variations ("less salesy," "more relatable," "add their name") until the subject line actually stands out.</div>
+    </section>
+
+    <!-- 51 -->
+    <section class="lecture" id="l51">
+      <div class="lecture-head"><span class="lnum">51</span><h2>Write a LinkedIn Post or Outreach Message with ChatGPT</h2></div>
+
+      <h4>LinkedIn post</h4>
+      <div class="prompt"><span class="tag">Prompt used</span>Write a LinkedIn post to promote our product to such retirement homes.</div>
+      <p style="font-size:14.3px;color:var(--ink-soft);margin:-6px 0 14px;">First draft ran too long, so: <i>"make it shorter."</i> Result opened boldly: "Attention, retirement home managers!"</p>
+
+      <h4>LinkedIn direct message</h4>
+      <div class="prompt"><span class="tag">Prompt used</span>Craft a LinkedIn message that we would send to managers of such retirement homes. Grab their attention, but don't appear too salesy. We want to show them a demo of our product.</div>
+      <p style="font-size:14.3px;color:var(--ink-soft);margin:-6px 0 14px;">The first result still felt like a typical, generic LinkedIn pitch. So the instructor kept iterating:</p>
+      <ul>
+        <li><i>"Rewrite it with a more friendly tone and not so polished, make it more simple and relatable"</i> — a little better, still fairly standard.</li>
+        <li><i>"Be more creative and out of the ordinary"</i> — still came out ordinary.</li>
+        <li><i>"The language should be as if you were writing to a friend"</i> — <b>this</b> finally produced a genuinely casual "Hey [name], how's it going?" opener.</li>
+      </ul>
+
+      <div class="takeaway"><span class="tag">Key takeaway</span>ChatGPT defaults to a safe, corporate tone. Getting something that feels human takes deliberate, repeated pushing — and even then, it's on you to add the final layer of real creativity and personality.</div>
+    </section>
+
+    <!-- 52 -->
+    <section class="lecture list-lecture" id="l52">
+      <div class="lecture-head"><span class="lnum">52</span><h2>Prompt List — The Best B2B Prompts</h2></div>
+      <div class="plist">
+        <div class="group-label">Getting started</div>
+        <div class="prompt">Assume that you're the CEO of a company that [creates/provides] a [product/service description]. You have a functional [product/MVP/prototype...]. The next step is getting B2B customers. List potential B2B customers that could be interested in such a product.</div>
+
+        <div class="group-label">B2B leads research</div>
+        <div class="prompt">List [20] existing [type of B2B customers generated previously] that currently operate in [country].</div>
+
+        <div class="group-label">Identify B2B lead pain points</div>
+        <div class="prompt">Put yourself in the shoes of the manager of such a [B2B lead]. Describe your daily struggles that could be solved using [product/service]. Describe all the pain points.</div>
+
+        <div class="group-label">Turn pain points into outreach content</div>
+        <div class="prompt">Craft a cold outreach email to [B2B lead] that would attract their interest based on the previously identified pain points.
+
+Write a LinkedIn [post/message] to promote our [product/service] to [B2B lead] based on the previously identified pain points.</div>
+
+        <div class="group-label">More ideas</div>
+        <div class="prompt">What are [5] trending topics for [industry] on LinkedIn?
+
+Generate [10] different angles for LinkedIn posts in order to share information about [topic].</div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>Personal course notes — Section 5, Lectures 38–52. Always fact-check any names, companies, or events ChatGPT generates before using them.</footer>
+
+</div>
+</body>
+</html>

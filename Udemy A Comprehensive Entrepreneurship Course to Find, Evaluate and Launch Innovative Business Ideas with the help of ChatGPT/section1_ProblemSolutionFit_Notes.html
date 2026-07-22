@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Section 1 Notes | Problem-Solution Fit</title>
+<style>
+  :root{
+    --navy:#1a2b4c;
+    --blue:#2563eb;
+    --blue-light:#eef2ff;
+    --green:#15803d;
+    --green-light:#ecfdf5;
+    --red:#b91c1c;
+    --red-light:#fef2f2;
+    --amber:#b45309;
+    --amber-light:#fffbeb;
+    --gray-bg:#f7f8fa;
+    --border:#e2e5eb;
+    --text:#1f2937;
+    --muted:#6b7280;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Segoe UI",Helvetica,Arial,sans-serif;
+    background:var(--gray-bg);
+    color:var(--text);
+    line-height:1.55;
+  }
+  .wrap{max-width:960px;margin:0 auto;padding:20px 24px 80px;}
+
+  header.hero{
+    background:linear-gradient(135deg,var(--navy),#243b6b);
+    color:#fff;
+    padding:36px 32px;
+    border-radius:14px;
+    margin-bottom:28px;
+  }
+  header.hero h1{margin:0 0 8px;font-size:26px;}
+  header.hero p{margin:0;color:#c9d4ee;font-size:15px;}
+  .course-tag{
+    display:inline-block;background:rgba(255,255,255,.15);
+    padding:4px 10px;border-radius:20px;font-size:12px;
+    margin-bottom:14px;letter-spacing:.03em;
+  }
+
+  nav.toc{
+    background:#fff;border:1px solid var(--border);
+    border-radius:12px;padding:20px 24px;margin-bottom:32px;
+  }
+  nav.toc h2{margin-top:0;font-size:16px;color:var(--navy);}
+  nav.toc ol{margin:0;padding-left:20px;columns:2;gap:24px;}
+  nav.toc li{margin-bottom:6px;font-size:14.5px;}
+  nav.toc a{color:var(--blue);text-decoration:none;}
+  nav.toc a:hover{text-decoration:underline;}
+
+  section.lesson{
+    background:#fff;border:1px solid var(--border);
+    border-radius:12px;padding:26px 30px;margin-bottom:22px;
+    scroll-margin-top:16px;
+  }
+  section.lesson h2{
+    margin:0 0 4px;font-size:19px;color:var(--navy);
+    display:flex;align-items:center;gap:10px;
+  }
+  section.lesson h2 .num{
+    background:var(--blue);color:#fff;font-size:13px;
+    width:26px;height:26px;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  section.lesson .lecture-of{color:var(--muted);font-size:13px;margin:0 0 16px 36px;}
+  section.lesson h3{font-size:15px;color:var(--navy);margin:20px 0 8px;}
+
+  .callout{
+    border-radius:8px;padding:12px 16px;margin:14px 0;
+    font-size:14.5px;border-left:4px solid;
+  }
+  .tip{background:var(--blue-light);border-color:var(--blue);}
+  .warn{background:var(--amber-light);border-color:var(--amber);}
+  .example{background:var(--green-light);border-color:var(--green);}
+  .callout b{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;}
+  .tip b{color:var(--blue);}
+  .warn b{color:var(--amber);}
+  .example b{color:var(--green);}
+
+  .prompt{
+    background:#0f172a;color:#e2e8f0;font-family:"Consolas","Monaco",monospace;
+    font-size:13.5px;padding:14px 16px;border-radius:8px;margin:12px 0;
+    white-space:pre-wrap;line-height:1.6;
+  }
+  .prompt .role{color:#7dd3fc;}
+  .prompt .label{color:#94a3b8;font-family:inherit;}
+
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px;}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top;}
+  th{background:#f1f3f8;color:var(--navy);font-size:13px;}
+  tr.win td:first-child, tr.win td.tag{color:var(--green);font-weight:600;}
+  tr.fail td:first-child, tr.fail td.tag{color:var(--red);font-weight:600;}
+  .badge{
+    display:inline-block;padding:2px 9px;border-radius:20px;font-size:12px;font-weight:600;
+  }
+  .badge.win{background:var(--green-light);color:var(--green);}
+  .badge.fail{background:var(--red-light);color:var(--red);}
+
+  .framework{
+    display:flex;gap:12px;flex-wrap:wrap;margin:16px 0;
+  }
+  .framework .step{
+    flex:1;min-width:130px;background:var(--blue-light);
+    border-radius:8px;padding:12px 14px;text-align:center;
+    border:1px solid #c7d2fe;
+  }
+  .framework .step .n{font-size:12px;color:var(--blue);font-weight:700;letter-spacing:.05em;}
+  .framework .step .t{font-size:14px;font-weight:600;color:var(--navy);margin-top:2px;}
+
+  ul.checklist{list-style:none;padding-left:0;margin:12px 0;}
+  ul.checklist li{padding-left:26px;position:relative;margin-bottom:6px;font-size:14.5px;}
+  ul.checklist li::before{
+    content:"☐";position:absolute;left:0;color:var(--blue);font-size:15px;
+  }
+
+  .three-legs{display:flex;gap:14px;margin:16px 0;flex-wrap:wrap;}
+  .leg{
+    flex:1;min-width:150px;text-align:center;padding:16px 10px;
+    border-radius:10px;background:#f1f3f8;border:1px solid var(--border);
+  }
+  .leg .icon{font-size:22px;}
+  .leg .title{font-weight:700;color:var(--navy);margin:6px 0 2px;font-size:14.5px;}
+  .leg .desc{font-size:12.5px;color:var(--muted);}
+
+  .cheat{
+    background:#fff;border:2px solid var(--navy);border-radius:12px;
+    padding:22px 26px;margin:26px 0;
+  }
+  .cheat h2{color:var(--navy);margin-top:0;}
+
+  code.inline{background:#eef1f6;padding:1px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:13px;}
+  .small-muted{color:var(--muted);font-size:13px;}
+  hr.soft{border:none;border-top:1px solid var(--border);margin:20px 0;}
+  a.back-top{font-size:12.5px;color:var(--blue);text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <span class="course-tag">ENTREPRENEURSHIP · WITH CHATGPT</span>
+    <h1>Section 1 — Does Your Business Idea Make Sense?</h1>
+    <p>The Problem–Solution Fit — Course notes for all 12 lectures, with the ChatGPT prompt patterns used throughout.</p>
+  </header>
+
+  <nav class="toc" id="top">
+    <h2>📑 Table of Contents</h2>
+    <ol>
+      <li><a href="#l1">Introduction to the Course</a></li>
+      <li><a href="#l2">Introduction to ChatGPT and its Limitations</a></li>
+      <li><a href="#l3">The Absolute Best Way to Use ChatGPT</a></li>
+      <li><a href="#l4">Download: Brainstorming Sheet</a></li>
+      <li><a href="#l5">What Customers Really Want — Intro</a></li>
+      <li><a href="#l6">Evaluate the Problem You're Solving</a></li>
+      <li><a href="#l7">Use ChatGPT to Evaluate the Problem</a></li>
+      <li><a href="#l8">Download: ChatGPT Prompts Used in Course</a></li>
+      <li><a href="#l9">Evaluate the Solution (Your Idea)</a></li>
+      <li><a href="#l10">Use ChatGPT to Evaluate &amp; Improve</a></li>
+      <li><a href="#l11">Draw Your Customer Persona</a></li>
+      <li><a href="#l12">Use ChatGPT to Define Your Persona</a></li>
+    </ol>
+  </nav>
+
+  <!-- LECTURE 1 -->
+  <section class="lesson" id="l1">
+    <h2><span class="num">1</span>Introduction to the Course</h2>
+    <p class="lecture-of">Lecture 1</p>
+
+    <h3>What this course covers</h3>
+    <p>The course has two parts:</p>
+    <ul class="checklist">
+      <li><b>Part 1 — Evaluate:</b> assess whether an idea has potential, using questions, brainstorming, and ChatGPT as a research/brainstorming partner.</li>
+      <li><b>Part 2 — Test:</b> validate real demand in the real world, spending as little money/time as possible — actual data from actual people, not just assumptions.</li>
+    </ul>
+
+    <div class="callout tip">
+      <b>Core philosophy</b>
+      Nobody — not you, not an investor, not ChatGPT — is qualified to <i>judge</i> an idea in advance. You can only <i>lower the randomness</i> by testing cheaply, then doubling down on whatever gets paying customers.
+    </div>
+
+    <h3>Who is this course for?</h3>
+    <p>Innovative / startup ideas, or traditional businesses with a strong tech/innovation angle. A plain restaurant, shop, or hotel with no innovative twist is <b>out of scope</b>.</p>
+
+    <div class="callout warn">
+      <b>Important caveat repeated all through the course</b>
+      ChatGPT is a brainstorming tool, not an oracle. Its answers can be confidently wrong — always treat output as a hypothesis to verify, never as a fact.
+    </div>
+  </section>
+
+  <!-- LECTURE 2 -->
+  <section class="lesson" id="l2">
+    <h2><span class="num">2</span>Introduction to ChatGPT and its Limitations</h2>
+    <p class="lecture-of">Lecture 2</p>
+
+    <h3>Interface basics</h3>
+    <ul class="checklist">
+      <li>GPT‑3.5 (free) vs. GPT‑4 (paid) — GPT‑4 is smarter and more accurate, but 3.5 is perfectly usable for brainstorming.</li>
+      <li>Past conversations persist — you can reopen a thread and ChatGPT keeps the full context, letting you refine iteratively instead of starting over.</li>
+    </ul>
+
+    <h3>Meta-trick: ask ChatGPT how to prompt itself</h3>
+    <p>Instead of hunting for prompt-engineering guides online, just ask the model directly.</p>
+    <div class="prompt"><span class="label">PROMPT →</span> What is the best way to ask you to find business ideas?</div>
+    <p>ChatGPT will typically reply that it needs: industry/market, target audience, your resources/skills, budget, and business type — i.e., <b>context</b>.</p>
+
+    <div class="callout warn">
+      <b>Known limitation at time of recording</b>
+      Training data cut off around 2021 — no awareness of anything after that. Always sanity-check anything time-sensitive.
+    </div>
+
+    <div class="callout example">
+      <b>Missing ingredient spotted in this lecture</b>
+      The model's own suggested prompt list left out <b>country</b> — a reminder that even ChatGPT's advice on how to use itself is incomplete, so you still have to think critically about context.
+    </div>
+  </section>
+
+  <!-- LECTURE 3 -->
+  <section class="lesson" id="l3">
+    <h2><span class="num">3</span>The Absolute Best Way to Use ChatGPT</h2>
+    <p class="lecture-of">Lecture 3</p>
+
+    <h3>The 3-part prompt framework</h3>
+    <div class="framework">
+      <div class="step"><div class="n">STEP 1</div><div class="t">Role</div><div class="small-muted">"Act as an industry expert / CEO / lawyer…"</div></div>
+      <div class="step"><div class="n">STEP 2</div><div class="t">Task</div><div class="small-muted">What you actually want produced</div></div>
+      <div class="step"><div class="n">STEP 3</div><div class="t">Context</div><div class="small-muted">Country, constraints, your resources, format…</div></div>
+    </div>
+
+    <p>Why <b>Role</b> matters: it primes the model to draw from the relevant "region" of its training data (e.g., "industry expert" pulls different associations than a generic answer).</p>
+
+    <h3>Worked example prompt</h3>
+    <div class="prompt">Act as an industry expert. Generate 4 business ideas based on current unfulfilled
+demand and industries ripe for disruption in the United States. Then generate a
+basic business plan for each: name, one-liner, target customer persona, customer
+pain points, main value proposition, sales/marketing channels, revenue streams,
+cost structure, key activities, key resources, key partners, idea validation steps,
+estimated first-year cost, potential challenges. Write the result in a markdown table.</div>
+
+    <h3>Iterative refinement — the real power move</h3>
+    <p>Example flow from the lecture: after generating "Telehealth for Mental Health," the model flagged <i>regulatory compliance</i> as a challenge. Rather than restart, you refine <b>inside the same conversation</b>:</p>
+    <div class="prompt">Come up with two more ideas, but which don't have regulatory compliance problems,
+licensing considerations, or security concerns.</div>
+    <p>This is what "context" really means — every follow-up question adds a constraint the model must keep satisfying, converging on something more useful with each turn.</p>
+
+    <div class="callout warn">
+      <b>Common mistake</b>
+      Thinking ChatGPT replaces domain knowledge. It <b>augments</b> — you still need to understand the underlying business theory (which is exactly why this course has "boring" theory lectures) to ask good questions and judge the answers.
+    </div>
+  </section>
+
+  <!-- LECTURE 4 -->
+  <section class="lesson" id="l4">
+    <h2><span class="num">4</span>Download File: Innovative Business Idea Brainstorming Sheet</h2>
+    <p class="lecture-of">Lecture 4</p>
+    <p>A worksheet to fill in by hand as you progress — each block maps to a lecture (e.g., a "Problem" page and a "Solution" page map to this section). Handwriting is called out as better for stimulating thinking/creativity than typing.</p>
+    <div class="callout tip">
+      <b>How to use it</b>
+      Fill it in now with assumptions. Later in the course (Part 2 — demand testing) you'll come back and check which assumptions were actually correct.
+    </div>
+  </section>
+
+  <!-- LECTURE 5 -->
+  <section class="lesson" id="l5">
+    <h2><span class="num">5</span>What Customers Really Want? — Introduction</h2>
+    <p class="lecture-of">Lecture 5</p>
+
+    <h3>The scary stat</h3>
+    <p><b>75% of venture-funded startups</b> fail to return investor capital (Harvard Business School lecturer's study, 2,000+ companies funded in 2012). It's worse for non-venture-backed startups, which run out of cash even faster.</p>
+
+    <h3>Why they actually fail</h3>
+    <p>Per a 2014 CB Insights survey of 100+ founders:</p>
+    <table>
+      <tr><th>Rank</th><th>Reason for failure</th></tr>
+      <tr><td>#1</td><td><b>No market need</b> — customers simply didn't want the product</td></tr>
+      <tr><td>#2</td><td>Ran out of cash</td></tr>
+      <tr><td>#3</td><td>Wrong team</td></tr>
+    </table>
+
+    <div class="callout example">
+      <b>The cat-tower analogy</b>
+      You build an elaborate cat climbing tower... and the cat only wants the cardboard box it came in. Effort and cleverness spent building something ≠ something people actually want.
+    </div>
+
+    <h3>Product-out vs. Customer-in</h3>
+    <div class="three-legs">
+      <div class="leg"><div class="icon">🚀</div><div class="title">Rocket approach<br>(traditional / product-first)</div><div class="desc">Build the whole thing, launch, hope it's right. Fine for big companies who already know their market. Risky for startups: no course-correction once launched.</div></div>
+      <div class="leg"><div class="icon">🚗</div><div class="title">Car approach<br>(customer-first)</div><div class="desc">Focus on customers → learn what they want → then build. You can steer, brake, or turn at any point. This is the Lean Startup approach (Blank / Ries / Maurya).</div></div>
+    </div>
+
+    <h3>The core equation</h3>
+    <p>A startup idea = <b>Problem</b> + <b>Solution</b> + <b>Customer</b>. Assessing an idea quickly means assessing:</p>
+    <ol>
+      <li>How big is the problem?</li>
+      <li>How good is the solution?</li>
+    </ol>
+    <p class="small-muted">(Customer persona is covered separately in lectures 11–12.)</p>
+  </section>
+
+  <!-- LECTURE 6 -->
+  <section class="lesson" id="l6">
+    <h2><span class="num">6</span>Evaluate the Problem You're Trying to Solve</h2>
+    <p class="lecture-of">Lecture 6</p>
+
+    <p>Three questions determine whether a problem is "big enough":</p>
+    <div class="three-legs">
+      <div class="leg"><div class="icon">🔁</div><div class="title">Frequent?</div><div class="desc">Ideally occurs ≥ once/day for the target user.</div></div>
+      <div class="leg"><div class="icon">🌍</div><div class="title">Common?</div><div class="desc">Shared by many people/businesses, not a niche few.</div></div>
+      <div class="leg"><div class="icon">💳</div><div class="title">Worth solving?</div><div class="desc">Serious enough that people will actually pay.</div></div>
+    </div>
+
+    <h3>Win / Fail case studies</h3>
+    <table>
+      <tr><th>Criterion</th><th>Company</th><th>What happened</th><th></th></tr>
+      <tr class="fail">
+        <td>Frequent</td><td>Plan (event-sharing app)</td>
+        <td>People only share/look for events a couple of times a month — not often enough to build a habit-forming app around.</td>
+        <td class="tag"><span class="badge fail">FAIL</span></td>
+      </tr>
+      <tr class="win">
+        <td>Frequent</td><td>Facebook / Twitter / Instagram / Snapchat</td>
+        <td>Status updates, news, photos, messages — used dozens of times per day.</td>
+        <td class="tag"><span class="badge win">WIN</span></td>
+      </tr>
+      <tr class="fail">
+        <td>Common</td><td>Patient Communicator</td>
+        <td>Built appointment reminders for doctors, but doctors are highly resistant to new tech in their workflow — after huge outreach effort, only 1 paying doctor signed up.</td>
+        <td class="tag"><span class="badge fail">FAIL</span></td>
+      </tr>
+      <tr class="win">
+        <td>Common</td><td>ZocDoc</td>
+        <td>Charges doctors $300/mo to be listed; solves what doctors actually want (more patients), fully disconnected from their internal systems. 6M+ users/month, 2,000 cities.</td>
+        <td class="tag"><span class="badge win">WIN</span></td>
+      </tr>
+      <tr class="fail">
+        <td>Worth solving</td><td>Zomato "Cashless Payments" (Dubai, 2015)</td>
+        <td>Let diners pay before eating (like Uber). Shut down — people are used to eating first, paying after; the problem wasn't actually painful enough to change that habit.</td>
+        <td class="tag"><span class="badge fail">FAIL</span></td>
+      </tr>
+      <tr class="win">
+        <td>Worth solving</td><td>Square</td>
+        <td>Small merchants were paying exorbitant card fees with poor support. Square gave a simple iPad-based, user-friendly alternative — a real, expensive pain point.</td>
+        <td class="tag"><span class="badge win">WIN</span></td>
+      </tr>
+    </table>
+
+    <div class="callout tip">
+      <b>Recap — the ideal problem</b>
+      Frequent + Common + Worth solving. Score your own idea against these three before moving on.
+    </div>
+  </section>
+
+  <!-- LECTURE 7 -->
+  <section class="lesson" id="l7">
+    <h2><span class="num">7</span>Use ChatGPT to Evaluate the Problem You're Solving</h2>
+    <p class="lecture-of">Lecture 7</p>
+
+    <p>Running example used for the rest of the course: <b>an AI assistant for elderly people.</b></p>
+
+    <h3>Step 1 — surface the problems</h3>
+    <div class="prompt">I am the CEO of a startup creating an AI assistant for elderly people.
+Describe the problem that this product solves.</div>
+    <p>ChatGPT returned five candidate problems: social isolation &amp; loneliness, limited mobility/accessibility, safety &amp; security concerns, health management, and simplified technology interaction.</p>
+
+    <h3>Step 2 — score them against the 3 criteria</h3>
+    <div class="prompt">Rate these 5 problems from 1–10 based on:
+- How frequent is this problem? (per day/month/year)
+- How common is it to people?
+- Is it worth solving? (serious enough that people would pay)
+Organize the results in a table.</div>
+
+    <table>
+      <tr><th>Problem</th><th>Frequency</th><th>Commonality</th><th>Worth solving</th></tr>
+      <tr><td>Social isolation &amp; loneliness</td><td>8/10</td><td>9/10</td><td>10/10</td></tr>
+      <tr><td>Safety &amp; security concerns</td><td>6/10</td><td>—</td><td>10/10</td></tr>
+      <tr><td>Simplified technology interaction</td><td>6/10</td><td>—</td><td>—</td></tr>
+    </table>
+    <p class="small-muted">(Only the scores explicitly discussed in the lecture are shown — the full table had all 5 rows filled in.)</p>
+
+    <div class="callout warn">
+      <b>How to read this table</b>
+      A perfect 10/10/10 problem essentially doesn't exist. Look for the <i>highest combination</i> — here, social isolation (8, 9, 10) stands out as the strongest candidate to build around.
+    </div>
+
+    <div class="callout example">
+      <b>Why the numbers make sense</b>
+      Safety incidents (falls, emergencies) don't happen often (6/10 frequency) — but when they do, the stakes are high, hence a 10/10 on "worth solving." Frequency and severity are independent dimensions.
+    </div>
+  </section>
+
+  <!-- LECTURE 8 -->
+  <section class="lesson" id="l8">
+    <h2><span class="num">8</span>Download and Copy the ChatGPT Prompts Used in this Course</h2>
+    <p class="lecture-of">Lecture 8</p>
+    <p>A resource-only lecture — a downloadable file containing every prompt template used throughout the course, ready to copy and adapt to your own business idea.</p>
+  </section>
+
+  <!-- LECTURE 9 -->
+  <section class="lesson" id="l9">
+    <h2><span class="num">9</span>Evaluate the Solution (Your Business Idea)</h2>
+    <p class="lecture-of">Lecture 9</p>
+
+    <p>Same logic as the problem, but now applied to your proposed <b>solution</b>. Three questions:</p>
+    <div class="three-legs">
+      <div class="leg"><div class="icon">✨</div><div class="title">Unique?</div><div class="desc">Differentiated enough that competitors can't just swallow you.</div></div>
+      <div class="leg"><div class="icon">🔒</div><div class="title">Protectable?</div><div class="desc">Hard for others to copy once it works.</div></div>
+      <div class="leg"><div class="icon">📈</div><div class="title">Sustainable?</div><div class="desc">Economically viable long-term, not just in a launch spike.</div></div>
+    </div>
+
+    <table>
+      <tr><th>Criterion</th><th>Company</th><th>What happened</th><th></th></tr>
+      <tr class="fail">
+        <td>Unique</td><td>Match.com / eHarmony</td>
+        <td>Won over 30+ Gen X singles, but Gen Y/Z hated the long profiles and 200-question compatibility quizzes.</td>
+        <td class="tag"><span class="badge fail">FAIL (with younger users)</span></td>
+      </tr>
+      <tr class="win">
+        <td>Unique</td><td>Tinder</td>
+        <td>Ditched long quizzes for 3 simple signals — location, age, looks — and a swipe interface. Radically simpler than the crowded market.</td>
+        <td class="tag"><span class="badge win">WIN</span></td>
+      </tr>
+      <tr class="fail">
+        <td>Protectable</td><td>Groupon</td>
+        <td>Innovative group-buying model (2008) was trivially copyable — hundreds of clones appeared worldwide; Groupon had to acquire many just to keep its position.</td>
+        <td class="tag"><span class="badge fail">FAIL</span></td>
+      </tr>
+      <tr class="win">
+        <td>Protectable</td><td>Premise</td>
+        <td>Network of 25,000 people worldwide collecting retail price data — protection comes from unique data access + network, not a patent.</td>
+        <td class="tag"><span class="badge win">WIN</span></td>
+      </tr>
+      <tr class="fail">
+        <td>Sustainable</td><td>Homejoy</td>
+        <td>Homeowners &amp; cleaners took the relationship offline to skip fees; Groupon discounts attracted one-time bargain hunters instead of repeat customers → ran out of cash, shut down.</td>
+        <td class="tag"><span class="badge fail">FAIL</span></td>
+      </tr>
+      <tr class="win">
+        <td>Sustainable</td><td>TaskRabbit / Elance</td>
+        <td>Diversified into many recurring services (moving, delivery, parties / programming, design, translation) — recurring, higher-value transactions sustain the business.</td>
+        <td class="tag"><span class="badge win">WIN</span></td>
+      </tr>
+    </table>
+
+    <div class="callout tip">
+      <b>Pattern spotted in "sustainable" wins</b>
+      On-demand platforms do better when the work is intellectual/skilled, pay is higher, and transactions repeat — the opposite of a one-off, price-sensitive, easily-disintermediated service.
+    </div>
+  </section>
+
+  <!-- LECTURE 10 -->
+  <section class="lesson" id="l10">
+    <h2><span class="num">10</span>Use ChatGPT to Evaluate and Improve Your Business</h2>
+    <p class="lecture-of">Lecture 10</p>
+
+    <div class="callout warn">
+      <b>Reality check first</b>
+      No solution is ever perfectly unique, protectable, and sustainable all at once — that combination doesn't exist. The goal is to score as well as possible, and to keep improving even if the current score is weak.
+    </div>
+
+    <h3>Asking too broadly doesn't work</h3>
+    <div class="prompt">I am the CEO of a company that creates an AI assistant for elderly people.
+How unique do you think my solution is compared to competitors and substitutes?</div>
+    <p>ChatGPT correctly declined to give a real assessment — it has no specifics about <i>your</i> product's actual features, so it can't judge uniqueness. Lesson: <b>vague input → vague or evasive output.</b> The model needs the specific feature-level detail that differentiates your product.</p>
+
+    <h3>What ChatGPT is genuinely good for here: generating differentiation ideas</h3>
+    <p>Instead of asking it to judge uniqueness, ask it to suggest ways to <i>build</i> uniqueness: e.g., specialized features (medication reminders, fall detection, telehealth integration), adaptive personalization, accessibility, device integration, support network, and data privacy/security.</p>
+
+    <h3>Ten ways to protect a solution (from the prompt in this lecture)</h3>
+    <div class="prompt">List 10 ways I can protect such a solution from competitors, so it's not easy
+to just create and sell the same product.</div>
+    <ul class="checklist">
+      <li>Patents, trademarks, copyrights</li>
+      <li>Trade secrets (algorithms, data, methods) + confidentiality agreements</li>
+      <li>Proprietary technology — continuous innovation</li>
+      <li>Strong partnerships (e.g., healthcare providers, senior living communities)</li>
+      <li>Regular updates</li>
+      <li>Strong brand identity &amp; reputation</li>
+      <li>Customer loyalty programs</li>
+      <li>Network effects</li>
+      <li>Diversification</li>
+      <li>Legal action against infringers</li>
+    </ul>
+    <p class="small-muted">Notice patents/IP are only <i>one</i> of ten levers — for early-stage startups, data access, partnerships, and brand often matter more because formal IP protection is slow and expensive.</p>
+  </section>
+
+  <!-- LECTURE 11 -->
+  <section class="lesson" id="l11">
+    <h2><span class="num">11</span>Draw Your Customer Persona</h2>
+    <p class="lecture-of">Lecture 11</p>
+
+    <p>The customer is <b>whoever pays</b> — not necessarily whoever uses the product. (E.g., an ad-based product has both a free user and a paying advertiser — you must address both.)</p>
+
+    <h3>Exercise</h3>
+    <p>Literally take paper and draw your ideal customer. First decide: B2C (mass market) or B2B (companies)?</p>
+
+    <table>
+      <tr><th>B2C — think about</th><th>B2B — think about</th></tr>
+      <tr>
+        <td>Gender · Age · Marital status (married/single/divorced) · Occupation · Interests · Typical day · Education level · Origin</td>
+        <td>Company size (small/medium/large) · Industry · Headcount · Which department needs this most</td>
+      </tr>
+    </table>
+
+    <div class="callout tip">
+      <b>The goal — Problem-Solution Fit</b>
+      You've reached it when the customer is genuinely ready to pay because the solution addresses their biggest problem. That's the target this entire section builds toward.
+    </div>
+  </section>
+
+  <!-- LECTURE 12 -->
+  <section class="lesson" id="l12">
+    <h2><span class="num">12</span>Use ChatGPT to Help Define Your Customer Persona</h2>
+    <p class="lecture-of">Lecture 12</p>
+
+    <h3>Step 1 — brainstorm broad segments</h3>
+    <div class="prompt">Describe 20 possible customer segments for an assistant for elderly people,
+and separate them into B2B and B2C (10 each).</div>
+    <p>Result included: elderly living alone, elderly with disabilities/memory issues, caregivers of elderly people, elderly wanting to stay active, those needing medical assistance — plus a parallel B2B list.</p>
+
+    <div class="callout example">
+      <b>A key realization from this exercise</b>
+      The <i>user</i> (elderly person) and the <i>customer</i> (who pays) are often different — here, the actual paying customer is more likely the <b>caregiver</b>, not the elderly user themselves.
+    </div>
+
+    <h3>Step 2 — zoom into one segment (B2C)</h3>
+    <div class="prompt">Describe the ideal family/caregiver customer: age, gender, marital status,
+occupation, hobbies, education level, origin.</div>
+    <p>Output: wide age range (young adult to elderly), likely skews female, marital status/occupation/hobbies/education don't strongly matter.</p>
+    <div class="callout warn">
+      <b>Stay skeptical</b>
+      The "likely predominantly female" claim is a plausible-sounding assumption, not verified fact — exactly the kind of claim to double- and triple-check with real research, not accept at face value.
+    </div>
+
+    <h3>Step 3 — zoom into one segment (B2B)</h3>
+    <div class="prompt">Describe the ideal home healthcare provider B2B customer — company size,
+industry, number of employees, and department.</div>
+    <p>Output: mid-to-large healthcare companies with multiple locations (more resources to adopt new tech); healthcare industry; dozens to thousands of employees; buyer is likely IT (implementation) + senior management (financial/operational case).</p>
+
+    <div class="callout tip">
+      <b>Bonus move</b>
+      You can go one step further and ask: <i>"List 10 companies like this in the US"</i> — giving you real, named candidates to research as potential first customers or design partners (always verify — don't assume the list is accurate).
+    </div>
+  </section>
+
+  <!-- CHEAT SHEET -->
+  <div class="cheat" id="cheatsheet">
+    <h2>🧭 Section Cheat Sheet — Problem-Solution-Customer Fit</h2>
+
+    <table>
+      <tr><th>Dimension</th><th>3 Questions</th></tr>
+      <tr><td><b>Problem</b></td><td>Frequent? · Common to many? · Worth paying to solve?</td></tr>
+      <tr><td><b>Solution</b></td><td>Unique? · Protectable? · Sustainable?</td></tr>
+      <tr><td><b>Customer</b></td><td>Who experiences the problem most? Who actually pays?</td></tr>
+    </table>
+
+    <h3>Universal ChatGPT prompt formula used all through this section</h3>
+    <div class="framework">
+      <div class="step"><div class="n">1</div><div class="t">Role</div></div>
+      <div class="step"><div class="n">2</div><div class="t">Task</div></div>
+      <div class="step"><div class="n">3</div><div class="t">Context</div></div>
+      <div class="step"><div class="n">4</div><div class="t">Format</div></div>
+    </div>
+    <p class="small-muted">Refine iteratively inside the same conversation — don't restart from scratch when a constraint changes.</p>
+
+    <div class="callout warn" style="margin-top:18px;">
+      <b>The one rule that never changes</b>
+      ChatGPT is a brainstorming accelerator, not a source of truth. Every output in this section — problem ratings, uniqueness scores, persona demographics — is a hypothesis to verify with real customers, not a conclusion.
+    </div>
+  </div>
+
+  <p style="text-align:center;margin-top:30px;"><a class="back-top" href="#top">↑ back to top</a></p>
+
+</div>
+</body>
+</html>

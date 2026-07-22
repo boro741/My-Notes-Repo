@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 6 Notes: EC2 Instance Storage</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --card: #f9fafb;
+    --accent: #d97706;      /* AWS-ish orange */
+    --accent-dark: #b45309;
+    --blue: #2563eb;
+    --green: #059669;
+    --purple: #7c3aed;
+    --red: #dc2626;
+    --code-bg: #f3f4f6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+  }
+  header.page-header {
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  header.page-header h1 {
+    margin: 0 0 6px 0;
+    font-size: 28px;
+    color: var(--accent-dark);
+  }
+  header.page-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .badge-row { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .topic-badge {
+    background: #fff; border: 1px solid var(--border); color: var(--accent-dark);
+    padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600;
+  }
+
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+  }
+  nav.toc h2 {
+    margin-top: 0;
+    font-size: 16px;
+    color: var(--accent-dark);
+  }
+  nav.toc ol {
+    margin: 0;
+    padding-left: 20px;
+    columns: 2;
+  }
+  nav.toc li { margin-bottom: 6px; font-size: 14px; break-inside: avoid; }
+  nav.toc a { color: var(--blue); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  section.lecture {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-bottom: 26px;
+    background: #fff;
+    scroll-margin-top: 16px;
+  }
+  section.lecture h2 {
+    margin-top: 0;
+    font-size: 20px;
+    color: #111827;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 8px;
+  }
+  .lecture-num {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 2px 8px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  h3 { color: var(--accent-dark); font-size: 16px; margin-bottom: 6px; }
+
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: #fffbeb;
+    padding: 10px 16px;
+    margin: 14px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 14.5px;
+  }
+  .callout.tip { border-left-color: var(--green); background: #ecfdf5; }
+  .callout.exam { border-left-color: var(--red); background: #fef2f2; }
+  .callout.warn { border-left-color: #ea580c; background: #fff7ed; }
+  .callout strong { color: inherit; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  th, td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
+  th { background: var(--card); color: var(--accent-dark); }
+  tr:nth-child(even) td { background: #fcfcfd; }
+
+  code {
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  pre {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 14px 16px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 14px 0;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  pre code { background: none; padding: 0; color: inherit; }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 4px; }
+
+  dl { margin: 14px 0; }
+  dt { font-weight: 700; color: var(--accent-dark); margin-top: 10px; }
+  dd { margin-left: 0; margin-bottom: 6px; color: #374151; }
+
+  .diagram {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 16px 0;
+    text-align: center;
+    overflow-x: auto;
+  }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram-caption { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  .analogy {
+    background: #eef2ff;
+    border: 1px dashed #a5b4fc;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14.5px;
+    margin: 14px 0;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-left: 6px;
+  }
+  .badge.old { background: #e5e7eb; color: #4b5563; }
+  .badge.new { background: #dcfce7; color: #166534; }
+
+  .top-link { font-size: 12px; text-align: right; }
+  .top-link a { color: var(--muted); text-decoration: none; }
+  .top-link a:hover { text-decoration: underline; }
+
+  hr.section-break { border: none; border-top: 2px dashed var(--border); margin: 36px 0; }
+
+  .summary-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 14px;
+  }
+  .summary-box h3 { color: var(--green); margin-top: 0; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="page-header">
+    <h1>Section 6 — EC2 Instance Storage</h1>
+    <p>My notes while watching Stephane Maarek's Udemy course · Simple English, diagrams included, no dark theme.</p>
+    <div class="badge-row">
+      <span class="topic-badge">EBS Volumes</span>
+      <span class="topic-badge">Snapshots</span>
+      <span class="topic-badge">AMI</span>
+      <span class="topic-badge">Instance Store</span>
+      <span class="topic-badge">EFS</span>
+    </div>
+  </header>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#l1">1. EBS Overview</a></li>
+      <li><a href="#l2">2. EBS Hands-On</a></li>
+      <li><a href="#l3">3. EBS Snapshots</a></li>
+      <li><a href="#l4">4. EBS Snapshots Hands-On</a></li>
+      <li><a href="#l5">5. AMI Overview</a></li>
+      <li><a href="#l6">6. AMI Hands-On</a></li>
+      <li><a href="#l7">7. EC2 Instance Store</a></li>
+      <li><a href="#l8">8. EBS Volume Types</a></li>
+      <li><a href="#l9">9. EBS Multi-Attach</a></li>
+      <li><a href="#l10">10. Amazon EFS</a></li>
+      <li><a href="#l11">11. Amazon EFS Hands-On</a></li>
+      <li><a href="#l12">12. EFS vs EBS vs Instance Store</a></li>
+      <li><a href="#l13">13. Clean-Up Checklist</a></li>
+      <li><a href="#lsummary">Cheat Sheet</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <section class="lecture" id="l1">
+    <h2><span class="lecture-num">1</span>EBS Overview</h2>
+
+    <p><strong>EBS = Elastic Block Store.</strong> It's a <strong>network drive</strong> you attach to an EC2 instance while it's running. It exists so your data can <strong>outlive the instance</strong> — terminate the instance, keep the volume, attach it to a new instance, and your data is right there.</p>
+
+    <div class="analogy">
+      💾 <strong>Analogy:</strong> An EBS volume is like a <strong>network USB stick</strong>. You "plug it in" to a computer, but the connection travels over the network instead of a physical port — which is also why there's a tiny bit of latency compared to a directly attached disk.
+    </div>
+
+    <h3>Core rules to remember</h3>
+    <ul>
+      <li>One EBS volume ↔ <strong>one instance at a time</strong> (Multi-Attach is the advanced exception — see Lecture 9)</li>
+      <li>An EBS volume is <strong>locked to one Availability Zone</strong>. A volume created in <code>us-east-1a</code> can only attach to instances in <code>us-east-1a</code> — never <code>us-east-1b</code></li>
+      <li>Because it's network-based, it can be <strong>detached and reattached quickly</strong> — great for failover</li>
+      <li>It's <strong>provisioned</strong>: you set size (GB) and IOPS up front, and pay for what you provision — not just what you use. You can resize later</li>
+      <li>A volume doesn't need to be attached to anything — you can create one and leave it ready to attach on demand</li>
+    </ul>
+
+    <div class="diagram">
+      <svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="20" width="280" height="160" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="2" stroke-dasharray="6"/>
+        <text x="160" y="42" text-anchor="middle" font-size="12" font-weight="bold" fill="#2563eb">Availability Zone: us-east-1a</text>
+
+        <rect x="45" y="70" width="110" height="50" rx="8" fill="#fcd34d" stroke="#d97706" stroke-width="2"/>
+        <text x="100" y="99" text-anchor="middle" font-size="11" font-weight="bold">EC2 Instance A</text>
+
+        <line x1="155" y1="85" x2="205" y2="85" stroke="#059669" stroke-width="2"/>
+        <rect x="205" y="65" width="80" height="40" rx="6" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="245" y="89" text-anchor="middle" font-size="10">EBS-1</text>
+
+        <line x1="155" y1="115" x2="205" y2="115" stroke="#059669" stroke-width="2"/>
+        <rect x="205" y="120" width="80" height="40" rx="6" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="245" y="144" text-anchor="middle" font-size="10">EBS-2</text>
+
+        <text x="160" y="200" text-anchor="middle" font-size="11" fill="#374151">One instance can have multiple EBS volumes</text>
+
+        <rect x="340" y="20" width="280" height="160" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="2" stroke-dasharray="6"/>
+        <text x="480" y="42" text-anchor="middle" font-size="12" font-weight="bold" fill="#dc2626">Availability Zone: us-east-1b</text>
+        <rect x="365" y="80" width="110" height="50" rx="8" fill="#fcd34d" stroke="#d97706" stroke-width="2"/>
+        <text x="420" y="109" text-anchor="middle" font-size="11" font-weight="bold">EC2 Instance B</text>
+
+        <line x1="330" y1="85" x2="365" y2="105" stroke="#dc2626" stroke-width="2" stroke-dasharray="3"/>
+        <text x="330" y="70" font-size="10" fill="#dc2626" text-anchor="middle">✕ cannot attach</text>
+        <text x="330" y="180" font-size="10" fill="#dc2626" text-anchor="middle">EBS-1 cannot cross AZs</text>
+      </svg>
+      <div class="diagram-caption">An EBS volume is locked to its Availability Zone — it can never attach to an instance in a different AZ.</div>
+    </div>
+
+    <h3>Delete on Termination</h3>
+    <p>An <em>attribute</em> on the EBS volume controlling whether AWS auto-deletes it when its EC2 instance is terminated.</p>
+    <table>
+      <tr><th>Volume</th><th>Default "Delete on Termination"</th><th>Behavior</th></tr>
+      <tr><td>Root volume</td><td><strong>Enabled (Yes)</strong></td><td>Deleted automatically when instance is terminated</td></tr>
+      <tr><td>Any extra attached volume</td><td><strong>Disabled (No)</strong></td><td>Survives instance termination</td></tr>
+    </table>
+
+    <div class="callout exam">
+      <strong>Exam scenario:</strong> "How do I preserve the root volume's data after terminating an instance?" → Disable <em>Delete on Termination</em> for the root volume before terminating.
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="lecture" id="l2">
+    <h2><span class="lecture-num">2</span>EBS Hands-On</h2>
+    <p>Practical walkthrough of managing volumes in the AWS console.</p>
+    <ol>
+      <li><strong>View attached volumes:</strong> EC2 instance → <em>Storage</em> tab → shows root device + any block devices</li>
+      <li><strong>Create a new volume:</strong> EC2 console → <em>Volumes</em> → Create Volume → choose type, size, and — critically — the <strong>same AZ</strong> as your target instance</li>
+      <li><strong>Attach it:</strong> Select the volume ("available" state) → Actions → Attach Volume → pick the instance</li>
+      <li><strong>Confirm:</strong> Refresh the instance's Storage tab — now shows two block devices</li>
+    </ol>
+
+    <div class="callout warn">
+      <strong>Proven the hard way:</strong> Creating a volume in a <em>different</em> AZ than your instance makes "Attach Volume" simply refuse to offer that instance. Live proof that EBS volumes are AZ-bound.
+    </div>
+
+    <p>Actually formatting/mounting the raw block device inside the OS is outside CCP exam scope, but the AWS doc to search is: <em>"make an Amazon EBS volume available for use on Linux."</em></p>
+
+    <h3>Interesting termination behavior</h3>
+    <p>Terminate the instance → the root volume (Delete on Termination = Yes) disappears from the Volumes list along with it. The extra volume (Delete on Termination = No) stays behind as an orphaned, still-billable volume.</p>
+  </section>
+
+  <!-- 3 -->
+  <section class="lecture" id="l3">
+    <h2><span class="lecture-num">3</span>EBS Snapshots</h2>
+    <p>A <strong>snapshot</strong> is a point-in-time backup of an EBS volume. Detaching first isn't required, but recommended for a fully consistent backup.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="65" width="140" height="50" rx="8" fill="#fcd34d" stroke="#d97706" stroke-width="2"/>
+        <text x="90" y="95" text-anchor="middle" font-size="11" font-weight="bold">EBS Volume</text>
+        <text x="90" y="35" text-anchor="middle" font-size="10" fill="#6b7280">us-east-1a</text>
+
+        <line x1="160" y1="90" x2="260" y2="90" stroke="#9ca3af" stroke-width="2"/>
+        <text x="210" y="75" text-anchor="middle" font-size="10" fill="#6b7280">snapshot</text>
+
+        <rect x="260" y="55" width="150" height="70" rx="8" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+        <text x="335" y="85" text-anchor="middle" font-size="11" font-weight="bold">EBS Snapshot</text>
+        <text x="335" y="102" text-anchor="middle" font-size="10">(Region-wide, not AZ-locked)</text>
+
+        <line x1="410" y1="90" x2="500" y2="90" stroke="#9ca3af" stroke-width="2"/>
+        <text x="455" y="75" text-anchor="middle" font-size="10" fill="#6b7280">restore</text>
+
+        <rect x="500" y="65" width="120" height="50" rx="8" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="560" y="95" text-anchor="middle" font-size="11" font-weight="bold">New Volume</text>
+        <text x="560" y="35" text-anchor="middle" font-size="10" fill="#6b7280">us-east-1b (or another Region)</text>
+      </svg>
+      <div class="diagram-caption">Since a live EBS volume can't move AZs on its own, snapshot → restore is the mechanism to relocate data across AZs or Regions.</div>
+    </div>
+
+    <div class="callout tip">
+      <strong>Why snapshots matter:</strong> They can be copied across AZs and Regions — this is the only way to relocate EBS data since the volume itself can't move.
+    </div>
+
+    <h3>Three snapshot features to know</h3>
+    <table>
+      <tr><th>Feature</th><th>What it does</th><th>Trade-off</th></tr>
+      <tr><td><strong>Archive Tier</strong></td><td>Moves a snapshot to cheaper storage — up to 75% savings</td><td>Restoring takes 24–72 hours</td></tr>
+      <tr><td><strong>Recycle Bin</strong></td><td>Deleted snapshots land here instead of vanishing forever</td><td>Retention configurable 1 day – 1 year</td></tr>
+      <tr><td><strong>Fast Snapshot Restore (FSR)</strong></td><td>Forces full initialization so there's zero latency on first use</td><td>Expensive — use sparingly</td></tr>
+    </table>
+  </section>
+
+  <!-- 4 -->
+  <section class="lecture" id="l4">
+    <h2><span class="lecture-num">4</span>EBS Snapshots Hands-On</h2>
+    <ol>
+      <li><strong>Create:</strong> Volume → Actions → Create Snapshot → add description → Create</li>
+      <li><strong>Copy across region:</strong> Snapshot → right-click → Copy Snapshot → pick destination region — useful for a Disaster Recovery strategy</li>
+      <li><strong>Restore into a volume:</strong> Snapshot → Actions → Create Volume From Snapshot → pick a <em>different AZ</em> than the original (e.g. restore an <code>eu-west-1a</code> snapshot into <code>eu-west-1b</code>) — this is the real mechanism for "moving" data between AZs</li>
+      <li><strong>Recycle Bin setup:</strong> Create a Retention Rule (resource type "EBS Snapshots", apply to all resources, set retention e.g. 1 day) → deleted snapshots now recover instead of disappearing</li>
+      <li><strong>Storage Tiers:</strong> Move a snapshot from Standard to Archive from the console — remember the 24–72 hr restore delay</li>
+    </ol>
+
+    <div class="callout tip">
+      <strong>Demo takeaway:</strong> Delete a snapshot → it disappears from Snapshots list → check <em>Recycle Bin → Resources</em> → it's sitting there → Recover Resources → it's back.
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="lecture" id="l5">
+    <h2><span class="lecture-num">5</span>AMI Overview</h2>
+    <p><strong>AMI = Amazon Machine Image.</strong> A template of everything that makes up an EC2 instance's software: OS, installed applications, monitoring agents, configuration — a "pre-baked" instance you can stamp out repeatedly.</p>
+
+    <div class="analogy">
+      🐳 <strong>Analogy:</strong> An AMI is like a <strong>Docker image for a virtual machine</strong> — build it once with everything installed, then spin up as many instances from it as you want, each already configured with no re-installation needed.
+    </div>
+
+    <h3>Where AMIs come from</h3>
+    <ul>
+      <li><strong>Public AMI</strong> — provided by AWS (e.g. Amazon Linux 2, used throughout this course)</li>
+      <li><strong>Your own AMI</strong> — build and maintain it yourself (can be automated)</li>
+      <li><strong>AWS Marketplace AMI</strong> — built and sold by third-party vendors, pre-configured with commercial software (you can sell your own too)</li>
+    </ul>
+
+    <div class="diagram">
+      <svg viewBox="0 0 640 130" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="65" r="10" fill="#d97706"/>
+        <text x="40" y="100" text-anchor="middle" font-size="10">1. Launch</text>
+
+        <line x1="50" y1="65" x2="150" y2="65" stroke="#9ca3af" stroke-width="2"/>
+        <rect x="150" y="40" width="110" height="50" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+        <text x="205" y="62" text-anchor="middle" font-size="10" font-weight="bold">2. Customize</text>
+        <text x="205" y="78" text-anchor="middle" font-size="9">(install software)</text>
+
+        <line x1="260" y1="65" x2="330" y2="65" stroke="#9ca3af" stroke-width="2"/>
+        <rect x="330" y="40" width="90" height="50" rx="8" fill="#fecaca" stroke="#dc2626" stroke-width="2"/>
+        <text x="375" y="68" text-anchor="middle" font-size="10" font-weight="bold">3. STOP</text>
+
+        <line x1="420" y1="65" x2="480" y2="65" stroke="#9ca3af" stroke-width="2"/>
+        <rect x="480" y="40" width="110" height="50" rx="8" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+        <text x="535" y="62" text-anchor="middle" font-size="10" font-weight="bold">4. Create Image</text>
+        <text x="535" y="78" text-anchor="middle" font-size="9">(= AMI)</text>
+      </svg>
+      <div class="diagram-caption">Stopping the instance first ensures data integrity before AWS captures the image. Creating an AMI generates EBS snapshots behind the scenes.</div>
+    </div>
+
+    <p>Once created, launch new instances from that AMI anywhere in the Region (or copy the AMI to another Region).</p>
+
+    <div class="callout tip">
+      <strong>Why it matters:</strong> Instances launched from a custom AMI boot <strong>much faster</strong> — the software is already baked in, no install step at boot time.
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="lecture" id="l6">
+    <h2><span class="lecture-num">6</span>AMI Hands-On</h2>
+    <ol>
+      <li>Launch an EC2 instance (Amazon Linux 2, t2.micro) with a user-data script that installs Apache (<code>httpd</code>) — but don't create an <code>index.html</code> yet, since we want a clean, reusable base image</li>
+      <li>Wait ~1–2 minutes for the script to actually finish (status "running" ≠ script done)</li>
+      <li>Verify Apache works by hitting the instance's public IP over HTTP</li>
+      <li><strong>Create the AMI:</strong> right-click instance → Image and templates → Create Image → name it → Create</li>
+      <li>Wait for AMI status: <em>pending</em> → <em>available</em></li>
+      <li><strong>Launch a new instance from that AMI</strong> (via "My AMIs" tab) — this time User Data only needs to <code>echo</code> a new <code>index.html</code>, no need to reinstall <code>httpd</code></li>
+      <li>Result: the second instance serves the page <strong>noticeably faster</strong> on boot since the heavy install step is skipped</li>
+    </ol>
+
+    <div class="callout exam">
+      <strong>Key exam idea:</strong> Whenever a scenario needs faster, standardized instance boot-up across many EC2 launches (fleet scaling, golden images), think <strong>custom AMI</strong>.
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="lecture" id="l7">
+    <h2><span class="lecture-num">7</span>EC2 Instance Store</h2>
+    <p>EBS is a network drive — great, but not the fastest option possible. Some EC2 instance types have a disk <strong>physically attached</strong> to the underlying hardware server. That's an <strong>EC2 Instance Store</strong>.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 640 150" xmlns="http://www.w3.org/2000/svg">
+        <rect x="30" y="30" width="250" height="90" rx="10" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="155" y="55" text-anchor="middle" font-size="12" font-weight="bold">EBS (network drive)</text>
+        <text x="155" y="75" text-anchor="middle" font-size="10">Durable — survives stop/terminate</text>
+        <text x="155" y="93" text-anchor="middle" font-size="10">Good general performance</text>
+
+        <rect x="360" y="30" width="250" height="90" rx="10" fill="#fecaca" stroke="#dc2626" stroke-width="2"/>
+        <text x="485" y="55" text-anchor="middle" font-size="12" font-weight="bold">Instance Store (local disk)</text>
+        <text x="485" y="75" text-anchor="middle" font-size="10">Ephemeral — lost on stop/terminate</text>
+        <text x="485" y="93" text-anchor="middle" font-size="10">Extremely high IOPS</text>
+      </svg>
+      <div class="diagram-caption">EBS trades a bit of speed for durability; Instance Store trades durability for maximum speed.</div>
+    </div>
+
+    <div class="callout warn">
+      <strong>The critical trade-off:</strong> Instance Store = <strong>ephemeral storage</strong>. Stop or terminate the instance → the data is <strong>gone</strong>. Not for durable, long-term storage — that's EBS's job.
+    </div>
+
+    <h3>When to use it</h3>
+    <ul>
+      <li>Buffers, caches, scratch data, temporary/session data</li>
+      <li>Anywhere you need extremely high I/O throughput and can tolerate data loss</li>
+    </ul>
+    <p>Also: if the underlying hardware server fails, the physically attached storage fails with it — backup/replication responsibility is entirely on you.</p>
+
+    <table>
+      <tr><th>Storage Type</th><th>Example</th><th>Read/Write IOPS</th></tr>
+      <tr><td>EC2 Instance Store (I3 family)</td><td>Physically attached NVMe SSD</td><td>Up to ~3.3M read / ~1.4M write IOPS</td></tr>
+      <tr><td>EBS gp2</td><td>Network volume</td><td>Up to ~32,000 IOPS</td></tr>
+    </table>
+
+    <div class="callout exam">
+      <strong>Exam pattern:</strong> "Very high performance, hardware-attached, disappears if the instance stops" → <strong>EC2 Instance Store</strong>.
+    </div>
+  </section>
+
+  <!-- 8 -->
+  <section class="lecture" id="l8">
+    <h2><span class="lecture-num">8</span>EBS Volume Types</h2>
+    <p>Six volume types, grouped into two families: <strong>SSD</strong> (transactional, small random I/O) and <strong>HDD</strong> (large, sequential, throughput-heavy).</p>
+
+    <table>
+      <tr><th>Family</th><th>Types</th><th>Boot Volume?</th><th>Best For</th></tr>
+      <tr><td>General Purpose SSD</td><td>gp2, gp3</td><td>✅ Yes</td><td>Balanced price/performance — default for most workloads</td></tr>
+      <tr><td>Provisioned IOPS SSD</td><td>io1, io2 Block Express</td><td>✅ Yes</td><td>Mission-critical, low-latency, high-throughput apps (databases)</td></tr>
+      <tr><td>Throughput Optimized HDD</td><td>st1</td><td>❌ No</td><td>Big data, data warehousing, log processing</td></tr>
+      <tr><td>Cold HDD</td><td>sc1</td><td>❌ No</td><td>Infrequently accessed / archive data, lowest cost</td></tr>
+    </table>
+
+    <h3>gp2 vs gp3 — the important distinction</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 640 170" xmlns="http://www.w3.org/2000/svg">
+        <text x="160" y="20" text-anchor="middle" font-size="12" font-weight="bold" fill="#2563eb">gp2 (older)</text>
+        <rect x="40" y="35" width="240" height="40" rx="6" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="160" y="60" text-anchor="middle" font-size="10">Bigger disk → automatically more IOPS</text>
+        <text x="160" y="95" text-anchor="middle" font-size="10" fill="#6b7280">Size and performance are LINKED</text>
+
+        <text x="480" y="20" text-anchor="middle" font-size="12" font-weight="bold" fill="#059669">gp3 (newer, recommended)</text>
+        <rect x="360" y="35" width="240" height="40" rx="6" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="480" y="53" text-anchor="middle" font-size="10">Fixed baseline: 3,000 IOPS / 125 MB/s</text>
+        <text x="480" y="67" text-anchor="middle" font-size="10">then dial in more independently</text>
+        <text x="480" y="95" text-anchor="middle" font-size="10" fill="#6b7280">Size and performance are DECOUPLED</text>
+
+        <text x="320" y="140" text-anchor="middle" font-size="11" fill="#374151">Same size disk, but gp3 lets you tune IOPS/throughput separately →</text>
+        <text x="320" y="158" text-anchor="middle" font-size="11" fill="#374151">cheaper and more flexible for most workloads</text>
+      </svg>
+      <div class="diagram-caption">gp2 ties performance to size; gp3 lets you set size and performance independently — which is why it's the current recommended default.</div>
+    </div>
+
+    <table>
+      <tr><th></th><th>gp2</th><th>gp3</th></tr>
+      <tr><td>Baseline IOPS</td><td>Scales with size (3 IOPS/GB)</td><td>Fixed baseline: <strong>3,000 IOPS</strong></td></tr>
+      <tr><td>Baseline Throughput</td><td>Tied to size</td><td>Fixed baseline: <strong>125 MB/s</strong></td></tr>
+      <tr><td>Max IOPS</td><td>16,000 (reached at 5,334 GB)</td><td>Up to 16,000 (independently)</td></tr>
+      <tr><td>Max Throughput</td><td>Tied to volume size</td><td>Up to 1,000 MB/s (independently)</td></tr>
+      <tr><td>Size ↔ IOPS relationship</td><td><strong>Linked</strong></td><td><strong>Decoupled</strong></td></tr>
+    </table>
+
+    <h3>Provisioned IOPS (io1 / io2 Block Express)</h3>
+    <ul>
+      <li>For apps needing sustained, very high IOPS (&gt;16,000) — e.g. large relational databases</li>
+      <li><strong>io1:</strong> 4 GB–16 TB, up to 64,000 IOPS on Nitro instances (32,000 on others), IOPS set independently of size</li>
+      <li><strong>io2 Block Express:</strong> up to 64 TB, sub-millisecond latency, up to 256,000 IOPS (ratio: 1,000 IOPS per GB)</li>
+      <li>io1/io2 are the only families supporting <strong>EBS Multi-Attach</strong> (Lecture 9)</li>
+    </ul>
+
+    <h3>st1 / sc1 (HDD)</h3>
+    <table>
+      <tr><th>Type</th><th>Use case</th><th>Max Throughput</th><th>Max IOPS</th></tr>
+      <tr><td>st1 (Throughput Optimized HDD)</td><td>Big data, log processing, data warehouses</td><td>500 MB/s</td><td>500</td></tr>
+      <tr><td>sc1 (Cold HDD)</td><td>Rarely accessed / archive, lowest cost</td><td>250 MB/s</td><td>250</td></tr>
+    </table>
+
+    <div class="callout exam">
+      <strong>Exam takeaway:</strong> Don't memorize every number — understand the <em>category logic</em>: General Purpose SSD (balanced) vs. Provisioned IOPS SSD (databases needing consistent high IOPS) vs. st1/sc1 (cheap, throughput-heavy, non-boot). To exceed 32,000 IOPS, you need an <strong>EC2 Nitro instance with io1/io2</strong>.
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section class="lecture" id="l9">
+    <h2><span class="lecture-num">9</span>EBS Multi-Attach</h2>
+    <p>Allows the <strong>same EBS volume</strong> to be attached to <strong>multiple EC2 instances at the same time</strong> — but only within the <strong>same AZ</strong>, and only for <strong>io1/io2</strong> volumes.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 640 190" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="10" width="600" height="170" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="2" stroke-dasharray="6"/>
+        <text x="320" y="32" text-anchor="middle" font-size="11" font-weight="bold" fill="#2563eb">Same Availability Zone</text>
+
+        <rect x="45" y="55" width="110" height="40" rx="6" fill="#fcd34d" stroke="#d97706" stroke-width="2"/>
+        <text x="100" y="79" text-anchor="middle" font-size="11">EC2-1</text>
+        <rect x="45" y="105" width="110" height="40" rx="6" fill="#fcd34d" stroke="#d97706" stroke-width="2"/>
+        <text x="100" y="129" text-anchor="middle" font-size="11">EC2-2</text>
+        <rect x="45" y="155" width="110" height="20" rx="4" fill="none"/>
+        <text x="100" y="169" text-anchor="middle" font-size="10" fill="#6b7280">...up to 16</text>
+
+        <line x1="155" y1="75" x2="330" y2="90" stroke="#9ca3af" stroke-width="2"/>
+        <line x1="155" y1="125" x2="330" y2="95" stroke="#9ca3af" stroke-width="2"/>
+
+        <rect x="330" y="65" width="200" height="60" rx="8" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+        <text x="430" y="90" text-anchor="middle" font-size="11" font-weight="bold">io1 / io2 Volume</text>
+        <text x="430" y="107" text-anchor="middle" font-size="10">Multi-Attach: ON</text>
+
+        <text x="430" y="150" text-anchor="middle" font-size="10" fill="#374151">Every instance gets FULL read/write access</text>
+      </svg>
+      <div class="diagram-caption">Multiple instances share one io1/io2 volume — all within the same AZ, up to 16 instances.</div>
+    </div>
+
+    <h3>Key facts</h3>
+    <ul>
+      <li>Every attached instance gets <strong>full read and write</strong> access simultaneously</li>
+      <li>Use case: higher availability for <strong>clustered Linux applications</strong> (e.g. Teradata) or apps that manage their own concurrent write coordination</li>
+      <li><strong>Same AZ only</strong> — cannot span AZs</li>
+      <li><strong>Max 16 EC2 instances</strong> can attach to one volume at a time</li>
+      <li>Requires a <strong>cluster-aware file system</strong> — regular XFS or EXT4 won't handle concurrent writes safely</li>
+    </ul>
+
+    <div class="callout exam">
+      <strong>Exam number to memorize:</strong> <strong>16</strong> instances max for Multi-Attach.
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section class="lecture" id="l10">
+    <h2><span class="lecture-num">10</span>Amazon EFS</h2>
+    <p><strong>EFS = Elastic File System</strong> — a managed <strong>NFS (Network File System)</strong>. Unlike EBS, it isn't locked to one AZ or one instance: it can be mounted by <strong>many EC2 instances simultaneously, across multiple AZs</strong>.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg">
+        <rect x="180" y="15" width="280" height="50" rx="10" fill="#fed7aa" stroke="#ea580c" stroke-width="2"/>
+        <text x="320" y="46" text-anchor="middle" font-size="12" font-weight="bold">Amazon EFS File System</text>
+
+        <line x1="270" y1="65" x2="100" y2="120" stroke="#9ca3af" stroke-width="2"/>
+        <line x1="320" y1="65" x2="320" y2="120" stroke="#9ca3af" stroke-width="2"/>
+        <line x1="370" y1="65" x2="540" y2="120" stroke="#9ca3af" stroke-width="2"/>
+
+        <rect x="30" y="120" width="140" height="40" rx="6" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="100" y="144" text-anchor="middle" font-size="10">EC2s — us-east-1a</text>
+        <rect x="250" y="120" width="140" height="40" rx="6" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="320" y="144" text-anchor="middle" font-size="10">EC2s — us-east-1b</text>
+        <rect x="470" y="120" width="140" height="40" rx="6" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="540" y="144" text-anchor="middle" font-size="10">EC2s — us-east-1c</text>
+
+        <text x="320" y="195" text-anchor="middle" font-size="11" fill="#374151">All mount the SAME shared file system, concurrently</text>
+      </svg>
+      <div class="diagram-caption">EFS spans multiple AZs — every instance in every AZ can read and write to the same file system at once.</div>
+    </div>
+
+    <h3>Key characteristics</h3>
+    <ul>
+      <li>Highly available, highly scalable — grows automatically to petabyte scale</li>
+      <li><strong>Pay-per-use</strong>: no capacity to provision in advance (unlike EBS)</li>
+      <li>~3× the cost of a gp2 EBS volume per GB — you pay for the convenience of sharing</li>
+      <li><strong>Linux-only</strong> — uses the POSIX filesystem API, not compatible with Windows</li>
+      <li>Encryption at rest available via KMS</li>
+      <li>Access controlled through a <strong>Security Group</strong> attached to the EFS mount targets</li>
+      <li>Use cases: content management, web serving/hosting (e.g. WordPress), shared data across a fleet</li>
+    </ul>
+
+    <h3>Performance Mode (set at creation, can't change later)</h3>
+    <table>
+      <tr><th>Mode</th><th>Latency</th><th>Throughput</th><th>Best for</th></tr>
+      <tr><td>General Purpose (default)</td><td>Low</td><td>Standard</td><td>Latency-sensitive apps: web servers, CMS</td></tr>
+      <tr><td>Max I/O</td><td>Higher</td><td>Higher, highly parallel</td><td>Big data, media processing</td></tr>
+    </table>
+
+    <h3>Throughput Mode</h3>
+    <table>
+      <tr><th>Mode</th><th>How it works</th><th>Best for</th></tr>
+      <tr><td>Bursting</td><td>Throughput scales with storage used (e.g. 50 MB/s baseline + bursts to 100 MB/s per TB)</td><td>General, storage-proportional workloads</td></tr>
+      <tr><td>Provisioned</td><td>You set throughput independently of storage size (e.g. 1 GB/s for just 1 TB)</td><td>Known, fixed throughput needs</td></tr>
+      <tr><td><strong>Elastic (recommended)</strong></td><td>Auto-scales throughput up/down automatically, pay for what you use</td><td>Unpredictable I/O workloads</td></tr>
+    </table>
+
+    <h3>Storage classes / lifecycle management</h3>
+    <table>
+      <tr><th>Tier</th><th>Access pattern</th><th>Cost</th></tr>
+      <tr><td>Standard</td><td>Frequently accessed files</td><td>Highest</td></tr>
+      <tr><td>EFS-IA (Infrequent Access)</td><td>Rarely-touched files</td><td>Lower storage cost, retrieval fee</td></tr>
+      <tr><td>Archive</td><td>Accessed a few times a year</td><td>Lowest storage cost</td></tr>
+    </table>
+    <p>A <strong>lifecycle policy</strong> automatically moves files between tiers based on days since last access (e.g. move to EFS-IA after 60 days). Correctly using storage classes can save up to <strong>90%</strong> in cost.</p>
+
+    <h3>Availability &amp; durability</h3>
+    <table>
+      <tr><th>Setting</th><th>Description</th><th>Use case</th></tr>
+      <tr><td>Standard (Regional)</td><td>Spans multiple AZs</td><td>Production — resilient to AZ failure</td></tr>
+      <tr><td>One Zone</td><td>Single AZ, cheaper, still backed up, compatible with One Zone-IA</td><td>Dev/test environments</td></tr>
+    </table>
+  </section>
+
+  <!-- 11 -->
+  <section class="lecture" id="l11">
+    <h2><span class="lecture-num">11</span>Amazon EFS Hands-On</h2>
+
+    <h3>Step 1 — Create the file system</h3>
+    <ul>
+      <li>Choose VPC, then <strong>Customize</strong> to see full options</li>
+      <li><strong>File system type:</strong> Regional (multi-AZ, production) vs. One Zone (single AZ, dev/cost-saving)</li>
+      <li>Enable automatic backups (recommended)</li>
+      <li><strong>Lifecycle management:</strong> e.g. "not accessed in 30 days → move to Infrequent Access", "not accessed in 90 days → move to Archive", "on first access → back to Standard"</li>
+      <li>Enable encryption</li>
+    </ul>
+
+    <h3>Step 2 — Performance settings</h3>
+    <p>Throughput mode options in the console: <strong>Bursting</strong>, <strong>Provisioned</strong>, and <strong>Enhanced</strong> (a category containing <strong>Elastic</strong> and <strong>Provisioned</strong>). Functionally there are three real choices: <strong>Bursting, Elastic, Provisioned</strong> — with <strong>Elastic</strong> being AWS's current recommended default. Performance mode (General Purpose vs Max I/O) is only selectable with Bursting or Provisioned; Elastic always uses General Purpose.</p>
+
+    <h3>Step 3 — Network access</h3>
+    <ul>
+      <li>Choose a VPC and mount targets — Regional type gives one mount target per AZ (subnet), each needing a Security Group</li>
+      <li>Create a dedicated Security Group for EFS (e.g. <code>sg-efs-demo</code>) — AWS auto-configures inbound rules when you attach EFS via the EC2 launch wizard</li>
+    </ul>
+
+    <h3>Step 4 — Mount EFS directly from the EC2 launch wizard</h3>
+    <ol>
+      <li>Select a subnet (AZ) first — required before adding a file system</li>
+      <li>Under "File systems," add the EFS file system → mount point defaults to <code>/mnt/efs/fs1</code></li>
+      <li>AWS <strong>auto-creates and attaches the correct Security Groups</strong> for both EFS and the instance, and auto-generates the user data script to mount it — no manual commands needed</li>
+    </ol>
+
+    <h3>Step 5 — Prove it's shared across AZs</h3>
+    <p>Launch <strong>Instance A</strong> (AZ-a) and <strong>Instance B</strong> (AZ-b), both mounting the same EFS file system.</p>
+    <pre><code># On Instance A:
+sudo su
+echo "hello world" > /mnt/efs/fs1/hello.txt
+cat /mnt/efs/fs1/hello.txt
+# → hello world
+
+# On Instance B (different AZ):
+ls /mnt/efs/fs1/
+cat /mnt/efs/fs1/hello.txt
+# → hello world   (same file, visible instantly)</code></pre>
+
+    <div class="callout tip">
+      <strong>What this proves:</strong> A file written from one AZ is immediately visible from an instance in a <em>different</em> AZ — this is the defining behavior that separates EFS from EBS.
+    </div>
+
+    <h3>Cleanup checklist for this demo</h3>
+    <ol>
+      <li>Terminate both EC2 instances</li>
+      <li>Delete the EFS file system (requires typing its File System ID to confirm)</li>
+      <li>Delete the auto-created security groups (only possible after dependent instances are fully terminated)</li>
+    </ol>
+  </section>
+
+  <!-- 12 -->
+  <section class="lecture" id="l12">
+    <h2><span class="lecture-num">12</span>EFS vs EBS vs Instance Store</h2>
+
+    <table>
+      <tr><th>Aspect</th><th>EBS</th><th>EFS</th></tr>
+      <tr><td>Attachment</td><td>One instance at a time (Multi-Attach = io1/io2 exception)</td><td>Hundreds of instances, concurrently</td></tr>
+      <tr><td>Scope</td><td>Locked to one AZ</td><td>Spans multiple AZs in a Region</td></tr>
+      <tr><td>Moving across AZ</td><td>Requires snapshot → restore in new AZ</td><td>Native — just mount from any AZ</td></tr>
+      <tr><td>OS support</td><td>Linux &amp; Windows</td><td>Linux only (POSIX/NFS)</td></tr>
+      <tr><td>IOPS vs size (gp2)</td><td>Linked — bigger disk, more IOPS</td><td>N/A</td></tr>
+      <tr><td>IOPS vs size (gp3/io1)</td><td>Independent</td><td>N/A</td></tr>
+      <tr><td>Cost</td><td>Lower</td><td>~3× EBS gp2, but tiering can cut costs significantly</td></tr>
+      <tr><td>Root volume behavior</td><td>Deleted by default on termination (configurable)</td><td>N/A — independent of any single instance</td></tr>
+      <tr><td>Typical use case</td><td>Databases, boot volumes, single-instance workloads</td><td>Shared content (WordPress), multi-instance web fleets</td></tr>
+    </table>
+
+    <div class="callout warn">
+      <strong>Don't forget the snapshot performance impact:</strong> Taking an EBS snapshot consumes I/O — avoid running one while your app is under heavy load, since it can degrade performance.
+    </div>
+
+    <h3>And EC2 Instance Store, for completeness</h3>
+    <p>Physically attached to the host hardware → highest performance, but <strong>lost entirely</strong> if the instance is stopped or terminated. Use only for ephemeral/temporary data.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 640 190" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="20" width="180" height="130" rx="10" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="110" y="45" text-anchor="middle" font-size="12" font-weight="bold">EBS</text>
+        <text x="110" y="70" text-anchor="middle" font-size="10">One instance</text>
+        <text x="110" y="88" text-anchor="middle" font-size="10">One AZ</text>
+        <text x="110" y="106" text-anchor="middle" font-size="10">Durable network drive</text>
+
+        <rect x="230" y="20" width="180" height="130" rx="10" fill="#fed7aa" stroke="#ea580c" stroke-width="2"/>
+        <text x="320" y="45" text-anchor="middle" font-size="12" font-weight="bold">EFS</text>
+        <text x="320" y="70" text-anchor="middle" font-size="10">Many instances</text>
+        <text x="320" y="88" text-anchor="middle" font-size="10">Many AZs</text>
+        <text x="320" y="106" text-anchor="middle" font-size="10">Shared network drive</text>
+
+        <rect x="440" y="20" width="180" height="130" rx="10" fill="#fecaca" stroke="#dc2626" stroke-width="2"/>
+        <text x="530" y="45" text-anchor="middle" font-size="12" font-weight="bold">Instance Store</text>
+        <text x="530" y="70" text-anchor="middle" font-size="10">One instance</text>
+        <text x="530" y="88" text-anchor="middle" font-size="10">Physically attached</text>
+        <text x="530" y="106" text-anchor="middle" font-size="10">Fastest, but ephemeral</text>
+      </svg>
+      <div class="diagram-caption">Three storage options, three different trade-offs between sharing, durability, and speed.</div>
+    </div>
+
+    <div class="summary-box">
+      <h3>One-line mental model for all three</h3>
+      <p><strong>EBS</strong> = your personal network hard drive (one instance, one AZ).<br>
+      <strong>EFS</strong> = a shared network drive for a whole team of instances across AZs.<br>
+      <strong>Instance Store</strong> = the fastest local disk you'll ever get — but it forgets everything when the machine turns off.</p>
+    </div>
+  </section>
+
+  <!-- 13 -->
+  <section class="lecture" id="l13">
+    <h2><span class="lecture-num">13</span>EFS and EBS Clean-Up</h2>
+    <p>Housekeeping checklist to avoid ongoing charges after finishing hands-on labs, in the correct dependency order:</p>
+    <ol>
+      <li><strong>Delete the EFS file system</strong> — Actions → Delete → confirm by pasting the File System ID</li>
+      <li><strong>Terminate all running EC2 instances</strong></li>
+      <li><strong>Delete all EBS volumes</strong> that are in "available" (unattached) state</li>
+      <li><strong>Delete all EBS snapshots</strong> — otherwise you keep paying for stored snapshot data</li>
+      <li><strong>Delete extra Security Groups</strong> (keep "default"). A security group tied to still-running instances can't be deleted until those instances fully terminate — retry after waiting</li>
+    </ol>
+
+    <div class="callout tip">
+      <strong>Practical tip:</strong> Deletion order matters because of dependencies — EFS mount targets and their security groups can't be removed while instances still reference them. If a delete fails, something upstream hasn't finished terminating yet — just wait and retry.
+    </div>
+  </section>
+
+  <hr class="section-break">
+
+  <!-- Summary -->
+  <section class="lecture" id="lsummary">
+    <h2>📋 Cheat Sheet</h2>
+
+    <div class="summary-box">
+      <h3>Storage decision guide</h3>
+      <table>
+        <tr><th>If you need...</th><th>Use</th></tr>
+        <tr><td>Persistent storage for one instance, in one AZ</td><td><strong>EBS</strong></td></tr>
+        <tr><td>Shared storage across many instances / many AZs (Linux only)</td><td><strong>EFS</strong></td></tr>
+        <tr><td>Maximum raw speed, don't care about durability</td><td><strong>Instance Store</strong></td></tr>
+        <tr><td>Same volume shared by clustered app instances (same AZ)</td><td><strong>EBS Multi-Attach (io1/io2)</strong></td></tr>
+        <tr><td>Reusable, pre-configured instance template</td><td><strong>AMI</strong></td></tr>
+      </table>
+    </div>
+
+    <div class="summary-box">
+      <h3>Key numbers to remember</h3>
+      <ul>
+        <li>EBS Multi-Attach: max <strong>16</strong> instances, same AZ only, io1/io2 only</li>
+        <li>gp3 baseline: <strong>3,000 IOPS / 125 MB/s</strong>, decoupled from size</li>
+        <li>io2 Block Express: up to <strong>256,000 IOPS</strong>, up to <strong>64 TB</strong></li>
+        <li>Snapshot archive tier restore: <strong>24–72 hours</strong></li>
+        <li>EFS cost: roughly <strong>3×</strong> EBS gp2 per GB (tiering can offset this by up to 90%)</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>Mental model recap</h3>
+      <ul>
+        <li><strong>EBS</strong> = network USB stick, locked to one AZ, one instance at a time (usually)</li>
+        <li><strong>Snapshots</strong> = the only way to move EBS data across AZs/Regions</li>
+        <li><strong>AMI</strong> = a saved template (OS + software) for launching pre-configured instances fast</li>
+        <li><strong>Instance Store</strong> = fastest but disappears when the instance stops/terminates</li>
+        <li><strong>EFS</strong> = shared NFS file system across many instances and AZs, Linux only</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="top-link"><a href="#top">↑ Back to top</a></div>
+
+</div>
+</body>
+</html>

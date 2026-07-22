@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 3 Notes — Lean Canvas</title>
+<style>
+  :root{
+    --bg: #fbfaf7;
+    --card: #ffffff;
+    --ink: #2b2b2b;
+    --muted: #6b6b6b;
+    --accent: #b5651d;      /* warm terracotta */
+    --accent-soft: #f4e3d3;
+    --line: #e7e1d6;
+    --green: #3f7d5c;
+    --green-soft: #e6f0ea;
+    --blue: #34618e;
+    --blue-soft: #e7eef6;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family: "Georgia", "Iowan Old Style", serif;
+    line-height:1.65;
+    padding:0 0 60px;
+  }
+  .wrap{max-width:820px; margin:0 auto; padding:0 24px;}
+
+  header.top{
+    background: linear-gradient(135deg,#a0522d,#c9843e);
+    color:#fff;
+    padding:44px 24px 34px;
+    margin-bottom:10px;
+  }
+  header.top .wrap{max-width:820px;}
+  header.top h1{
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size:1.9rem;
+    margin:0 0 6px;
+    letter-spacing:.3px;
+  }
+  header.top p{
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    margin:0;
+    opacity:.92;
+    font-size:.98rem;
+  }
+  .course-tag{
+    display:inline-block;
+    font-family:"Helvetica Neue", Arial, sans-serif;
+    font-size:.75rem;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    background:rgba(255,255,255,.18);
+    padding:4px 10px;
+    border-radius:20px;
+    margin-bottom:14px;
+  }
+
+  nav.toc{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:18px 22px;
+    margin:24px 0 34px;
+    font-family:"Helvetica Neue", Arial, sans-serif;
+  }
+  nav.toc h2{
+    font-size:.8rem;
+    text-transform:uppercase;
+    letter-spacing:1.2px;
+    color:var(--muted);
+    margin:0 0 10px;
+  }
+  nav.toc ol{margin:0; padding-left:20px;}
+  nav.toc li{margin-bottom:4px;}
+  nav.toc a{color:var(--accent); text-decoration:none;}
+  nav.toc a:hover{text-decoration:underline;}
+
+  section.lecture{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:30px 30px 26px;
+    margin-bottom:26px;
+  }
+  section.lecture > h2{
+    font-family:"Helvetica Neue", Arial, sans-serif;
+    font-size:1.3rem;
+    color:var(--accent);
+    margin:0 0 4px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .lec-num{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--accent);
+    color:#fff;
+    font-size:.85rem;
+    font-weight:bold;
+    width:30px; height:30px;
+    border-radius:50%;
+    flex-shrink:0;
+  }
+  section.lecture > .subtitle{
+    font-family:"Helvetica Neue", Arial, sans-serif;
+    font-size:.85rem;
+    color:var(--muted);
+    margin:0 0 18px;
+    padding-bottom:14px;
+    border-bottom:1px dashed var(--line);
+  }
+
+  h3.block-title{
+    font-family:"Helvetica Neue", Arial, sans-serif;
+    font-size:1.02rem;
+    color:var(--ink);
+    background:var(--accent-soft);
+    display:inline-block;
+    padding:4px 12px;
+    border-radius:6px;
+    margin:22px 0 10px;
+  }
+  h3.block-title:first-of-type{margin-top:6px;}
+
+  p{margin:0 0 12px;}
+  ul, ol{margin:0 0 14px; padding-left:22px;}
+  li{margin-bottom:6px;}
+
+  .callout{
+    background:var(--blue-soft);
+    border-left:4px solid var(--blue);
+    border-radius:6px;
+    padding:12px 16px;
+    margin:14px 0;
+    font-size:.96rem;
+  }
+  .callout strong{color:var(--blue);}
+
+  .example{
+    background:var(--green-soft);
+    border-left:4px solid var(--green);
+    border-radius:6px;
+    padding:12px 16px;
+    margin:14px 0;
+    font-size:.96rem;
+  }
+  .example .tag{
+    font-family:"Helvetica Neue", Arial, sans-serif;
+    font-weight:bold;
+    color:var(--green);
+    font-size:.78rem;
+    text-transform:uppercase;
+    letter-spacing:.6px;
+    display:block;
+    margin-bottom:4px;
+  }
+
+  .action{
+    background:#fff8ec;
+    border:1px dashed #d8a94d;
+    border-radius:6px;
+    padding:10px 16px;
+    margin:14px 0;
+    font-size:.92rem;
+    font-family:"Helvetica Neue", Arial, sans-serif;
+  }
+  .action .tag{
+    font-weight:bold;
+    color:#a6720b;
+    margin-right:6px;
+  }
+
+  table.canvas{
+    width:100%;
+    border-collapse:collapse;
+    margin:14px 0 20px;
+    font-size:.92rem;
+    font-family:"Helvetica Neue", Arial, sans-serif;
+  }
+  table.canvas th, table.canvas td{
+    border:1px solid var(--line);
+    padding:8px 10px;
+    text-align:left;
+    vertical-align:top;
+  }
+  table.canvas th{
+    background:var(--accent-soft);
+    color:var(--ink);
+    font-weight:bold;
+  }
+
+  .order-strip{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin:14px 0 18px;
+    font-family:"Helvetica Neue", Arial, sans-serif;
+    font-size:.82rem;
+  }
+  .order-strip span{
+    background:var(--blue-soft);
+    color:var(--blue);
+    padding:5px 10px;
+    border-radius:20px;
+    white-space:nowrap;
+  }
+  .order-strip span::after{
+    content: " ›";
+    color:var(--muted);
+  }
+  .order-strip span:last-child::after{content:"";}
+
+  .summary-box{
+    background:#fdf6e3;
+    border:1px solid #eadfb8;
+    border-radius:10px;
+    padding:16px 20px;
+    margin-top:18px;
+  }
+  .summary-box h4{
+    margin:0 0 8px;
+    font-family:"Helvetica Neue", Arial, sans-serif;
+    font-size:.9rem;
+    text-transform:uppercase;
+    letter-spacing:.8px;
+    color:#a6720b;
+  }
+
+  .key-term{
+    font-weight:bold;
+    color:var(--accent);
+  }
+
+  footer{
+    text-align:center;
+    font-family:"Helvetica Neue", Arial, sans-serif;
+    color:var(--muted);
+    font-size:.82rem;
+    margin-top:30px;
+  }
+
+  @media (max-width:600px){
+    section.lecture{padding:20px 18px;}
+    header.top{padding:30px 18px 24px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <span class="course-tag">Entrepreneurship Course · Paul Nekh &amp; Olena</span>
+    <h1>Section 3: Lean Canvas</h1>
+    <p>Organize your thoughts and ideas about your startup — my personal notes</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>What's in this section</h2>
+    <ol>
+      <li><a href="#lec20">20. Introduction to the Lean Canvas</a></li>
+      <li><a href="#lec21">21. Part 1: Problem, Customer Segments, Unique Value Proposition</a></li>
+      <li><a href="#lec22">22. Part 2: Solution, Channels, Revenue Streams</a></li>
+      <li><a href="#lec23">23. Part 3: Cost Structure, Key Metrics, Unfair Advantage</a></li>
+      <li><a href="#lec24">24. Practice: Fill out your own Lean Canvas</a></li>
+      <li><a href="#lec25">25. Use ChatGPT to Help Define Your Business Model</a></li>
+      <li><a href="#lec26">26. Should you keep your idea secret?</a></li>
+    </ol>
+  </nav>
+
+  <!-- LECTURE 20 -->
+  <section class="lecture" id="lec20">
+    <h2><span class="lec-num">20</span> Introduction to the Lean Canvas</h2>
+    <p class="subtitle">What is the Lean Canvas and why do we need it?</p>
+
+    <h3 class="block-title">What is it?</h3>
+    <p>The <span class="key-term">Lean Canvas</span> is a free, one-page tool to write down all the
+    assumptions you are making about your startup idea. It is inspired by the famous
+    <span class="key-term">Business Model Canvas</span>, but simplified for early-stage startups.</p>
+
+    <div class="callout">
+      <strong>Core idea — "known unknowns":</strong> There are things you know, things you know
+      you don't know, and things you don't even know you don't know. The Lean Canvas is about
+      writing down the "known unknowns" — things you assume are true but haven't tested yet.
+      Later, you go and test each assumption to see if it's really true or false.
+    </div>
+
+    <h3 class="block-title">Lean Canvas vs Business Model Canvas</h3>
+    <ul>
+      <li>Both have <strong>9 blocks</strong>.</li>
+      <li>5 of the 9 blocks are different between the two.</li>
+      <li>Business Model Canvas → built for <strong>established, running businesses</strong>.</li>
+      <li>Lean Canvas → built for <strong>early-stage startups</strong> that have nothing yet
+      (no key resources, no partners, no real customers yet).</li>
+    </ul>
+
+    <h3 class="block-title">Recommended order to fill it out</h3>
+    <div class="order-strip">
+      <span>1. Problem</span>
+      <span>2. Customer Segments</span>
+      <span>3. Unique Value Proposition</span>
+      <span>4. Solution</span>
+      <span>5. Channels</span>
+      <span>6. Revenue Streams</span>
+      <span>7. Cost Structure</span>
+      <span>8. Key Metrics</span>
+      <span>9. Unfair Advantage</span>
+    </div>
+    <p>You don't need to invent things you don't have yet (like "key resources" on the old canvas).
+    That's exactly why the Lean Canvas replaces those blocks with things a new startup can actually
+    answer.</p>
+
+    <h3 class="block-title">Running example used in this section: Snapchat</h3>
+    <div class="example">
+      <span class="tag">Example</span>
+      Founded in 2011 by Evan Spiegel and Bobby Murphy (a third co-founder, Reggie Brown, left
+      early). The course uses Snapchat throughout to show how each block of the canvas is filled in
+      real life.
+    </div>
+
+    <div class="action">
+      <span class="tag">Action:</span> Download the Lean Canvas template (Word/PDF), and fill it
+      block-by-block as you watch the next lectures.
+    </div>
+  </section>
+
+  <!-- LECTURE 21 -->
+  <section class="lecture" id="lec21">
+    <h2><span class="lec-num">21</span> Part 1: Problem, Customer Segments, Unique Value Proposition</h2>
+    <p class="subtitle">The first three blocks of the canvas</p>
+
+    <h3 class="block-title">Block 1 — Problem</h3>
+    <p>List the <strong>top 3 customer problems</strong>. Keep them specific. Remember the rule from
+    earlier sections: a good problem is <span class="key-term">frequent</span>,
+    <span class="key-term">common</span>, and <span class="key-term">worth solving</span>.
+    It also helps to list <strong>existing alternatives</strong> — how people solve this problem
+    today without your product — so you can see what's missing.</p>
+
+    <div class="example">
+      <span class="tag">Snapchat's 3 problems</span>
+      <ol>
+        <li>People worry that social networks (like Facebook) misuse their data and don't respect privacy.</li>
+        <li>People regret sharing things online that can't be taken back.</li>
+        <li>Teenagers don't like being watched by parents, teachers, or future employers.</li>
+      </ol>
+    </div>
+
+    <h3 class="block-title">Block 2 — Customer Segments</h3>
+    <p>Steps to fill this block:</p>
+    <ol>
+      <li>Split your broad audience into smaller, specific sub-segments.</li>
+      <li>Pick the <strong>strongest</strong> segment to focus on first.</li>
+      <li>Separate <span class="key-term">customers</span> from <span class="key-term">users</span>.</li>
+    </ol>
+
+    <div class="callout">
+      <strong>Customers vs Users:</strong> Customers are the people who <em>pay</em> you.
+      Users are the people who <em>use</em> the product but may not pay anything.
+      Both go in this block, because in many business models there are no customers without users first.
+    </div>
+
+    <div class="example">
+      <span class="tag">Analogy — The Simpsons</span>
+      Parents = customers (they have the money). Kids = users (they use the product but don't pay).
+    </div>
+
+    <div class="example">
+      <span class="tag">Snapchat</span>
+      <strong>Users:</strong> mostly teenagers (early adopters, mostly free users).<br>
+      <strong>Customers:</strong> some teenagers who buy virtual goods (like "Snap Replays"), but the
+      real money comes from <strong>advertisers</strong> (Coca-Cola, McDonald's, Universal) — because
+      teenagers are a highly attractive audience for ads.
+    </div>
+
+    <h3 class="block-title">Block 3 — Unique Value Proposition (UVP)</h3>
+    <p>This is basically a <strong>marketing catchphrase</strong> — a single, clear sentence that
+    hooks people's attention. It is <em>not</em> the same as your solution: it doesn't list features,
+    just the one thing that makes you stand out. You usually see it on the homepage of a company's website.</p>
+
+    <div class="example">
+      <span class="tag">Snapchat's real UVP</span>
+      "Experience a totally new way to share today."
+    </div>
+
+    <div class="summary-box">
+      <h4>Quick recap</h4>
+      <ul>
+        <li><strong>Problem:</strong> Top 3 problems, must be frequent + common + worth solving.</li>
+        <li><strong>Customer Segments:</strong> Narrow down → pick strongest segment → split customers vs users.</li>
+        <li><strong>UVP:</strong> One catchy sentence that hooks attention — not a feature list.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- LECTURE 22 -->
+  <section class="lecture" id="lec22">
+    <h2><span class="lec-num">22</span> Part 2: Solution, Channels, Revenue Streams</h2>
+    <p class="subtitle">The middle three blocks of the canvas</p>
+
+    <h3 class="block-title">Block 4 — Solution</h3>
+    <p>Best practice: outline a <strong>solution for each problem</strong> you listed earlier. It doesn't
+    need to be a totally different product each time — it can just be a different feature.</p>
+
+    <div class="example">
+      <span class="tag">Snapchat: problem → solution mapping</span>
+      <ul>
+        <li><strong>Privacy worry</strong> → Snaps are deleted from Snapchat's servers once they disappear.</li>
+        <li><strong>Regret sharing</strong> → Content automatically vanishes after a few seconds
+          (though screenshots are still a loophole).</li>
+        <li><strong>Fear of being watched</strong> → Vanishing "notes" feel private; also, parents
+          weren't yet on Snapchat the way they were on Facebook.</li>
+      </ul>
+    </div>
+
+    <h3 class="block-title">Block 5 — Channels</h3>
+    <p>Channels are all about <strong>how you reach your customers</strong>. There are two types:</p>
+    <table class="canvas">
+      <tr><th>Type</th><th>What it means</th><th>Examples</th></tr>
+      <tr><td><strong>Sales channels</strong></td><td>Where the product is actually purchased/downloaded</td>
+        <td>App Store, Google Play, e-commerce sites, phone sales</td></tr>
+      <tr><td><strong>Marketing channels</strong></td><td>How people find out about the product</td>
+        <td>Google Ads, Facebook Ads, affiliate marketing (e.g. Rakuten), blog promotions (e.g. Reddit)</td></tr>
+    </table>
+
+    <div class="example">
+      <span class="tag">Snapchat's growth channel: word of mouth</span>
+      Snapchat wasn't popular at launch (2011). It took off after Evan Spiegel's mom told her niece
+      about it at Orange County High School — the word spread through the school. Teenagers hang out
+      in groups, so once one person had the app, friends followed. This is how it went viral organically.
+    </div>
+
+    <h3 class="block-title">Block 6 — Revenue Streams</h3>
+    <p>This block is about <strong>how the business actually makes money</strong>.</p>
+
+    <div class="callout">
+      <strong>Common pattern for ad-based startups:</strong> Many startups (especially ones betting on
+      advertising) don't make money for years. They first need to grow to millions of users and show
+      "hockey-stick growth" so advertisers see a big enough audience worth paying for. Until then, they
+      burn cash.
+    </div>
+
+    <div class="example">
+      <span class="tag">Snapchat's revenue streams (started making real money in 2015)</span>
+      <ul>
+        <li><strong>Sponsored lenses</strong> — brands pay (up to $750,000 on peak days like
+          Halloween) to have a fun filter people use and share with friends — essentially free
+          viral marketing for the brand.</li>
+        <li><strong>Sponsored Geofilters</strong> — location-based branded stickers (e.g. a burger
+          brand's sticker near their restaurants).</li>
+        <li><strong>Selling virtual goods</strong> — e.g. paying $0.99 for 3 "replays" of a snap
+          (interesting: this slightly contradicts their "disappearing forever" promise, showing
+          how startups test monetization boundaries).</li>
+        <li><strong>Snapcash</strong> — send money to friends in-app; a first step toward mobile
+          payments and possibly taking a cut on purchases later.</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h4>Quick recap</h4>
+      <ul>
+        <li><strong>Solution:</strong> One idea per problem — doesn't need to be a new product each time.</li>
+        <li><strong>Channels:</strong> Sales channels (where they buy) + Marketing channels (how they hear about you).</li>
+        <li><strong>Revenue Streams:</strong> How you make money — and expect it may take time if you rely on ads.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- LECTURE 23 -->
+  <section class="lecture" id="lec23">
+    <h2><span class="lec-num">23</span> Part 3: Cost Structure, Key Metrics, Unfair Advantage</h2>
+    <p class="subtitle">The final three blocks of the canvas</p>
+
+    <h3 class="block-title">Block 7 — Cost Structure</h3>
+    <p>List your costs, split into two types:</p>
+    <table class="canvas">
+      <tr><th>Type</th><th>Meaning</th><th>Examples</th></tr>
+      <tr><td><strong>Fixed costs</strong></td><td>Stay the same no matter how much you sell</td>
+        <td>Office rent, electricity, insurance</td></tr>
+      <tr><td><strong>Variable costs</strong></td><td>Go up or down depending on usage/sales</td>
+        <td>Servers (more users = more cost), communication, travel</td></tr>
+    </table>
+
+    <h3 class="block-title">Block 8 — Key Metrics</h3>
+    <p>Metrics are the numbers that tell you if the business is doing well or going off track.
+    Split them into two kinds:</p>
+    <ul>
+      <li><strong>Business metrics</strong> — conversion rate, retention rate, % of paying vs free
+        users, daily active users (DAU), monthly active users (MAU), number of downloads.</li>
+      <li><strong>Personal metrics</strong> — your own long-term goals, e.g. "10,000 customers by
+        end of year" or "$100M revenue in 3 years."</li>
+    </ul>
+
+    <div class="example">
+      <span class="tag">Snapchat's key metrics</span>
+      Conversion rate, daily active users, number of snaps sent per day worldwide, and average time
+      spent in the app per day.
+    </div>
+
+    <h3 class="block-title">Block 9 — Unfair Advantage</h3>
+    <p>Similar to a "competitive advantage" — but specifically something
+    <strong>hard to copy or buy</strong>. It's usually not obvious in the early stage.</p>
+
+    <div class="callout">
+      <strong>Types of unfair advantage:</strong>
+      <ul>
+        <li>A secret formula/patent (e.g. Coca-Cola's formula).</li>
+        <li>An expert on the founding team (e.g. a rocket engineer from SpaceX joining your space startup).</li>
+        <li>Customer lock-in (e.g. Apple's proprietary chargers force you to keep buying Apple accessories).</li>
+      </ul>
+    </div>
+
+    <div class="example">
+      <span class="tag">Snapchat's unfair advantage</span>
+      Word of mouth + network effects, and being extremely popular with teenagers — an audience
+      even Facebook struggled to reach. This is so strong that Facebook offered $3 billion to
+      acquire Snapchat; the 23-year-old CEO refused, and the company later became worth much more.
+    </div>
+
+    <div class="summary-box">
+      <h4>Quick recap</h4>
+      <ul>
+        <li><strong>Cost Structure:</strong> Fixed costs (constant) vs Variable costs (scale with usage).</li>
+        <li><strong>Key Metrics:</strong> Business metrics (numbers) + Personal metrics (your own goals).</li>
+        <li><strong>Unfair Advantage:</strong> Something competitors can't easily copy or buy.</li>
+      </ul>
+      <p style="margin-top:10px;"><strong>Important reminder:</strong> Everything on the Lean Canvas
+      is an <em>assumption</em> — not proven fact. The next step (next section) is to actually
+      test these assumptions one by one.</p>
+    </div>
+  </section>
+
+  <!-- LECTURE 24 -->
+  <section class="lecture" id="lec24">
+    <h2><span class="lec-num">24</span> Practice: Download and Fill out the Lean Canvas</h2>
+    <p class="subtitle">Hands-on exercise</p>
+    <div class="action">
+      <span class="tag">Action:</span> Download the Lean Canvas (available in both Word and PDF)
+      and fill it out for your own startup idea.
+    </div>
+    <p>Tips from the instructors:</p>
+    <ul>
+      <li>It may feel a bit academic/formal at first, but it's a genuinely useful brainstorming tool.</li>
+      <li>Fill it out with a <strong>co-founder or another person</strong> if possible — more people
+      means more ideas and creativity.</li>
+    </ul>
+  </section>
+
+  <!-- LECTURE 25 -->
+  <section class="lecture" id="lec25">
+    <h2><span class="lec-num">25</span> Use ChatGPT to Help Define Your Business Model</h2>
+    <p class="subtitle">Using AI as a brainstorming assistant — but only after trying it yourself first</p>
+
+    <div class="callout">
+      <strong>Golden rule:</strong> Do the Lean Canvas yourself <em>first</em>. If you jump straight to
+      ChatGPT, it's too easy — you don't train your own thinking. Use ChatGPT afterward to fill gaps,
+      double-check, and get extra ideas.
+    </div>
+
+    <h3 class="block-title">Example used here: AI assistant for elderly people</h3>
+
+    <h3 class="block-title">Prompt 1 — Desirability &amp; Viability assumptions</h3>
+    <p>Before even touching the canvas, you can ask ChatGPT to list your assumptions in two categories:</p>
+    <ul>
+      <li><span class="key-term">Desirability assumptions</span> — will people actually want this?
+        (e.g. "elderly people will want companionship," "they'll want emergency support," "they'll
+        find it convenient")</li>
+      <li><span class="key-term">Viability assumptions</span> — is this even possible to build/run?
+        (e.g. "the AI must be reliable and user-friendly," "it must be affordable," "it must be secure")</li>
+    </ul>
+    <div class="example">
+      <span class="tag">Sample prompt</span>
+      "I want to create an AI assistant for elderly people. List in two columns: desirability
+      assumptions and viability assumptions." (You can also ask for a specific number, like
+      "list 10" or "list 20.")
+    </div>
+
+    <h3 class="block-title">Using ChatGPT for each canvas block</h3>
+    <p>You can ask ChatGPT to brainstorm ideas for literally any block on the canvas:</p>
+    <table class="canvas">
+      <tr><th>Block</th><th>Example prompt</th></tr>
+      <tr><td>Problem</td><td>"Describe 10 problems that an assistant for elderly people could solve."</td></tr>
+      <tr><td>Unique Value Proposition</td><td>"List 5 unique value propositions for [this solution]."</td></tr>
+      <tr><td>Revenue Streams</td><td>"Imagine 10 revenue models for such a business." Then push further:
+        "Come up with more innovative, unlikely revenue models."</td></tr>
+      <tr><td>Channels</td><td>"Imagine 10 sales channels for such a company."</td></tr>
+      <tr><td>Customer Segments</td><td>"Who could be the customers for such a solution?"</td></tr>
+      <tr><td>Cost Structure</td><td>"Imagine the cost structure of such a company."</td></tr>
+      <tr><td>Unfair Advantage</td><td>Ask what the "unfair advantage" could be — if ChatGPT doesn't
+        get the term, simply ask it to "list them."</td></tr>
+    </table>
+
+    <div class="example">
+      <span class="tag">Sample ChatGPT ideas that came up</span>
+      <ul>
+        <li><strong>Problems:</strong> medication reminders, appointment scheduling, grocery
+          shopping help, home safety monitoring, reducing social isolation, memory support, entertainment.</li>
+        <li><strong>Revenue models:</strong> subscription, commission, advertising, data licensing,
+          donation model, blockchain/crypto rewards, gamified social-enterprise model.</li>
+        <li><strong>Customer segments:</strong> elderly people living alone, family caregivers,
+          healthcare providers, senior living communities, insurance companies, transportation
+          companies, financial institutions.</li>
+        <li><strong>Unfair advantages:</strong> personalized support, advanced AI capabilities,
+          remote monitoring, partnerships with healthcare/insurance companies, strong data &amp;
+          analytics, security/privacy, brand recognition, customer loyalty.</li>
+      </ul>
+    </div>
+
+    <div class="callout">
+      <strong>Important nuance:</strong> ChatGPT can list many possible unfair advantages, but you
+      can't chase all of them at once. Your job is to pick <strong>one or two</strong> to focus your
+      effort on — trying to have every advantage at the same time is unrealistic for a startup.
+    </div>
+
+    <div class="summary-box">
+      <h4>Quick recap</h4>
+      <p>ChatGPT is a great <strong>brainstorming tool</strong> for the Lean Canvas — it's fast at
+      generating raw ideas for any block. But it should <em>support</em> your own thinking, not
+      replace the exercise of doing the canvas yourself first.</p>
+    </div>
+  </section>
+
+  <!-- LECTURE 26 -->
+  <section class="lecture" id="lec26">
+    <h2><span class="lec-num">26</span> Should you keep your startup idea secret?</h2>
+    <p class="subtitle">"Ask Gollum about it" — a short but important mindset lesson</p>
+
+    <div class="callout">
+      <strong>Main takeaway:</strong> Talk about your startup idea as much as possible. If you keep
+      it secret, nothing moves forward — you need feedback, connections, and momentum to actually
+      build something.
+    </div>
+
+    <h3 class="block-title">The one exception</h3>
+    <p>Only stay quiet if <strong>both</strong> of these are true:</p>
+    <ul>
+      <li>You are an expert engineer in a very complex, specific technical field, <strong>and</strong></li>
+      <li>You've found a specific technical solution to a hard problem</li>
+    </ul>
+    <p>In that narrow case, don't share the technical details with someone who has the exact same
+    skills as you (a rival engineer or competing company). For every other situation, execution
+    matters far more than secrecy.</p>
+
+    <div class="example">
+      <span class="tag">Example — Airbnb</span>
+      Airbnb was rejected by investors dozens of times — almost no one believed in the idea. It
+      still became a massive success. Once it grew, copycats appeared everywhere. The lesson:
+      people only start copying you once you're already making serious money — until then, the
+      risk of "idea theft" is very small or marginal.
+    </div>
+
+    <div class="summary-box">
+      <h4>Quick recap</h4>
+      <p>Ideas are worth very little without execution. Share your idea, get feedback, and move
+      fast — that matters far more than protecting it from being "stolen."</p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  My personal notes · A Comprehensive Entrepreneurship Course · Paul Nekh &amp; Olena
+</footer>
+
+</body>
+</html>

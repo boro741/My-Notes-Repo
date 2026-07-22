@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Section 4 Notes: IAM & AWS CLI</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --card: #f9fafb;
+    --accent: #d97706;
+    --accent-dark: #b45309;
+    --blue: #2563eb;
+    --green: #059669;
+    --purple: #7c3aed;
+    --red: #dc2626;
+    --code-bg: #f3f4f6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+  }
+  header.page-header {
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  header.page-header h1 {
+    margin: 0 0 6px 0;
+    font-size: 28px;
+    color: var(--accent-dark);
+  }
+  header.page-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+  }
+  nav.toc h2 {
+    margin-top: 0;
+    font-size: 16px;
+    color: var(--accent-dark);
+  }
+  nav.toc ol {
+    margin: 0;
+    padding-left: 20px;
+    columns: 2;
+  }
+  nav.toc li { margin-bottom: 6px; font-size: 14px; }
+  nav.toc a { color: var(--blue); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  section.lecture {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-bottom: 26px;
+    background: #fff;
+    scroll-margin-top: 16px;
+  }
+  section.lecture h2 {
+    margin-top: 0;
+    font-size: 20px;
+    color: #111827;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 8px;
+  }
+  .lecture-num {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 2px 8px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  h3 { color: var(--accent-dark); font-size: 16px; margin-bottom: 6px; }
+
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: #fffbeb;
+    padding: 10px 16px;
+    margin: 14px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 14.5px;
+  }
+  .callout.tip {
+    border-left-color: var(--green);
+    background: #ecfdf5;
+  }
+  .callout.warning {
+    border-left-color: var(--red);
+    background: #fef2f2;
+  }
+  .callout strong { color: inherit; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th {
+    background: var(--card);
+    color: var(--accent-dark);
+  }
+  tr:nth-child(even) td { background: #fcfcfd; }
+
+  code {
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 4px; }
+
+  .diagram {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 16px 0;
+    text-align: center;
+    overflow-x: auto;
+  }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram-caption {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  .analogy {
+    background: #eef2ff;
+    border: 1px dashed #a5b4fc;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14.5px;
+    margin: 14px 0;
+  }
+
+  .top-link { font-size: 12px; text-align: right; }
+  .top-link a { color: var(--muted); text-decoration: none; }
+  .top-link a:hover { text-decoration: underline; }
+
+  hr.section-break {
+    border: none;
+    border-top: 2px dashed var(--border);
+    margin: 36px 0;
+  }
+
+  .summary-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 14px;
+  }
+  .summary-box h3 { color: var(--green); margin-top: 0; }
+</style>
+</head>
+<body>
+<div class="container" id="top">
+
+  <header class="page-header">
+    <h1>Section 4 — IAM &amp; AWS CLI</h1>
+    <p>My notes while watching Stephane Maarek's Udemy course · Simple English, diagrams included, no dark theme.</p>
+  </header>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#l11">11. IAM Introduction: Users, Groups, Policies</a></li>
+      <li><a href="#l1213">12-13. Users &amp; Groups Hands-On + Multi-Session Sign-In</a></li>
+      <li><a href="#l14">14. IAM Policies (Structure)</a></li>
+      <li><a href="#l15">15. IAM Policies Hands-On</a></li>
+      <li><a href="#l16">16. IAM MFA Overview</a></li>
+      <li><a href="#l17">17. IAM MFA Hands-On</a></li>
+      <li><a href="#l18">18. Access Keys, CLI &amp; SDK</a></li>
+      <li><a href="#l1921">19-21. AWS CLI Setup (Windows / Mac / Linux)</a></li>
+      <li><a href="#l22">22. AWS CLI Hands-On</a></li>
+      <li><a href="#l23">23. AWS CloudShell</a></li>
+      <li><a href="#l24">24. IAM Roles for AWS Services</a></li>
+      <li><a href="#l25">25. IAM Roles Hands-On</a></li>
+      <li><a href="#l26">26. IAM Security Tools</a></li>
+      <li><a href="#l27">27. IAM Security Tools Hands-On</a></li>
+      <li><a href="#l28">28. IAM Best Practices</a></li>
+      <li><a href="#l29">29. Shared Responsibility Model for IAM</a></li>
+      <li><a href="#lsummary">Cheat Sheet</a></li>
+    </ol>
+  </nav>
+
+  <!-- 11 -->
+  <section class="lecture" id="l11">
+    <h2><span class="lecture-num">11</span>IAM Introduction: Users, Groups, Policies</h2>
+
+    <p><strong>IAM</strong> = Identity and Access Management. It's a <strong>global service</strong> — users and groups you create aren't tied to any one region.</p>
+
+    <p>When you first make an AWS account, you get a <strong>root user</strong> automatically. The only thing the root account should be used for is initial account setup — after that, stop using it and never share it. Instead, create individual <strong>IAM users</strong>: one IAM user = one physical person in your organization.</p>
+
+    <h3>Users and Groups</h3>
+    <ul>
+      <li>Users can be collected into <strong>groups</strong> to make managing permissions easier (e.g. a "Developers" group).</li>
+      <li><strong>Groups can only contain users</strong> — never other groups.</li>
+      <li>A user doesn't have to belong to a group (allowed, but not best practice).</li>
+      <li>A user <strong>can belong to multiple groups</strong> at once.</li>
+    </ul>
+
+    <div class="diagram">
+      <svg viewBox="0 0 680 260" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="30" width="180" height="90" rx="10" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="110" y="52" text-anchor="middle" font-size="13" font-weight="bold">Developers</text>
+        <text x="110" y="75" text-anchor="middle" font-size="12">Alice</text>
+        <text x="110" y="93" text-anchor="middle" font-size="12">Bob</text>
+        <text x="110" y="111" text-anchor="middle" font-size="12">Charles</text>
+
+        <rect x="250" y="30" width="180" height="90" rx="10" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="340" y="52" text-anchor="middle" font-size="13" font-weight="bold">Operations</text>
+        <text x="340" y="80" text-anchor="middle" font-size="12">David</text>
+        <text x="340" y="98" text-anchor="middle" font-size="12">Edward</text>
+
+        <rect x="480" y="30" width="180" height="90" rx="10" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+        <text x="570" y="52" text-anchor="middle" font-size="13" font-weight="bold">Audit Team</text>
+        <text x="570" y="80" text-anchor="middle" font-size="12">Charles</text>
+        <text x="570" y="98" text-anchor="middle" font-size="12">David</text>
+
+        <rect x="250" y="160" width="180" height="55" rx="10" fill="#f3f4f6" stroke="#9ca3af" stroke-width="2" stroke-dasharray="5"/>
+        <text x="340" y="185" text-anchor="middle" font-size="13" font-weight="bold">Fred</text>
+        <text x="340" y="203" text-anchor="middle" font-size="11" fill="#6b7280">no group (not best practice)</text>
+
+        <text x="340" y="245" text-anchor="middle" font-size="11" fill="#374151">Charles is in Developers + Audit Team · David is in Operations + Audit Team</text>
+      </svg>
+      <div class="diagram-caption">Groups only ever contain users. A user (like Charles or David) can belong to more than one group at the same time; Fred belongs to none.</div>
+    </div>
+
+    <h3>Policies — how permissions actually get granted</h3>
+    <p>Users and groups get permissions through <strong>IAM Policies</strong> — JSON documents that describe, in a fairly plain way, what a user or group is allowed (or not allowed) to do. You don't need to be a programmer to read one.</p>
+
+    <div class="callout warning">
+      <strong>Least privilege principle:</strong> never give a user more permissions than their job needs. Letting everyone do everything is a security and cost risk — a careless new user could launch expensive resources or break things.
+    </div>
+  </section>
+
+  <!-- 12-13 -->
+  <section class="lecture" id="l1213">
+    <h2><span class="lecture-num">12-13</span>Users &amp; Groups Hands-On + Multi-Session Sign-In</h2>
+
+    <h3>Creating a user</h3>
+    <ol>
+      <li>IAM console → <strong>Users</strong> → create user (e.g. <code>Stephane</code>), give console access.</li>
+      <li>Choose <strong>"create an IAM user"</strong> (simpler, and the one the exam cares about) rather than IAM Identity Center.</li>
+      <li>Set a password — for a real teammate, leave it auto-generated and force a change on first login; for yourself, set a custom one.</li>
+      <li>For permissions, it's better to <strong>create/attach a group</strong> (e.g. group <code>admin</code> with the <code>AdministratorAccess</code> policy) than to attach a policy straight to the user.</li>
+      <li><strong>Tags</strong> (optional key/value metadata, e.g. <code>department = engineering</code>) can be attached to most AWS resources, including users.</li>
+    </ol>
+    <p>Once created, the user's permissions page shows <code>AdministratorAccess</code> as <em>inherited via the group</em>, not attached directly — this is exactly why grouping users is the recommended pattern.</p>
+
+    <h3>Signing in as an IAM user</h3>
+    <ul>
+      <li>Your account has a <strong>Sign-in URL</strong> built from your account ID — you can replace the ID with a custom, unique <strong>account alias</strong> to make the URL friendlier.</li>
+      <li>To be logged in as root and as an IAM user <em>at the same time</em>, open a private/incognito browser window for the second login.</li>
+    </ul>
+
+    <div class="callout warning">
+      <strong>Don't lose access to both logins.</strong> If you lose your root account login and your admin login, you're in serious trouble — AWS support can't always bail you out.
+    </div>
+
+    <h3>Multi-session sign-in (newer console feature)</h3>
+    <p>Instead of juggling private browser windows, you can turn on <strong>multi-session support</strong> in the console and add multiple sessions (root, different IAM users, even different accounts) as tabs inside the <em>same</em> browser window. Each session is fully isolated — resources created in one session's account don't show up in another's.</p>
+  </section>
+
+  <!-- 14 -->
+  <section class="lecture" id="l14">
+    <h2><span class="lecture-num">14</span>IAM Policies (Structure)</h2>
+
+    <p>Where a policy is attached changes who it affects:</p>
+    <ul>
+      <li><strong>Attached at the group level</strong> → applies to every member of that group.</li>
+      <li><strong>Inline policy</strong> → attached directly to one specific user, regardless of which group(s) they're in.</li>
+      <li>A user in more than one group (or with an inline policy on top) simply <strong>inherits and combines permissions from every source</strong> — e.g. Charles gets whatever Developers has, plus whatever Audit Team has.</li>
+    </ul>
+
+    <h3>Anatomy of a policy document</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 640 260" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="20" width="600" height="220" rx="10" fill="#f9fafb" stroke="#9ca3af" stroke-width="2"/>
+        <text x="40" y="45" font-size="13" font-weight="bold" fill="#111827">Policy document</text>
+
+        <rect x="40" y="55" width="270" height="30" rx="6" fill="#fde68a" stroke="#d97706"/>
+        <text x="175" y="75" text-anchor="middle" font-size="12">Version (e.g. "2012-10-17")</text>
+
+        <rect x="330" y="55" width="270" height="30" rx="6" fill="#fde68a" stroke="#d97706"/>
+        <text x="465" y="75" text-anchor="middle" font-size="12">Id (optional)</text>
+
+        <rect x="40" y="100" width="560" height="130" rx="8" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="60" y="122" font-size="12" font-weight="bold">Statement (one or more)</text>
+        <text x="60" y="145" font-size="11">Sid — statement ID (optional)</text>
+        <text x="60" y="165" font-size="11">Effect — Allow or Deny</text>
+        <text x="60" y="185" font-size="11">Principal — which account/user/role this applies to</text>
+        <text x="330" y="145" font-size="11">Action — the list of API calls affected</text>
+        <text x="330" y="165" font-size="11">Resource — the list of resources affected</text>
+        <text x="330" y="185" font-size="11" fill="#6b7280">Condition — optional, when the statement applies</text>
+      </svg>
+      <div class="diagram-caption">Every IAM policy is Version + optional Id + one or more Statements. Each statement needs Effect, Principal, Action, and Resource to make sense.</div>
+    </div>
+
+    <div class="callout warning">
+      <strong>Exam tip:</strong> know <code>Effect</code>, <code>Principal</code>, <code>Action</code>, and <code>Resource</code> cold — these are the parts that actually decide who can do what to which resource.
+    </div>
+  </section>
+
+  <!-- 15 -->
+  <section class="lecture" id="l15">
+    <h2><span class="lecture-num">15</span>IAM Policies Hands-On</h2>
+
+    <h3>Watching permissions disappear (and come back)</h3>
+    <ol>
+      <li>Removed the <code>Stephane</code> user from the <code>admin</code> group → immediately lost admin access.</li>
+      <li>Refreshing the IAM console then threw <strong>Access Denied</strong> for <code>iam:ListUsers</code> — proof the permission really was gone.</li>
+      <li>Fixed it by attaching the managed policy <code>IAMReadOnlyAccess</code> directly to the user — enough to view users/groups again, but <strong>not enough to create a group</strong> (tried it, got denied) — a clean demo of least-privilege in action.</li>
+      <li>Re-added the user to the <code>admin</code> group to restore full admin rights, and cleaned up the test group afterwards.</li>
+    </ol>
+
+    <h3>Reading existing managed policies</h3>
+    <table>
+      <tr><th>Policy</th><th>What its JSON actually says</th></tr>
+      <tr><td><code>AdministratorAccess</code></td><td><code>Action: *</code>, <code>Resource: *</code> — allow literally everything on everything</td></tr>
+      <tr><td><code>IAMReadOnlyAccess</code></td><td>A defined list like <code>Get*</code> and <code>List*</code> on <code>Resource: *</code> — the <code>*</code> groups many related API calls together (e.g. <code>Get*</code> covers <code>GetUser</code>, <code>GetGroup</code>, etc.)</td></tr>
+    </table>
+
+    <p>You can also build your own custom policy with the <strong>visual editor</strong> — pick a service (e.g. IAM), tick specific actions (e.g. <code>ListUsers</code>, <code>GetUser</code>), choose which resources it applies to, and AWS generates the matching JSON for you automatically.</p>
+
+    <div class="callout tip">
+      <strong>Tip:</strong> a user's final permissions can be the sum of several sources at once — one or more groups plus any policy attached directly to the user. Check all of them when troubleshooting "why can/can't this user do X."
+    </div>
+  </section>
+
+  <!-- 16 -->
+  <section class="lecture" id="l16">
+    <h2><span class="lecture-num">16</span>IAM MFA Overview</h2>
+
+    <p>Two layers of defense for your accounts:</p>
+
+    <h3>1. Password policy</h3>
+    <ul>
+      <li>Minimum password length, required character types (uppercase, lowercase, number, non-alphanumeric).</li>
+      <li>Allow (or not) users to change their own password.</li>
+      <li>Force password expiration (e.g. every 90 days).</li>
+      <li>Prevent password reuse.</li>
+    </ul>
+
+    <h3>2. Multi-Factor Authentication (MFA)</h3>
+    <p>MFA combines <strong>something you know</strong> (your password) with <strong>something you have</strong> (a physical or virtual device). Even if a password is stolen, the account stays safe because the attacker also needs the physical device.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 640 170" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="20" width="220" height="50" rx="8" fill="#fecaca" stroke="#dc2626" stroke-width="2"/>
+        <text x="130" y="50" text-anchor="middle" font-size="12" font-weight="bold">Password only</text>
+        <text x="330" y="50" font-size="11" fill="#dc2626">→ stolen password = account compromised</text>
+
+        <rect x="20" y="95" width="220" height="50" rx="8" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="130" y="115" text-anchor="middle" font-size="12" font-weight="bold">Password</text>
+        <text x="130" y="133" text-anchor="middle" font-size="11">+ MFA device</text>
+        <text x="330" y="125" font-size="11" fill="#059669">→ stolen password alone isn't enough</text>
+      </svg>
+      <div class="diagram-caption">MFA doesn't replace the password — it adds a second, physical requirement on top of it.</div>
+    </div>
+
+    <h3>MFA device options</h3>
+    <table>
+      <tr><th>Device type</th><th>Notes</th></tr>
+      <tr><td>Virtual MFA (Google Authenticator)</td><td>App-based, works with one account at a time per phone</td></tr>
+      <tr><td>Virtual MFA (Authy)</td><td>App-based, supports multiple accounts/tokens on a single device — root, IAM users, other accounts, all together</td></tr>
+      <tr><td>U2F Security Key (e.g. YubiKey by Yubico)</td><td>Physical key, third-party to AWS; one key can serve multiple root/IAM users</td></tr>
+      <tr><td>Hardware key fob (e.g. by Gemalto)</td><td>Physical device, third-party to AWS</td></tr>
+      <tr><td>GovCloud hardware fob (by SurePassID)</td><td>Third-party, only for the US government AWS GovCloud</td></tr>
+    </table>
+  </section>
+
+  <!-- 17 -->
+  <section class="lecture" id="l17">
+    <h2><span class="lecture-num">17</span>IAM MFA Hands-On</h2>
+
+    <ol>
+      <li><strong>Password policy:</strong> Account Settings → Password Policy → use the IAM default or customize length, character requirements, expiration, and reuse rules.</li>
+      <li><strong>MFA on the root user:</strong> account name → Security Credentials → assign an MFA device.</li>
+      <li>Name the device (e.g. "my iPhone"), choose <strong>Authenticator app</strong> as the type.</li>
+      <li>Scan the QR code shown by AWS using a compatible app (e.g. Twilio Authy).</li>
+      <li>Enter <strong>two consecutive codes</strong> from the app — this proves the device is set up correctly and in sync — then click Add MFA.</li>
+      <li>From then on, logging in needs your password <em>and</em> the current code from the app.</li>
+    </ol>
+
+    <div class="callout warning">
+      <strong>Real risk:</strong> students have locked themselves out of their AWS accounts by losing the phone/device tied to their MFA. If you're at real risk of losing your device, don't enable MFA casually — keep the device safe, and remember you can remove an MFA device later if needed.
+    </div>
+  </section>
+
+  <!-- 18 -->
+  <section class="lecture" id="l18">
+    <h2><span class="lecture-num">18</span>Access Keys, CLI &amp; SDK</h2>
+
+    <p>There are three ways to access AWS:</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="20" width="270" height="45" rx="8" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+        <text x="155" y="47" text-anchor="middle" font-size="12" font-weight="bold">Management Console — user/pass (+MFA)</text>
+
+        <rect x="20" y="85" width="270" height="45" rx="8" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="155" y="112" text-anchor="middle" font-size="12" font-weight="bold">CLI — access keys, from your terminal</text>
+
+        <rect x="20" y="150" width="270" height="45" rx="8" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+        <text x="155" y="177" text-anchor="middle" font-size="12" font-weight="bold">SDK — access keys, inside your app code</text>
+
+        <line x1="290" y1="42" x2="400" y2="107" stroke="#9ca3af" stroke-width="2"/>
+        <line x1="290" y1="107" x2="400" y2="107" stroke="#9ca3af" stroke-width="2"/>
+        <line x1="290" y1="172" x2="400" y2="107" stroke="#9ca3af" stroke-width="2"/>
+
+        <rect x="400" y="80" width="220" height="55" rx="10" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="510" y="103" text-anchor="middle" font-size="12" font-weight="bold">AWS API</text>
+        <text x="510" y="121" text-anchor="middle" font-size="11">/ Services</text>
+      </svg>
+      <div class="diagram-caption">All three paths ultimately hit the same AWS APIs — they just differ in how you authenticate and where you're calling from.</div>
+    </div>
+
+    <ul>
+      <li><strong>Access keys</strong> = Access Key ID (like a username) + Secret Access Key (like a password). Generated per-user from the console, and treated exactly like credentials — never shared, never someone else's.</li>
+      <li><strong>CLI</strong> (Command Line Interface) — open-source, lets you manage AWS from a terminal and script/automate tasks; an alternative to the web console. Every command starts with <code>aws</code>.</li>
+      <li><strong>SDK</strong> (Software Development Kit) — language-specific libraries (JavaScript, Python, PHP, .NET, Ruby, Java, Go, Node.js, C++, plus Mobile and IoT SDKs) so your own application code can call AWS APIs directly, secured with the same access keys.</li>
+    </ul>
+
+    <div class="callout tip">
+      <strong>Fun fact:</strong> the AWS CLI itself is built on top of <code>Boto</code>, the AWS SDK for Python.
+    </div>
+  </section>
+
+  <!-- 19-21 -->
+  <section class="lecture" id="l1921">
+    <h2><span class="lecture-num">19-21</span>AWS CLI Setup (Windows / Mac / Linux)</h2>
+    <p>The Windows and Linux setup lectures were pure screen-recording walkthroughs of AWS's official installers, with no extra narration beyond following AWS's own install guide for each OS.</p>
+    <p>On <strong>macOS</strong>: search for "installing the AWS CLI version 2 on macOS," download the <code>.pkg</code> graphical installer, click through Continue → Agree → Install (choose "install for all users"), then open a terminal (e.g. iTerm) and confirm with:</p>
+    <p><code>aws --version</code></p>
+    <p>A correct install returns something like <code>aws-cli 2.0.10</code>.</p>
+    <div class="callout tip">
+      <strong>General rule regardless of OS:</strong> install the official AWS CLI v2 package for your platform, then verify with <code>aws --version</code> before moving on.
+    </div>
+  </section>
+
+  <!-- 22 -->
+  <section class="lecture" id="l22">
+    <h2><span class="lecture-num">22</span>AWS CLI Hands-On</h2>
+    <ol>
+      <li>Create access keys: user → Security Credentials → Create access key. AWS will nudge you toward alternatives (CloudShell, IAM Identity Center) first — for learning purposes, confirm you understand the recommendation and create the key anyway.</li>
+      <li>The secret key is only shown <strong>once</strong> at creation time — save it immediately.</li>
+      <li>Configure the CLI locally: <code>aws configure</code>, then enter the Access Key ID, Secret Access Key, a default region (e.g. <code>eu-west-1</code>), and a default output format.</li>
+      <li>Test it: <code>aws iam list-users</code> — returns the same kind of information (username, UserId, ARN, created date) you'd see in the console.</li>
+    </ol>
+
+    <div class="callout tip">
+      <strong>Permissions are identical everywhere.</strong> Removing a user from their permission-granting group blocks them in the console <em>and</em> makes the same CLI call fail with a permissions error — the CLI isn't a backdoor around IAM.
+    </div>
+  </section>
+
+  <!-- 23 -->
+  <section class="lecture" id="l23">
+    <h2><span class="lecture-num">23</span>AWS CloudShell</h2>
+    <p><strong>CloudShell</strong> is a free, browser-based terminal built into the AWS console (icon top-right) — an alternative to installing the CLI locally. It's not available in every region, so if you want to use it, pick one of the regions where it's supported.</p>
+    <ul>
+      <li>Comes with the AWS CLI pre-installed and already authenticated as whichever identity you're logged in as — no <code>aws configure</code> needed.</li>
+      <li>Default region = whichever region your CloudShell session is currently in (rather than needing <code>--region</code> flags).</li>
+      <li>Gives you a small persistent file storage area — files you create (e.g. via <code>echo</code>) stick around even after restarting the session.</li>
+      <li>Supports uploading and downloading files, adjustable font size/theme, and multiple tabs/split panes.</li>
+    </ul>
+    <div class="callout tip">
+      <strong>Bottom line:</strong> if CloudShell is available in your region and works for you, it's a convenient zero-setup alternative to a local terminal. If not, your locally configured CLI works exactly the same for the rest of the course.
+    </div>
+  </section>
+
+  <!-- 24 -->
+  <section class="lecture" id="l24">
+    <h2><span class="lecture-num">24</span>IAM Roles for AWS Services</h2>
+    <p>Some AWS services need to perform actions on your behalf — and just like users, they need permissions to do so. That's what an <strong>IAM Role</strong> is for: an identity meant to be used by an AWS service (like an EC2 instance or a Lambda function), not by a person.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="65" width="150" height="50" rx="8" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="95" y="95" text-anchor="middle" font-size="12" font-weight="bold">EC2 Instance</text>
+
+        <line x1="170" y1="90" x2="250" y2="90" stroke="#9ca3af" stroke-width="2"/>
+
+        <rect x="250" y="55" width="180" height="70" rx="8" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+        <text x="340" y="80" text-anchor="middle" font-size="12" font-weight="bold">IAM Role</text>
+        <text x="340" y="98" text-anchor="middle" font-size="11">(+ attached policy)</text>
+
+        <line x1="430" y1="90" x2="510" y2="90" stroke="#9ca3af" stroke-width="2"/>
+
+        <rect x="510" y="65" width="110" height="50" rx="8" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="565" y="95" text-anchor="middle" font-size="12" font-weight="bold">AWS API</text>
+      </svg>
+      <div class="diagram-caption">The EC2 instance assumes the role, and the role's attached policy decides what it's allowed to call.</div>
+    </div>
+
+    <p>Common examples: <strong>EC2 instance roles</strong>, <strong>Lambda function roles</strong>, <strong>CloudFormation roles</strong> — any service that needs to act against AWS on its own.</p>
+  </section>
+
+  <!-- 25 -->
+  <section class="lecture" id="l25">
+    <h2><span class="lecture-num">25</span>IAM Roles Hands-On</h2>
+    <ol>
+      <li>IAM console → Roles → Create role.</li>
+      <li>Choose <strong>"AWS service"</strong> as the trusted entity type, then pick which service (e.g. EC2).</li>
+      <li>Attach a policy (e.g. <code>IAMReadOnlyAccess</code>) defining what the role can do.</li>
+      <li>Name it (e.g. <code>DemoRoleForEC2</code>) and confirm — the trusted entity setup is what allows the EC2 service specifically to assume this role.</li>
+    </ol>
+    <p>The role isn't actually put to use yet — it'll get attached to a real EC2 instance later in the course — but the role itself is ready with its permissions in place.</p>
+  </section>
+
+  <!-- 26 -->
+  <section class="lecture" id="l26">
+    <h2><span class="lecture-num">26</span>IAM Security Tools</h2>
+    <table>
+      <tr><th>Tool</th><th>Scope</th><th>What it shows</th></tr>
+      <tr><td>IAM Credentials Report</td><td>Account-level</td><td>All users in the account and the status of their various credentials</td></tr>
+      <tr><td>IAM Access Advisor</td><td>Per-user</td><td>Which service permissions a user has, and when each was last actually used</td></tr>
+    </table>
+    <div class="callout tip">
+      <strong>Why it matters:</strong> Access Advisor directly supports the least-privilege principle — it shows you which granted permissions are actually unused, so you can trim them down.
+    </div>
+  </section>
+
+  <!-- 27 -->
+  <section class="lecture" id="l27">
+    <h2><span class="lecture-num">27</span>IAM Security Tools Hands-On</h2>
+
+    <h3>Credentials Report</h3>
+    <p>IAM → Credential report → Download — generates a CSV with one row per user (including root), showing: when the user was created, whether a console password is set and when it was last used/changed, upcoming password rotation, whether <strong>MFA is active</strong>, whether access keys exist and when they were last rotated/used.</p>
+    <p>Great for spotting stale accounts or credentials that deserve a security review.</p>
+
+    <h3>Access Advisor</h3>
+    <p>User → Access Advisor tab shows every service the user has permission to access and whether/when they actually used it (e.g. IAM, EC2, Organizations accessed; Alexa for Business never touched). It can also tell you <em>which</em> attached policy granted access to a given service — handy for untangling permissions that came from multiple sources.</p>
+
+    <div class="callout tip">
+      <strong>Practical use:</strong> if Access Advisor shows a user has permissions to dozens of services but only ever touches a handful, that's your signal to tighten their policy down to just what they actually use.
+    </div>
+  </section>
+
+  <!-- 28 -->
+  <section class="lecture" id="l28">
+    <h2><span class="lecture-num">28</span>IAM Best Practices</h2>
+    <ul>
+      <li>Don't use the root account except for initial account setup.</li>
+      <li>One AWS user = one physical person — never share your login with a friend or colleague; create them their own user instead.</li>
+      <li>Put users in groups and manage permissions at the group level.</li>
+      <li>Set a strong password policy.</li>
+      <li>Enable and enforce MFA.</li>
+      <li>Use roles (not shared credentials) to give permissions to AWS services, including EC2 instances.</li>
+      <li>If accessing AWS via CLI/SDK, generate access keys and keep them just as secret as a password.</li>
+      <li>Regularly audit permissions with the IAM Credentials Report and IAM Access Advisor.</li>
+    </ul>
+    <div class="callout warning">
+      <strong>Never, ever, ever share your IAM user credentials or access keys.</strong> This is repeated for a reason — it's the most common way accounts get compromised.
+    </div>
+  </section>
+
+  <!-- 29 -->
+  <section class="lecture" id="l29">
+    <h2><span class="lecture-num">29</span>Shared Responsibility Model for IAM</h2>
+    <p>A recurring exam topic: knowing what AWS handles versus what you handle.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 640 200" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="20" width="290" height="160" rx="10" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="165" y="45" text-anchor="middle" font-size="13" font-weight="bold">AWS is responsible for</text>
+        <text x="40" y="70" font-size="11">• Global infrastructure &amp; network security</text>
+        <text x="40" y="90" font-size="11">• Configuration of the services they offer</text>
+        <text x="40" y="110" font-size="11">• Vulnerability analysis of their services</text>
+        <text x="40" y="130" font-size="11">• Compliance certifications</text>
+
+        <rect x="330" y="20" width="290" height="160" rx="10" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+        <text x="475" y="45" text-anchor="middle" font-size="13" font-weight="bold">You are responsible for</text>
+        <text x="350" y="70" font-size="11">• Creating users, groups, roles, policies</text>
+        <text x="350" y="90" font-size="11">• Enabling &amp; enforcing MFA</text>
+        <text x="350" y="110" font-size="11">• Rotating access keys often</text>
+        <text x="350" y="130" font-size="11">• Applying least-privilege permissions</text>
+        <text x="350" y="150" font-size="11">• Monitoring &amp; reviewing access patterns</text>
+      </svg>
+      <div class="diagram-caption">AWS secures the infrastructure underneath IAM; everything about how you configure and use IAM is on you.</div>
+    </div>
+
+    <p>In short: AWS is responsible for the infrastructure itself; you're responsible for how you configure and use it — creating identities, enabling MFA, rotating keys, and reviewing who has access to what.</p>
+  </section>
+
+  <hr class="section-break">
+
+  <!-- Final Summary -->
+  <section class="lecture" id="lsummary">
+    <h2>📋 Cheat Sheet</h2>
+    <p>Lecture 30's own recap lines up with everything above: IAM users map to real people; groups collect users (never other groups); policies (JSON documents) grant permissions to users, groups, or roles; roles are identities for AWS services; MFA and password policies protect accounts; the CLI/SDK (via access keys) give programmatic access; and credential reports plus Access Advisor let you audit it all.</p>
+
+    <div class="summary-box">
+      <h3>Core building blocks</h3>
+      <table>
+        <tr><th>Concept</th><th>What it is</th></tr>
+        <tr><td>IAM User</td><td>One physical person; has console password and/or access keys</td></tr>
+        <tr><td>IAM Group</td><td>Collection of users only (never other groups); a way to share policies</td></tr>
+        <tr><td>IAM Policy</td><td>JSON document granting/denying permissions — attachable to users, groups, or roles</td></tr>
+        <tr><td>IAM Role</td><td>An identity for AWS services (EC2, Lambda, CloudFormation, etc.), not people</td></tr>
+        <tr><td>Access Keys</td><td>Access Key ID + Secret Access Key — credentials for CLI/SDK access</td></tr>
+      </table>
+    </div>
+
+    <div class="summary-box">
+      <h3>Key facts to remember</h3>
+      <ul>
+        <li>IAM is a <strong>global</strong> service — no region selection.</li>
+        <li>Groups contain <strong>only users</strong>, never other groups; a user can be in multiple groups.</li>
+        <li>Policy structure: <code>Version</code> + optional <code>Id</code> + <code>Statement(s)</code> — each statement needs <code>Effect</code>, <code>Principal</code>, <code>Action</code>, <code>Resource</code> (<code>Condition</code> optional).</li>
+        <li>Least privilege: never grant more access than the job requires.</li>
+        <li>MFA = password (know) + device (have); options include Google Authenticator/Authy (virtual), YubiKey (U2F), hardware key fobs, and a GovCloud-specific fob.</li>
+        <li>Three access paths: Console (user/pass + MFA), CLI (access keys, terminal), SDK (access keys, in-app code) — the AWS CLI is itself built on the Python SDK, Boto.</li>
+        <li>CloudShell = free browser-based terminal, pre-authenticated, but region-limited.</li>
+        <li>Audit tools: IAM Credentials Report (account-wide credential status) and IAM Access Advisor (per-user, last-accessed services).</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>Mental model recap</h3>
+      <p>Root account is for setup only — everything day-to-day happens through IAM users, grouped for easy permission management, with policies spelling out exactly what's allowed. Roles do the same job as users but for AWS services instead of people. MFA and strong password policies protect the login; access keys protect programmatic access via the CLI/SDK — and both deserve the same secrecy as a password. Credentials reports and Access Advisor are how you keep checking that nobody has more access than they actually use.</p>
+    </div>
+  </section>
+
+  <div class="top-link"><a href="#top">↑ Back to top</a></div>
+
+</div>
+</body>
+</html>
