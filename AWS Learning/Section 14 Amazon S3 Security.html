@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 14 — Amazon S3 Security — Notes</title>
+<style>
+  :root {
+    --accent: #e8830f;
+    --accent-dark: #c96a08;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --border: #e3e0da;
+    --text: #2b2a28;
+    --text-muted: #6b6a66;
+    --green: #2e7d32;
+    --green-bg: #eef7ee;
+    --red: #c0392b;
+    --red-bg: #fdecea;
+    --amber: #b8790a;
+    --amber-bg: #fff4e2;
+    --purple: #6a4fb3;
+    --purple-bg: #f3f0fb;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  header {
+    padding-bottom: 24px;
+    border-bottom: 3px solid var(--accent);
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 2rem;
+    color: var(--text);
+  }
+
+  header h1 span {
+    color: var(--accent);
+  }
+
+  header p.subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+  }
+
+  nav.toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 32px;
+  }
+
+  nav.toc h2 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  nav.toc ol {
+    margin: 0;
+    padding-left: 22px;
+    columns: 2;
+    column-gap: 24px;
+  }
+
+  nav.toc li {
+    margin-bottom: 6px;
+    break-inside: avoid;
+  }
+
+  nav.toc a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  nav.toc a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 24px;
+    scroll-margin-top: 20px;
+  }
+
+  .card h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 14px;
+    font-size: 1.3rem;
+    color: var(--text);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    color: var(--accent-dark);
+    font-size: 1.05rem;
+    margin: 20px 0 8px;
+  }
+
+  a { color: var(--accent-dark); }
+
+  code {
+    background: #f1eee7;
+    border: 1px solid #e6e2d8;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.92em;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    color: #7a4b00;
+  }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 0.94rem;
+  }
+
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f7f2ea;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) td {
+    background: #fcfbf9;
+  }
+
+  .callout {
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+
+  .callout strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .callout.tip {
+    background: var(--green-bg);
+    border-color: var(--green);
+  }
+  .callout.tip strong.tag { color: var(--green); }
+
+  .callout.warning {
+    background: var(--red-bg);
+    border-color: var(--red);
+  }
+  .callout.warning strong.tag { color: var(--red); }
+
+  .callout.key {
+    background: var(--amber-bg);
+    border-color: var(--amber);
+  }
+  .callout.key strong.tag { color: var(--amber); }
+
+  .analogy {
+    border: 1.5px dashed var(--purple);
+    background: var(--purple-bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+  .analogy strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--purple);
+  }
+
+  .diagram {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fdfcfa;
+    padding: 16px;
+    margin: 16px 0 6px;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  .diagram svg {
+    max-width: 100%;
+  }
+
+  .caption {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 4px 0 16px;
+    font-style: italic;
+  }
+
+  .cheatsheet {
+    border: 2px solid var(--accent);
+  }
+
+  .cheatsheet h2 { color: var(--accent-dark); }
+
+  .back-to-top {
+    display: block;
+    text-align: center;
+    margin-top: 36px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    text-decoration: none;
+  }
+  .back-to-top:hover { text-decoration: underline; }
+
+  .svg-box { fill: #fff; stroke: #c8917a; stroke-width: 1.5; }
+  .svg-box-accent { fill: #fff4e2; stroke: var(--accent); stroke-width: 1.5; }
+  .svg-text { font-family: -apple-system, sans-serif; font-size: 12px; fill: #2b2a28; }
+  .svg-label { font-family: -apple-system, sans-serif; font-size: 11px; fill: #6b6a66; }
+  .svg-arrow { stroke: #6b6a66; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+
+  /* ══ RESPONSIVE — iPhone 15 & iPad 10 ══ */
+
+  /* iPad 10 landscape (1180px) — already fine, just ensure padding */
+  @media (max-width: 1024px) {
+    .wrap { padding-left: 20px; padding-right: 20px; }
+    nav.toc ol { columns: 2; }
+  }
+
+  /* iPad 10 portrait (820px) */
+  @media (max-width: 860px) {
+    .wrap { padding: 20px 18px 60px; }
+    header h1 { font-size: 22px; }
+    nav.toc ol { columns: 1; }
+    .card { padding: 18px 20px; }
+    table { font-size: 13px; }
+    th, td { padding: 7px 9px; }
+  }
+
+  /* iPhone 15 & small phones (≤ 480px) */
+  @media (max-width: 480px) {
+    .wrap { padding: 16px 14px 50px; }
+
+    /* Header */
+    header h1 { font-size: 19px; line-height: 1.3; }
+    header p.subtitle { font-size: 13px; }
+    header { padding-bottom: 16px; margin-bottom: 20px; }
+
+    /* TOC */
+    nav.toc { padding: 14px 16px; border-radius: 10px; }
+    nav.toc ol { columns: 1; padding-left: 16px; }
+    nav.toc li { font-size: 14px; margin-bottom: 8px; }
+
+    /* Sections */
+    .card {
+      padding: 16px 16px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+    }
+    .card h2 {
+      font-size: 17px;
+      line-height: 1.3;
+    }
+    h3 { font-size: 15px; }
+
+    /* Tables — make scrollable horizontally */
+    table {
+      display: block;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    th, td { padding: 7px 10px; }
+
+    /* Code blocks */
+    code, .prompt {
+      font-size: 12.5px;
+      word-break: break-all;
+    }
+
+    /* Flex/grid layout components — stack on mobile */
+    .framework, .three-legs {
+      flex-direction: column;
+      gap: 10px;
+    }
+    .framework .step, .leg {
+      min-width: unset;
+      width: 100%;
+    }
+
+    /* Lists */
+    ul, ol { padding-left: 18px; }
+    li { font-size: 14px; margin-bottom: 6px; }
+    ul.checklist li { font-size: 14px; }
+
+    /* Callouts */
+    .callout, .tip, .warn, .example, .analogy, .summary-box {
+      padding: 10px 13px;
+      font-size: 14px;
+    }
+
+    /* Back to top links */
+    .back-to-top { font-size: 13px; }
+
+    /* Cheat sheet */
+    .cheat, .cheatsheet { padding: 16px 16px; }
+  }
+
+  /* Tiny phones ≤ 360px */
+  @media (max-width: 360px) {
+    .wrap { padding: 12px 12px 40px; }
+    .card h2 { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header id="top">
+  <h1><span>Section 14</span> — Amazon S3 Security</h1>
+  <p class="subtitle">My notes on S3 encryption, CORS, MFA Delete, access logs, pre-signed URLs, access points, and Object Lambda.</p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#encryption">S3 Encryption Overview</a></li>
+    <li><a href="#encryption-hands-on">S3 Encryption Hands On</a></li>
+    <li><a href="#default-encryption">S3 Default Encryption vs Bucket Policies</a></li>
+    <li><a href="#cors">S3 CORS</a></li>
+    <li><a href="#cors-hands-on">S3 CORS Hands On</a></li>
+    <li><a href="#mfa-delete">S3 MFA Delete</a></li>
+    <li><a href="#access-logs">S3 Access Logs</a></li>
+    <li><a href="#presigned-urls">S3 Pre-signed URLs</a></li>
+    <li><a href="#access-points">S3 Access Points</a></li>
+    <li><a href="#object-lambda">S3 Object Lambda</a></li>
+    <li><a href="#cheatsheet">Cheat Sheet</a></li>
+  </ol>
+</nav>
+
+<!-- 1. ENCRYPTION OVERVIEW -->
+<section class="card" id="encryption">
+  <h2><span class="badge">1</span> S3 Encryption Overview</h2>
+
+  <p>There are four ways to encrypt objects in S3. The exam wants you to know exactly when to use which.</p>
+
+  <table>
+    <tr><th>Method</th><th>Who manages the key</th><th>Required header</th><th>Notes</th></tr>
+    <tr><td><code>SSE-S3</code></td><td>AWS (you never see the key)</td><td><code>x-amz-server-side-encryption: AES256</code></td><td>Default for new buckets/objects. Encryption type is AES-256.</td></tr>
+    <tr><td><code>SSE-KMS</code></td><td>You, via AWS KMS</td><td><code>x-amz-server-side-encryption: aws:kms</code></td><td>You control the key; usage is logged in CloudTrail. Reading/writing needs KMS API calls (<code>GenerateDataKey</code>, <code>Decrypt</code>), which count against KMS quotas.</td></tr>
+    <tr><td><code>SSE-C</code></td><td>You, entirely outside AWS</td><td>Key passed in HTTP headers, every request</td><td>S3 never stores your key — it's used once then discarded. Must use HTTPS.</td></tr>
+    <tr><td>Client-side encryption</td><td>You, fully</td><td>N/A — nothing sent to AWS about encryption</td><td>Data is encrypted before it ever leaves the client, and decrypted after download, all client-side (e.g. via the Client-Side Encryption Library).</td></tr>
+  </table>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 210" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#6b6a66"/>
+        </marker>
+      </defs>
+      <rect class="svg-box" x="20" y="10" width="130" height="40" rx="6"/>
+      <text class="svg-text" x="85" y="34" text-anchor="middle" font-size="11">User uploads file</text>
+      <path class="svg-arrow" d="M150,30 L280,30"/>
+      <rect class="svg-box-accent" x="280" y="10" width="140" height="40" rx="6"/>
+      <text class="svg-text" x="350" y="34" text-anchor="middle" font-size="10">Amazon S3</text>
+      <text class="svg-label" x="600" y="20" text-anchor="middle" font-size="10">SSE-S3: AWS-owned key</text>
+
+      <rect class="svg-box" x="20" y="65" width="130" height="40" rx="6"/>
+      <text class="svg-text" x="85" y="89" text-anchor="middle" font-size="11">User uploads file</text>
+      <path class="svg-arrow" d="M150,85 L280,85"/>
+      <rect class="svg-box-accent" x="280" y="65" width="140" height="40" rx="6"/>
+      <text class="svg-text" x="350" y="89" text-anchor="middle" font-size="10">Amazon S3</text>
+      <path class="svg-arrow" d="M420,80 L520,80"/>
+      <rect class="svg-box" x="520" y="65" width="120" height="40" rx="6"/>
+      <text class="svg-text" x="580" y="89" text-anchor="middle" font-size="10">AWS KMS key</text>
+      <text class="svg-label" x="600" y="60" text-anchor="middle" font-size="10">SSE-KMS: your KMS key</text>
+
+      <rect class="svg-box" x="20" y="120" width="130" height="40" rx="6"/>
+      <text class="svg-text" x="85" y="144" text-anchor="middle" font-size="10">User + own key</text>
+      <path class="svg-arrow" d="M150,140 L280,140"/>
+      <rect class="svg-box-accent" x="280" y="120" width="140" height="40" rx="6"/>
+      <text class="svg-text" x="350" y="144" text-anchor="middle" font-size="10">Amazon S3</text>
+      <text class="svg-label" x="600" y="115" text-anchor="middle" font-size="10">SSE-C: key supplied per-request, never stored</text>
+
+      <rect class="svg-box" x="20" y="175" width="130" height="30" rx="6"/>
+      <text class="svg-text" x="85" y="194" text-anchor="middle" font-size="10">User encrypts locally</text>
+      <path class="svg-arrow" d="M150,190 L280,190"/>
+      <rect class="svg-box-accent" x="280" y="175" width="140" height="30" rx="6"/>
+      <text class="svg-text" x="350" y="194" text-anchor="middle" font-size="10">Amazon S3 (stores blob as-is)</text>
+    </svg>
+  </div>
+  <p class="caption">The four encryption paths differ only in <em>who holds the key</em> and <em>where encryption happens</em> — S3, KMS, the client with a custom key, or the client entirely on its own.</p>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    SSE-KMS can hit <strong>API throttling</strong> on very high-throughput buckets, because every encrypt/decrypt is a call to KMS (5,000–30,000 requests/sec depending on region, though this can be raised via Service Quotas).
+  </div>
+
+  <h3>Encryption in transit (SSL/TLS)</h3>
+  <ul>
+    <li>S3 has both an HTTP endpoint (unencrypted) and an HTTPS endpoint (encrypted in flight).</li>
+    <li><strong>SSE-C requires HTTPS</strong> — you can't use it over plain HTTP.</li>
+    <li>To force HTTPS-only access, attach a bucket policy that denies any request where <code>aws:SecureTransport</code> is <code>false</code>.</li>
+  </ul>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    A short companion note in the transcript mentions <strong>DSSE-KMS</strong> ("double" SSE-KMS, released June 2023) — essentially KMS encryption applied twice for extra strength. The instructor doesn't teach it in depth since it wasn't (at time of recording) an exam topic.
+  </div>
+</section>
+
+<!-- 2. ENCRYPTION HANDS ON -->
+<section class="card" id="encryption-hands-on">
+  <h2><span class="badge">2</span> S3 Encryption Hands On</h2>
+
+  <ul>
+    <li>When creating a bucket, you must choose a <strong>default encryption</strong>: SSE-S3, SSE-KMS, or DSSE-KMS.</li>
+    <li>Uploaded objects inherit the bucket's default encryption — visible under the object's <strong>Properties → Server-side encryption settings</strong>.</li>
+    <li>You can override the encryption for an individual object (Properties → Edit). If versioning is enabled, editing the encryption creates a <strong>new version</strong> of the object rather than modifying it in place.</li>
+    <li>For SSE-KMS, you pick a KMS key — either your own (costs money monthly) or the default <code>aws/s3</code> key AWS provides for free.</li>
+    <li>SSE-KMS has a <strong>Bucket Key</strong> option that reduces KMS API calls (and therefore cost) — enabled by default. It has no effect if you're just using SSE-S3.</li>
+  </ul>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    <code>SSE-C</code> is <strong>not available in the console</strong> at all — you can only use it via the CLI/SDK. Client-side encryption also isn't a console setting, since it happens entirely outside AWS before upload.
+  </div>
+</section>
+
+<!-- 3. DEFAULT ENCRYPTION VS BUCKET POLICY -->
+<section class="card" id="default-encryption">
+  <h2><span class="badge">3</span> S3 Default Encryption vs Bucket Policies</h2>
+
+  <ul>
+    <li>Every bucket now defaults to <strong>SSE-S3</strong> automatically for new objects — but you can change the default to something else, like SSE-KMS.</li>
+    <li>You can also <strong>force</strong> encryption using a bucket policy — e.g. deny any <code>PutObject</code> call that's missing the correct encryption header (like the KMS or SSE-C header).</li>
+  </ul>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    <strong>Bucket policies are evaluated before default encryption settings.</strong> So a policy can reject an upload outright if it doesn't meet your encryption requirements, regardless of what the bucket's default encryption is set to.
+  </div>
+</section>
+
+<!-- 4. CORS -->
+<section class="card" id="cors">
+  <h2><span class="badge">4</span> S3 CORS</h2>
+
+  <p><strong>CORS</strong> = Cross-Origin Resource Sharing — a browser-level security mechanism, not an S3-specific one. It comes up as one exam question, so it's worth understanding properly.</p>
+
+  <ul>
+    <li>An <strong>origin</strong> = scheme (protocol) + host (domain) + port. E.g. for <code>https://www.example.com</code>, the port is implied to be 443, protocol is HTTPS, and the host is <code>www.example.com</code>.</li>
+    <li>Two URLs share the <strong>same origin</strong> only if scheme, host, and port all match.</li>
+    <li>If a browser on one origin tries to fetch resources from a <em>different</em> origin, that request will be blocked <strong>unless</strong> the other origin explicitly allows it via <code>Access-Control-Allow-Origin</code> headers.</li>
+  </ul>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 190" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="70" width="140" height="45" rx="6"/>
+      <text class="svg-text" x="90" y="97" text-anchor="middle" font-size="11">Web Browser</text>
+
+      <path class="svg-arrow" d="M160,80 L300,40"/>
+      <rect class="svg-box-accent" x="300" y="15" width="200" height="45" rx="6"/>
+      <text class="svg-text" x="400" y="42" text-anchor="middle" font-size="10">Origin: www.example.com</text>
+
+      <path class="svg-arrow" d="M160,100 L300,140"/>
+      <text class="svg-label" x="230" y="130" text-anchor="middle" font-size="9">1. preflight OPTIONS request</text>
+      <rect class="svg-box-accent" x="300" y="120" width="200" height="45" rx="6"/>
+      <text class="svg-text" x="400" y="147" text-anchor="middle" font-size="10">Cross-Origin: www.other.com</text>
+
+      <path class="svg-arrow" d="M500,140 Q 600,90 160,90" />
+      <text class="svg-label" x="600" y="105" text-anchor="middle" font-size="9">2. CORS headers returned</text>
+
+      <text class="svg-label" x="400" y="180" text-anchor="middle" font-size="9">If allowed, browser makes the real GET/PUT/DELETE request to www.other.com</text>
+    </svg>
+  </div>
+  <p class="caption">Before fetching a resource from a different origin, the browser sends a preflight request asking permission; only if the target origin's CORS headers allow it does the real request go through.</p>
+
+  <h3>How this applies to S3</h3>
+  <p>If a static website hosted on one S3 bucket needs to pull assets (images, etc.) from <em>another</em> S3 bucket, that's a cross-origin request. Unless the asset bucket's <strong>CORS configuration</strong> explicitly allows the website's origin, the browser will block the request.</p>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Quick fix: configure CORS on the target S3 bucket to allow the specific origin, or use <code>*</code> to allow all origins.
+  </div>
+</section>
+
+<!-- 5. CORS HANDS ON -->
+<section class="card" id="cors-hands-on">
+  <h2><span class="badge">5</span> S3 CORS Hands On</h2>
+
+  <ol>
+    <li>Bucket A hosts a static website (<code>index.html</code>) that <code>fetch()</code>es an <code>extra-page.html</code> file.</li>
+    <li>While <code>extra-page.html</code> lives in the <strong>same bucket</strong>, the fetch works fine — same origin, no CORS needed.</li>
+    <li>Move <code>extra-page.html</code> to a <strong>different bucket</strong> (in another region, made public, also hosting a static website) and point <code>index.html</code>'s fetch at that bucket's URL instead.</li>
+    <li>Reloading the page now shows no visible error, but the browser's <strong>developer console</strong> reveals: <code>Cross-Origin Request Blocked</code> — missing <code>Access-Control-Allow-Origin</code> header.</li>
+  </ol>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    The fix is to add a <strong>CORS configuration</strong> (JSON) on the bucket being fetched <em>from</em>, listing the requesting bucket's website URL (no trailing slash) under <code>AllowedOrigins</code>.
+  </div>
+
+  <p>After saving the CORS config, refreshing the page loads the extra page successfully. In the browser's Network tab, the response now includes <code>Access-Control-Allow-Methods: GET</code> and <code>Access-Control-Allow-Origin</code> matching the requesting bucket's origin — proof CORS is now correctly configured.</p>
+</section>
+
+<!-- 6. MFA DELETE -->
+<section class="card" id="mfa-delete">
+  <h2><span class="badge">6</span> S3 MFA Delete</h2>
+
+  <p><strong>MFA Delete</strong> forces a user to provide a code from their MFA device (phone app, hardware token, etc.) before certain destructive operations can happen.</p>
+
+  <table>
+    <tr><th>Operation</th><th>MFA required?</th></tr>
+    <tr><td>Permanently delete an object version</td><td>Yes</td></tr>
+    <tr><td>Suspend versioning on the bucket</td><td>Yes</td></tr>
+    <tr><td>Enable versioning</td><td>No</td></tr>
+    <tr><td>List deleted versions</td><td>No</td></tr>
+  </table>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    Versioning must already be enabled to use MFA Delete. And crucially: <strong>only the bucket owner (root account)</strong> can enable or disable MFA Delete — and it can <em>only</em> be done via the CLI, not the console UI.
+  </div>
+
+  <h3>Hands-on recap</h3>
+  <ul>
+    <li>Requires setting up an MFA device on the <strong>root account</strong> beforehand, plus temporary root access keys just for this one operation (delete them immediately afterward!).</li>
+    <li>Enable via CLI: put bucket versioning with <code>MfaDelete=Enabled</code>, passing the MFA device ARN and a current MFA code.</li>
+    <li>Once enabled, normal object deletes (adding a delete marker) still work fine — but <strong>permanently deleting a specific version ID</strong> is blocked unless a valid MFA code is supplied via the CLI.</li>
+    <li>Disabling it uses the same CLI command with <code>MfaDelete=Disabled</code> (and a fresh MFA code).</li>
+  </ul>
+
+  <div class="callout warning">
+    <strong class="tag">Important</strong>
+    Using the root account and root access keys is generally discouraged — this is one of the few legitimate reasons to do so. Deactivate/delete the temporary root access keys as soon as you're done.
+  </div>
+</section>
+
+<!-- 7. ACCESS LOGS -->
+<section class="card" id="access-logs">
+  <h2><span class="badge">7</span> S3 Access Logs</h2>
+
+  <p>For audit purposes, S3 can log <strong>every request</strong> made to a bucket (authorized or denied, from any account) into log files stored in another S3 bucket. You can then analyze those logs with a tool like <strong>Amazon Athena</strong>.</p>
+
+  <ul>
+    <li>The logging (target) bucket must be in the <strong>same AWS region</strong> as the bucket being monitored.</li>
+    <li>Enabling logging automatically updates the target bucket's policy to allow the S3 logging service to write into it.</li>
+    <li>Logs aren't instant — it can take a while (the instructor mentions a couple of hours) before the first log files show up.</li>
+  </ul>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    Never set a bucket's logging destination to be <strong>itself</strong>. That creates an infinite logging loop — every log write generates another log entry, which generates another, and so on — and your storage costs will explode.
+  </div>
+</section>
+
+<!-- 8. PRE-SIGNED URLS -->
+<section class="card" id="presigned-urls">
+  <h2><span class="badge">8</span> S3 Pre-signed URLs</h2>
+
+  <p>A pre-signed URL is a temporary, signed link to a specific S3 object. Whoever holds the URL inherits the <strong>permissions of whoever generated it</strong> (for a GET or a PUT) — even if the bucket/object is otherwise private.</p>
+
+  <table>
+    <tr><th>Generated via</th><th>Max expiration</th></tr>
+    <tr><td>S3 Console</td><td>Up to 12 hours</td></tr>
+    <tr><td>CLI</td><td>Up to 168 hours</td></tr>
+  </table>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 140" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="45" width="140" height="45" rx="6"/>
+      <text class="svg-text" x="90" y="72" text-anchor="middle" font-size="11">Bucket owner</text>
+      <path class="svg-arrow" d="M160,60 L300,60"/>
+      <text class="svg-label" x="230" y="50" text-anchor="middle" font-size="9">generates pre-signed URL</text>
+      <rect class="svg-box-accent" x="300" y="45" width="150" height="45" rx="6"/>
+      <text class="svg-text" x="375" y="72" text-anchor="middle" font-size="10">Private S3 object</text>
+      <path class="svg-arrow" d="M160,85 L620,105"/>
+      <text class="svg-label" x="400" y="120" text-anchor="middle" font-size="9">shares URL with external user (valid for a limited time)</text>
+      <rect class="svg-box" x="620" y="80" width="140" height="45" rx="6"/>
+      <text class="svg-text" x="690" y="107" text-anchor="middle" font-size="11">External user</text>
+    </svg>
+  </div>
+  <p class="caption">The owner signs a URL carrying their own permissions, then hands it to someone who otherwise has no access — the URL works only until it expires.</p>
+
+  <h3>Use cases</h3>
+  <ul>
+    <li>Only allow logged-in users to download a premium video from a private bucket.</li>
+    <li>Dynamically generate download links for an ever-changing list of users.</li>
+    <li>Temporarily allow a specific user to upload a file to a specific location, while keeping the bucket private overall.</li>
+  </ul>
+
+  <h3>Hands-on: generating one from the console</h3>
+  <ol>
+    <li>Select the object → <strong>Object actions → Share with a pre-signed URL</strong>.</li>
+    <li>Pick an expiration (minutes or hours).</li>
+    <li>The generated URL can be shared with anyone — they get access to that one object until it expires, even though the bucket stays private.</li>
+  </ol>
+</section>
+
+<!-- 9. ACCESS POINTS -->
+<section class="card" id="access-points">
+  <h2><span class="badge">9</span> S3 Access Points</h2>
+
+  <p>A bucket with lots of different data (finance, sales, etc.) and lots of different user groups can end up with one giant, unmanageable bucket policy. <strong>S3 Access Points</strong> solve this by splitting security management into smaller, focused pieces.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 210" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box-accent" x="300" y="10" width="180" height="45" rx="6"/>
+      <text class="svg-text" x="390" y="37" text-anchor="middle" font-size="11">S3 Bucket (finance/, sales/)</text>
+
+      <path class="svg-arrow" d="M340,55 L120,110"/>
+      <rect class="svg-box" x="20" y="110" width="180" height="40" rx="6"/>
+      <text class="svg-text" x="110" y="134" text-anchor="middle" font-size="10">Finance access point</text>
+      <text class="svg-label" x="110" y="170" text-anchor="middle" font-size="9">Finance users (read/write)</text>
+
+      <path class="svg-arrow" d="M390,55 L390,110"/>
+      <rect class="svg-box" x="300" y="110" width="180" height="40" rx="6"/>
+      <text class="svg-text" x="390" y="134" text-anchor="middle" font-size="10">Sales access point</text>
+      <text class="svg-label" x="390" y="170" text-anchor="middle" font-size="9">Sales users (read/write)</text>
+
+      <path class="svg-arrow" d="M440,55 L660,110"/>
+      <rect class="svg-box" x="580" y="110" width="190" height="40" rx="6"/>
+      <text class="svg-text" x="675" y="134" text-anchor="middle" font-size="10">Analytics access point</text>
+      <text class="svg-label" x="675" y="170" text-anchor="middle" font-size="9">Analytics users (read-only, both prefixes)</text>
+    </svg>
+  </div>
+  <p class="caption">Each access point has its own policy scoped to a prefix and permission level — finance and sales teams each get their own door, analytics gets a read-only door into both.</p>
+
+  <ul>
+    <li>Each access point gets its own <strong>DNS name</strong> and its own attached policy (very similar in structure to a bucket policy).</li>
+    <li>An access point can be reachable from the <strong>internet</strong> or scoped to a <strong>VPC</strong> for private traffic only.</li>
+    <li>Result: a much simpler bucket policy overall, plus individually scoped, easier-to-manage access point policies — this is how you scale S3 access management.</li>
+  </ul>
+
+  <h3>VPC origin for access points</h3>
+  <ul>
+    <li>To let an EC2 instance in a VPC reach an access point privately (without going over the public internet), create a <strong>VPC endpoint</strong>.</li>
+    <li>The VPC endpoint has its own policy that must allow access to both the target bucket and the access point.</li>
+    <li>End result: three layers of security working together — the VPC endpoint policy, the access point policy, and the S3 bucket policy.</li>
+  </ul>
+</section>
+
+<!-- 10. OBJECT LAMBDA -->
+<section class="card" id="object-lambda">
+  <h2><span class="badge">10</span> S3 Object Lambda</h2>
+
+  <p>What if different applications need <em>different versions</em> of the same object — without duplicating the whole bucket? <strong>S3 Object Lambda</strong> builds on access points to transform objects on the fly, as they're retrieved.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 220" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box-accent" x="300" y="90" width="180" height="45" rx="6"/>
+      <text class="svg-text" x="390" y="117" text-anchor="middle" font-size="11">S3 Bucket (original objects)</text>
+
+      <rect class="svg-box" x="20" y="10" width="170" height="40" rx="6"/>
+      <text class="svg-text" x="105" y="34" text-anchor="middle" font-size="10">E-commerce app</text>
+      <path class="svg-arrow" d="M190,30 L300,100"/>
+      <text class="svg-label" x="230" y="55" text-anchor="middle" font-size="9">direct access — original object</text>
+
+      <rect class="svg-box" x="590" y="10" width="180" height="40" rx="6"/>
+      <text class="svg-text" x="680" y="34" text-anchor="middle" font-size="10">Analytics app</text>
+      <path class="svg-arrow" d="M680,50 L680,90"/>
+      <rect class="svg-box" x="590" y="90" width="180" height="40" rx="6"/>
+      <text class="svg-text" x="680" y="114" text-anchor="middle" font-size="9">Object Lambda access point</text>
+      <path class="svg-arrow" d="M590,110 L480,112"/>
+      <text class="svg-label" x="680" y="150" text-anchor="middle" font-size="9">→ Lambda redacts PII → gets redacted object</text>
+
+      <rect class="svg-box" x="20" y="170" width="180" height="40" rx="6"/>
+      <text class="svg-text" x="110" y="194" text-anchor="middle" font-size="10">Marketing app</text>
+      <path class="svg-arrow" d="M110,170 L110,150"/>
+      <rect class="svg-box" x="20" y="115" width="180" height="40" rx="6"/>
+      <text class="svg-text" x="110" y="139" text-anchor="middle" font-size="9">Object Lambda access point</text>
+      <path class="svg-arrow" d="M200,135 L300,120"/>
+      <text class="svg-label" x="110" y="215" text-anchor="middle" font-size="9">→ Lambda enriches data → gets enriched object</text>
+    </svg>
+  </div>
+  <p class="caption">One bucket, one set of objects — but different apps get different transformed versions on the fly via S3 Object Lambda, instead of storing multiple copies.</p>
+
+  <h3>How it works</h3>
+  <ol>
+    <li>App calls an <strong>S3 Object Lambda access point</strong> (instead of the bucket/regular access point directly).</li>
+    <li>This invokes a <strong>Lambda function</strong>, which fetches the original object from S3 and runs custom code on it.</li>
+    <li>The transformed result is what the calling app actually receives.</li>
+  </ol>
+
+  <h3>Use cases</h3>
+  <ul>
+    <li>Redact PII (personally identifiable information) for analytics or non-production environments.</li>
+    <li>Convert data formats on the fly (e.g. XML → JSON).</li>
+    <li>Resize or watermark images dynamically — even with a watermark specific to the requesting user.</li>
+    <li>Enrich objects with extra data (e.g. looking up a customer loyalty database) for a marketing app, without duplicating the bucket.</li>
+  </ul>
+</section>
+
+<!-- CHEAT SHEET -->
+<section class="card cheatsheet" id="cheatsheet">
+  <h2><span class="badge">✓</span> Cheat Sheet</h2>
+
+  <h3>Key facts to remember</h3>
+  <ul>
+    <li>4 encryption types: <code>SSE-S3</code> (AWS key, default), <code>SSE-KMS</code> (your KMS key, CloudTrail logging, watch KMS quotas), <code>SSE-C</code> (your own key, HTTPS required, CLI/SDK only), client-side (fully outside AWS).</li>
+    <li>Bucket policies are evaluated <strong>before</strong> default encryption settings — a policy can force/require encryption regardless of the default.</li>
+    <li>CORS is a browser security feature; fix cross-bucket asset loading by adding a CORS config on the bucket being fetched from, allowing the requesting origin (or <code>*</code>).</li>
+    <li>MFA Delete guards permanent version deletes and versioning suspension; only the root account can toggle it, and only via CLI.</li>
+    <li>Access logs go to a bucket in the <strong>same region</strong>; never point a bucket's logs at itself (infinite loop).</li>
+    <li>Pre-signed URLs inherit the signer's permissions; console max 12 hours, CLI max 168 hours.</li>
+    <li>Access Points let you split one bucket policy into many smaller, scoped policies (per prefix, per user group); each has its own DNS name and can be internet- or VPC-facing.</li>
+    <li>S3 Object Lambda = access point + Lambda function, to transform objects on the fly (redact, enrich, convert, watermark) without duplicating data.</li>
+  </ul>
+
+  <h3>Decision guide</h3>
+  <table>
+    <tr><th>Need</th><th>Use</th></tr>
+    <tr><td>Simplest default protection for objects</td><td>SSE-S3 (default)</td></tr>
+    <tr><td>Control + audit trail on encryption keys</td><td>SSE-KMS</td></tr>
+    <tr><td>Bring your own key, S3 never stores it</td><td>SSE-C (CLI/SDK only)</td></tr>
+    <tr><td>Full control over encryption process</td><td>Client-side encryption</td></tr>
+    <tr><td>Website assets blocked from loading cross-bucket</td><td>Configure CORS on the source bucket</td></tr>
+    <tr><td>Extra protection against accidental permanent deletes</td><td>MFA Delete</td></tr>
+    <tr><td>Audit who accessed what in a bucket</td><td>S3 Access Logs → analyze with Athena</td></tr>
+    <tr><td>Give a one-off temporary link to a private object</td><td>Pre-signed URL</td></tr>
+    <tr><td>Manage access for many teams on one bucket</td><td>S3 Access Points</td></tr>
+    <tr><td>Serve different transformed versions of the same object</td><td>S3 Object Lambda</td></tr>
+  </table>
+
+  <h3>Mental model</h3>
+  <p>This section is all about controlling exactly who can touch your S3 data, and how it's protected while at rest and in transit: encryption (in its four flavors) protects the bytes themselves; CORS controls which websites' browsers are allowed to fetch your objects; MFA Delete and access logs are safety nets against accidental or malicious changes and give you an audit trail; pre-signed URLs let you hand out narrow, time-boxed access without touching bucket-wide permissions; and access points (plus Object Lambda on top) let a single bucket serve many different teams and use cases securely, each with their own door and — if needed — their own on-the-fly transformed view of the data.</p>
+</section>
+
+<a class="back-to-top" href="#top">↑ Back to top</a>
+
+</div>
+</body>
+</html>

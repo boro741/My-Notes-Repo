@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How the OS Actually Works — Notes</title>
+<style>
+  :root {
+    --accent: #d9720a;
+    --accent-dark: #b85c05;
+    --accent-light: #fff3e6;
+    --text: #232323;
+    --text-soft: #55555a;
+    --bg: #f7f6f4;
+    --card-bg: #ffffff;
+    --border: #e4e0da;
+    --green: #2e8b4f;
+    --green-bg: #eaf7ee;
+    --red: #c0392b;
+    --red-bg: #fdecea;
+    --indigo: #6a5acd;
+    --indigo-bg: #f2f0fb;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  header.page-header {
+    text-align: center;
+    padding: 28px 20px 34px;
+    margin-bottom: 28px;
+    border-bottom: 3px solid var(--accent);
+  }
+
+  header.page-header h1 {
+    margin: 0 0 8px;
+    font-size: 2rem;
+    color: var(--accent-dark);
+    letter-spacing: -0.02em;
+  }
+
+  header.page-header p {
+    margin: 0;
+    color: var(--text-soft);
+    font-size: 1.05rem;
+  }
+
+  /* Table of contents */
+  nav.toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 26px;
+    margin-bottom: 32px;
+  }
+
+  nav.toc h2 {
+    margin-top: 0;
+    font-size: 1.05rem;
+    color: var(--accent-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.85rem;
+  }
+
+  nav.toc ol {
+    margin: 10px 0 0;
+    padding-left: 22px;
+  }
+
+  nav.toc li { margin-bottom: 6px; }
+
+  nav.toc a {
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--accent);
+  }
+
+  nav.toc a:hover { color: var(--accent-dark); }
+
+  /* Cards */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 26px 30px 30px;
+    margin-bottom: 26px;
+    scroll-margin-top: 20px;
+  }
+
+  .card h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 0;
+    font-size: 1.35rem;
+    color: var(--text);
+  }
+
+  .badge {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .card h3 {
+    color: var(--accent-dark);
+    font-size: 1.05rem;
+    margin: 22px 0 8px;
+  }
+
+  .card p { margin: 10px 0; }
+
+  code {
+    background: #f0ede8;
+    border: 1px solid #e0dbd2;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.9em;
+    color: #8a3b00;
+  }
+
+  /* Callouts */
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: var(--accent-light);
+    border-radius: 8px;
+    padding: 12px 18px;
+    margin: 16px 0;
+  }
+  .callout.tip { border-left-color: var(--green); background: var(--green-bg); }
+  .callout.warning { border-left-color: var(--red); background: var(--red-bg); }
+  .callout strong { display: block; margin-bottom: 4px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .callout.tip strong { color: var(--green); }
+  .callout.warning strong { color: var(--red); }
+  .callout:not(.tip):not(.warning) strong { color: var(--accent-dark); }
+
+  .analogy {
+    border: 2px dashed var(--indigo);
+    background: var(--indigo-bg);
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin: 16px 0;
+  }
+  .analogy strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--indigo);
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.95rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    background: #faf5ee;
+    color: var(--accent-dark);
+    font-weight: 600;
+  }
+
+  /* Diagrams */
+  .diagram {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #fcfbf9;
+    padding: 16px;
+    margin: 18px 0 6px;
+    text-align: center;
+  }
+  .diagram svg { max-width: 100%; height: auto; }
+  .caption {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-soft);
+    margin: 0 0 20px;
+    font-style: italic;
+  }
+
+  ul, ol.notes-list { padding-left: 22px; }
+  ul li, ol.notes-list li { margin-bottom: 6px; }
+
+  .back-to-top {
+    display: block;
+    text-align: center;
+    margin-top: 40px;
+    color: var(--accent-dark);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .back-to-top:hover { text-decoration: underline; }
+
+  .cheat-sheet {
+    border: 2px solid var(--accent);
+  }
+
+  .source-note {
+    text-align: center;
+    color: var(--text-soft);
+    font-size: 0.85rem;
+    margin-top: -10px;
+    margin-bottom: 30px;
+  }
+
+  /* ══ RESPONSIVE — iPhone 15 & iPad 10 ══ */
+
+  /* iPad 10 landscape (1180px) — already fine, just ensure padding */
+  @media (max-width: 1024px) {
+    .wrap { padding-left: 20px; padding-right: 20px; }
+    nav.toc ol { columns: 2; }
+  }
+
+  /* iPad 10 portrait (820px) */
+  @media (max-width: 860px) {
+    .wrap { padding: 20px 18px 60px; }
+    header.page-header h1, header.hero h1 { font-size: 22px; }
+    nav.toc ol { columns: 1; }
+    section.lecture, section.lesson, .card { padding: 18px 20px; }
+    table { font-size: 13px; }
+    th, td { padding: 7px 9px; }
+  }
+
+  /* iPhone 15 & small phones (≤ 480px) */
+  @media (max-width: 480px) {
+    .wrap { padding: 16px 14px 50px; }
+
+    /* Header */
+    header.page-header h1, header.hero h1 { font-size: 19px; line-height: 1.3; }
+    header.page-header p, header.hero p   { font-size: 13px; }
+    header.hero { padding: 24px 18px; border-radius: 10px; }
+
+    /* TOC */
+    nav.toc { padding: 14px 16px; border-radius: 10px; }
+    nav.toc ol { columns: 1; padding-left: 16px; }
+    nav.toc li { font-size: 14px; margin-bottom: 8px; }
+
+    /* Sections */
+    section.lecture, section.lesson, .card {
+      padding: 16px 16px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+    }
+    section.lecture h2, section.lesson h2, .card h2 {
+      font-size: 17px;
+      line-height: 1.3;
+    }
+    h3 { font-size: 15px; }
+
+    /* Tables — make scrollable horizontally */
+    table {
+      display: block;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    th, td { padding: 7px 10px; }
+
+    /* Code blocks */
+    code, .prompt {
+      font-size: 12.5px;
+      word-break: break-all;
+    }
+
+    /* Flex/grid layout components — stack on mobile */
+    .framework, .three-legs {
+      flex-direction: column;
+      gap: 10px;
+    }
+    .framework .step, .leg {
+      min-width: unset;
+      width: 100%;
+    }
+
+    /* Lists */
+    ul, ol { padding-left: 18px; }
+    li { font-size: 14px; margin-bottom: 6px; }
+    ul.checklist li { font-size: 14px; }
+
+    /* Callouts */
+    .callout, .tip, .warn, .example, .analogy, .summary-box {
+      padding: 10px 13px;
+      font-size: 14px;
+    }
+
+    /* Back to top links */
+    .top-link, a.back-top { font-size: 13px; }
+
+    /* Cheat sheet */
+    .cheat, .cheat-sheet { padding: 16px 16px; }
+  }
+
+  /* Tiny phones ≤ 360px */
+  @media (max-width: 360px) {
+    .wrap { padding: 12px 12px 40px; }
+    section.lecture h2, section.lesson h2, .card h2 { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page-header" id="top">
+    <h1>How the OS Actually Works</h1>
+    <p>My notes from Ben Dicken's livestream on processes, threads, and virtual memory</p>
+  </header>
+
+  <p class="source-note">Stream context: loosely following <em>Systems Performance</em> by Brendan Gregg — this session went deep on processes, threads, and virtual memory instead.</p>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#why-processes">Why We Need the "Process" Abstraction</a></li>
+      <li><a href="#fork-exec">Creating Processes: <code>fork</code> and <code>exec</code></a></li>
+      <li><a href="#anatomy">Anatomy of a Process (Memory Layout)</a></li>
+      <li><a href="#file-descriptors">File Descriptors</a></li>
+      <li><a href="#process-vs-thread">Processes vs. Threads</a></li>
+      <li><a href="#lifecycle">Process Lifecycle (States)</a></li>
+      <li><a href="#virtual-memory">Virtual Memory & the MMU</a></li>
+      <li><a href="#page-table-walk">Walking Through a Page Table Lookup</a></li>
+      <li><a href="#multilevel">Why Page Tables Are Actually Trees</a></li>
+      <li><a href="#cheat-sheet">Cheat Sheet</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <section class="card" id="why-processes">
+    <h2><span class="badge">1</span> Why We Need the "Process" Abstraction</h2>
+
+    <p>Start with the raw hardware: a CPU (with one or more cores), RAM, and disk. The CPU constantly reads and writes to RAM, and RAM spills over to disk when it needs permanent or overflow storage.</p>
+
+    <p>Very old computers could only run <strong>one program at a time</strong> — feed it in (even on a punch card), let it run start to finish, done. But modern computers need to run many programs at once: a chat app, music, a database, a terminal — all "at the same time," even on a single core.</p>
+
+    <p>This is done through <strong>context switching</strong>: the OS gives each program a tiny time slice on the CPU (say, 1–10 milliseconds), then swaps in the next program. If you have multiple cores, some programs can run truly in parallel; the rest is handled by slicing time. The part of the OS that decides who runs next and for how long is the <strong>scheduler</strong>.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+        <text x="350" y="24" text-anchor="middle" font-size="14" font-weight="bold" fill="#232323">One CPU core, four programs, time-sliced</text>
+        <rect x="20" y="50" width="660" height="50" fill="#fff" stroke="#d9720a" stroke-width="2" rx="6"/>
+        <rect x="20" y="50" width="150" height="50" fill="#fde6cf"/>
+        <rect x="170" y="50" width="150" height="50" fill="#eaf7ee"/>
+        <rect x="320" y="50" width="150" height="50" fill="#f2f0fb"/>
+        <rect x="470" y="50" width="210" height="50" fill="#fdecea"/>
+        <text x="95" y="80" text-anchor="middle" font-size="13" fill="#232323">Chat</text>
+        <text x="245" y="80" text-anchor="middle" font-size="13" fill="#232323">Music</text>
+        <text x="395" y="80" text-anchor="middle" font-size="13" fill="#232323">Database</text>
+        <text x="575" y="80" text-anchor="middle" font-size="13" fill="#232323">Terminal</text>
+        <text x="350" y="120" text-anchor="middle" font-size="12" fill="#55555a">← single CPU core timeline →</text>
+        <path d="M20 140 h660" stroke="#e4e0da" stroke-width="2"/>
+        <path d="M20 140 v10 M170 140 v10 M320 140 v10 M470 140 v10 M680 140 v10" stroke="#e4e0da" stroke-width="2"/>
+        <text x="350" y="175" text-anchor="middle" font-size="12" fill="#55555a">Each program gets a short slice, then gets "kicked off" so the next one can run</text>
+      </svg>
+    </div>
+    <p class="caption">Even with a single core, the OS rotates programs through short time slices so they all appear to run "at once."</p>
+
+    <p>The problem: if every program had to manually coordinate which chunk of RAM and CPU it's "allowed" to touch, engineering software would be a nightmare — and a buggy or malicious program could stomp on another program's memory.</p>
+
+    <div class="callout warning">
+      <strong>The core problem</strong>
+      Without isolation, any process could read or overwrite another process's memory — by accident or on purpose.
+    </div>
+
+    <p>The <strong>process</strong> is the OS's answer: it's an abstraction that lets a running program act as if it owns the entire computer — its own CPU time, its own (virtually) unlimited memory, its own files — while the OS handles the real-world juggling of sharing hardware safely between everyone.</p>
+
+    <div class="analogy">
+      <strong>Analogy</strong>
+      A process is like a hotel room. You get a key, and inside your room you can act as if you own the whole building — arrange furniture however you like, use the outlets, whatever. You don't need to coordinate with the guest three doors down. The hotel (the OS) is the one making sure nobody's room key opens someone else's door.
+    </div>
+
+    <p>This is also why building custom AI agent code, databases, or operating systems benefits from having reliable "primitives" to build on — a process is one such primitive that application code can simply trust and build on top of.</p>
+  </section>
+
+  <!-- 2 -->
+  <section class="card" id="fork-exec">
+    <h2><span class="badge">2</span> Creating Processes: <code>fork</code> and <code>exec</code></h2>
+
+    <p>On Unix-like systems (Mac, Linux), new processes are created with two system calls used together:</p>
+
+    <table>
+      <tr><th>Call</th><th>What it does</th></tr>
+      <tr><td><code>fork</code></td><td>Makes an identical clone of the currently running process (new process ID, but same code, same memory contents) and adds it to the OS's process list.</td></tr>
+      <tr><td><code>exec</code> / <code>execve</code></td><td>Replaces the "text" (code) of the calling process with a brand-new program loaded from an executable file on disk, then starts running that instead.</td></tr>
+    </table>
+
+    <p>So the normal way to launch a new program is: <code>fork</code> (clone yourself), then in the clone call <code>exec</code> (swap out your code for the new program). Right after boot, Unix systems start with one initial process, and every other process — kernel or user — descends from it via forking.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 700 190" xmlns="http://www.w3.org/2000/svg">
+        <rect x="30" y="30" width="180" height="60" rx="8" fill="#fde6cf" stroke="#d9720a" stroke-width="2"/>
+        <text x="120" y="65" text-anchor="middle" font-size="13" fill="#232323">Video Editor (parent)</text>
+
+        <path d="M210 60 h60" stroke="#232323" stroke-width="2" marker-end="url(#arrow)"/>
+        <text x="240" y="50" text-anchor="middle" font-size="12" fill="#55555a">fork()</text>
+
+        <rect x="270" y="30" width="180" height="60" rx="8" fill="#f2f0fb" stroke="#6a5acd" stroke-width="2"/>
+        <text x="360" y="55" text-anchor="middle" font-size="13" fill="#232323">Identical Clone</text>
+        <text x="360" y="72" text-anchor="middle" font-size="11" fill="#55555a">(new PID, same code)</text>
+
+        <path d="M450 60 h60" stroke="#232323" stroke-width="2" marker-end="url(#arrow)"/>
+        <text x="480" y="50" text-anchor="middle" font-size="12" fill="#55555a">exec()</text>
+
+        <rect x="510" y="30" width="160" height="60" rx="8" fill="#eaf7ee" stroke="#2e8b4f" stroke-width="2"/>
+        <text x="590" y="55" text-anchor="middle" font-size="13" fill="#232323">New Program</text>
+        <text x="590" y="72" text-anchor="middle" font-size="11" fill="#55555a">(code replaced)</text>
+
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 z" fill="#232323"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+    <p class="caption">fork() clones the running process; exec() then swaps the clone's code for a new program.</p>
+
+    <div class="callout">
+      <strong>From the man pages</strong>
+      <code>fork</code>: the new child process is an exact copy of the parent except for a unique PID, a different parent PID, its own copy of file descriptors, and reset resource usage counters. <code>execve</code>: loads a new executable object file (a compiled binary, e.g. what GCC produces) and starts running it in place of the calling process.
+    </div>
+
+    <p>Fun fact from the stream: in Linux, both processes and threads are internally represented as <code>tasks</code>. The main difference between them (covered more in section 5) is that a thread shares the same virtual memory space as its process but has its own program stack.</p>
+  </section>
+
+  <!-- 3 -->
+  <section class="card" id="anatomy">
+    <h2><span class="badge">3</span> Anatomy of a Process (Memory Layout)</h2>
+
+    <p>A process is split into two regions: the <strong>user address space</strong> (where your program's own code and data live) and the <strong>kernel context</strong> (bookkeeping the kernel keeps about your process).</p>
+
+    <h3>User address space</h3>
+    <ul>
+      <li><strong>Text</strong> — the actual compiled instructions (adds, moves, jumps) being executed.</li>
+      <li><strong>Data / constants</strong> — fixed-size stuff, loaded near the bottom of the address space.</li>
+      <li><strong>Heap</strong> — general-purpose memory for things not tied to a single function call (arrays, objects, hash maps). Grows in one direction as you allocate, though it can get fragmented as allocations come and go.</li>
+      <li><strong>Stack</strong> — tracks function calls: each call pushes a "frame" with local variables; returning pops it off. Grows and shrinks constantly, and can get deep during heavy recursion.</li>
+    </ul>
+
+    <h3>Kernel context</h3>
+    <ul>
+      <li><strong>Kernel stack</strong> — a separate stack used only while the process is executing in kernel mode (e.g., during a disk or network request).</li>
+      <li><strong>Metadata</strong> — process ID, user ID (UID), timing info.</li>
+      <li><strong>File descriptors</strong> — which files this process currently has open (more in section 4).</li>
+    </ul>
+
+    <div class="diagram">
+      <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg">
+        <text x="185" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#232323">User Address Space</text>
+        <rect x="30" y="35" width="310" height="200" fill="#fff" stroke="#d9720a" stroke-width="2" rx="6"/>
+
+        <rect x="45" y="45" width="280" height="35" fill="#f2f0fb" stroke="#6a5acd"/>
+        <text x="185" y="67" text-anchor="middle" font-size="12">Stack (grows ↓)</text>
+
+        <rect x="45" y="90" width="280" height="60" fill="#fdf2e5" stroke="#e0c090"/>
+        <text x="185" y="123" text-anchor="middle" font-size="12">(unused space)</text>
+
+        <rect x="45" y="160" width="280" height="35" fill="#eaf7ee" stroke="#2e8b4f"/>
+        <text x="185" y="182" text-anchor="middle" font-size="12">Heap (grows ↑)</text>
+
+        <rect x="45" y="205" width="280" height="25" fill="#fde6cf" stroke="#d9720a"/>
+        <text x="185" y="222" text-anchor="middle" font-size="11">Text / Data / Constants</text>
+
+        <text x="510" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#232323">Kernel Context</text>
+        <rect x="380" y="35" width="290" height="200" fill="#fbf9f6" stroke="#232323" stroke-width="2" rx="6" stroke-dasharray="4"/>
+        <rect x="395" y="50" width="260" height="45" fill="#fdecea" stroke="#c0392b"/>
+        <text x="525" y="77" text-anchor="middle" font-size="12">Kernel stack</text>
+        <rect x="395" y="105" width="260" height="45" fill="#fff" stroke="#d9720a"/>
+        <text x="525" y="132" text-anchor="middle" font-size="12">PID · UID · timing</text>
+        <rect x="395" y="160" width="260" height="45" fill="#f2f0fb" stroke="#6a5acd"/>
+        <text x="525" y="187" text-anchor="middle" font-size="12">File descriptor table</text>
+      </svg>
+    </div>
+    <p class="caption">Each process has its own user-space stack/heap/text, plus kernel-side bookkeeping (kernel stack, IDs, open files).</p>
+
+    <div class="analogy">
+      <strong>Analogy</strong>
+      Think of the heap as a big shared storage closet you can put boxes in whenever you need to, and the stack as a stack of sticky notes on your desk — you add one every time you start a task, and peel it off the moment that task finishes.
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="card" id="file-descriptors">
+    <h2><span class="badge">4</span> File Descriptors</h2>
+
+    <p>When a process opens a file with the <code>open</code> system call, it gets back a small integer called a <strong>file descriptor</strong> — an identifier the kernel uses to track "this process currently has this file open." The kernel needs this to enforce file permissions and know what reads/writes a process is allowed to make.</p>
+
+    <div class="callout">
+      <strong>Key point</strong>
+      The file descriptor table lives in the kernel context of a process, not in user space — it's part of the bookkeeping the kernel does on your behalf.
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="card" id="process-vs-thread">
+    <h2><span class="badge">5</span> Processes vs. Threads</h2>
+
+    <p>A process always has <em>at least</em> one thread. A <strong>thread</strong> is a lighter-weight unit of execution inside a process: multiple threads in the same process share the same virtual address space and the same heap, but each has its own program stack (its own point of execution).</p>
+
+    <table>
+      <tr><th></th><th>Multi-process</th><th>Multi-threaded</th></tr>
+      <tr><td>Isolation</td><td>Fully isolated — separate memory spaces</td><td>Shared memory space (same heap)</td></tr>
+      <tr><td>Communication</td><td>Message passing or shared memory (must set up explicitly)</td><td>Direct — just shared variables</td></tr>
+      <tr><td>Cost to create/switch</td><td>Heavier</td><td>Lighter weight, cheaper to switch</td></tr>
+      <tr><td>Coordination needed</td><td>Less (isolated by default)</td><td>More (must coordinate access to shared data)</td></tr>
+    </table>
+
+    <div class="diagram">
+      <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+        <rect x="40" y="20" width="620" height="180" fill="#fff" stroke="#d9720a" stroke-width="2" rx="10"/>
+        <text x="350" y="45" text-anchor="middle" font-size="13" font-weight="bold" fill="#232323">One Process</text>
+
+        <rect x="70" y="60" width="560" height="45" fill="#eaf7ee" stroke="#2e8b4f"/>
+        <text x="350" y="87" text-anchor="middle" font-size="12">Shared heap + shared virtual address space</text>
+
+        <rect x="90" y="120" width="150" height="60" fill="#f2f0fb" stroke="#6a5acd" rx="6"/>
+        <text x="165" y="145" text-anchor="middle" font-size="12">Thread A</text>
+        <text x="165" y="163" text-anchor="middle" font-size="11" fill="#55555a">own stack</text>
+
+        <rect x="275" y="120" width="150" height="60" fill="#f2f0fb" stroke="#6a5acd" rx="6"/>
+        <text x="350" y="145" text-anchor="middle" font-size="12">Thread B</text>
+        <text x="350" y="163" text-anchor="middle" font-size="11" fill="#55555a">own stack</text>
+
+        <rect x="460" y="120" width="150" height="60" fill="#f2f0fb" stroke="#6a5acd" rx="6"/>
+        <text x="535" y="145" text-anchor="middle" font-size="12">Thread C</text>
+        <text x="535" y="163" text-anchor="middle" font-size="11" fill="#55555a">own stack</text>
+      </svg>
+    </div>
+    <p class="caption">Threads in the same process share the heap and address space, but each keeps its own program stack.</p>
+
+    <div class="callout tip">
+      <strong>Best practice / trade-off</strong>
+      Use multiple processes when you want strong isolation (a crash in one shouldn't take down the other). Use multiple threads when you want cheap parallelism and don't mind coordinating shared state carefully (locks, etc.).
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="card" id="lifecycle">
+    <h2><span class="badge">6</span> Process Lifecycle (States)</h2>
+
+    <p>The scheduler has to track what state every process is in, since it can't run all of them on the CPU at once:</p>
+
+    <table>
+      <tr><th>State</th><th>Meaning</th></tr>
+      <tr><td><code>Ready</code></td><td>Wants to run, nothing is blocking it, just waiting for CPU time.</td></tr>
+      <tr><td><code>Running</code></td><td>Actively executing on a CPU core right now.</td></tr>
+      <tr><td><code>Waiting</code></td><td>Blocked on something like a disk read or network request; not using the CPU.</td></tr>
+      <tr><td><code>Killed / Zombie</code></td><td>Finished executing, just needs the OS to clean up its remaining bookkeeping.</td></tr>
+    </table>
+
+    <div class="diagram">
+      <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+        <rect x="30" y="80" width="140" height="55" rx="8" fill="#fde6cf" stroke="#d9720a" stroke-width="2"/>
+        <text x="100" y="112" text-anchor="middle" font-size="13">Ready</text>
+
+        <rect x="280" y="20" width="140" height="55" rx="8" fill="#eaf7ee" stroke="#2e8b4f" stroke-width="2"/>
+        <text x="350" y="52" text-anchor="middle" font-size="13">Running</text>
+
+        <rect x="280" y="140" width="140" height="55" rx="8" fill="#fdecea" stroke="#c0392b" stroke-width="2"/>
+        <text x="350" y="172" text-anchor="middle" font-size="13">Waiting</text>
+
+        <rect x="530" y="80" width="140" height="55" rx="8" fill="#f2f0fb" stroke="#6a5acd" stroke-width="2"/>
+        <text x="600" y="105" text-anchor="middle" font-size="13">Zombie /</text>
+        <text x="600" y="122" text-anchor="middle" font-size="13">Terminated</text>
+
+        <path d="M170 100 L280 55" stroke="#232323" stroke-width="2" marker-end="url(#a2)"/>
+        <text x="220" y="70" font-size="11" fill="#55555a">scheduled</text>
+
+        <path d="M350 75 L350 140" stroke="#232323" stroke-width="2" marker-end="url(#a2)"/>
+        <text x="360" y="110" font-size="11" fill="#55555a">blocks on I/O</text>
+
+        <path d="M280 168 L170 118" stroke="#232323" stroke-width="2" marker-end="url(#a2)"/>
+        <text x="200" y="155" font-size="11" fill="#55555a">I/O done</text>
+
+        <path d="M420 40 L530 90" stroke="#232323" stroke-width="2" marker-end="url(#a2)"/>
+        <text x="460" y="55" font-size="11" fill="#55555a">finishes</text>
+
+        <defs>
+          <marker id="a2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 z" fill="#232323"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+    <p class="caption">A process cycles between Ready and Running, drops to Waiting when blocked on I/O, and ends as a Zombie until the OS cleans it up.</p>
+  </section>
+
+  <!-- 7 -->
+  <section class="card" id="virtual-memory">
+    <h2><span class="badge">7</span> Virtual Memory & the MMU</h2>
+
+    <p>Virtual memory lets every process act like it owns <em>all</em> the memory on the machine — even more than physically exists. The CPU only ever thinks in <strong>virtual addresses</strong> (e.g. <code>0x12345</code>). It never talks to RAM directly.</p>
+
+    <p>Instead, requests pass through the <strong>Memory Management Unit (MMU)</strong> — a mix of hardware and OS software — which translates the virtual address into the real, physical address in RAM (e.g. translating <code>0x12345</code> into <code>0x83145</code>).</p>
+
+    <div class="analogy">
+      <strong>Analogy</strong>
+      This is like a database proxy: instead of your app connecting straight to a database, it talks to a proxy, which picks the actual connection behind the scenes. The MMU is that same kind of middleman between the CPU and physical RAM.
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 700 160" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="50" width="140" height="60" rx="8" fill="#fde6cf" stroke="#d9720a" stroke-width="2"/>
+        <text x="90" y="85" text-anchor="middle" font-size="13">CPU</text>
+
+        <path d="M160 80 h100" stroke="#232323" stroke-width="2" marker-end="url(#a3)"/>
+        <text x="210" y="70" text-anchor="middle" font-size="11" fill="#55555a">virtual addr</text>
+
+        <rect x="260" y="50" width="180" height="60" rx="8" fill="#f2f0fb" stroke="#6a5acd" stroke-width="2"/>
+        <text x="350" y="78" text-anchor="middle" font-size="13">MMU</text>
+        <text x="350" y="95" text-anchor="middle" font-size="10" fill="#55555a">(translates via page table)</text>
+
+        <path d="M440 80 h100" stroke="#232323" stroke-width="2" marker-end="url(#a3)"/>
+        <text x="490" y="70" text-anchor="middle" font-size="11" fill="#55555a">physical addr</text>
+
+        <rect x="540" y="50" width="140" height="60" rx="8" fill="#eaf7ee" stroke="#2e8b4f" stroke-width="2"/>
+        <text x="610" y="85" text-anchor="middle" font-size="13">RAM</text>
+
+        <defs>
+          <marker id="a3" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 z" fill="#232323"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+    <p class="caption">The CPU only ever speaks in virtual addresses; the MMU rewrites them into real physical RAM addresses.</p>
+
+    <p>Why this matters: it's exactly what makes process isolation possible. Because every process's virtual addresses get mapped independently, the OS guarantees no two processes are ever handed the same slice of physical RAM at the same time.</p>
+
+    <div class="callout">
+      <strong>Key point</strong>
+      Memory isn't managed byte-by-byte — it's managed in fixed-size chunks called <code>pages</code>, typically 4KB–16KB (some systems support larger pages, e.g. 2MB "huge pages"). Pages are the unit used to map memory in and swap it out to disk.
+    </div>
+  </section>
+
+  <!-- 8 -->
+  <section class="card" id="page-table-walk">
+    <h2><span class="badge">8</span> Walking Through a Page Table Lookup</h2>
+
+    <p>Say the CPU executes an instruction to load a value from virtual address <code>0x2C8</code>. A virtual address is split into two parts:</p>
+
+    <ul>
+      <li><strong>Page table index</strong> — the higher-order bits (here: <code>2</code>) — which page are we talking about?</li>
+      <li><strong>Page offset</strong> — the lower bits (here: <code>0xC8</code>) — how far into that page is the data?</li>
+    </ul>
+
+    <p>The OS keeps a <strong>page map</strong> (array) per process. Each entry tracks two important bits:</p>
+
+    <table>
+      <tr><th>Bit</th><th>Meaning</th></tr>
+      <tr><td><code>D</code> (dirty)</td><td>Has this page changed since it was loaded from disk? If <code>1</code>, it must be saved back to disk before that RAM slot can be reused for something else.</td></tr>
+      <tr><td><code>R</code> (resident)</td><td>Is this page currently actually sitting in physical RAM (<code>1</code>), or has it been swapped out to disk (<code>0</code>)?</td></tr>
+    </table>
+
+    <p>Walking through the example: the CPU looks up index <code>2</code> in the page map. It finds <code>R = 1</code> (already resident — no disk trip needed) and a physical page number, say <code>9</code>. The CPU jumps to slot <code>9</code> in physical RAM, then uses the offset <code>0xC8</code> to find exactly where inside that page the requested bytes live.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 700 230" xmlns="http://www.w3.org/2000/svg">
+        <text x="120" y="20" text-anchor="middle" font-size="12" font-weight="bold">Virtual address 0x2C8</text>
+        <rect x="40" y="30" width="80" height="40" fill="#fde6cf" stroke="#d9720a" stroke-width="2"/>
+        <text x="80" y="55" text-anchor="middle" font-size="13">index=2</text>
+        <rect x="130" y="30" width="80" height="40" fill="#f2f0fb" stroke="#6a5acd" stroke-width="2"/>
+        <text x="170" y="55" text-anchor="middle" font-size="13">offset=C8</text>
+
+        <path d="M80 70 v25" stroke="#232323" stroke-width="2" marker-end="url(#a4)"/>
+
+        <text x="230" y="115" text-anchor="middle" font-size="12" font-weight="bold">Page Map (per process)</text>
+        <rect x="40" y="125" width="380" height="35" fill="#fff" stroke="#232323" stroke-width="1"/>
+        <text x="60" y="147" font-size="11">idx</text>
+        <text x="120" y="147" font-size="11">D</text>
+        <text x="180" y="147" font-size="11">R</text>
+        <text x="280" y="147" font-size="11">phys page #</text>
+
+        <rect x="40" y="160" width="380" height="35" fill="#eaf7ee" stroke="#2e8b4f" stroke-width="2"/>
+        <text x="60" y="182" font-size="11">2</text>
+        <text x="120" y="182" font-size="11">0</text>
+        <text x="180" y="182" font-size="11">1</text>
+        <text x="280" y="182" font-size="11">9</text>
+
+        <path d="M420 178 h100" stroke="#232323" stroke-width="2" marker-end="url(#a4)"/>
+
+        <text x="620" y="140" text-anchor="middle" font-size="12" font-weight="bold">Physical RAM</text>
+        <rect x="540" y="150" width="160" height="55" fill="#fdecea" stroke="#c0392b" stroke-width="2"/>
+        <text x="620" y="172" text-anchor="middle" font-size="11">page #9</text>
+        <text x="620" y="190" text-anchor="middle" font-size="11">+ offset C8 → data</text>
+
+        <defs>
+          <marker id="a4" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 z" fill="#232323"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+    <p class="caption">The index picks a row in the page map; that row points to a physical page; the offset finds the exact byte inside it.</p>
+
+    <div class="callout warning">
+      <strong>What happens if R = 0</strong>
+      If the resident bit is <code>0</code>, the page isn't in RAM. The kernel has to fetch it from disk, put the process into a waiting/sleeping state so something else can use the CPU, and wake it up (via a trap) once the data is ready. That whole round trip is why a "cache miss" to disk feels slow from the CPU's perspective — even though the CPU got to do other useful work in the meantime.
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section class="card" id="multilevel">
+    <h2><span class="badge">9</span> Why Page Tables Are Actually Trees</h2>
+
+    <p>Modern OSes use large address spaces — around 48 bits even on 64-bit CPUs (e.g. x86). A single flat page map covering a 48-bit address space per process would be enormous and completely impractical to keep around for every running process.</p>
+
+    <p>The fix: a <strong>tiered (tree-like) structure</strong>. The address space is broken into large chunks, and those chunks are broken into smaller chunks, and so on. This works well because in practice, the vast majority of a huge virtual address space is unused — memory usage is sparse. A tree structure only needs to store mappings for the parts that are actually in use, instead of reserving space for every possible address.</p>
+
+    <div class="callout tip">
+      <strong>Best practice</strong>
+      This is a classic space/time trade-off: a flat table is faster to look up (single index) but wildly wasteful in memory. A tree-structured (multi-level) page table costs a few extra lookup steps but stays practical at real-world address space sizes.
+    </div>
+  </section>
+
+  <!-- Cheat sheet -->
+  <section class="card cheat-sheet" id="cheat-sheet">
+    <h2><span class="badge">✓</span> Cheat Sheet</h2>
+
+    <h3>Key facts to remember</h3>
+    <ul>
+      <li>A <strong>process</strong> = an abstraction that lets a program act like it owns the whole computer (CPU, memory, files) while the OS actually shares hardware safely between everyone.</li>
+      <li>New processes are made with <code>fork</code> (clone) + <code>exec</code>/<code>execve</code> (swap in new code).</li>
+      <li>A process has a <strong>user address space</strong> (text, heap, stack) and a <strong>kernel context</strong> (kernel stack, PID/UID, file descriptor table).</li>
+      <li>A <strong>file descriptor</strong> is the kernel's ID for a file a process has open.</li>
+      <li>A <strong>thread</strong> shares its process's heap and address space but has its own program stack — cheaper than a full process, but needs more coordination.</li>
+      <li>Process states: <code>Ready</code> → <code>Running</code> → (maybe) <code>Waiting</code> → back to <code>Ready</code> → eventually <code>Zombie/Terminated</code>.</li>
+      <li><strong>Virtual memory</strong> lets every process pretend it owns all of RAM (and more); the <strong>MMU</strong> translates virtual → physical addresses using a per-process <strong>page map</strong>.</li>
+      <li>Memory is managed in <strong>pages</strong> (typically 4–16KB). Each page-map entry has a <code>D</code> (dirty) bit and an <code>R</code> (resident) bit.</li>
+      <li>Real page tables are <strong>multi-level trees</strong>, not flat arrays — because address spaces are huge but usage is sparse.</li>
+    </ul>
+
+    <h3>Process vs. Thread, at a glance</h3>
+    <table>
+      <tr><th>Aspect</th><th>Process</th><th>Thread</th></tr>
+      <tr><td>Memory</td><td>Own isolated address space</td><td>Shares heap/address space with siblings</td></tr>
+      <tr><td>Stack</td><td>Own stack</td><td>Own stack</td></tr>
+      <tr><td>Weight</td><td>Heavier to create/switch</td><td>Lighter weight</td></tr>
+      <tr><td>Best for</td><td>Strong isolation between components</td><td>Cheap parallelism within one component</td></tr>
+    </table>
+
+    <h3>The one-paragraph mental model</h3>
+    <p>Every running program lives inside a <strong>process</strong>, which is really just a comfortable lie the OS tells it: "you own this whole machine." Under the hood, the OS is constantly time-slicing the CPU across many processes (and their threads), while the <strong>MMU and page tables</strong> quietly translate every memory access from a pretend "virtual" address into a real slot in physical RAM — swapping pages to and from disk as needed — so that no process can ever see or corrupt another's memory, even though they're all sharing the exact same hardware underneath.</p>
+  </section>
+
+  <a href="#top" class="back-to-top">↑ Back to top</a>
+
+</div>
+</body>
+</html>

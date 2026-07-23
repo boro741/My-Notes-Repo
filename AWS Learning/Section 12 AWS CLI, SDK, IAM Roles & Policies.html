@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 12 — AWS CLI, SDK, IAM Roles & Policies — Notes</title>
+<style>
+  :root {
+    --accent: #e8830f;
+    --accent-dark: #c96a08;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --border: #e3e0da;
+    --text: #2b2a28;
+    --text-muted: #6b6a66;
+    --green: #2e7d32;
+    --green-bg: #eef7ee;
+    --red: #c0392b;
+    --red-bg: #fdecea;
+    --amber: #b8790a;
+    --amber-bg: #fff4e2;
+    --purple: #6a4fb3;
+    --purple-bg: #f3f0fb;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  header {
+    padding-bottom: 24px;
+    border-bottom: 3px solid var(--accent);
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 2rem;
+    color: var(--text);
+  }
+
+  header h1 span {
+    color: var(--accent);
+  }
+
+  header p.subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+  }
+
+  nav.toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 32px;
+  }
+
+  nav.toc h2 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  nav.toc ol {
+    margin: 0;
+    padding-left: 22px;
+    columns: 2;
+    column-gap: 24px;
+  }
+
+  nav.toc li {
+    margin-bottom: 6px;
+    break-inside: avoid;
+  }
+
+  nav.toc a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  nav.toc a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 24px;
+    scroll-margin-top: 20px;
+  }
+
+  .card h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 14px;
+    font-size: 1.3rem;
+    color: var(--text);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    color: var(--accent-dark);
+    font-size: 1.05rem;
+    margin: 20px 0 8px;
+  }
+
+  a { color: var(--accent-dark); }
+
+  code {
+    background: #f1eee7;
+    border: 1px solid #e6e2d8;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.92em;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    color: #7a4b00;
+  }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 0.94rem;
+  }
+
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f7f2ea;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) td {
+    background: #fcfbf9;
+  }
+
+  .callout {
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+
+  .callout strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .callout.tip {
+    background: var(--green-bg);
+    border-color: var(--green);
+  }
+  .callout.tip strong.tag { color: var(--green); }
+
+  .callout.warning {
+    background: var(--red-bg);
+    border-color: var(--red);
+  }
+  .callout.warning strong.tag { color: var(--red); }
+
+  .callout.key {
+    background: var(--amber-bg);
+    border-color: var(--amber);
+  }
+  .callout.key strong.tag { color: var(--amber); }
+
+  .analogy {
+    border: 1.5px dashed var(--purple);
+    background: var(--purple-bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+  .analogy strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--purple);
+  }
+
+  .diagram {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fdfcfa;
+    padding: 16px;
+    margin: 16px 0 6px;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  .diagram svg {
+    max-width: 100%;
+  }
+
+  .caption {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 4px 0 16px;
+    font-style: italic;
+  }
+
+  .cheatsheet {
+    border: 2px solid var(--accent);
+  }
+
+  .cheatsheet h2 { color: var(--accent-dark); }
+
+  .back-to-top {
+    display: block;
+    text-align: center;
+    margin-top: 36px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    text-decoration: none;
+  }
+  .back-to-top:hover { text-decoration: underline; }
+
+  .svg-box { fill: #fff; stroke: #c8917a; stroke-width: 1.5; }
+  .svg-box-accent { fill: #fff4e2; stroke: var(--accent); stroke-width: 1.5; }
+  .svg-text { font-family: -apple-system, sans-serif; font-size: 12px; fill: #2b2a28; }
+  .svg-label { font-family: -apple-system, sans-serif; font-size: 11px; fill: #6b6a66; }
+  .svg-arrow { stroke: #6b6a66; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+
+  /* ══ RESPONSIVE — iPhone 15 & iPad 10 ══ */
+
+  /* iPad 10 landscape (1180px) — already fine, just ensure padding */
+  @media (max-width: 1024px) {
+    .wrap { padding-left: 20px; padding-right: 20px; }
+    nav.toc ol { columns: 2; }
+  }
+
+  /* iPad 10 portrait (820px) */
+  @media (max-width: 860px) {
+    .wrap { padding: 20px 18px 60px; }
+    header h1 { font-size: 22px; }
+    nav.toc ol { columns: 1; }
+    section.card { padding: 18px 20px; }
+    table { font-size: 13px; }
+    th, td { padding: 7px 9px; }
+  }
+
+  /* iPhone 15 & small phones (≤ 480px) */
+  @media (max-width: 480px) {
+    .wrap { padding: 16px 14px 50px; }
+
+    /* Header */
+    header h1 { font-size: 19px; line-height: 1.3; }
+    header p.subtitle   { font-size: 13px; }
+    header { padding-bottom: 16px; margin-bottom: 20px; }
+
+    /* TOC */
+    nav.toc { padding: 14px 16px; border-radius: 10px; margin-bottom: 24px; }
+    nav.toc ol { columns: 1; padding-left: 16px; }
+    nav.toc li { font-size: 14px; margin-bottom: 8px; }
+
+    /* Sections */
+    section.card {
+      padding: 16px 16px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+    }
+    section.card h2 {
+      font-size: 17px;
+      line-height: 1.3;
+    }
+    h3 { font-size: 15px; }
+
+    /* Tables — make scrollable horizontally */
+    table {
+      display: block;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    th, td { padding: 7px 10px; }
+
+    /* Code blocks */
+    code, .prompt {
+      font-size: 12.5px;
+      word-break: break-all;
+    }
+
+    /* Flex/grid layout components — stack on mobile */
+    .framework, .three-legs {
+      flex-direction: column;
+      gap: 10px;
+    }
+    .framework .step, .leg {
+      min-width: unset;
+      width: 100%;
+    }
+
+    /* Lists */
+    ul, ol { padding-left: 18px; }
+    li { font-size: 14px; margin-bottom: 6px; }
+    ul.checklist li { font-size: 14px; }
+
+    /* Callouts */
+    .callout, .tip, .warn, .example, .analogy, .summary-box {
+      padding: 10px 13px;
+      font-size: 14px;
+    }
+
+    /* Back to top links */
+    .top-link, a.back-to-top { font-size: 13px; margin-top: 24px; }
+
+    /* Cheat sheet */
+    .cheatsheet { padding: 16px 16px; }
+  }
+
+  /* Tiny phones ≤ 360px */
+  @media (max-width: 360px) {
+    .wrap { padding: 12px 12px 40px; }
+    section.card h2 { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header id="top">
+  <h1><span>Section 12</span> — AWS CLI, SDK, IAM Roles & Policies</h1>
+  <p class="subtitle">My notes on EC2 instance metadata, CLI profiles & MFA, the AWS SDK, exponential backoff, and request signing (SigV4).</p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#imds">EC2 Instance Metadata (IMDS)</a></li>
+    <li><a href="#imds-hands-on">IMDS Hands On</a></li>
+    <li><a href="#cli-profiles">AWS CLI Profiles</a></li>
+    <li><a href="#cli-mfa">AWS CLI with MFA</a></li>
+    <li><a href="#sdk">AWS SDK Overview</a></li>
+    <li><a href="#backoff">Exponential Backoff & Service Limit Increase</a></li>
+    <li><a href="#sigv4">AWS Signature v4 Signing (SigV4)</a></li>
+    <li><a href="#cheatsheet">Cheat Sheet</a></li>
+  </ol>
+</nav>
+
+<!-- 1. IMDS OVERVIEW -->
+<section class="card" id="imds">
+  <h2><span class="badge">1</span> EC2 Instance Metadata (IMDS)</h2>
+
+  <p>IMDS (Instance Metadata Service) lets an EC2 instance learn about <em>itself</em> — without needing an IAM role just to ask "who am I?". The instance talks to a special local URL:</p>
+  <p><code>http://169.254.169.254</code></p>
+
+  <ul>
+    <li>From this URL you can get things like the instance name, public IP, private IP, and more.</li>
+    <li>You can also retrieve the <strong>IAM role name</strong> attached to the instance, and even get temporary <strong>credentials</strong> for that role.</li>
+    <li>You <strong>cannot</strong> see what IAM <em>policy</em> is attached to the role — just the role's credentials.</li>
+  </ul>
+
+  <div class="callout key">
+    <strong class="tag">Terminology</strong>
+    <strong>Metadata</strong> = information about the instance itself. <strong>User data</strong> = the launch script you gave the instance at boot. Both are accessible through this same base URL, but this lecture is only about the metadata side.
+  </div>
+
+  <h3>IMDSv1 vs IMDSv2</h3>
+  <table>
+    <tr><th>Version</th><th>How it works</th><th>Notes</th></tr>
+    <tr><td>IMDSv1</td><td>Query the metadata URL directly</td><td>Simple, but less secure</td></tr>
+    <tr><td>IMDSv2</td><td>Two steps: (1) <code>PUT</code> a request to get a session token, (2) pass that token as a header when calling the metadata URL</td><td>More secure, enabled by default since 2023; more overhead but AWS made this the default for security reasons</td></tr>
+  </table>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#6b6a66"/>
+        </marker>
+      </defs>
+      <rect class="svg-box" x="20" y="50" width="150" height="50" rx="6"/>
+      <text class="svg-text" x="95" y="80" text-anchor="middle">EC2 Instance</text>
+
+      <path class="svg-arrow" d="M170,65 L290,65"/>
+      <text class="svg-label" x="230" y="55" text-anchor="middle" font-size="10">1. PUT for token</text>
+
+      <rect class="svg-box-accent" x="290" y="30" width="200" height="90" rx="8"/>
+      <text class="svg-text" x="390" y="60" text-anchor="middle" font-weight="600">IMDS</text>
+      <text class="svg-label" x="390" y="78" text-anchor="middle" font-size="10">169.254.169.254</text>
+
+      <path class="svg-arrow" d="M290,95 L172,95"/>
+      <text class="svg-label" x="230" y="110" text-anchor="middle" font-size="10">2. returns token</text>
+
+      <path class="svg-arrow" d="M170,130 Q 330,145 490,90" />
+      <text class="svg-label" x="330" y="146" text-anchor="middle" font-size="10">3. GET metadata/credentials with token header</text>
+
+      <rect class="svg-box" x="540" y="50" width="200" height="50" rx="6"/>
+      <text class="svg-text" x="640" y="72" text-anchor="middle" font-size="11">Metadata / IAM</text>
+      <text class="svg-text" x="640" y="88" text-anchor="middle" font-size="11">role credentials</text>
+      <path class="svg-arrow" d="M490,75 L540,75"/>
+    </svg>
+  </div>
+  <p class="caption">IMDSv2 flow: the instance first requests a session token, then uses that token as a header to read its own metadata or IAM role credentials.</p>
+</section>
+
+<!-- 2. IMDS HANDS ON -->
+<section class="card" id="imds-hands-on">
+  <h2><span class="badge">2</span> IMDS Hands On</h2>
+
+  <ul>
+    <li>When launching an EC2 instance, under <strong>Advanced details</strong> there's a <strong>Metadata version</strong> setting: <code>V1 and V2</code> or <code>V2 only</code>.</li>
+    <li><strong>Amazon Linux 2023</strong> defaults to <code>V2 only</code>. Older AMIs like <strong>Amazon Linux 2</strong> let you choose either.</li>
+  </ul>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    On Amazon Linux 2023, trying IMDSv1 directly (plain <code>curl</code> against the metadata URL) returns <code>401 Unauthorized</code>. You must use the IMDSv2 token flow instead.
+  </div>
+
+  <h3>Using IMDSv2 from the instance</h3>
+  <ol>
+    <li>Get a token: <code>TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")</code> (the exact command is looked up from AWS docs).</li>
+    <li>Use the token as a header on subsequent requests: <code>curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/</code></li>
+    <li>A <strong>trailing slash</strong> means you're looking at a "directory" (more data inside); no trailing slash means you get an actual value.</li>
+    <li>Examples: <code>.../meta-data/hostname</code> returns the hostname, <code>.../meta-data/local-ipv4</code> returns the private IP.</li>
+  </ol>
+
+  <h3>Getting IAM role credentials via IMDS</h3>
+  <ul>
+    <li>Path: <code>.../meta-data/iam/security-credentials/</code></li>
+    <li>With <strong>no IAM role</strong> attached to the instance, this returns <code>404 Not Found</code>.</li>
+    <li>After attaching a role (<strong>EC2 console → Actions → Security → Modify IAM role</strong>) and waiting ~30 seconds, querying <code>.../security-credentials/&lt;role-name&gt;</code> returns a JSON blob with an <strong>Access Key ID</strong>, <strong>Secret Access Key</strong>, <strong>Session Token</strong>, and an <strong>expiration</strong> (roughly an hour or so out).</li>
+  </ul>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    You never have to do this by hand in real usage — the AWS CLI and SDK automatically call IMDS behind the scenes to get an instance's IAM role credentials. This lecture is just showing you what's happening under the hood.
+  </div>
+</section>
+
+<!-- 3. CLI PROFILES -->
+<section class="card" id="cli-profiles">
+  <h2><span class="badge">3</span> AWS CLI Profiles</h2>
+
+  <p>If you work with multiple AWS accounts, <strong>profiles</strong> let you store separate sets of credentials locally and switch between them on the command line.</p>
+
+  <ul>
+    <li>Your <code>~/.aws/credentials</code> file normally has a <code>[default]</code> section with an access key + secret key. <code>~/.aws/config</code> has matching <code>[default]</code> settings like region.</li>
+    <li>To add another account, run <code>aws configure --profile &lt;name&gt;</code> (e.g. <code>aws configure --profile my-other-aws-account</code>) and enter that account's access key, secret key, region, and output format.</li>
+    <li>This creates a new named section (e.g. <code>[my-other-aws-account]</code>) in both the credentials and config files, alongside <code>[default]</code>.</li>
+  </ul>
+
+  <h3>Using a profile</h3>
+  <ul>
+    <li><code>aws s3 ls</code> — runs against the <code>default</code> profile.</li>
+    <li><code>aws s3 ls --profile my-other-aws-account</code> — runs against that specific profile instead.</li>
+  </ul>
+
+  <div class="callout tip">
+    <strong class="tag">Real-world tip</strong>
+    Not an exam topic, but genuinely useful: once you're juggling multiple AWS accounts, always set up named profiles and pass <code>--profile</code> explicitly so you don't accidentally run commands against the wrong account.
+  </div>
+</section>
+
+<!-- 4. CLI WITH MFA -->
+<section class="card" id="cli-mfa">
+  <h2><span class="badge">4</span> AWS CLI with MFA</h2>
+
+  <p>To use Multi-Factor Authentication with the CLI/SDK, you need a <strong>temporary session</strong>, obtained via the API call <code>sts get-session-token</code>.</p>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Remember the API name: <code>STS GetSessionToken</code>. You pass it your MFA device's <strong>serial number</strong>, the current <strong>token code</strong> from the device, and how long you want the credentials to last. It returns a temporary <strong>Access Key ID</strong>, <strong>Secret Access Key</strong>, and <strong>Session Token</strong>.
+  </div>
+
+  <h3>Hands-on steps</h3>
+  <ol>
+    <li>In <strong>IAM → your user → Security credentials</strong>, assign a virtual MFA device (scan the QR code with an app like Authy, enter two consecutive MFA codes to confirm).</li>
+    <li>Note the MFA device's ARN — you'll need it as the serial number.</li>
+    <li>Run: <code>aws sts get-session-token --serial-number &lt;mfa-arn&gt; --token-code &lt;current-code&gt;</code></li>
+    <li>This returns temporary credentials (expiring in about an hour).</li>
+    <li>Create a new profile for them: <code>aws configure --profile mfa</code> (enter the temporary access key + secret key).</li>
+    <li>Manually edit <code>~/.aws/credentials</code> to add a line under that profile: <code>aws_session_token = &lt;token&gt;</code> (the <code>configure</code> command doesn't have a prompt for the session token, so you add it directly in the file).</li>
+    <li>Now <code>aws s3 ls --profile mfa</code> makes calls using your temporary, MFA-backed credentials.</li>
+  </ol>
+
+  <div class="callout tip">
+    <strong class="tag">Key takeaway</strong>
+    Even if the hands-on steps feel fiddly, the one thing to remember is: <code>STS GetSessionToken</code> is the API for generating temporary, MFA-authenticated credentials (access key + secret key + session token).
+  </div>
+</section>
+
+<!-- 5. SDK OVERVIEW -->
+<section class="card" id="sdk">
+  <h2><span class="badge">5</span> AWS SDK Overview</h2>
+
+  <p>The <strong>SDK</strong> (Software Development Kit) lets you call AWS services directly from your application's code, instead of going through the CLI.</p>
+
+  <ul>
+    <li>AWS provides official SDKs for many languages: Java, .NET, Node.js, PHP, Python, Go, Ruby, C++ (and the list keeps growing).</li>
+    <li>You use the SDK whenever your code needs to make API calls to AWS services — e.g. DynamoDB or Amazon S3.</li>
+  </ul>
+
+  <div class="analogy">
+    <strong class="tag">Fun fact</strong>
+    The AWS CLI itself is written in Python and uses the Python SDK, <code>Boto3</code>, under the hood. So every time you've been running CLI commands in this course, you've indirectly been using an SDK already.
+  </div>
+
+  <p>The exam expects you to know <em>when</em> to reach for an SDK (i.e., when you're building an application that needs to call AWS programmatically) — deeper hands-on SDK practice comes later in the course, in the Lambda functions section.</p>
+</section>
+
+<!-- 6. EXPONENTIAL BACKOFF -->
+<section class="card" id="backoff">
+  <h2><span class="badge">6</span> Exponential Backoff & Service Limit Increase</h2>
+
+  <p>AWS has two types of limits ("quotas"):</p>
+  <table>
+    <tr><th>Type</th><th>What it limits</th><th>Example</th></tr>
+    <tr><td>API rate limits</td><td>How many times you can call a specific API per second</td><td><code>DescribeInstances</code> (EC2): 100 calls/sec. <code>GetObject</code> (S3): 5,500 GETs/sec per prefix.</td></tr>
+    <tr><td>Service quotas (service limits)</td><td>How many resources you can run at once</td><td>On-Demand Standard instances: up to 1,152 vCPUs per account</td></tr>
+  </table>
+
+  <ul>
+    <li>Going over an <strong>API rate limit</strong> gets you throttled (intermittent errors) — the fix is an <strong>exponential backoff</strong> retry strategy.</li>
+    <li>If you're <em>consistently</em> hitting rate limits due to real heavy usage, request an <strong>API throttling limit increase</strong> from AWS.</li>
+    <li>Going over a <strong>service quota</strong> means requesting a <strong>service limit increase</strong> (open a support ticket, or call the <strong>Service Quotas API</strong> programmatically).</li>
+  </ul>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Whenever you see a "throttling exception" in an exam question, the answer is almost always: implement <strong>exponential backoff</strong>.
+  </div>
+
+  <h3>How exponential backoff works</h3>
+  <p>Each time a request is throttled, you retry — but you wait <strong>double</strong> the time before the next retry: 1s → 2s → 4s → 8s → 16s...</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <line x1="30" y1="100" x2="750" y2="100" stroke="#6b6a66" stroke-width="1.5"/>
+      <rect class="svg-box-accent" x="30" y="80" width="30" height="20"/>
+      <text class="svg-label" x="45" y="72" text-anchor="middle" font-size="10">1s</text>
+      <rect class="svg-box-accent" x="120" y="70" width="30" height="30"/>
+      <text class="svg-label" x="135" y="62" text-anchor="middle" font-size="10">2s</text>
+      <rect class="svg-box-accent" x="250" y="55" width="30" height="45"/>
+      <text class="svg-label" x="265" y="47" text-anchor="middle" font-size="10">4s</text>
+      <rect class="svg-box-accent" x="430" y="35" width="30" height="65"/>
+      <text class="svg-label" x="445" y="27" text-anchor="middle" font-size="10">8s</text>
+      <rect class="svg-box-accent" x="680" y="10" width="30" height="90"/>
+      <text class="svg-label" x="695" y="5" text-anchor="middle" font-size="10">16s</text>
+      <text class="svg-label" x="45" y="115" text-anchor="middle" font-size="9">retry 1</text>
+      <text class="svg-label" x="135" y="115" text-anchor="middle" font-size="9">retry 2</text>
+      <text class="svg-label" x="265" y="115" text-anchor="middle" font-size="9">retry 3</text>
+      <text class="svg-label" x="445" y="115" text-anchor="middle" font-size="9">retry 4</text>
+      <text class="svg-label" x="695" y="115" text-anchor="middle" font-size="9">retry 5</text>
+    </svg>
+  </div>
+  <p class="caption">Each retry waits twice as long as the last one — this spreads out the load so a server under pressure gets breathing room instead of getting hit even harder.</p>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    If you use the AWS SDK, exponential backoff retry logic is <strong>already built in</strong>. If you're calling the raw AWS API yourself, you are responsible for implementing it yourself.
+  </div>
+</section>
+
+<!-- 7. SIGV4 -->
+<section class="card" id="sigv4">
+  <h2><span class="badge">7</span> AWS Signature v4 Signing (SigV4)</h2>
+
+  <p>Every AWS HTTP API call needs to be <strong>signed</strong> so AWS knows who's making the request and whether they're authorized. Signing uses your credentials (access key + secret key) and the signing process itself is called <strong>SigV4 (Signature Version 4)</strong>.</p>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    You don't need to know how to manually compute a SigV4 signature (it's a complicated 4-step process) — the CLI and SDK do this automatically for every request. Some requests, like reading a <em>public</em> S3 object, don't need to be signed at all; most other API calls do.
+  </div>
+
+  <h3>Two ways to send the signature</h3>
+  <table>
+    <tr><th>Method</th><th>How</th></tr>
+    <tr><td>Authorization header</td><td>The computed signature is sent in the HTTP <code>Authorization</code> header. This is what the CLI does by default.</td></tr>
+    <tr><td>Query string</td><td>The signature is embedded directly in the URL, under the <code>X-Amz-Signature</code> query parameter.</td></tr>
+  </table>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="20" width="180" height="45" rx="6"/>
+      <text class="svg-text" x="110" y="47" text-anchor="middle">HTTP Request</text>
+      <path class="svg-arrow" d="M200,42 L320,42"/>
+      <rect class="svg-box-accent" x="320" y="20" width="200" height="45" rx="6"/>
+      <text class="svg-text" x="420" y="40" text-anchor="middle" font-size="11">Authorization header</text>
+      <text class="svg-label" x="420" y="55" text-anchor="middle" font-size="9">(what the CLI uses)</text>
+
+      <rect class="svg-box" x="20" y="90" width="180" height="45" rx="6"/>
+      <text class="svg-text" x="110" y="117" text-anchor="middle">HTTP Request</text>
+      <path class="svg-arrow" d="M200,112 L320,112"/>
+      <rect class="svg-box-accent" x="320" y="90" width="200" height="45" rx="6"/>
+      <text class="svg-text" x="420" y="110" text-anchor="middle" font-size="11">Query string</text>
+      <text class="svg-label" x="420" y="125" text-anchor="middle" font-size="9">?X-Amz-Signature=...</text>
+    </svg>
+  </div>
+  <p class="caption">Two valid places to carry a SigV4 signature: baked into the Authorization header, or appended to the URL as a query parameter.</p>
+
+  <p>Example from the console: opening an S3 object generates a browser URL containing a <strong>security token</strong>, the <strong>algorithm</strong> (<code>AWS4-HMAC-SHA256</code> / SigV4), a <strong>date</strong>, an <strong>expiration</strong>, <strong>AMZ credentials</strong> (which account, etc.), and the <strong>AMZ signature</strong> itself — all passed as query string parameters so the browser can fetch the object without a separate Authorization header.</p>
+</section>
+
+<!-- CHEAT SHEET -->
+<section class="card cheatsheet" id="cheatsheet">
+  <h2><span class="badge">✓</span> Cheat Sheet</h2>
+
+  <h3>Key facts to remember</h3>
+  <ul>
+    <li>IMDS base URL: <code>169.254.169.254</code>. IMDSv2 requires a token (via <code>PUT</code>) passed as a header on every subsequent request; IMDSv1 is direct but less secure and disabled by default on newer AMIs (e.g. Amazon Linux 2023).</li>
+    <li>You can read an instance's IAM role credentials from IMDS at <code>.../iam/security-credentials/&lt;role&gt;</code>, but never the policy attached to the role.</li>
+    <li>Use <code>aws configure --profile &lt;name&gt;</code> and <code>--profile &lt;name&gt;</code> on commands to manage multiple AWS accounts from one machine.</li>
+    <li><code>STS GetSessionToken</code> is the API for getting temporary, MFA-backed credentials (access key, secret key, session token).</li>
+    <li>The CLI is built on the Python SDK (<code>Boto3</code>) — SDKs exist for many languages and are how applications call AWS programmatically.</li>
+    <li>Throttling exception → think <strong>exponential backoff</strong>. SDK includes this automatically; raw API usage means you implement it yourself.</li>
+    <li>Two kinds of AWS limits: <strong>API rate limits</strong> (calls/sec, fixed with backoff or a throttling limit increase) vs <strong>service quotas</strong> (resource counts, fixed with a service limit increase / Service Quotas API).</li>
+    <li>Every signed AWS API request uses <strong>SigV4</strong>; the signature travels either in the <code>Authorization</code> header or as an <code>X-Amz-Signature</code> query string parameter.</li>
+  </ul>
+
+  <h3>Decision guide</h3>
+  <table>
+    <tr><th>Situation</th><th>What to do</th></tr>
+    <tr><td>App needs to call AWS from code</td><td>Use the AWS SDK for your language</td></tr>
+    <tr><td>Managing 2+ AWS accounts locally</td><td>Set up named CLI profiles, pass <code>--profile</code></td></tr>
+    <tr><td>Need temporary MFA-authenticated CLI access</td><td><code>aws sts get-session-token --serial-number ... --token-code ...</code></td></tr>
+    <tr><td>Getting throttled repeatedly by an API</td><td>Implement exponential backoff; if it's a real sustained need, request a rate limit increase</td></tr>
+    <tr><td>Hitting a resource count ceiling (e.g. vCPUs)</td><td>Request a service quota increase</td></tr>
+  </table>
+
+  <h3>Mental model</h3>
+  <p>This section is all about the plumbing behind every AWS request: an EC2 instance can ask a special local address who it is and borrow its IAM role's credentials (IMDS); a person can juggle multiple accounts and even prove their identity with MFA to get short-lived credentials (CLI profiles + STS); code talks to AWS the same way the CLI does, just through an SDK instead of a terminal; every request that reaches AWS gets rate-limited and needs to be signed with SigV4 so AWS can trust it; and when things get throttled, the fix is simply to back off exponentially rather than everyone hammering the API harder.</p>
+</section>
+
+<a class="back-to-top" href="#top">↑ Back to top</a>
+
+</div>
+</body>
+</html>

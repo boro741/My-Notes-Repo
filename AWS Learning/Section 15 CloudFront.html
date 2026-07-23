@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 15 — CloudFront — Notes</title>
+<style>
+  :root {
+    --accent: #e8830f;
+    --accent-dark: #c96a08;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --border: #e3e0da;
+    --text: #2b2a28;
+    --text-muted: #6b6a66;
+    --green: #2e7d32;
+    --green-bg: #eef7ee;
+    --red: #c0392b;
+    --red-bg: #fdecea;
+    --amber: #b8790a;
+    --amber-bg: #fff4e2;
+    --purple: #6a4fb3;
+    --purple-bg: #f3f0fb;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  header {
+    padding-bottom: 24px;
+    border-bottom: 3px solid var(--accent);
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 2rem;
+    color: var(--text);
+  }
+
+  header h1 span {
+    color: var(--accent);
+  }
+
+  header p.subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+  }
+
+  nav.toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 32px;
+  }
+
+  nav.toc h2 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  nav.toc ol {
+    margin: 0;
+    padding-left: 22px;
+    columns: 2;
+    column-gap: 24px;
+  }
+
+  nav.toc li {
+    margin-bottom: 6px;
+    break-inside: avoid;
+  }
+
+  nav.toc a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  nav.toc a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 24px;
+    scroll-margin-top: 20px;
+  }
+
+  .card h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 14px;
+    font-size: 1.3rem;
+    color: var(--text);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    color: var(--accent-dark);
+    font-size: 1.05rem;
+    margin: 20px 0 8px;
+  }
+
+  a { color: var(--accent-dark); }
+
+  code {
+    background: #f1eee7;
+    border: 1px solid #e6e2d8;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.92em;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    color: #7a4b00;
+  }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 0.94rem;
+  }
+
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f7f2ea;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) td {
+    background: #fcfbf9;
+  }
+
+  .callout {
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+
+  .callout strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .callout.tip {
+    background: var(--green-bg);
+    border-color: var(--green);
+  }
+  .callout.tip strong.tag { color: var(--green); }
+
+  .callout.warning {
+    background: var(--red-bg);
+    border-color: var(--red);
+  }
+  .callout.warning strong.tag { color: var(--red); }
+
+  .callout.key {
+    background: var(--amber-bg);
+    border-color: var(--amber);
+  }
+  .callout.key strong.tag { color: var(--amber); }
+
+  .analogy {
+    border: 1.5px dashed var(--purple);
+    background: var(--purple-bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+  .analogy strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--purple);
+  }
+
+  .diagram {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fdfcfa;
+    padding: 16px;
+    margin: 16px 0 6px;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  .diagram svg {
+    max-width: 100%;
+  }
+
+  .caption {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 4px 0 16px;
+    font-style: italic;
+  }
+
+  .cheatsheet {
+    border: 2px solid var(--accent);
+  }
+
+  .cheatsheet h2 { color: var(--accent-dark); }
+
+  .back-to-top {
+    display: block;
+    text-align: center;
+    margin-top: 36px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    text-decoration: none;
+  }
+  .back-to-top:hover { text-decoration: underline; }
+
+  .svg-box { fill: #fff; stroke: #c8917a; stroke-width: 1.5; }
+  .svg-box-accent { fill: #fff4e2; stroke: var(--accent); stroke-width: 1.5; }
+  .svg-text { font-family: -apple-system, sans-serif; font-size: 12px; fill: #2b2a28; }
+  .svg-label { font-family: -apple-system, sans-serif; font-size: 11px; fill: #6b6a66; }
+  .svg-arrow { stroke: #6b6a66; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+
+  /* ══ RESPONSIVE — iPhone 15 & iPad 10 ══ */
+
+  /* iPad 10 landscape (1180px) — already fine, just ensure padding */
+  @media (max-width: 1024px) {
+    .wrap { padding-left: 20px; padding-right: 20px; }
+    nav.toc ol { columns: 2; }
+  }
+
+  /* iPad 10 portrait (820px) */
+  @media (max-width: 860px) {
+    .wrap { padding: 20px 18px 60px; }
+    header.page-header h1, header.hero h1 { font-size: 22px; }
+    nav.toc ol { columns: 1; }
+    section.lecture, section.lesson { padding: 18px 20px; }
+    table { font-size: 13px; }
+    th, td { padding: 7px 9px; }
+  }
+
+  /* iPhone 15 & small phones (≤ 480px) */
+  @media (max-width: 480px) {
+    .wrap { padding: 16px 14px 50px; }
+
+    /* Header */
+    header.page-header h1, header.hero h1 { font-size: 19px; line-height: 1.3; }
+    header.page-header p, header.hero p   { font-size: 13px; }
+    header.hero { padding: 24px 18px; border-radius: 10px; }
+
+    /* TOC */
+    nav.toc { padding: 14px 16px; border-radius: 10px; }
+    nav.toc ol { columns: 1; padding-left: 16px; }
+    nav.toc li { font-size: 14px; margin-bottom: 8px; }
+
+    /* Sections */
+    section.lecture, section.lesson {
+      padding: 16px 16px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+    }
+    section.lecture h2, section.lesson h2 {
+      font-size: 17px;
+      line-height: 1.3;
+    }
+    h3 { font-size: 15px; }
+
+    /* Tables — make scrollable horizontally */
+    table {
+      display: block;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    th, td { padding: 7px 10px; }
+
+    /* Code blocks */
+    code, .prompt {
+      font-size: 12.5px;
+      word-break: break-all;
+    }
+
+    /* Flex/grid layout components — stack on mobile */
+    .framework, .three-legs {
+      flex-direction: column;
+      gap: 10px;
+    }
+    .framework .step, .leg {
+      min-width: unset;
+      width: 100%;
+    }
+
+    /* Lists */
+    ul, ol { padding-left: 18px; }
+    li { font-size: 14px; margin-bottom: 6px; }
+    ul.checklist li { font-size: 14px; }
+
+    /* Callouts */
+    .callout, .tip, .warn, .example, .analogy, .summary-box {
+      padding: 10px 13px;
+      font-size: 14px;
+    }
+
+    /* Back to top links */
+    .top-link, a.back-top { font-size: 13px; }
+
+    /* Cheat sheet */
+    .cheat { padding: 16px 16px; }
+  }
+
+  /* Tiny phones ≤ 360px */
+  @media (max-width: 360px) {
+    .wrap { padding: 12px 12px 40px; }
+    section.lecture h2, section.lesson h2 { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header id="top">
+  <h1><span>Section 15</span> — CloudFront</h1>
+  <p class="subtitle">My notes on CloudFront as a CDN — caching, invalidations, cache behaviors, origins, geo restriction, signed URLs, and advanced options.</p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#overview">CloudFront Overview</a></li>
+    <li><a href="#hands-on">CloudFront Hands On</a></li>
+    <li><a href="#caching">Caching & Cache Policies</a></li>
+    <li><a href="#invalidations">Cache Invalidations</a></li>
+    <li><a href="#behaviors">Cache Behaviors</a></li>
+    <li><a href="#caching-hands-on">Caching & Invalidations Hands On</a></li>
+    <li><a href="#alb-origin">ALB/EC2 as an Origin</a></li>
+    <li><a href="#geo-restriction">Geo Restriction</a></li>
+    <li><a href="#signed-url">Signed URL / Signed Cookies</a></li>
+    <li><a href="#key-groups">Signed URL — Key Groups & Hands On</a></li>
+    <li><a href="#advanced">Advanced Concepts</a></li>
+    <li><a href="#real-time-logs">Real-Time Logs</a></li>
+    <li><a href="#cheatsheet">Cheat Sheet</a></li>
+  </ol>
+</nav>
+
+<!-- 1. OVERVIEW -->
+<section class="card" id="overview">
+  <h2><span class="badge">1</span> CloudFront Overview</h2>
+
+  <p>CloudFront is AWS's <strong>CDN (Content Delivery Network)</strong>. Whenever you see "CDN" on the exam, think CloudFront.</p>
+
+  <ul>
+    <li>It caches your website/content at <strong>edge locations</strong> around the world, so users get content from somewhere close to them → lower latency, better experience.</li>
+    <li>Made up of hundreds of points of presence globally (edge locations + caches).</li>
+    <li>Because content is spread globally, CloudFront also provides <strong>DDoS protection</strong> — an attack hitting one location doesn't take down everything, and it works alongside AWS Shield and WAF (covered later in the security section).</li>
+  </ul>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 190" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#6b6a66"/>
+        </marker>
+      </defs>
+      <rect class="svg-box-accent" x="320" y="80" width="140" height="45" rx="6"/>
+      <text class="svg-text" x="390" y="107" text-anchor="middle" font-size="11">Origin: S3 (Australia)</text>
+
+      <rect class="svg-box" x="20" y="20" width="140" height="40" rx="6"/>
+      <text class="svg-text" x="90" y="44" text-anchor="middle" font-size="10">Edge: USA</text>
+      <path class="svg-arrow" d="M160,45 Q 250,60 320,95"/>
+
+      <rect class="svg-box" x="620" y="20" width="140" height="40" rx="6"/>
+      <text class="svg-text" x="690" y="44" text-anchor="middle" font-size="10">Edge: China</text>
+      <path class="svg-arrow" d="M620,45 Q 530,60 460,95"/>
+
+      <rect class="svg-box" x="20" y="140" width="140" height="40" rx="6"/>
+      <text class="svg-text" x="90" y="164" text-anchor="middle" font-size="10">Edge: Brazil</text>
+      <path class="svg-arrow" d="M160,155 Q 250,140 320,110"/>
+
+      <rect class="svg-box" x="620" y="140" width="140" height="40" rx="6"/>
+      <text class="svg-text" x="690" y="164" text-anchor="middle" font-size="10">Edge: Europe</text>
+      <path class="svg-arrow" d="M620,155 Q 530,140 460,110"/>
+    </svg>
+  </div>
+  <p class="caption">The first user in a region pulls content from the origin through their nearest edge location; every later user nearby gets served straight from that edge's cache.</p>
+
+  <h3>Origins CloudFront can connect to</h3>
+  <ul>
+    <li><strong>Amazon S3 bucket</strong> — for distributing/caching files, or even uploading files to S3 through CloudFront. Secured via <strong>Origin Access Control (OAC)</strong>.</li>
+    <li><strong>VPC origin</strong> — connect privately to things inside your VPC: private application load balancers, network load balancers, or EC2 instances.</li>
+    <li><strong>Custom origin over HTTP</strong> — e.g. an S3 static website (must be enabled as a website first) or any public HTTP backend, like a public load balancer.</li>
+  </ul>
+
+  <h3>How it works at a high level</h3>
+  <p>A client's HTTP request hits an edge location. If the content is already cached there, it's served immediately. If not, the edge location fetches it from the origin, serves it, and <strong>caches it locally</strong> so the next request for the same content doesn't need to go back to the origin.</p>
+
+  <h3>CloudFront vs S3 Cross-Region Replication</h3>
+  <table>
+    <tr><th></th><th>CloudFront</th><th>S3 Cross-Region Replication</th></tr>
+    <tr><td>Coverage</td><td>Global edge network (~216 points of presence)</td><td>Only the specific regions you set up</td></tr>
+    <tr><td>Freshness</td><td>Cached, e.g. for about a day</td><td>Updated near real-time, no caching</td></tr>
+    <tr><td>Direction</td><td>Read (caching)</td><td>Read-only replicated copy</td></tr>
+    <tr><td>Best for</td><td>Static content that needs to be fast everywhere</td><td>Dynamic content that changes often, needed at low latency in a few regions</td></tr>
+  </table>
+</section>
+
+<!-- 2. HANDS ON -->
+<section class="card" id="hands-on">
+  <h2><span class="badge">2</span> CloudFront Hands On</h2>
+
+  <ul>
+    <li>Create an S3 bucket, upload some files (private by default) — trying the plain Object URL gives <code>Access Denied</code>; the console's "Open" link works because it generates a pre-signed URL.</li>
+    <li>Create a CloudFront distribution: choose a plan (the <strong>Free plan</strong> covers plenty — enough requests/month, always-on DNS protection, geographic traffic blocking, global CDN, free TLS certs). Paid plans add things like edge key-value store, advanced DDoS protection, uptime SLA.</li>
+    <li>Set origin type = <strong>Amazon S3</strong>, point it at your bucket, and allow CloudFront private access to the bucket using the recommended origin/cache settings.</li>
+  </ul>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    Creating the distribution automatically updates your S3 bucket policy to allow access <strong>only</strong> from your CloudFront distribution — you can see this new statement under the bucket's Permissions tab.
+  </div>
+
+  <ul>
+    <li>Once deployed, visiting the CloudFront domain name directly gives <code>Access Denied</code> (there's no default file at the root) — but a specific path like <code>/coffee.jpg</code> or <code>/index.html</code> loads correctly, even though the underlying S3 objects are private.</li>
+    <li>Reloading a previously-requested file (like <code>/beach.jpeg</code>) is <strong>near-instant</strong> — that's the cache doing its job.</li>
+  </ul>
+</section>
+
+<!-- 3. CACHING & CACHE POLICIES -->
+<section class="card" id="caching">
+  <h2><span class="badge">3</span> Caching & Cache Policies</h2>
+
+  <ul>
+    <li>Cache lives at <strong>each edge location</strong> — as many caches as edge locations.</li>
+    <li>Every cached object is identified by a <strong>Cache Key</strong>. By default, that's just the <strong>hostname</strong> + <strong>resource path</strong> of the URL (e.g. <code>mywebsite.com</code> + <code>/content/stories/example-story.html</code>).</li>
+    <li>Goal: maximize the <strong>cache hit ratio</strong> (minimize requests back to the origin).</li>
+  </ul>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 140" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="45" width="130" height="45" rx="6"/>
+      <text class="svg-text" x="85" y="72" text-anchor="middle" font-size="11">Client request</text>
+      <path class="svg-arrow" d="M150,67 L260,67"/>
+      <rect class="svg-box-accent" x="260" y="20" width="180" height="95" rx="6"/>
+      <text class="svg-text" x="350" y="45" text-anchor="middle" font-size="11" font-weight="600">Edge Location</text>
+      <text class="svg-label" x="350" y="65" text-anchor="middle" font-size="9">cached? → serve immediately</text>
+      <text class="svg-label" x="350" y="82" text-anchor="middle" font-size="9">not cached →</text>
+      <path class="svg-arrow" d="M440,90 L560,90"/>
+      <rect class="svg-box" x="560" y="65" width="150" height="45" rx="6"/>
+      <text class="svg-text" x="635" y="92" text-anchor="middle" font-size="11">Origin</text>
+      <text class="svg-label" x="635" y="125" text-anchor="middle" font-size="9">response gets cached at the edge for next time</text>
+    </svg>
+  </div>
+  <p class="caption">A cache miss forwards the request to the origin, then stores the response at the edge so the next matching request is served instantly.</p>
+
+  <h3>Enhancing the Cache Key: Cache Policy</h3>
+  <p>Sometimes content varies by user, device, language, or location — so you may want to include more than just hostname + path in the Cache Key. A <strong>CloudFront Cache Policy</strong> lets you configure:</p>
+  <ul>
+    <li><strong>Headers</strong> — none, a whitelist of specific headers, all, or all-except.</li>
+    <li><strong>Cookies</strong> — none, whitelist, all, or all-except.</li>
+    <li><strong>Query strings</strong> — none, whitelist, all, or all-except.</li>
+    <li><strong>TTL</strong> — from 0 seconds up to 1 year (also controllable via <code>Cache-Control</code> or <code>Expires</code> headers).</li>
+  </ul>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Whatever headers/cookies/query strings you include in the Cache Key are <strong>automatically forwarded to the origin</strong> too. E.g. whitelisting a <code>language</code> header means it's both part of the cache key <em>and</em> sent to the origin so it can respond in the right language.
+  </div>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    The more you include in the Cache Key (especially "all" query strings/cookies/headers), the <strong>worse</strong> your cache hit ratio gets — more variations mean fewer requests share a cached entry.
+  </div>
+
+  <h3>Origin Request Policy</h3>
+  <p>What if you want to forward extra data to the origin <strong>without</strong> it affecting the Cache Key? That's what an <strong>Origin Request Policy</strong> is for — it can add extra headers, cookies, or query strings to the origin request (even ones the viewer never sent, like a secret API key), but none of that extra data is part of the cache key.</p>
+
+  <div class="analogy">
+    <strong class="tag">Analogy</strong>
+    Think of the Cache Policy as deciding what goes on the "label" you use to file something away (so similar requests find the same cached copy), while the Origin Request Policy is extra info stapled to the request when you actually go ask the origin for something — it helps the origin do its job, but doesn't change how things get filed in the cache.
+  </div>
+</section>
+
+<!-- 4. CACHE INVALIDATIONS -->
+<section class="card" id="invalidations">
+  <h2><span class="badge">4</span> Cache Invalidations</h2>
+
+  <p>If you update your origin content, edge locations won't know until the cached copy's <strong>TTL expires</strong>. If you need the update to show up immediately, you can force a refresh — that's a <strong>CloudFront invalidation</strong>.</p>
+
+  <ul>
+    <li>You pass in a file path — either <code>/*</code> to invalidate everything, or something scoped like <code>/images/*</code>.</li>
+    <li>Invalidated files are removed from every edge location's cache — the next request for them forces a fresh fetch from the origin.</li>
+  </ul>
+
+  <div class="callout tip">
+    <strong class="tag">Tip</strong>
+    Invalidate only what changed (e.g. <code>/index.html</code> and <code>/images/*</code>) rather than always nuking the whole cache with <code>/*</code>, to avoid unnecessary origin load.
+  </div>
+</section>
+
+<!-- 5. CACHE BEHAVIORS -->
+<section class="card" id="behaviors">
+  <h2><span class="badge">5</span> Cache Behaviors</h2>
+
+  <p>You can route different <strong>URL path patterns</strong> to different origins or apply different caching rules per path. E.g. <code>/images/*</code> → S3, <code>/api/*</code> → your app origin, <code>/*</code> (the <strong>default cache behavior</strong>) → whatever's left.</p>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    The default cache behavior (<code>/*</code>) is always evaluated <strong>last</strong> — more specific path patterns are checked first, and if nothing matches, it falls back to the default.
+  </div>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="55" width="140" height="45" rx="6"/>
+      <text class="svg-text" x="90" y="82" text-anchor="middle" font-size="11">Incoming request</text>
+      <path class="svg-arrow" d="M160,65 L290,25"/>
+      <rect class="svg-box-accent" x="290" y="5" width="170" height="40" rx="6"/>
+      <text class="svg-text" x="375" y="20" text-anchor="middle" font-size="10">/api/*</text>
+      <text class="svg-text" x="375" y="35" text-anchor="middle" font-size="9">→ Application Load Balancer</text>
+
+      <path class="svg-arrow" d="M160,80 L290,80"/>
+      <rect class="svg-box-accent" x="290" y="60" width="170" height="40" rx="6"/>
+      <text class="svg-text" x="375" y="75" text-anchor="middle" font-size="10">/images/*</text>
+      <text class="svg-text" x="375" y="90" text-anchor="middle" font-size="9">→ S3 bucket</text>
+
+      <path class="svg-arrow" d="M160,95 L290,130"/>
+      <rect class="svg-box-accent" x="290" y="115" width="170" height="40" rx="6"/>
+      <text class="svg-text" x="375" y="130" text-anchor="middle" font-size="10">/* (default)</text>
+      <text class="svg-text" x="375" y="145" text-anchor="middle" font-size="9">→ default origin</text>
+    </svg>
+  </div>
+  <p class="caption">Cache behaviors route requests to different origins based on the path — most specific pattern wins, default (/*) always catches whatever's left.</p>
+
+  <h3>Use case: gating access with a login page</h3>
+  <p>Set up a cache behavior for <code>/login</code> that goes to an EC2 instance which generates <strong>CloudFront signed cookies</strong>. The user then uses those signed cookies to access the default cache behavior (everything else, e.g. an S3 bucket). If they try to access content without logging in first, the default behavior can be configured to require signed cookies, redirecting them back to <code>/login</code>.</p>
+
+  <h3>Use case: maximizing cache hits</h3>
+  <p>Static content (e.g. from S3) can use a simple cache policy with no headers/cookies to maximize hits. Dynamic content (e.g. a REST API behind a load balancer + EC2) may need headers/cookies in the cache policy to serve correctly personalized responses.</p>
+</section>
+
+<!-- 6. CACHING HANDS ON -->
+<section class="card" id="caching-hands-on">
+  <h2><span class="badge">6</span> Caching & Invalidations Hands On</h2>
+
+  <ul>
+    <li>In the distribution's default behavior, you can create a <strong>Cache Policy</strong> (set TTL min/max/default, choose which headers/cookies/query strings go into the cache key) and, optionally, an <strong>Origin Request Policy</strong> (extra headers/cookies/query strings forwarded to the origin only).</li>
+    <li>You can add a <strong>new cache behavior</strong> (e.g. for <code>/images/*</code>) pointing to a different origin, with its own cache key and origin request policy — multiple behaviors coexist, most specific wins.</li>
+  </ul>
+
+  <h3>Demonstrating TTL + invalidation</h3>
+  <ol>
+    <li>Edit <code>index.html</code>, re-upload it to S3 (overwriting, since versioning isn't enabled here).</li>
+    <li>Opening the file directly from S3 shows the updated content immediately.</li>
+    <li>Refreshing the <strong>CloudFront</strong> URL still shows the <strong>old</strong> content — because it's cached and the TTL (1 day) hasn't expired yet.</li>
+    <li>Creating an invalidation for <code>/*</code> clears the cache, and refreshing the CloudFront URL now shows the updated content, freshly fetched from S3.</li>
+  </ol>
+</section>
+
+<!-- 7. ALB/EC2 ORIGIN -->
+<section class="card" id="alb-origin">
+  <h2><span class="badge">7</span> ALB/EC2 as an Origin</h2>
+
+  <h3>The new, better way: VPC origins</h3>
+  <p>Lets CloudFront deliver content directly from apps hosted in your <strong>private subnets</strong> — private ALBs, NLBs, or EC2 instances — without exposing anything to the public internet.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="45" width="130" height="45" rx="6"/>
+      <text class="svg-text" x="85" y="72" text-anchor="middle" font-size="11">User</text>
+      <path class="svg-arrow" d="M150,67 L260,67"/>
+      <rect class="svg-box-accent" x="260" y="45" width="150" height="45" rx="6"/>
+      <text class="svg-text" x="335" y="72" text-anchor="middle" font-size="10">CloudFront (edge)</text>
+      <path class="svg-arrow" d="M410,67 L520,67"/>
+      <text class="svg-label" x="465" y="55" text-anchor="middle" font-size="9">VPC origin</text>
+      <rect class="svg-box" x="520" y="20" width="220" height="90" rx="8"/>
+      <text class="svg-text" x="630" y="45" text-anchor="middle" font-size="10" font-weight="600">Private VPC</text>
+      <text class="svg-label" x="630" y="65" text-anchor="middle" font-size="9">Private ALB / NLB</text>
+      <text class="svg-label" x="630" y="82" text-anchor="middle" font-size="9">Private EC2 instances</text>
+    </svg>
+  </div>
+  <p class="caption">VPC origins let CloudFront reach private ALBs, NLBs, or EC2 instances directly — nothing needs to be exposed to the public internet.</p>
+
+  <h3>The old way (before VPC origins existed)</h3>
+  <ul>
+    <li>Your EC2 instance or ALB had to be <strong>public</strong>.</li>
+    <li>You'd look up the full list of CloudFront's public edge-location IPs and configure your security group to allow traffic <strong>only</strong> from those IPs.</li>
+  </ul>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    The old method was tedious (manually tracking CloudFront's IP list) and riskier — if someone accidentally loosens the security group, your instance becomes exposed to more than just CloudFront. VPC origins avoid this risk entirely since the backend never needs a public IP.
+  </div>
+</section>
+
+<!-- 8. GEO RESTRICTION -->
+<section class="card" id="geo-restriction">
+  <h2><span class="badge">8</span> Geo Restriction</h2>
+
+  <p>Restrict who can access your distribution based on the <strong>country</strong> they're connecting from (determined via a third-party geo-IP database).</p>
+
+  <ul>
+    <li><strong>Allow list</strong> — only approved countries can access.</li>
+    <li><strong>Block list</strong> — banned countries are denied.</li>
+    <li>Use case: enforcing copyright restrictions on content by region.</li>
+  </ul>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    Geo restriction (like other security options) wasn't available on the <strong>Free plan</strong> at the time of recording — you needed a paid plan or "Pay as You Go" billing to access it under the distribution's Security settings.
+  </div>
+</section>
+
+<!-- 9. SIGNED URL / COOKIES -->
+<section class="card" id="signed-url">
+  <h2><span class="badge">9</span> Signed URL / Signed Cookies</h2>
+
+  <p>Want to make a CloudFront distribution private, but still give specific people access to premium/paid content — while knowing who has access to what? Use a <strong>CloudFront signed URL</strong> or <strong>signed cookie</strong>.</p>
+
+  <p>When creating either, you attach a policy defining:</p>
+  <ul>
+    <li><strong>Expiration</strong> — when it stops working.</li>
+    <li><strong>IP ranges</strong> allowed to use it (if you know your clients' IPs).</li>
+    <li><strong>Trusted signers</strong> — which accounts are allowed to create signed URLs/cookies.</li>
+  </ul>
+
+  <table>
+    <tr><th></th><th>Signed URL</th><th>Signed Cookie</th></tr>
+    <tr><td>Scope</td><td>One URL per file</td><td>One cookie can unlock many files</td></tr>
+    <tr><td>Best for</td><td>Sharing individual files</td><td>Giving access to a batch of content (e.g. a whole premium section of a site)</td></tr>
+  </table>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="45" width="130" height="45" rx="6"/>
+      <text class="svg-text" x="85" y="72" text-anchor="middle" font-size="11">Client</text>
+      <path class="svg-arrow" d="M150,60 L280,40"/>
+      <text class="svg-label" x="215" y="35" text-anchor="middle" font-size="9">auth to your app</text>
+      <rect class="svg-box" x="280" y="15" width="160" height="40" rx="6"/>
+      <text class="svg-text" x="360" y="40" text-anchor="middle" font-size="10">Your application</text>
+      <path class="svg-arrow" d="M280,45 L150,80"/>
+      <text class="svg-label" x="215" y="95" text-anchor="middle" font-size="9">returns signed URL</text>
+      <path class="svg-arrow" d="M150,90 L560,90"/>
+      <text class="svg-label" x="350" y="105" text-anchor="middle" font-size="9">client uses signed URL</text>
+      <rect class="svg-box-accent" x="560" y="65" width="160" height="45" rx="6"/>
+      <text class="svg-text" x="640" y="92" text-anchor="middle" font-size="10">CloudFront → S3 (OAC)</text>
+    </svg>
+  </div>
+  <p class="caption">The app authenticates the user, generates a signed URL via the AWS SDK, and hands it back — the client then uses it directly against CloudFront.</p>
+
+  <h3>CloudFront Signed URL vs S3 Pre-signed URL</h3>
+  <table>
+    <tr><th></th><th>CloudFront Signed URL</th><th>S3 Pre-signed URL</th></tr>
+    <tr><td>Works with</td><td>Any origin (S3, HTTP backend, etc.)</td><td>S3 only</td></tr>
+    <tr><td>Key management</td><td>Account-wide key pair or key group; can be managed by any sufficiently-permissioned IAM user (key groups) — or root only (old key pair method)</td><td>Issued using the signer's own IAM credentials/permissions</td></tr>
+    <tr><td>Filtering</td><td>By IP, path, date, expiration</td><td>Limited lifetime only</td></tr>
+    <tr><td>Caching</td><td>Leverages all of CloudFront's caching</td><td>No caching layer</td></tr>
+    <tr><td>Use when</td><td>CloudFront sits in front of S3 (bucket policy restricts direct S3 access to CloudFront/OAC)</td><td>Users access S3 directly, no CloudFront involved</td></tr>
+  </table>
+</section>
+
+<!-- 10. KEY GROUPS + HANDS ON -->
+<section class="card" id="key-groups">
+  <h2><span class="badge">10</span> Signed URL — Key Groups & Hands On</h2>
+
+  <h3>Two ways to manage signing keys</h3>
+  <table>
+    <tr><th>Method</th><th>Details</th></tr>
+    <tr><td><strong>Trusted key group</strong> (recommended)</td><td>Manage via APIs, rotate keys, secure with IAM. Any sufficiently-permissioned IAM user can manage it.</td></tr>
+    <tr><td>Account CloudFront key pair (old method)</td><td>Requires the <strong>root account</strong> and the AWS console — no APIs, can't be automated, not recommended.</td></tr>
+  </table>
+
+  <h3>Hands-on: setting up a trusted key group</h3>
+  <ol>
+    <li>Generate an RSA key pair, <strong>2,048-bit</strong> (private key + public key).</li>
+    <li>The <strong>private key</strong> goes on your application (e.g. EC2 instances) — used to sign URLs. Keep it secret.</li>
+    <li>The <strong>public key</strong> gets uploaded into CloudFront (under Key Management → Public Keys) — used to verify signatures.</li>
+    <li>Create a <strong>Key Group</strong> and add up to 5 public keys to it.</li>
+    <li>CloudFront references this key group to validate signed URLs/cookies generated by your app.</li>
+  </ol>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    The old CloudFront key-pair method (root account, AWS console, security credentials page) still exists, but the <strong>recommended, current approach is public keys + key groups</strong>, since it supports IAM permissions and API automation.
+  </div>
+</section>
+
+<!-- 11. ADVANCED CONCEPTS -->
+<section class="card" id="advanced">
+  <h2><span class="badge">11</span> Advanced Concepts</h2>
+
+  <h3>Pricing & Price Classes</h3>
+  <p>Data transfer cost out of CloudFront varies by continent/region — e.g. the first 10TB out of the US/Canada/Mexico costs ~$0.08/GB, while the same in India costs about ~$0.17/GB. Cost per GB also drops the more total data you transfer (e.g. over 5PB out of the US drops to ~$0.02/GB).</p>
+
+  <p>To control cost, you can limit which edge locations serve your distribution using a <strong>Price Class</strong>:</p>
+  <table>
+    <tr><th>Price Class</th><th>Coverage</th></tr>
+    <tr><td>Price Class All</td><td>All edge locations worldwide — best performance, highest cost</td></tr>
+    <tr><td>Price Class 200</td><td>Most regions, excludes the priciest ones</td></tr>
+    <tr><td>Price Class 100</td><td>Only the least expensive regions (e.g. North America & Europe)</td></tr>
+  </table>
+
+  <h3>Multiple Origins vs Origin Groups</h3>
+  <p>These solve <strong>different</strong> problems:</p>
+  <ul>
+    <li><strong>Multiple origins + cache behaviors</strong> — route by path/content type, e.g. <code>/api/*</code> → Application Load Balancer, everything else → S3.</li>
+    <li><strong>Origin Groups</strong> — high availability / failover. One <strong>primary</strong> + one <strong>secondary</strong> origin; if the primary errors out, CloudFront retries the same request against the secondary.</li>
+  </ul>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 140" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box-accent" x="300" y="45" width="180" height="45" rx="6"/>
+      <text class="svg-text" x="390" y="72" text-anchor="middle" font-size="11">CloudFront</text>
+      <path class="svg-arrow" d="M300,60 L150,35"/>
+      <rect class="svg-box" x="20" y="10" width="130" height="40" rx="6"/>
+      <text class="svg-text" x="85" y="34" text-anchor="middle" font-size="10">Primary origin</text>
+      <path class="svg-arrow" d="M150,45 Q 220,10 300,55" stroke-dasharray="4,3"/>
+      <text class="svg-label" x="220" y="15" text-anchor="middle" font-size="9">on error → retry</text>
+      <path class="svg-arrow" d="M300,80 L150,105"/>
+      <rect class="svg-box" x="20" y="90" width="130" height="40" rx="6"/>
+      <text class="svg-text" x="85" y="114" text-anchor="middle" font-size="10">Secondary origin</text>
+    </svg>
+  </div>
+  <p class="caption">In an origin group, CloudFront automatically retries a failed request against the secondary origin — e.g. two S3 buckets in different regions kept in sync via replication, giving region-level disaster recovery.</p>
+
+  <h3>Field-Level Encryption</h3>
+  <p>Adds extra protection for specific sensitive fields (e.g. credit card numbers) <strong>on top of</strong> HTTPS encryption in transit — using asymmetric encryption.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="45" width="120" height="40" rx="6"/>
+      <text class="svg-text" x="80" y="69" text-anchor="middle" font-size="10">Client (POST)</text>
+      <path class="svg-arrow" d="M140,65 L260,65"/>
+      <rect class="svg-box-accent" x="260" y="45" width="150" height="40" rx="6"/>
+      <text class="svg-text" x="335" y="65" text-anchor="middle" font-size="9">Edge: encrypts credit card field with public key</text>
+      <path class="svg-arrow" d="M410,65 L530,65"/>
+      <rect class="svg-box" x="530" y="45" width="120" height="40" rx="6"/>
+      <text class="svg-text" x="590" y="65" text-anchor="middle" font-size="9">ALB (passes through, can't decrypt)</text>
+      <path class="svg-arrow" d="M650,65 L760,65"/>
+      <text class="svg-label" x="700" y="95" text-anchor="middle" font-size="9">Web server: decrypts with private key</text>
+    </svg>
+  </div>
+  <p class="caption">Only the sensitive field (e.g. a credit card number) gets its own layer of encryption at the edge — everything in between (CloudFront, the load balancer) passes it along encrypted, and only the web server holding the private key can decrypt it.</p>
+
+  <ul>
+    <li>Up to <strong>10 fields</strong> can be marked for field-level encryption per request.</li>
+    <li>Only the origin/web server with the <strong>private key</strong> can decrypt those fields — CloudFront and any load balancer in between never see the plaintext.</li>
+  </ul>
+</section>
+
+<!-- 12. REAL-TIME LOGS -->
+<section class="card" id="real-time-logs">
+  <h2><span class="badge">12</span> Real-Time Logs</h2>
+
+  <p>CloudFront can stream every request it receives, in real time, into a <strong>Kinesis Data Stream</strong> — useful for monitoring, analyzing, and reacting to content delivery performance.</p>
+
+  <ul>
+    <li>For near-real-time (batch) processing instead, send the same stream through <strong>Kinesis Data Firehose</strong> to a destination like S3 or OpenSearch.</li>
+    <li>You control the <strong>sampling rate</strong> — the percentage of requests captured (useful to avoid overwhelming the stream on high-traffic endpoints).</li>
+    <li>You can also choose which <strong>fields</strong> and which <strong>cache behaviors/path patterns</strong> get logged (e.g. only requests to <code>/images/*</code>).</li>
+  </ul>
+</section>
+
+<!-- CHEAT SHEET -->
+<section class="card cheatsheet" id="cheatsheet">
+  <h2><span class="badge">✓</span> Cheat Sheet</h2>
+
+  <h3>Key facts to remember</h3>
+  <ul>
+    <li>CDN on the exam = CloudFront. Caches content at edge locations globally, lowering latency and adding DDoS resilience.</li>
+    <li>Origins: S3 (via OAC), VPC origin (private ALB/NLB/EC2 — the modern secure way), or custom HTTP origin.</li>
+    <li>CloudFront vs S3 CRR: CloudFront = global caching (~1 day TTL) for static content; CRR = near-real-time, read-only, region-to-region replication for dynamic content.</li>
+    <li>Default Cache Key = hostname + resource path; extend it with headers/cookies/query strings via a <strong>Cache Policy</strong> — but anything you add is also forwarded to the origin and hurts your hit ratio.</li>
+    <li>Need to forward extra data to the origin <em>without</em> affecting the cache key? Use an <strong>Origin Request Policy</strong>.</li>
+    <li>Force fresh content immediately (before TTL expires) with a <strong>Cache Invalidation</strong> — scope it (e.g. <code>/images/*</code>) rather than always using <code>/*</code>.</li>
+    <li><strong>Cache behaviors</strong> route by path pattern to different origins; the default (<code>/*</code>) always evaluates last.</li>
+    <li><strong>Geo restriction</strong>: allow-list or block-list by country (via geo-IP lookup).</li>
+    <li><strong>Signed URL</strong> = one file per URL; <strong>Signed cookie</strong> = many files per cookie. Trusted key groups are the modern way to manage signing keys (vs. the old root-only CloudFront key pair).</li>
+    <li>CloudFront Signed URL works with any origin type; S3 Pre-signed URL only works directly against S3 (no CloudFront in front).</li>
+    <li><strong>Price classes</strong> trade off edge location coverage vs. cost (All / 200 / 100).</li>
+    <li><strong>Origin groups</strong> (primary + secondary) give automatic failover / high availability — different purpose than multi-origin path-based routing.</li>
+    <li><strong>Field-level encryption</strong> protects specific sensitive fields end-to-end, decryptable only by the origin holding the private key.</li>
+    <li><strong>Real-time logs</strong> stream requests to Kinesis Data Stream (optionally onward via Firehose), with configurable sampling rate and field/path filtering.</li>
+  </ul>
+
+  <h3>Decision guide</h3>
+  <table>
+    <tr><th>Need</th><th>Use</th></tr>
+    <tr><td>Serve static content fast worldwide</td><td>CloudFront + S3 origin</td></tr>
+    <tr><td>Serve private backend (ALB/EC2) securely</td><td>CloudFront VPC origin</td></tr>
+    <tr><td>Refresh cached content immediately</td><td>Cache invalidation</td></tr>
+    <tr><td>Different content/origin per path</td><td>Cache behaviors</td></tr>
+    <tr><td>Failover if an origin goes down</td><td>Origin groups</td></tr>
+    <tr><td>Restrict by country</td><td>Geo restriction</td></tr>
+    <tr><td>Give one file's worth of temporary access</td><td>Signed URL</td></tr>
+    <tr><td>Give a batch of files' worth of temporary access</td><td>Signed cookie</td></tr>
+    <tr><td>Protect one sensitive field end-to-end</td><td>Field-level encryption</td></tr>
+    <tr><td>Reduce edge coverage to save cost</td><td>Lower price class</td></tr>
+  </table>
+
+  <h3>Mental model</h3>
+  <p>CloudFront is a global cache sitting in front of your real backend (S3, ALB, EC2, or any HTTP origin): it decides what to cache and how (cache policies, cache keys), how to invalidate stale content, how to route different paths to different places (cache behaviors and origin groups), how to keep things private and controlled (VPC origins, signed URLs/cookies, geo restriction, field-level encryption), and how to keep costs down by choosing how far around the world you actually need edge coverage (price classes) — all while giving you visibility into what's happening through real-time logs.</p>
+</section>
+
+<a class="back-to-top" href="#top">↑ Back to top</a>
+
+</div>
+</body>
+</html>

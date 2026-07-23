@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 11 — Amazon S3 Introduction — Notes</title>
+<style>
+  :root {
+    --accent: #e8830f;
+    --accent-dark: #c96a08;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --border: #e3e0da;
+    --text: #2b2a28;
+    --text-muted: #6b6a66;
+    --green: #2e7d32;
+    --green-bg: #eef7ee;
+    --red: #c0392b;
+    --red-bg: #fdecea;
+    --amber: #b8790a;
+    --amber-bg: #fff4e2;
+    --purple: #6a4fb3;
+    --purple-bg: #f3f0fb;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  header {
+    padding-bottom: 24px;
+    border-bottom: 3px solid var(--accent);
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 2rem;
+    color: var(--text);
+  }
+
+  header h1 span {
+    color: var(--accent);
+  }
+
+  header p.subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+  }
+
+  nav.toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 32px;
+  }
+
+  nav.toc h2 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  nav.toc ol {
+    margin: 0;
+    padding-left: 22px;
+    columns: 2;
+    column-gap: 24px;
+  }
+
+  nav.toc li {
+    margin-bottom: 6px;
+    break-inside: avoid;
+  }
+
+  nav.toc a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  nav.toc a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 24px;
+    scroll-margin-top: 20px;
+  }
+
+  .card h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 14px;
+    font-size: 1.3rem;
+    color: var(--text);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    color: var(--accent-dark);
+    font-size: 1.05rem;
+    margin: 20px 0 8px;
+  }
+
+  a { color: var(--accent-dark); }
+
+  code {
+    background: #f1eee7;
+    border: 1px solid #e6e2d8;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.92em;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    color: #7a4b00;
+  }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 0.94rem;
+  }
+
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f7f2ea;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) td {
+    background: #fcfbf9;
+  }
+
+  .callout {
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+
+  .callout strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .callout.tip {
+    background: var(--green-bg);
+    border-color: var(--green);
+  }
+  .callout.tip strong.tag { color: var(--green); }
+
+  .callout.warning {
+    background: var(--red-bg);
+    border-color: var(--red);
+  }
+  .callout.warning strong.tag { color: var(--red); }
+
+  .callout.key {
+    background: var(--amber-bg);
+    border-color: var(--amber);
+  }
+  .callout.key strong.tag { color: var(--amber); }
+
+  .analogy {
+    border: 1.5px dashed var(--purple);
+    background: var(--purple-bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+  .analogy strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--purple);
+  }
+
+  .diagram {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fdfcfa;
+    padding: 16px;
+    margin: 16px 0 6px;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  .diagram svg {
+    max-width: 100%;
+  }
+
+  .caption {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 4px 0 16px;
+    font-style: italic;
+  }
+
+  .cheatsheet {
+    border: 2px solid var(--accent);
+  }
+
+  .cheatsheet h2 { color: var(--accent-dark); }
+
+  .back-to-top {
+    display: block;
+    text-align: center;
+    margin-top: 36px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    text-decoration: none;
+  }
+  .back-to-top:hover { text-decoration: underline; }
+
+  .svg-box { fill: #fff; stroke: #c8917a; stroke-width: 1.5; }
+  .svg-box-accent { fill: #fff4e2; stroke: var(--accent); stroke-width: 1.5; }
+  .svg-text { font-family: -apple-system, sans-serif; font-size: 12px; fill: #2b2a28; }
+  .svg-label { font-family: -apple-system, sans-serif; font-size: 11px; fill: #6b6a66; }
+  .svg-arrow { stroke: #6b6a66; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+
+  /* ══ RESPONSIVE — iPhone 15 & iPad 10 ══ */
+
+  /* iPad 10 landscape (1180px) — already fine, just ensure padding */
+  @media (max-width: 1024px) {
+    .container, .wrap { padding-left: 20px; padding-right: 20px; }
+    nav.toc ol { columns: 2; }
+  }
+
+  /* iPad 10 portrait (820px) */
+  @media (max-width: 860px) {
+    .container, .wrap { padding: 20px 18px 60px; }
+    header.page-header h1, header.hero h1, header h1 { font-size: 22px; }
+    nav.toc ol { columns: 1; }
+    section.lecture, section.lesson, .card { padding: 18px 20px; }
+    table { font-size: 13px; }
+    th, td { padding: 7px 9px; }
+  }
+
+  /* iPhone 15 & small phones (≤ 480px) */
+  @media (max-width: 480px) {
+    .container, .wrap { padding: 16px 14px 50px; }
+
+    /* Header */
+    header.page-header h1, header.hero h1, header h1 { font-size: 19px; line-height: 1.3; }
+    header.page-header p, header.hero p, header p, header p.subtitle { font-size: 13px; }
+    header.hero, header { padding: 24px 18px; border-radius: 10px; }
+
+    /* TOC */
+    nav.toc { padding: 14px 16px; border-radius: 10px; }
+    nav.toc ol { columns: 1; padding-left: 16px; }
+    nav.toc li { font-size: 14px; margin-bottom: 8px; }
+
+    /* Sections */
+    section.lecture, section.lesson, .card {
+      padding: 16px 16px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+    }
+    section.lecture h2, section.lesson h2, .card h2 {
+      font-size: 17px;
+      line-height: 1.3;
+    }
+    h3 { font-size: 15px; }
+
+    /* Tables — make scrollable horizontally */
+    table {
+      display: block;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    th, td { padding: 7px 10px; }
+
+    /* Code blocks */
+    code, .prompt {
+      font-size: 12.5px;
+      word-break: break-all;
+    }
+
+    /* Flex/grid layout components — stack on mobile */
+    .framework, .three-legs {
+      flex-direction: column;
+      gap: 10px;
+    }
+    .framework .step, .leg {
+      min-width: unset;
+      width: 100%;
+    }
+
+    /* Lists */
+    ul, ol { padding-left: 18px; }
+    li { font-size: 14px; margin-bottom: 6px; }
+    ul.checklist li { font-size: 14px; }
+
+    /* Callouts */
+    .callout, .tip, .warn, .example, .analogy, .summary-box {
+      padding: 10px 13px;
+      font-size: 14px;
+    }
+
+    /* Back to top links */
+    .top-link, a.back-top, .back-to-top { font-size: 13px; }
+
+    /* Cheat sheet */
+    .cheat, .cheatsheet { padding: 16px 16px; }
+  }
+
+  /* Tiny phones ≤ 360px */
+  @media (max-width: 360px) {
+    .container, .wrap { padding: 12px 12px 40px; }
+    section.lecture h2, section.lesson h2, .card h2 { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header id="top">
+  <h1><span>Section 11</span> — Amazon S3 Introduction</h1>
+  <p class="subtitle">My notes on buckets, objects, security, static websites, versioning, replication, and storage classes.</p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#overview">S3 Overview</a></li>
+    <li><a href="#hands-on">S3 Hands On</a></li>
+    <li><a href="#bucket-policy">S3 Security: Bucket Policy</a></li>
+    <li><a href="#bucket-policy-hands-on">Bucket Policy Hands On</a></li>
+    <li><a href="#website">S3 Static Website Hosting</a></li>
+    <li><a href="#versioning">S3 Versioning</a></li>
+    <li><a href="#replication">S3 Replication</a></li>
+    <li><a href="#storage-classes">S3 Storage Classes</a></li>
+    <li><a href="#cheatsheet">Cheat Sheet</a></li>
+  </ol>
+</nav>
+
+<!-- 1. OVERVIEW -->
+<section class="card" id="overview">
+  <h2><span class="badge">1</span> S3 Overview</h2>
+
+  <p>S3 is one of the core building blocks of AWS — it's advertised as "infinitely scaling storage" and a huge chunk of the web actually runs on it (many sites use it as a backbone, and lots of AWS services integrate with it directly).</p>
+
+  <h3>Common use cases</h3>
+  <ul>
+    <li>Backup and storage (files, disks, etc.)</li>
+    <li>Disaster recovery — replicate data to another region so you're covered if a region goes down</li>
+    <li>Archival — cheap long-term storage you retrieve later</li>
+    <li>Hybrid cloud storage — extend on-prem storage into the cloud</li>
+    <li>Hosting applications, media (video/images), static websites</li>
+    <li>Data lakes for big data analytics</li>
+    <li>Delivering software updates</li>
+  </ul>
+
+  <div class="callout key">
+    <strong class="tag">Real examples</strong>
+    NASDAQ stores 7 years of data in S3 Glacier (the archival tier). Sysco runs analytics on its data stored in S3 to get business insights.
+  </div>
+
+  <h3>Buckets</h3>
+  <ul>
+    <li>Buckets are like directories in the cloud — you store objects (files) inside them.</li>
+    <li>Buckets are created at the <strong>region level</strong>. The S3 console UI is global (shows buckets from all regions), but each bucket itself lives in one specific region.</li>
+  </ul>
+
+  <h3>Bucket naming</h3>
+  <p>Historically, bucket names had to be <strong>globally unique</strong> across every AWS account and region in the world. AWS recently added the <strong>account regional namespace</strong> option — it lets you reuse the same bucket name across your own regions/accounts, because AWS appends a unique suffix behind the scenes.</p>
+
+  <div class="callout tip">
+    <strong class="tag">Naming rules</strong>
+    No uppercase letters, no underscores, can't look like an IP address. Must start with a lowercase letter or number. Can't start with prefix <code>xn--</code>. Can't end with suffix <code>-s3alias</code>. Basically: keep it simple — lowercase letters and numbers.
+  </div>
+
+  <h3>Objects</h3>
+  <ul>
+    <li>Objects are just files. Each has a <strong>key</strong> — the full path of the file.</li>
+    <li>A key is made of a <strong>prefix</strong> + an <strong>object name</strong>. Example: for <code>my_folder1/another_folder/my_file.txt</code>, the prefix is <code>my_folder1/another_folder</code> and the object name is <code>my_file.txt</code>.</li>
+    <li>S3 doesn't actually have real "directories" — the console just displays them that way. Under the hood, everything is one long key name with slashes in it.</li>
+    <li><strong>Max object size:</strong> 50 TB.</li>
+    <li>Files larger than <strong>5 GB</strong> must use <strong>multi-part upload</strong> (split into parts). E.g. a 5 TB file needs at least 1,000 parts of 5 GB each.</li>
+    <li>Objects can have <strong>metadata</strong> (key/value pairs, set by system or user), <strong>tags</strong> (up to 10 Unicode key/value pairs — useful for security & lifecycle rules), and a <strong>version ID</strong> if versioning is enabled.</li>
+  </ul>
+
+  <div class="analogy">
+    <strong class="tag">Analogy</strong>
+    Think of an S3 key like a full file path on your computer — <code>Documents/2024/report.pdf</code>. There's no real "Documents" or "2024" folder on disk in S3's world — it's really just one long name with slashes that the console renders as folders for convenience.
+  </div>
+</section>
+
+<!-- 2. HANDS ON -->
+<section class="card" id="hands-on">
+  <h2><span class="badge">2</span> S3 Hands On</h2>
+
+  <p>Walkthrough of creating a bucket and uploading files in the console.</p>
+
+  <h3>Creating a bucket</h3>
+  <ul>
+    <li>Choose the region (e.g. Ireland <code>eu-west-1</code>).</li>
+    <li><strong>Bucket type:</strong> General purpose (recommended default) vs Directory (low-latency use cases).</li>
+    <li><strong>Namespace:</strong> Global (needs a globally unique name) vs Account Regional (AWS appends a suffix so any name works).</li>
+    <li><strong>Object Ownership:</strong> ACLs disabled (recommended default).</li>
+    <li><strong>Block Public Access:</strong> left enabled for max security.</li>
+    <li><strong>Bucket Versioning:</strong> disabled for now (covered later).</li>
+    <li><strong>Default encryption:</strong> server-side encryption with an Amazon S3 managed key, with Bucket Key enabled.</li>
+  </ul>
+
+  <h3>Uploading and viewing objects</h3>
+  <p>Uploaded <code>coffee.jpg</code> to the bucket, then opened the Object page to see its properties, size, type, and an <strong>Object URL</strong>.</p>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    Clicking "Open" in the console works because the console generates a signed request for you. But copying the plain <strong>Object URL</strong> and pasting it into a browser gives <code>AccessDenied</code> — the bucket isn't public by default.
+  </div>
+
+  <p>The console's "Open" link actually uses a <strong>pre-signed URL</strong> — a long URL containing an embedded signature/credentials proving <em>you</em> are allowed to view the object. That's why it works while the plain object URL doesn't.</p>
+
+  <h3>Folders</h3>
+  <p>You can create folders (e.g. <code>images/</code>) and upload into them (e.g. <code>images/beach.jpg</code>) — visually just like Google Drive/Dropbox. Deleting a folder deletes everything inside it (type <code>permanently delete</code> to confirm).</p>
+</section>
+
+<!-- 3. BUCKET POLICY -->
+<section class="card" id="bucket-policy">
+  <h2><span class="badge">3</span> S3 Security: Bucket Policy</h2>
+
+  <h3>Ways to secure S3</h3>
+  <table>
+    <tr><th>Mechanism</th><th>What it is</th></tr>
+    <tr><td>User-based (IAM policies)</td><td>Controls which API calls a specific IAM user is allowed to make</td></tr>
+    <tr><td>Resource-based (Bucket policies)</td><td>Bucket-wide rules set directly on the bucket; can allow cross-account access or make a bucket public</td></tr>
+    <tr><td>Object Access Control List (ACL)</td><td>Finer-grained, can be disabled</td></tr>
+    <tr><td>Bucket ACL</td><td>Less common, can be disabled</td></tr>
+    <tr><td>Encryption</td><td>Encrypt objects using encryption keys</td></tr>
+  </table>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    An IAM principal can access an S3 object if: IAM permissions allow it <em>OR</em> the resource (bucket) policy allows it — <strong>AND</strong> there's no explicit <code>Deny</code> anywhere.
+  </div>
+
+  <h3>Anatomy of a bucket policy</h3>
+  <p>Bucket policies are JSON documents with a few key parts:</p>
+  <ul>
+    <li><code>Resource</code> — which bucket/objects the policy applies to (e.g. <code>arn:aws:s3:::example-bucket/*</code> = every object in the bucket)</li>
+    <li><code>Effect</code> — <code>Allow</code> or <code>Deny</code></li>
+    <li><code>Action</code> — the API calls being allowed/denied (e.g. <code>s3:GetObject</code>)</li>
+    <li><code>Principal</code> — who the policy applies to (<code>*</code> = anyone)</li>
+  </ul>
+  <p>A policy with <code>Principal: *</code>, <code>Effect: Allow</code>, <code>Action: s3:GetObject</code> on <code>bucket/*</code> makes every object in the bucket publicly readable.</p>
+
+  <h3>Access scenarios</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 820 300" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#6b6a66"/>
+        </marker>
+      </defs>
+
+      <rect class="svg-box" x="20" y="20" width="150" height="45" rx="6"/>
+      <text class="svg-text" x="95" y="47" text-anchor="middle">Website visitor</text>
+      <path class="svg-arrow" d="M170,42 L280,42"/>
+      <text class="svg-label" x="225" y="32" text-anchor="middle">public bucket policy</text>
+      <rect class="svg-box-accent" x="280" y="20" width="160" height="45" rx="6"/>
+      <text class="svg-text" x="360" y="47" text-anchor="middle">S3 Bucket</text>
+
+      <rect class="svg-box" x="20" y="95" width="150" height="45" rx="6"/>
+      <text class="svg-text" x="95" y="122" text-anchor="middle">IAM User</text>
+      <path class="svg-arrow" d="M170,117 L280,117"/>
+      <text class="svg-label" x="225" y="107" text-anchor="middle">IAM policy</text>
+      <rect class="svg-box-accent" x="280" y="95" width="160" height="45" rx="6"/>
+      <text class="svg-text" x="360" y="122" text-anchor="middle">S3 Bucket</text>
+
+      <rect class="svg-box" x="20" y="170" width="150" height="45" rx="6"/>
+      <text class="svg-text" x="95" y="197" text-anchor="middle">EC2 Instance</text>
+      <path class="svg-arrow" d="M170,192 L280,192"/>
+      <text class="svg-label" x="225" y="182" text-anchor="middle">IAM role</text>
+      <rect class="svg-box-accent" x="280" y="170" width="160" height="45" rx="6"/>
+      <text class="svg-text" x="360" y="197" text-anchor="middle">S3 Bucket</text>
+
+      <rect class="svg-box" x="20" y="245" width="150" height="45" rx="6"/>
+      <text class="svg-text" x="95" y="266" text-anchor="middle" font-size="11">IAM user (other</text>
+      <text class="svg-text" x="95" y="280" text-anchor="middle" font-size="11">AWS account)</text>
+      <path class="svg-arrow" d="M170,267 L280,267"/>
+      <text class="svg-label" x="225" y="257" text-anchor="middle">cross-account</text>
+      <text class="svg-label" x="225" y="269" text-anchor="middle">bucket policy</text>
+      <rect class="svg-box-accent" x="280" y="245" width="160" height="45" rx="6"/>
+      <text class="svg-text" x="360" y="272" text-anchor="middle">S3 Bucket</text>
+    </svg>
+  </div>
+  <p class="caption">Four ways to grant access to an S3 bucket, depending on who's asking: public visitor, IAM user, EC2 instance, or a user in another AWS account.</p>
+
+  <h3>Block Public Access settings</h3>
+  <div class="callout warning">
+    <strong class="tag">Important</strong>
+    "Block Public Access" is a bucket (or account-level) safety switch designed to prevent data leaks. Even if your bucket policy would make the bucket public, these settings override it and keep the bucket private. Leave them on unless you specifically intend to make a bucket public.
+  </div>
+</section>
+
+<!-- 4. BUCKET POLICY HANDS ON -->
+<section class="card" id="bucket-policy-hands-on">
+  <h2><span class="badge">4</span> Bucket Policy Hands On</h2>
+
+  <p>Steps to make the <code>coffee.jpg</code> object publicly accessible via its plain URL:</p>
+  <ol>
+    <li>Go to the bucket's <strong>Permissions</strong> tab and edit <strong>Block Public Access</strong> — untick it to allow public access (AWS shows a warning since this is a risky action).</li>
+    <li>Use the <strong>AWS Policy Generator</strong> to build a bucket policy: Type = S3 Bucket Policy, Effect = Allow, Principal = <code>*</code>, Action = <code>GetObject</code>, Amazon Resource Name = the bucket ARN + <code>/*</code> (the <code>/*</code> represents all objects inside the bucket).</li>
+    <li>Paste the generated JSON policy into the bucket policy editor and save.</li>
+    <li>Now the object URL loads directly — no more <code>AccessDenied</code>.</li>
+  </ol>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    Making a bucket public is a real risk — never do this with buckets that hold real company/production data. Only unblock public access when you deliberately want a public policy (e.g. hosting a static website).
+  </div>
+</section>
+
+<!-- 5. STATIC WEBSITE -->
+<section class="card" id="website">
+  <h2><span class="badge">5</span> S3 Static Website Hosting</h2>
+
+  <p>S3 can host static websites directly and serve them over the internet. The website URL format depends on the AWS region.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 700 140" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="45" width="140" height="50" rx="6"/>
+      <text class="svg-text" x="90" y="75" text-anchor="middle">User / Browser</text>
+      <path class="svg-arrow" d="M160,70 L280,70"/>
+      <text class="svg-label" x="220" y="60" text-anchor="middle">website endpoint URL</text>
+      <rect class="svg-box-accent" x="280" y="20" width="180" height="100" rx="8"/>
+      <text class="svg-text" x="370" y="55" text-anchor="middle" font-weight="600">S3 Bucket</text>
+      <text class="svg-label" x="370" y="75" text-anchor="middle">index.html</text>
+      <text class="svg-label" x="370" y="90" text-anchor="middle">images/</text>
+      <text class="svg-label" x="370" y="105" text-anchor="middle">(public read policy)</text>
+    </svg>
+  </div>
+  <p class="caption">A browser hits the S3 static website endpoint, which serves files straight out of the bucket — but only if the bucket allows public reads.</p>
+
+  <div class="callout warning">
+    <strong class="tag">Important</strong>
+    Static website hosting will <strong>not</strong> work unless public reads are enabled on the bucket (via a bucket policy). A <code>403 Forbidden</code> error after enabling website hosting means your bucket still isn't public — attach an S3 bucket policy that allows public <code>GetObject</code>.
+  </div>
+
+  <h3>Hands-on setup</h3>
+  <ol>
+    <li>Upload your site files (e.g. <code>beach.jpg</code>, <code>coffee.jpg</code>, <code>index.html</code>).</li>
+    <li>Go to bucket <strong>Properties → Static website hosting → Edit</strong>, enable it, and set the index document to <code>index.html</code>.</li>
+    <li>Save — the bucket gets a <strong>bucket website endpoint</strong> URL.</li>
+    <li>Because the bucket policy already allows public reads, visiting the endpoint URL loads the page and its images correctly.</li>
+  </ol>
+</section>
+
+<!-- 6. VERSIONING -->
+<section class="card" id="versioning">
+  <h2><span class="badge">6</span> S3 Versioning</h2>
+
+  <p>Versioning is a bucket-level setting. Once enabled, every time you upload to the same key, S3 keeps the old copy and creates a new version instead of overwriting it.</p>
+
+  <div class="callout tip">
+    <strong class="tag">Best practice</strong>
+    Enable versioning on your buckets. It protects against unintended deletes (a "delete" just adds a delete marker, so you can restore the previous version) and lets you easily roll back to an earlier version of a file.
+  </div>
+
+  <ul>
+    <li>Any file that existed <strong>before</strong> versioning was enabled has version ID <code>null</code>.</li>
+    <li><strong>Suspending</strong> versioning does not delete previous versions — it's a safe operation.</li>
+  </ul>
+
+  <h3>Hands-on behavior</h3>
+  <ul>
+    <li>Enable versioning under bucket <strong>Properties</strong>.</li>
+    <li>Re-uploading <code>index.html</code> with new content creates a <strong>new version ID</strong> — the old version is still there if you toggle <strong>"Show versions"</strong> in the console.</li>
+    <li><strong>Deleting a specific version ID</strong> = a <em>permanent delete</em> (type <code>permanently delete</code> to confirm) — this is destructive and cannot be undone.</li>
+    <li><strong>Deleting an object normally</strong> (without "Show versions") just adds a <strong>delete marker</strong> on top — the underlying object/version is still there. The page appears to be gone (404) but it isn't actually erased.</li>
+    <li>To restore the object, permanently delete the <strong>delete marker itself</strong> — this brings back the previous version.</li>
+  </ul>
+
+  <div class="analogy">
+    <strong class="tag">Analogy</strong>
+    A delete marker is like putting a "removed" sticky note on top of a file instead of shredding it. Peel off the sticky note (delete the delete marker) and the original file is right there again. A permanent delete of a specific version ID, on the other hand, is the shredder — no getting it back.
+  </div>
+</section>
+
+<!-- 7. REPLICATION -->
+<section class="card" id="replication">
+  <h2><span class="badge">7</span> S3 Replication</h2>
+
+  <p>Two flavors of replication, both <strong>asynchronous</strong> and both requiring versioning enabled on <strong>both</strong> source and destination buckets:</p>
+  <table>
+    <tr><th>Type</th><th>Meaning</th><th>Typical use cases</th></tr>
+    <tr><td><code>CRR</code> — Cross-Region Replication</td><td>Source and destination buckets are in <strong>different regions</strong></td><td>Compliance, lower-latency access to data, replicating across accounts</td></tr>
+    <tr><td><code>SRR</code> — Same-Region Replication</td><td>Source and destination buckets are in the <strong>same region</strong></td><td>Aggregating logs from multiple buckets, live replication between prod and test accounts</td></tr>
+  </table>
+
+  <p>Buckets can be in different AWS accounts. S3 needs proper <strong>IAM permissions</strong> to read from the source and write to the destination.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 700 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box-accent" x="20" y="35" width="180" height="60" rx="8"/>
+      <text class="svg-text" x="110" y="60" text-anchor="middle" font-weight="600">Origin Bucket</text>
+      <text class="svg-label" x="110" y="78" text-anchor="middle">Region A (versioned)</text>
+      <path class="svg-arrow" d="M200,65 L490,65"/>
+      <text class="svg-label" x="345" y="55" text-anchor="middle">async replication</text>
+      <rect class="svg-box-accent" x="490" y="35" width="190" height="60" rx="8"/>
+      <text class="svg-text" x="585" y="60" text-anchor="middle" font-weight="600">Replica Bucket</text>
+      <text class="svg-label" x="585" y="78" text-anchor="middle">Region B (versioned)</text>
+    </svg>
+  </div>
+  <p class="caption">New objects uploaded to the origin bucket are copied asynchronously to the replica bucket, keeping the same version IDs.</p>
+
+  <h3>Important notes</h3>
+  <div class="callout warning">
+    <strong class="tag">Important</strong>
+    Only <strong>new objects</strong> get replicated after you turn replication on. To replicate objects that already existed, you need <strong>S3 Batch Replication</strong> — a separate feature that also handles objects that previously failed replication.
+  </div>
+  <ul>
+    <li><strong>Delete marker replication</strong> is optional (off by default). If enabled, delete markers get replicated too.</li>
+    <li><strong>Permanent deletes</strong> of a specific version ID are <strong>never</strong> replicated — this is intentional, to prevent malicious/accidental deletes from cascading to the replica.</li>
+    <li><strong>No chaining</strong>: if Bucket 1 → Bucket 2 and Bucket 2 → Bucket 3, objects from Bucket 1 do <strong>not</strong> flow through to Bucket 3.</li>
+  </ul>
+
+  <h3>Hands-on recap</h3>
+  <ol>
+    <li>Create origin and target buckets (can be different regions for CRR), enable versioning on both.</li>
+    <li>On the origin bucket, go to <strong>Management → Replication rules → Create rule</strong>. Scope = all objects, destination = target bucket, and create/select an IAM role for it.</li>
+    <li>Choose whether to replicate existing objects (this triggers a Batch Operation) — for a normal setup, choose <strong>no</strong>.</li>
+    <li>Uploading a new file to the origin bucket → after a short delay, it appears in the replica bucket with the <strong>same version ID</strong>.</li>
+    <li>Deleting a file (adding a delete marker) replicates the delete marker if that setting is enabled — the file "disappears" in both buckets but is recoverable via "Show versions."</li>
+    <li>Permanently deleting a specific version in the origin bucket does <strong>not</strong> remove it from the replica bucket.</li>
+  </ol>
+</section>
+
+<!-- 8. STORAGE CLASSES -->
+<section class="card" id="storage-classes">
+  <h2><span class="badge">8</span> S3 Storage Classes</h2>
+
+  <p>You choose a storage class per object at upload time, can change it manually later, or automate transitions with <strong>Lifecycle rules</strong>.</p>
+
+  <h3>Durability vs Availability</h3>
+  <ul>
+    <li><strong>Durability</strong> = how likely you are to lose an object. All S3 classes offer <strong>11 nines</strong> (99.999999999%) durability — on average you'd lose 1 object out of 10 million once every 10,000 years.</li>
+    <li><strong>Availability</strong> = how readily the service responds. This <strong>varies by class</strong> — e.g. S3 Standard is 99.99% available (~53 minutes of downtime/errors per year).</li>
+  </ul>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Durability is the same (11 nines) across every storage class. Availability is what differs between classes.
+  </div>
+
+  <h3>The classes</h3>
+  <table>
+    <tr><th>Class</th><th>Availability</th><th>Notes / Use case</th></tr>
+    <tr><td>S3 Standard</td><td>99.99%</td><td>Default, frequently accessed data, low latency & high throughput. Survives 2 concurrent facility failures. Big data, mobile/gaming apps, content distribution.</td></tr>
+    <tr><td>S3 Standard-IA (Infrequent Access)</td><td>99.9%</td><td>Cheaper storage, cost on retrieval, rapid access when needed. Disaster recovery, backups.</td></tr>
+    <tr><td>S3 One Zone-IA</td><td>99.5%</td><td>Stored in a single AZ only — lost if that AZ is destroyed. Secondary backup copies, recreatable data.</td></tr>
+    <tr><td>Glacier Instant Retrieval</td><td>—</td><td>Millisecond retrieval. Min storage duration 90 days. Good for data accessed ~once a quarter.</td></tr>
+    <tr><td>Glacier Flexible Retrieval</td><td>—</td><td>Retrieval tiers: Expedited (1–5 min), Standard (3–5 hrs), Bulk (5–12 hrs, free). Min storage duration 90 days.</td></tr>
+    <tr><td>Glacier Deep Archive</td><td>—</td><td>Retrieval tiers: Standard (12 hrs), Bulk (48 hrs). Lowest cost. Min storage duration 180 days. Long-term archival.</td></tr>
+    <tr><td>S3 Intelligent-Tiering</td><td>—</td><td>Auto-moves objects between tiers based on usage. Small monthly monitoring/auto-tiering fee. No retrieval charges.</td></tr>
+  </table>
+
+  <div class="analogy">
+    <strong class="tag">Analogy</strong>
+    Think of the Glacier tiers like ordering something online: <strong>Instant Retrieval</strong> is same-day delivery, <strong>Flexible Retrieval</strong> is choosing standard vs express shipping, and <strong>Deep Archive</strong> is the cheapest "it'll get there in a couple of days" option — you save money the more patient you're willing to be.
+  </div>
+
+  <h3>S3 Intelligent-Tiering tiers</h3>
+  <ul>
+    <li><strong>Frequent Access</strong> — automatic, default tier.</li>
+    <li><strong>Infrequent Access</strong> — automatic, for objects not accessed for ~30 days.</li>
+    <li><strong>Archive Instant Access</strong> — automatic, for objects not accessed over 90 days.</li>
+    <li><strong>Archive Access</strong> — optional, configurable from 90 to 700+ days.</li>
+    <li><strong>Deep Archive Access</strong> — optional, configurable from 180 to 700+ days.</li>
+  </ul>
+  <p>The idea: you "sit back and relax" and let S3 move objects between tiers automatically as access patterns change.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 800 160" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box-accent" x="10" y="55" width="130" height="50" rx="6"/>
+      <text class="svg-text" x="75" y="84" text-anchor="middle" font-size="11">Standard</text>
+      <path class="svg-arrow" d="M140,80 L235,80"/>
+      <text class="svg-label" x="187" y="70" text-anchor="middle" font-size="10">30 days</text>
+      <rect class="svg-box-accent" x="235" y="55" width="130" height="50" rx="6"/>
+      <text class="svg-text" x="300" y="80" text-anchor="middle" font-size="11">Standard-IA</text>
+      <path class="svg-arrow" d="M365,80 L460,80"/>
+      <text class="svg-label" x="412" y="70" text-anchor="middle" font-size="10">60 days</text>
+      <rect class="svg-box-accent" x="460" y="55" width="150" height="50" rx="6"/>
+      <text class="svg-text" x="535" y="80" text-anchor="middle" font-size="11">Intelligent-Tiering</text>
+      <path class="svg-arrow" d="M610,80 L705,80"/>
+      <text class="svg-label" x="657" y="70" text-anchor="middle" font-size="10">180 days</text>
+      <rect class="svg-box-accent" x="705" y="55" width="90" height="50" rx="6"/>
+      <text class="svg-text" x="750" y="76" text-anchor="middle" font-size="10">Glacier</text>
+      <text class="svg-text" x="750" y="90" text-anchor="middle" font-size="10">Flexible</text>
+    </svg>
+  </div>
+  <p class="caption">Example lifecycle rule: an object automatically transitions to cheaper storage classes as it ages.</p>
+
+  <h3>Hands-on recap</h3>
+  <ul>
+    <li>You can set an object's storage class at upload, or change it later via <strong>Properties → Edit storage class</strong>.</li>
+    <li><strong>Lifecycle rules</strong> (under bucket <strong>Management</strong>) automate these transitions — e.g. move to Standard-IA after 30 days, Intelligent-Tiering after 60 days, Glacier Flexible Retrieval after 180 days.</li>
+    <li><strong>Reduced Redundancy</strong> storage class is deprecated — not covered further.</li>
+  </ul>
+</section>
+
+<!-- CHEAT SHEET -->
+<section class="card cheatsheet" id="cheatsheet">
+  <h2><span class="badge">✓</span> Cheat Sheet</h2>
+
+  <h3>Key facts to remember</h3>
+  <ul>
+    <li>Buckets are regional; names need to be unique (globally, or per-account with the new account regional namespace).</li>
+    <li>An object's key = prefix + object name. S3 has no real "directories," just long key names.</li>
+    <li>Max object size 50 TB; multi-part upload required above 5 GB.</li>
+    <li>Access to an S3 object requires IAM permission <em>or</em> a resource (bucket) policy allowing it, and no explicit deny — plus Block Public Access must not be blocking it.</li>
+    <li>Static website hosting needs the bucket to allow public reads, or you'll get a 403.</li>
+    <li>Versioning: normal delete = adds a delete marker (recoverable); deleting a specific version ID = permanent (not recoverable).</li>
+    <li>Replication needs versioning on both buckets; only new objects replicate automatically (use Batch Replication for existing ones); permanent deletes never replicate; no chaining across 3+ buckets.</li>
+    <li>All storage classes share 11 nines durability — only availability and retrieval speed/cost differ.</li>
+  </ul>
+
+  <h3>Storage class decision guide</h3>
+  <table>
+    <tr><th>If you need...</th><th>Use...</th></tr>
+    <tr><td>Default, frequently accessed data</td><td>S3 Standard</td></tr>
+    <tr><td>Cheaper storage, accessed rarely but needs fast access</td><td>S3 Standard-IA</td></tr>
+    <tr><td>Same as above but data is re-creatable / non-critical</td><td>S3 One Zone-IA</td></tr>
+    <tr><td>Don't know the access pattern, want AWS to manage tiering</td><td>S3 Intelligent-Tiering</td></tr>
+    <tr><td>Archive, retrieve within milliseconds</td><td>Glacier Instant Retrieval</td></tr>
+    <tr><td>Archive, can wait minutes to hours</td><td>Glacier Flexible Retrieval</td></tr>
+    <tr><td>Long-term archive, can wait 12–48 hours, lowest cost</td><td>Glacier Deep Archive</td></tr>
+  </table>
+
+  <h3>Mental model</h3>
+  <p>S3 is just a big, regional key-value store for files: every object lives at a "key" inside a bucket, secured by a mix of IAM policies and bucket policies (with Block Public Access as a safety net), optionally versioned so nothing is really ever lost by accident, optionally replicated to another bucket/region for redundancy, and optionally aged automatically into cheaper storage classes as it gets accessed less — all while keeping the same rock-solid 11-nines durability no matter which tier it's sitting in.</p>
+</section>
+
+<a class="back-to-top" href="#top">↑ Back to top</a>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 13 — Advanced Amazon S3 — Notes</title>
+<style>
+  :root {
+    --accent: #e8830f;
+    --accent-dark: #c96a08;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --border: #e3e0da;
+    --text: #2b2a28;
+    --text-muted: #6b6a66;
+    --green: #2e7d32;
+    --green-bg: #eef7ee;
+    --red: #c0392b;
+    --red-bg: #fdecea;
+    --amber: #b8790a;
+    --amber-bg: #fff4e2;
+    --purple: #6a4fb3;
+    --purple-bg: #f3f0fb;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  header {
+    padding-bottom: 24px;
+    border-bottom: 3px solid var(--accent);
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 2rem;
+    color: var(--text);
+  }
+
+  header h1 span {
+    color: var(--accent);
+  }
+
+  header p.subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+  }
+
+  nav.toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 32px;
+  }
+
+  nav.toc h2 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  nav.toc ol {
+    margin: 0;
+    padding-left: 22px;
+    columns: 2;
+    column-gap: 24px;
+  }
+
+  nav.toc li {
+    margin-bottom: 6px;
+    break-inside: avoid;
+  }
+
+  nav.toc a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  nav.toc a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 24px;
+    scroll-margin-top: 20px;
+  }
+
+  .card h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 14px;
+    font-size: 1.3rem;
+    color: var(--text);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    color: var(--accent-dark);
+    font-size: 1.05rem;
+    margin: 20px 0 8px;
+  }
+
+  a { color: var(--accent-dark); }
+
+  code {
+    background: #f1eee7;
+    border: 1px solid #e6e2d8;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.92em;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    color: #7a4b00;
+  }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 0.94rem;
+  }
+
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f7f2ea;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) td {
+    background: #fcfbf9;
+  }
+
+  .callout {
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+
+  .callout strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .callout.tip {
+    background: var(--green-bg);
+    border-color: var(--green);
+  }
+  .callout.tip strong.tag { color: var(--green); }
+
+  .callout.warning {
+    background: var(--red-bg);
+    border-color: var(--red);
+  }
+  .callout.warning strong.tag { color: var(--red); }
+
+  .callout.key {
+    background: var(--amber-bg);
+    border-color: var(--amber);
+  }
+  .callout.key strong.tag { color: var(--amber); }
+
+  .analogy {
+    border: 1.5px dashed var(--purple);
+    background: var(--purple-bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+  .analogy strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--purple);
+  }
+
+  .diagram {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fdfcfa;
+    padding: 16px;
+    margin: 16px 0 6px;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  .diagram svg {
+    max-width: 100%;
+  }
+
+  .caption {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 4px 0 16px;
+    font-style: italic;
+  }
+
+  .cheatsheet {
+    border: 2px solid var(--accent);
+  }
+
+  .cheatsheet h2 { color: var(--accent-dark); }
+
+  .back-to-top {
+    display: block;
+    text-align: center;
+    margin-top: 36px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    text-decoration: none;
+  }
+  .back-to-top:hover { text-decoration: underline; }
+
+  .svg-box { fill: #fff; stroke: #c8917a; stroke-width: 1.5; }
+  .svg-box-accent { fill: #fff4e2; stroke: var(--accent); stroke-width: 1.5; }
+  .svg-text { font-family: -apple-system, sans-serif; font-size: 12px; fill: #2b2a28; }
+  .svg-label { font-family: -apple-system, sans-serif; font-size: 11px; fill: #6b6a66; }
+  .svg-arrow { stroke: #6b6a66; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+
+  /* ══ RESPONSIVE — iPhone 15 & iPad 10 ══ */
+
+  /* iPad 10 landscape (1180px) — already fine, just ensure padding */
+  @media (max-width: 1024px) {
+    .container, .wrap { padding-left: 20px; padding-right: 20px; }
+    nav.toc ol { columns: 2; }
+  }
+
+  /* iPad 10 portrait (820px) */
+  @media (max-width: 860px) {
+    .container, .wrap { padding: 20px 18px 60px; }
+    header.page-header h1, header.hero h1, header h1 { font-size: 22px; }
+    nav.toc ol { columns: 1; }
+    section.lecture, section.lesson, section.card { padding: 18px 20px; }
+    table { font-size: 13px; }
+    th, td { padding: 7px 9px; }
+  }
+
+  /* iPhone 15 & small phones (≤ 480px) */
+  @media (max-width: 480px) {
+    .container, .wrap { padding: 16px 14px 50px; }
+
+    /* Header */
+    header.page-header h1, header.hero h1, header h1 { font-size: 19px; line-height: 1.3; }
+    header.page-header p, header.hero p, header p.subtitle   { font-size: 13px; }
+    header.hero { padding: 24px 18px; border-radius: 10px; }
+
+    /* TOC */
+    nav.toc { padding: 14px 16px; border-radius: 10px; }
+    nav.toc ol { columns: 1; padding-left: 16px; }
+    nav.toc li { font-size: 14px; margin-bottom: 8px; }
+
+    /* Sections */
+    section.lecture, section.lesson, section.card {
+      padding: 16px 16px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+    }
+    section.lecture h2, section.lesson h2, section.card h2 {
+      font-size: 17px;
+      line-height: 1.3;
+    }
+    h3 { font-size: 15px; }
+
+    /* Tables — make scrollable horizontally */
+    table {
+      display: block;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    th, td { padding: 7px 10px; }
+
+    /* Code blocks */
+    code, .prompt {
+      font-size: 12.5px;
+      word-break: break-all;
+    }
+
+    /* Flex/grid layout components — stack on mobile */
+    .framework, .three-legs {
+      flex-direction: column;
+      gap: 10px;
+    }
+    .framework .step, .leg {
+      min-width: unset;
+      width: 100%;
+    }
+
+    /* Lists */
+    ul, ol { padding-left: 18px; }
+    li { font-size: 14px; margin-bottom: 6px; }
+    ul.checklist li { font-size: 14px; }
+
+    /* Callouts */
+    .callout, .tip, .warn, .example, .analogy, .summary-box {
+      padding: 10px 13px;
+      font-size: 14px;
+    }
+
+    /* Back to top links */
+    .top-link, a.back-top { font-size: 13px; }
+
+    /* Cheat sheet */
+    .cheat, .cheatsheet { padding: 16px 16px; }
+  }
+
+  /* Tiny phones ≤ 360px */
+  @media (max-width: 360px) {
+    .container, .wrap { padding: 12px 12px 40px; }
+    section.lecture h2, section.lesson h2, section.card h2 { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header id="top">
+  <h1><span>Section 13</span> — Advanced Amazon S3</h1>
+  <p class="subtitle">My notes on lifecycle rules, event notifications, S3 performance tricks, and object tags & metadata.</p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#lifecycle">S3 Lifecycle Rules & S3 Analytics</a></li>
+    <li><a href="#lifecycle-hands-on">S3 Lifecycle Rules Hands On</a></li>
+    <li><a href="#events">S3 Event Notifications</a></li>
+    <li><a href="#events-hands-on">S3 Event Notifications Hands On</a></li>
+    <li><a href="#performance">S3 Performance</a></li>
+    <li><a href="#tags-metadata">S3 Object Tags & Metadata</a></li>
+    <li><a href="#cheatsheet">Cheat Sheet</a></li>
+  </ol>
+</nav>
+
+<!-- 1. LIFECYCLE RULES -->
+<section class="card" id="lifecycle">
+  <h2><span class="badge">1</span> S3 Lifecycle Rules & S3 Analytics</h2>
+
+  <p>Objects can move between storage classes over time — either manually, or automatically using <strong>Lifecycle Rules</strong>.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 170" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#6b6a66"/>
+        </marker>
+      </defs>
+      <rect class="svg-box-accent" x="20" y="65" width="120" height="45" rx="6"/>
+      <text class="svg-text" x="80" y="92" text-anchor="middle" font-size="11">Standard</text>
+      <path class="svg-arrow" d="M140,87 L230,87"/>
+      <rect class="svg-box-accent" x="230" y="65" width="120" height="45" rx="6"/>
+      <text class="svg-text" x="290" y="92" text-anchor="middle" font-size="11">Standard-IA</text>
+      <path class="svg-arrow" d="M350,87 L440,87"/>
+      <rect class="svg-box-accent" x="440" y="65" width="140" height="45" rx="6"/>
+      <text class="svg-text" x="510" y="92" text-anchor="middle" font-size="11">Intelligent-Tiering</text>
+      <path class="svg-arrow" d="M580,87 L670,87"/>
+      <rect class="svg-box-accent" x="670" y="65" width="100" height="45" rx="6"/>
+      <text class="svg-text" x="720" y="92" text-anchor="middle" font-size="10">One-Zone-IA</text>
+
+      <path class="svg-arrow" d="M720,110 Q 650,150 520,150"/>
+      <rect class="svg-box-accent" x="380" y="130" width="140" height="40" rx="6"/>
+      <text class="svg-text" x="450" y="154" text-anchor="middle" font-size="10">Flexible Retrieval</text>
+      <path class="svg-arrow" d="M380,150 Q 300,150 230,140"/>
+      <rect class="svg-box-accent" x="120" y="130" width="120" height="40" rx="6"/>
+      <text class="svg-text" x="180" y="154" text-anchor="middle" font-size="10">Deep Archive</text>
+    </svg>
+  </div>
+  <p class="caption">Objects can transition through storage classes in many valid orders — e.g. Standard → Standard-IA → Intelligent-Tiering → One-Zone-IA → Flexible Retrieval / Deep Archive.</p>
+
+  <h3>What a lifecycle rule can do</h3>
+  <ul>
+    <li><strong>Transition actions</strong> — move an object to another storage class after N days. E.g. move to Standard-IA after 60 days, or to Glacier after 6 months.</li>
+    <li><strong>Expiration actions</strong> — delete objects after N days (e.g. delete log files after 365 days), delete old versions of objects if versioning is enabled, or clean up <strong>incomplete multi-part uploads</strong> older than a certain age (e.g. 2 weeks).</li>
+    <li>Rules can apply to the whole bucket, to a specific <strong>prefix</strong> (path), or to objects with specific <strong>tags</strong>.</li>
+  </ul>
+
+  <h3>Exam-style scenarios</h3>
+  <div class="callout key">
+    <strong class="tag">Scenario 1</strong>
+    An app on EC2 creates thumbnails from uploaded profile photos. Thumbnails are easy to recreate and only need to be kept 60 days; source images need instant access for 60 days, then users can tolerate up to a 6-hour wait. <strong>Solution:</strong> keep source images on Standard, transition to Glacier after 60 days. Use a prefix to separate thumbnails, store them on One-Zone-IA (infrequently accessed, recreatable), and expire them after 60 days.
+  </div>
+
+  <div class="callout key">
+    <strong class="tag">Scenario 2</strong>
+    Company policy: deleted objects must be recoverable instantly for 30 days, then recoverable within 48 hours for up to 365 days. <strong>Solution:</strong> enable <strong>versioning</strong> (deletes just add a delete marker, so the object is recoverable), then set a rule to transition non-current versions to Standard-IA, and later to Glacier Deep Archive for long-term archival.
+  </div>
+
+  <h3>S3 Analytics</h3>
+  <p>Not sure what the "right" number of days is for a transition? <strong>S3 Analytics</strong> gives recommendations — but only for <strong>Standard</strong> and <strong>Standard-IA</strong> (not One-Zone-IA or Glacier).</p>
+  <ul>
+    <li>Produces a <strong>CSV report</strong> with statistics and recommendations.</li>
+    <li>Updated daily; takes <strong>24–48 hours</strong> to start showing useful data.</li>
+  </ul>
+
+  <div class="callout tip">
+    <strong class="tag">Tip</strong>
+    Use the S3 Analytics CSV report as your starting point for designing (or improving) lifecycle rules, rather than guessing at transition timings.
+  </div>
+</section>
+
+<!-- 2. LIFECYCLE HANDS ON -->
+<section class="card" id="lifecycle-hands-on">
+  <h2><span class="badge">2</span> S3 Lifecycle Rules Hands On</h2>
+
+  <p>Lifecycle rules are created under a bucket's <strong>Management</strong> tab. Once you name a rule and choose its scope (e.g. all objects in the bucket), you get <strong>five possible rule actions</strong>:</p>
+
+  <table>
+    <tr><th>Action</th><th>What it does</th></tr>
+    <tr><td>Move current versions between storage classes</td><td>Transitions the most recent (displayed) version of an object — e.g. to Standard-IA after 30 days, Intelligent-Tiering after 60, Glacier Instant Retrieval after 90, Flexible Retrieval after 180, Deep Archive after 365</td></tr>
+    <tr><td>Move non-current versions between storage classes</td><td>Transitions older/overwritten versions — e.g. straight to Glacier Flexible Retrieval after 90 days since they likely won't be needed</td></tr>
+    <tr><td>Expire current versions of objects</td><td>Deletes the current version after a set number of days (e.g. 700 days)</td></tr>
+    <tr><td>Permanently delete non-current versions</td><td>Cleans up old versions after a set number of days (e.g. 700 days)</td></tr>
+    <tr><td>Delete expired objects / delete markers / incomplete multi-part uploads</td><td>Housekeeping cleanup action</td></tr>
+  </table>
+
+  <p>You can stack as many transitions as you like, and the console shows a <strong>timeline preview</strong> of what will happen to current vs. non-current versions of your objects before you save the rule.</p>
+</section>
+
+<!-- 3. EVENT NOTIFICATIONS -->
+<section class="card" id="events">
+  <h2><span class="badge">3</span> S3 Event Notifications</h2>
+
+  <p>S3 can notify other services when things happen in a bucket — object created, object removed, object restored, replication events, etc. You can also filter events (e.g. only react to <code>.jpeg</code> files).</p>
+
+  <p><strong>Use case example:</strong> automatically generate a thumbnail every time an image is uploaded to S3.</p>
+
+  <h3>Where events can go</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box-accent" x="20" y="80" width="140" height="50" rx="6"/>
+      <text class="svg-text" x="90" y="110" text-anchor="middle" font-weight="600">S3 Bucket</text>
+
+      <path class="svg-arrow" d="M160,90 L300,40"/>
+      <rect class="svg-box" x="300" y="15" width="130" height="45" rx="6"/>
+      <text class="svg-text" x="365" y="42" text-anchor="middle" font-size="11">SNS Topic</text>
+
+      <path class="svg-arrow" d="M160,105 L300,105"/>
+      <rect class="svg-box" x="300" y="82" width="130" height="45" rx="6"/>
+      <text class="svg-text" x="365" y="109" text-anchor="middle" font-size="11">SQS Queue</text>
+
+      <path class="svg-arrow" d="M160,120 L300,165"/>
+      <rect class="svg-box" x="300" y="145" width="130" height="45" rx="6"/>
+      <text class="svg-text" x="365" y="172" text-anchor="middle" font-size="11">Lambda Function</text>
+
+      <path class="svg-arrow" d="M160,95 L560,60"/>
+      <rect class="svg-box-accent" x="560" y="35" width="180" height="50" rx="6"/>
+      <text class="svg-text" x="650" y="58" text-anchor="middle" font-size="11" font-weight="600">Amazon EventBridge</text>
+      <text class="svg-label" x="650" y="75" text-anchor="middle" font-size="9">→ 18+ possible destinations</text>
+    </svg>
+  </div>
+  <p class="caption">S3 events can go directly to SNS, SQS, or Lambda — and every event also lands in EventBridge, which can fan it out to 18+ other AWS services with more advanced filtering.</p>
+
+  <h3>Direct targets: SNS, SQS, Lambda</h3>
+  <ul>
+    <li>S3 doesn't use an IAM role to deliver events. Instead, the <strong>target</strong> needs a resource policy that allows S3 to talk to it:
+      <ul>
+        <li><strong>SNS</strong> — attach an <strong>SNS resource access policy</strong> allowing S3 to publish messages.</li>
+        <li><strong>SQS</strong> — attach an <strong>SQS resource access policy</strong> allowing S3 to send messages.</li>
+        <li><strong>Lambda</strong> — attach a <strong>Lambda resource policy</strong> allowing S3 to invoke the function.</li>
+      </ul>
+    </li>
+    <li>This works the same way conceptually as an S3 bucket policy — just attached to the other resource instead.</li>
+    <li>Events are typically delivered within seconds, but can occasionally take a minute or more.</li>
+  </ul>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Remember the three direct Event Notification targets: <strong>SNS</strong>, <strong>SQS</strong>, and <strong>Lambda</strong>. Also remember that <strong>every</strong> S3 event can additionally flow into <strong>EventBridge</strong>, unlocking advanced filtering (by metadata, object size, name), multiple simultaneous destinations, and features like event archiving/replay.</p>
+  </div>
+</section>
+
+<!-- 4. EVENT NOTIFICATIONS HANDS ON -->
+<section class="card" id="events-hands-on">
+  <h2><span class="badge">4</span> S3 Event Notifications Hands On</h2>
+
+  <p>Setting up an event notification (bucket <strong>Properties → Event notifications</strong>) gives you two paths:</p>
+  <ol>
+    <li><strong>Create an event notification</strong> directly (to SNS, SQS, or Lambda), or</li>
+    <li>Enable the <strong>EventBridge integration</strong> toggle to send everything to EventBridge instead.</li>
+  </ol>
+
+  <h3>Walkthrough: notify SQS on object creation</h3>
+  <ol>
+    <li>Create an SQS queue first (e.g. <code>DemoS3Notification</code>).</li>
+    <li>Create the event notification, choose event type <strong>"All object create events"</strong>, and pick the SQS queue as the destination.</li>
+  </ol>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    Saving the notification will fail with an error if the SQS queue doesn't yet allow S3 to send messages into it. You must edit the queue's <strong>access policy</strong> (via the SQS Policy Generator: Effect = Allow, Principal = anyone, Action = SendMessage, Resource = the queue ARN) before S3 can successfully validate and deliver to it.
+  </div>
+
+  <ul>
+    <li>Once the access policy is fixed, saving the notification triggers an automatic <strong>test event</strong> in the queue to confirm connectivity.</li>
+    <li>Uploading a real file (e.g. <code>coffee.jpg</code>) then generates an actual event message in the queue with <code>eventName: ObjectCreatedPut</code> and the object's key — exactly the kind of message you'd use to trigger something like thumbnail generation.</li>
+  </ul>
+</section>
+
+<!-- 5. PERFORMANCE -->
+<section class="card" id="performance">
+  <h2><span class="badge">5</span> S3 Performance</h2>
+
+  <h3>Baseline performance</h3>
+  <ul>
+    <li>S3 automatically scales to a very high request volume with low latency — <strong>100–200ms</strong> to get the first byte.</li>
+    <li><strong>3,500 PUT/COPY/POST/DELETE</strong> requests per second, <strong>per prefix</strong>.</li>
+    <li><strong>5,500 GET/HEAD</strong> requests per second, <strong>per prefix</strong>.</li>
+    <li>There's no limit on the number of prefixes in a bucket, so performance scales by spreading objects across more prefixes.</li>
+  </ul>
+
+  <div class="analogy">
+    <strong class="tag">Analogy</strong>
+    A "prefix" is just everything between the bucket name and the object name — e.g. for <code>bucket/folder1/sub1/file</code>, the prefix is <code>folder1/sub1</code>. Each distinct prefix gets its <em>own</em> 3,500/5,500 allowance, like each checkout lane at a store having its own throughput — more lanes (prefixes) means more total customers served per second.
+  </div>
+
+  <p>Example: 4 objects spread across 4 different prefixes, read evenly, can together achieve <strong>22,000 GET/HEAD requests/second</strong> (4 × 5,500).</p>
+
+  <h3>Speeding up uploads: Multi-part upload</h3>
+  <ul>
+    <li><strong>Recommended</strong> for files over 100 MB, <strong>required</strong> for files over 5 GB.</li>
+    <li>Splits a file into parts and uploads them <strong>in parallel</strong>, maximizing bandwidth use; S3 reassembles the parts once all are uploaded.</li>
+  </ul>
+
+  <div class="diagram">
+    <svg viewBox="0 0 700 150" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="55" width="100" height="40" rx="6"/>
+      <text class="svg-text" x="70" y="80" text-anchor="middle" font-size="11">Big File</text>
+      <path class="svg-arrow" d="M120,60 L230,25"/>
+      <path class="svg-arrow" d="M120,75 L230,75"/>
+      <path class="svg-arrow" d="M120,90 L230,125"/>
+      <rect class="svg-box-accent" x="230" y="8" width="90" height="34" rx="5"/>
+      <text class="svg-text" x="275" y="29" text-anchor="middle" font-size="10">Part 1</text>
+      <rect class="svg-box-accent" x="230" y="58" width="90" height="34" rx="5"/>
+      <text class="svg-text" x="275" y="79" text-anchor="middle" font-size="10">Part 2</text>
+      <rect class="svg-box-accent" x="230" y="108" width="90" height="34" rx="5"/>
+      <text class="svg-text" x="275" y="129" text-anchor="middle" font-size="10">Part 3</text>
+      <path class="svg-arrow" d="M320,25 L470,75"/>
+      <path class="svg-arrow" d="M320,75 L470,75"/>
+      <path class="svg-arrow" d="M320,125 L470,75"/>
+      <rect class="svg-box" x="470" y="55" width="150" height="40" rx="6"/>
+      <text class="svg-text" x="545" y="80" text-anchor="middle" font-size="11">Amazon S3</text>
+    </svg>
+  </div>
+  <p class="caption">Multi-part upload splits a large file into chunks that upload in parallel, then S3 reassembles them.</p>
+
+  <h3>Speeding up transfers over distance: S3 Transfer Acceleration</h3>
+  <ul>
+    <li>Works for both upload and download. Compatible with multi-part upload.</li>
+    <li>Routes your transfer through the nearest AWS <strong>edge location</strong> (200+ worldwide) instead of the public internet all the way to the target region.</li>
+  </ul>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="45" width="140" height="45" rx="6"/>
+      <text class="svg-text" x="90" y="72" text-anchor="middle" font-size="11">User (USA)</text>
+      <path class="svg-arrow" d="M160,67 L290,67"/>
+      <text class="svg-label" x="225" y="55" text-anchor="middle" font-size="9">public internet (short hop)</text>
+      <rect class="svg-box-accent" x="290" y="45" width="160" height="45" rx="6"/>
+      <text class="svg-text" x="370" y="68" text-anchor="middle" font-size="11">AWS Edge Location (USA)</text>
+      <path class="svg-arrow" d="M450,67 L610,67"/>
+      <text class="svg-label" x="530" y="55" text-anchor="middle" font-size="9">fast private AWS network</text>
+      <rect class="svg-box" x="610" y="45" width="150" height="45" rx="6"/>
+      <text class="svg-text" x="685" y="68" text-anchor="middle" font-size="11">S3 Bucket (Australia)</text>
+    </svg>
+  </div>
+  <p class="caption">Transfer acceleration minimizes the distance traveled over the public internet by routing through a nearby edge location, then uses AWS's fast private backbone the rest of the way.</p>
+
+  <h3>Speeding up downloads: S3 Byte-Range Fetches</h3>
+  <ul>
+    <li>Parallelize <strong>GET</strong> requests by fetching specific byte ranges of a file at once.</li>
+    <li>Improves resilience too — if one byte-range request fails, you can retry just that smaller range instead of the whole file.</li>
+    <li>Also useful to fetch just <strong>part</strong> of a file — e.g. reading only the first 50 bytes to grab a header, without downloading the whole thing.</li>
+  </ul>
+</section>
+
+<!-- 6. TAGS & METADATA -->
+<section class="card" id="tags-metadata">
+  <h2><span class="badge">6</span> S3 Object Tags & Metadata</h2>
+
+  <h3>User-defined metadata</h3>
+  <ul>
+    <li>Key-value pairs attached to an object, set at upload time.</li>
+    <li>User-defined metadata keys must start with <code>x-amz-meta-</code> (to distinguish them from AWS-generated metadata like <code>Content-Length</code> or <code>Content-Type</code>).</li>
+    <li>Example: <code>x-amz-meta-origin: paris</code>.</li>
+  </ul>
+
+  <h3>Object tags</h3>
+  <ul>
+    <li>Also key-value pairs, but more commonly used — same concept as tags elsewhere in AWS.</li>
+    <li>Useful for <strong>fine-grained permissions</strong> (e.g. only allow access to objects with a specific tag) and for <strong>analytics</strong> (e.g. group S3 Analytics results by tag).</li>
+    <li>Example: <code>Project: Blue</code>, <code>PHI: True</code>.</li>
+  </ul>
+
+  <div class="callout warning">
+    <strong class="tag">Important</strong>
+    Neither metadata nor tags are <strong>searchable</strong> in Amazon S3. You cannot filter or query objects by metadata or tag values directly on S3.
+  </div>
+
+  <h3>How do you search, then?</h3>
+  <p>Build an <strong>external index</strong> in a database — e.g. <strong>DynamoDB</strong> — that stores the metadata/tags in a searchable form. You query that index, and the search results point you to the matching objects in S3.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 700 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="45" width="150" height="45" rx="6"/>
+      <text class="svg-text" x="95" y="72" text-anchor="middle" font-size="11">User Search Query</text>
+      <path class="svg-arrow" d="M170,67 L280,67"/>
+      <rect class="svg-box-accent" x="280" y="45" width="160" height="45" rx="6"/>
+      <text class="svg-text" x="360" y="72" text-anchor="middle" font-size="11">DynamoDB (index)</text>
+      <path class="svg-arrow" d="M440,67 L560,67"/>
+      <rect class="svg-box" x="560" y="45" width="130" height="45" rx="6"/>
+      <text class="svg-text" x="625" y="72" text-anchor="middle" font-size="11">S3 Objects</text>
+    </svg>
+  </div>
+  <p class="caption">Since S3 can't search metadata/tags itself, queries hit an external index (like DynamoDB) which then points to the matching objects stored in S3.</p>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    "How would you make S3 objects searchable by metadata/tags?" → build an external searchable index (e.g. DynamoDB) that mirrors the metadata/tags, then resolve search results back to S3 objects.
+  </div>
+</section>
+
+<!-- CHEAT SHEET -->
+<section class="card cheatsheet" id="cheatsheet">
+  <h2><span class="badge">✓</span> Cheat Sheet</h2>
+
+  <h3>Key facts to remember</h3>
+  <ul>
+    <li>Lifecycle rules = transition actions (move between storage classes) + expiration actions (delete objects, old versions, or incomplete multi-part uploads); can target a whole bucket, a prefix, or specific tags.</li>
+    <li>S3 Analytics gives transition recommendations, but only for Standard ↔ Standard-IA; report updates daily and takes 24–48 hrs to populate.</li>
+    <li>S3 Event Notifications can go directly to <strong>SNS</strong>, <strong>SQS</strong>, or <strong>Lambda</strong> (each needs a resource policy authorizing S3), or to <strong>EventBridge</strong> (all events flow there too, unlocking 18+ destinations and advanced filtering).</li>
+    <li>Baseline performance: 3,500 PUT/COPY/POST/DELETE and 5,500 GET/HEAD requests per second, <strong>per prefix</strong> — no limit on number of prefixes.</li>
+    <li>Multi-part upload: recommended over 100MB, required over 5GB — parallelizes uploads.</li>
+    <li>Transfer Acceleration: routes through edge locations to minimize public-internet travel; works for upload & download; compatible with multi-part upload.</li>
+    <li>Byte-Range Fetches: parallelize/resume GETs, or fetch just part of a file (like a header).</li>
+    <li>Metadata (<code>x-amz-meta-*</code>) and tags are both key-value pairs on objects, but <strong>neither is searchable</strong> — tags are also useful for fine-grained permissions and analytics grouping.</li>
+    <li>To search S3 objects by metadata/tags, build an external searchable index (e.g. DynamoDB) that mirrors that data.</li>
+  </ul>
+
+  <h3>Decision guide</h3>
+  <table>
+    <tr><th>Need</th><th>Feature</th></tr>
+    <tr><td>Automatically move/delete objects over time</td><td>Lifecycle rules</td></tr>
+    <tr><td>Figure out the right transition timing</td><td>S3 Analytics (Standard/Standard-IA only)</td></tr>
+    <tr><td>React to uploads/deletes automatically</td><td>Event Notifications → SNS / SQS / Lambda / EventBridge</td></tr>
+    <tr><td>Upload a huge file fast</td><td>Multi-part upload</td></tr>
+    <tr><td>Upload/download fast across long distances</td><td>Transfer Acceleration</td></tr>
+    <tr><td>Download large files fast / resiliently</td><td>Byte-Range Fetches</td></tr>
+    <tr><td>Search objects by custom attributes</td><td>External index (e.g. DynamoDB) fed by tags/metadata</td></tr>
+  </table>
+
+  <h3>Mental model</h3>
+  <p>This section is about running S3 efficiently at scale: lifecycle rules automate moving or deleting objects as they age so you're not manually managing storage tiers; event notifications let other AWS services react instantly when something happens in a bucket; performance features (multi-part upload, transfer acceleration, byte-range fetches) exist because S3 itself scales extremely well per-prefix but a single connection or single request doesn't — so you parallelize and route smartly; and tags/metadata add context to objects, but since S3 can't search on them, real search means building your own index elsewhere and using S3 purely as the object store.</p>
+</section>
+
+<a class="back-to-top" href="#top">↑ Back to top</a>
+
+</div>
+</body>
+</html>
