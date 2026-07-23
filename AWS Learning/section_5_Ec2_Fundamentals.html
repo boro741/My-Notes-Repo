@@ -315,11 +315,11 @@
 </style>
 </head>
 <body>
-<div class="container">
+<div class="container" id="top">
 
   <header class="page-header">
     <h1>Section 5 — AWS Fundamentals: EC2</h1>
-    <p>My notes while watching Stephane Maarek's Udemy course · Simple English, diagrams included, no dark theme.</p>
+    <p>My notes while watching Stephane Maarek's Udemy course · Simple English, diagrams included, clean layout.</p>
   </header>
 
   <nav class="toc">
@@ -341,13 +341,13 @@
   <section class="lecture" id="s1">
     <h2><span class="lecture-num">1</span>AWS Budget &amp; Billing Setup</h2>
 
-    <p>Before creating any AWS resources, set up billing alerts so you never get a surprise bill. AWS is pay-as-you-go — you're billed for what you use, but mistakes (like forgetting to terminate an instance) happen to everyone.</p>
+    <p>Before launching any resources in AWS, set up billing alerts. AWS follows a <strong>pay-as-you-go model</strong> — you only pay for what you use, but forgetting to delete an unwanted server can lead to unexpected charges.</p>
 
-    <h3>Accessing the billing console</h3>
-    <p>Click your account name (top right) → <strong>Billing and Cost Management</strong>.</p>
+    <h3>How to Access the Billing Console</h3>
+    <p>Click your Account Name (top-right corner of the AWS Console) → Click <strong>Billing and Cost Management</strong>.</p>
 
     <div class="callout warn">
-      <strong>IAM users can't see billing by default.</strong> Even with admin permissions, an IAM user won't see billing info until the <em>root account</em> enables it: log in as root → Account settings → "IAM user and role access to billing information" → Edit → activate.
+      <strong>Important IAM Permission Note:</strong> By default, IAM users cannot view billing information even if they have administrator policies. The <em>Root User</em> must enable billing access first: Log in as Root → Account settings → "IAM user and role access to billing information" → Click Edit → Check Activate → Save.
     </div>
 
     <div class="diagram">
@@ -369,27 +369,27 @@
         <rect x="540" y="55" width="70" height="50" rx="10" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
         <text x="575" y="82" text-anchor="middle" font-size="11" font-weight="bold">IAM User</text>
       </svg>
-      <div class="diagram-caption">Root account grants billing visibility once; after that, IAM users can view (but shouldn't necessarily manage) billing.</div>
+      <div class="diagram-caption">The Root account grants billing permission once; after that, authorized IAM users can view billing details.</div>
     </div>
 
     <div class="callout exam">
-      <strong>Security best practice:</strong> Use the root account only for billing/account management. Use IAM users for everyday work — this limits the damage if IAM credentials leak.
+      <strong>Security Best Practice:</strong> Use the Root user exclusively for account and billing administration. Perform all daily technical work using IAM users.
     </div>
 
-    <h3>Billing dashboard basics</h3>
+    <h3>Understanding Your Billing Dashboard</h3>
     <dl>
-      <dt>Month-to-Date Cost</dt><dd>Total spend so far this month</dd>
-      <dt>Forecasted Cost</dt><dd>Estimated total for the month based on current usage</dd>
-      <dt>Last Month's Cost</dt><dd>Total spend from the previous month</dd>
+      <dt>Month-to-Date Cost</dt><dd>The total money spent during the current month so far.</dd>
+      <dt>Forecasted Cost</dt><dd>The estimated end-of-month bill based on current usage trends.</dd>
+      <dt>Last Month's Cost</dt><dd>The final total amount charged in the previous month.</dd>
     </dl>
 
-    <h3>Cost breakdown &amp; Free Tier monitoring</h3>
+    <h3>Monitoring Charges &amp; AWS Free Tier</h3>
     <ul>
-      <li><strong>Bills → Charges by Service</strong> — see exactly which service is costing money (e.g. EC2 instances $20, EBS volumes $8, NAT Gateway $12)</li>
-      <li><strong>Free Tier page</strong> — shows current usage vs. free limits, plus a forecast. If the forecast turns <strong>red</strong>, you're about to exceed the free tier and get charged — stop/terminate resources immediately</li>
+      <li><strong>Bills → Charges by Service:</strong> Shows a clear service-by-service cost breakdown (e.g., EC2 servers, EBS storage drives, NAT Gateways).</li>
+      <li><strong>Free Tier Dashboard:</strong> Tracks your usage against monthly free limits (e.g., 750 free hours per month for <code>t2.micro</code> instances). If the bar turns <strong>red</strong>, you are close to exceeding free tier limits!</li>
     </ul>
 
-    <h3>Setting up two layers of budget alerts</h3>
+    <h3>Setting Up Budget Alerts</h3>
     <div class="diagram">
       <svg viewBox="0 0 640 130" xmlns="http://www.w3.org/2000/svg">
         <rect x="20" y="20" width="590" height="30" rx="6" fill="#fecaca" stroke="#dc2626" stroke-width="1.5"/>
@@ -398,19 +398,19 @@
         <rect x="20" y="70" width="590" height="30" rx="6" fill="#fed7aa" stroke="#ea580c" stroke-width="1.5"/>
         <text x="30" y="90" font-size="12" font-weight="bold" fill="#7c2d12">Layer 2 — Monthly Cost Budget: alerts at 85% and 100% of your set limit (e.g. $10)</text>
       </svg>
-      <div class="diagram-caption">Two independent safety nets — one catches accidental charges early, the other tracks your overall monthly spend.</div>
+      <div class="diagram-caption">Two budget safety nets — one flags accidental initial charges, while the second tracks total monthly spend.</div>
     </div>
 
     <div class="callout tip">
-      <strong>Course tip:</strong> If you terminate instances after each lab, you should stay within the free tier (EC2 micro instances are free for 750 hours/month for a new account).
+      <strong>Pro Tip:</strong> Always delete or terminate lab servers after completing practice exercises to stay well within the AWS Free Tier.
     </div>
 
-    <h3>After every hands-on lab, do this:</h3>
+    <h3>After Every Hands-On Lab:</h3>
     <ol>
-      <li>Check <strong>Free Tier</strong> page — still within limits?</li>
-      <li>Check <strong>Bills → Charges by Service</strong> — anything unexpected?</li>
-      <li>Confirm budget alerts are configured</li>
-      <li><strong>Terminate</strong> resources you're not using</li>
+      <li>Check the <strong>Free Tier page</strong> to confirm usage limits.</li>
+      <li>Open <strong>Bills → Charges by Service</strong> to verify zero unexpected charges.</li>
+      <li>Confirm budget email alerts are active.</li>
+      <li><strong>Terminate</strong> (permanently delete) lab servers you are no longer using.</li>
     </ol>
   </section>
 
@@ -418,13 +418,13 @@
   <section class="lecture" id="s2">
     <h2><span class="lecture-num">2</span>What is EC2?</h2>
 
-    <p><strong>EC2 = Elastic Compute Cloud.</strong> It's AWS's core Infrastructure-as-a-Service (IaaS) offering — you rent virtual machines on demand instead of buying physical servers.</p>
+    <p><strong>EC2</strong> stands for <strong>Elastic Compute Cloud</strong>. It is AWS's core Infrastructure-as-a-Service (IaaS) offering. Instead of buying physical server hardware, you rent virtual computers (virtual machines) on demand from AWS cloud data centers.</p>
 
-    <div class="callout tip">
-      <strong>Core idea:</strong> Pay only for what you use, for as long as you use it. Scale up instantly when traffic grows, scale down when it shrinks.
+    <div class="analogy">
+      💻 <strong>Real-World Analogy:</strong> EC2 is like <strong>renting a computer in the cloud</strong> instead of buying a physical laptop. You can pick the computer's power (RAM, CPU), use it for a few hours, pay only for those hours, and return it when finished!
     </div>
 
-    <h3>EC2 isn't one thing — it's a family of services</h3>
+    <h3>The EC2 Ecosystem</h3>
     <div class="diagram">
       <svg viewBox="0 0 640 260" xmlns="http://www.w3.org/2000/svg">
         <rect x="255" y="100" width="130" height="60" rx="10" fill="#fcd34d" stroke="#d97706" stroke-width="2"/>
@@ -447,41 +447,40 @@
         <rect x="230" y="220" width="180" height="40" rx="8" fill="#fed7aa" stroke="#ea580c" stroke-width="2"/>
         <text x="320" y="245" text-anchor="middle" font-size="11">AMI — instance template</text>
       </svg>
-      <div class="diagram-caption">The EC2 "family": the instance itself, plus EBS (storage), ELB (traffic distribution), ASG (auto-scaling) and AMI (templates) all work together.</div>
+      <div class="diagram-caption">The EC2 ecosystem: The virtual server (Instance) works together with EBS (hard drive), ELB (traffic balancer), ASG (auto-scaler), and AMI (operating system template).</div>
     </div>
 
     <dl>
-      <dt>EC2 Instances</dt><dd>Virtual machines you rent to run your applications</dd>
-      <dt>EBS Volumes</dt><dd>Virtual hard drives attached to instances for persistent storage</dd>
-      <dt>Elastic Load Balancer (ELB)</dt><dd>Distributes incoming traffic across multiple instances</dd>
-      <dt>Auto Scaling Groups (ASG)</dt><dd>Automatically adds/removes instances based on demand</dd>
+      <dt>EC2 Instance</dt><dd>The virtual computer running your software applications.</dd>
+      <dt>EBS Volume</dt><dd>The virtual hard drive attached to your instance to store files permanently.</dd>
+      <dt>Elastic Load Balancer (ELB)</dt><dd>A smart traffic manager that distributes incoming website visitors across multiple EC2 servers.</dd>
+      <dt>Auto Scaling Group (ASG)</dt><dd>Automatically adds more EC2 servers during high web traffic and removes them when traffic drops.</dd>
     </dl>
-
-    <div class="callout tip">
-      <strong>Why this matters:</strong> Nearly every company on AWS uses EC2 in some form. Understanding EC2 well means understanding the core of cloud infrastructure.
-    </div>
   </section>
 
   <!-- 3 -->
   <section class="lecture" id="s3">
     <h2><span class="lecture-num">3</span>What Can You Customize on an Instance?</h2>
 
-    <p>When launching an EC2 instance, you control almost everything about it:</p>
+    <p>When creating an EC2 instance, you choose every hardware and software setting:</p>
 
     <table>
-      <tr><th>Setting</th><th>What it controls</th></tr>
-      <tr><td>Operating System</td><td>Linux (most popular in the cloud), Windows, or macOS</td></tr>
-      <tr><td>CPU &amp; Cores</td><td>Compute power — from 1 core to 96+ cores</td></tr>
-      <tr><td>RAM</td><td>Memory available to the instance</td></tr>
-      <tr><td>Storage</td><td>Network storage (EBS) or local hardware storage (Instance Store)</td></tr>
-      <tr><td>Network Card</td><td>Speed/type of network interface</td></tr>
-      <tr><td>Public IP Address</td><td>Whether it's reachable from the internet</td></tr>
-      <tr><td>Security Groups</td><td>Firewall — inbound/outbound traffic rules</td></tr>
-      <tr><td>Bootstrap Script (User Data)</td><td>Commands that run automatically at first boot</td></tr>
+      <tr><th>Setting</th><th>Description</th></tr>
+      <tr><td>Operating System (OS)</td><td>Linux (Amazon Linux, Ubuntu), Windows, or macOS.</td></tr>
+      <tr><td>CPU / Compute Power</td><td>Number of virtual processor cores (from 1 core up to 96+ cores).</td></tr>
+      <tr><td>RAM / Memory</td><td>System memory capacity (from 0.5 GB up to several Terabytes).</td></tr>
+      <tr><td>Storage Drives</td><td>Network storage (EBS) or high-speed physical disk (Instance Store).</td></tr>
+      <tr><td>Network Speed</td><td>Network interface card speed and bandwidth.</td></tr>
+      <tr><td>Public IP Address</td><td>Allows your instance to send and receive traffic over the internet.</td></tr>
+      <tr><td>Security Group</td><td>A virtual firewall controlling allowed inbound and outbound network traffic.</td></tr>
+      <tr><td>User Data Script</td><td>A setup script that runs automatically when the instance boots for the first time.</td></tr>
     </table>
 
-    <div class="callout tip">
-      <strong>The power of EC2:</strong> Configure a machine exactly how you need it, spin it up in seconds, use it, shut it down when done — no physical hardware to maintain.
+    <div class="analogy">
+      🏰 <strong>Real-World Analogy (Security Group &amp; Network Gateways):</strong><br>
+      • <strong>Security Group:</strong> Think of a Security Group like a <em>security guard standing right outside your private house door</em>. It inspects everyone trying to enter your specific room.<br>
+      • <strong>NACL (Network ACL):</strong> Think of a NACL like the <em>main gatekeeper at the colony/society entrance gate</em>. It checks traffic entering the entire neighborhood before it reaches individual houses.<br>
+      • <strong>VPC (Virtual Private Cloud):</strong> Think of a VPC like a <em>gated housing society / apartment complex</em> in the cloud, isolating your servers safely inside.
     </div>
   </section>
 
@@ -489,7 +488,7 @@
   <section class="lecture" id="s4">
     <h2><span class="lecture-num">4</span>Bootstrapping with EC2 User Data</h2>
 
-    <p><strong>Bootstrapping</strong> = automating setup tasks when a machine first starts. <strong>EC2 User Data</strong> is a script that runs <em>once</em>, right when the instance first launches, and never again.</p>
+    <p><strong>Bootstrapping</strong> means automatically running setup tasks when a computer starts for the first time. In AWS, you do this using an <strong>EC2 User Data script</strong>. This script executes <em>once</em> when the server is launched, and never runs again on standard restarts.</p>
 
     <div class="diagram">
       <svg viewBox="0 0 640 130" xmlns="http://www.w3.org/2000/svg">
@@ -505,25 +504,19 @@
         <circle cx="580" cy="65" r="10" fill="#059669"/>
         <text x="580" y="100" text-anchor="middle" font-size="11">Instance Ready</text>
       </svg>
-      <div class="diagram-caption">User Data runs exactly once at boot — never again on reboot or restart.</div>
+      <div class="diagram-caption">User Data scripts execute once during initial server startup with full administrator privileges.</div>
     </div>
 
-    <h3>What you typically do with it</h3>
+    <h3>Common Uses of User Data Scripts</h3>
     <ul>
-      <li>Install software updates/patches</li>
-      <li>Install applications (web servers, databases, etc.)</li>
-      <li>Download config files from the internet</li>
-      <li>Start services automatically</li>
-      <li>Clone Git repositories</li>
-      <li>Set up monitoring agents</li>
+      <li>Installing OS updates and patches.</li>
+      <li>Installing web server software (like Apache or Nginx) or database applications.</li>
+      <li>Downloading application code and config files automatically.</li>
+      <li>Starting software services automatically on boot.</li>
     </ul>
 
-    <div class="callout warn">
-      <strong>Trade-off:</strong> The more you put in User Data, the longer the instance takes to boot. Balance automation against startup speed.
-    </div>
-
     <div class="callout exam">
-      <strong>Remember:</strong> User Data scripts run with <strong>root privileges</strong> — you never need to prefix commands with <code>sudo</code>.
+      <strong>Exam Rule:</strong> User Data scripts automatically run with <strong>root privileges</strong> (administrator rights). You do not need to add <code>sudo</code> before commands!
     </div>
   </section>
 
@@ -531,7 +524,7 @@
   <section class="lecture" id="s5">
     <h2><span class="lecture-num">5</span>EC2 Pricing Models</h2>
 
-    <p>AWS offers several ways to pay for EC2, each suited to a different kind of workload.</p>
+    <p>AWS offers 6 different payment plans for EC2 instances based on your workload needs:</p>
 
     <div class="diagram">
       <svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg">
@@ -561,88 +554,67 @@
         <rect x="140" y="182" width="315" height="18" fill="#059669"/>
         <text x="465" y="196" font-size="10" fill="#6b7280">up to 90%</text>
       </svg>
-      <div class="diagram-caption">Roughly how much you can save vs. On-Demand — but remember, bigger discounts usually mean less flexibility (Spot can be interrupted anytime).</div>
+      <div class="diagram-caption">Comparing EC2 pricing discounts against On-Demand rates. Larger discounts require longer commitments or accepting interruptions.</div>
     </div>
 
     <h3>1. On-Demand</h3>
-    <p>Pay by the second, no commitment. Best for: development/testing, unpredictable workloads, short-term projects, learning AWS.</p>
-    <div class="analogy">🏨 <strong>Hotel analogy:</strong> Walk in anytime, pay full price. No planning needed, maximum flexibility.</div>
+    <p>Pay by the second or hour with no upfront commitment. Ideal for development, testing, learning, and short-term unpredictable applications.</p>
+    <div class="analogy">🏨 <strong>Hotel Analogy:</strong> Walk into a hotel room without booking. You pay standard full rates per night, but enjoy complete freedom to check out anytime.</div>
 
-    <h3>2. Reserved Instances</h3>
-    <p>Commit to 1 or 3 years for up to <strong>72% discount</strong>. Best for steady-state workloads (databases, always-on web servers).</p>
-    <dl>
-      <dt>What you reserve</dt><dd>Instance type, Region, Tenancy, Operating System</dd>
-      <dt>Payment options</dt><dd>All Upfront (~72% off), Partial Upfront (~66% off), No Upfront (~65% off)</dd>
-    </dl>
-    <div class="callout tip"><strong>Convertible Reserved Instances:</strong> Slightly less discount (~66%) but let you change instance type/family/OS/tenancy later — good if requirements might shift.</div>
-    <div class="analogy">🏨 Book the same room for a year — big discount for long-term commitment.</div>
+    <h3>2. Reserved Instances (RI)</h3>
+    <p>Commit to a 1-year or 3-year term for up to a <strong>72% discount</strong> compared to On-Demand rates. Perfect for steady, 24/7 production workloads (like core databases).</p>
+    <div class="analogy">🏨 Book the exact same hotel room for 1 full year upfront. The hotel gives you a huge discount for committing long-term.</div>
 
     <h3>3. Savings Plans</h3>
-    <p>Commit to spending a fixed <strong>$/hour</strong> for 1–3 years, get up to <strong>70% discount</strong> — but you can mix instance types/sizes/OS as long as you stay within that hourly spend.</p>
-    <div class="analogy">🏨 Tell the hotel "I'll spend $300/month" — they discount you, but you can pick different room types as long as you stay in budget.</div>
+    <p>Commit to spending a specific dollar amount per hour (e.g., $10/hour) for 1 or 3 years. Offers up to <strong>70% discount</strong> while giving flexibility to change instance families, OS, or Regions.</p>
 
     <h3>4. Spot Instances</h3>
-    <p>Bid on unused AWS capacity for up to <strong>90% discount</strong>. Best for batch jobs, data analysis, image processing — anything fault-tolerant.</p>
-    <div class="callout warn"><strong>Critical limitation:</strong> AWS can terminate your Spot instance anytime the price rises above your bid. Never use Spot for critical apps or databases.</div>
-    <div class="analogy">🏨 Last-minute hotel sale on empty rooms — amazing price, but you can get kicked out if someone pays more.</div>
+    <p>Bid on unused AWS computing capacity at up to <strong>90% discount</strong>. Best for batch processing, image rendering, data analytics, and fault-tolerant workloads.</p>
+    <div class="callout warn">
+      <strong>Warning:</strong> AWS can reclaim Spot instances with a 2-minute warning whenever AWS needs the capacity back. Never use Spot instances for databases or critical web servers!
+    </div>
 
     <h3>5. Dedicated Hosts</h3>
-    <p>An entire physical server dedicated to you — the most expensive option. Best for compliance requirements or bring-your-own-license software billed per socket/core.</p>
-    <dl>
-      <dt>Dedicated Host</dt><dd>You get the physical server itself, full visibility, can reuse server-bound licenses</dd>
-      <dt>Dedicated Instance</dt><dd>Runs on hardware dedicated to you, but you don't control which physical server (may share with other instances in your account)</dd>
-    </dl>
-    <div class="analogy">🏨 Rent the entire building for yourself. Maximum privacy, maximum cost.</div>
+    <p>A physical server fully dedicated to your account. Used for strict compliance requirements or software with core-bound licensing.</p>
 
     <h3>6. Capacity Reservations</h3>
-    <p>Reserve on-demand capacity in a specific AZ — no discount, but guarantees the capacity is there when you need it. Charged at on-demand rates whether you launch instances or not. Combine with Reserved Instances/Savings Plans to also get a discount.</p>
-    <div class="analogy">🏨 Reserve a specific room for a specific night — pay full price even if you don't show up, but the room is guaranteed.</div>
+    <p>Reserves EC2 capacity in a specific Availability Zone. Pays standard On-Demand rates, but guarantees that server capacity will be available when needed.</p>
 
-    <h3>Choosing the right option</h3>
+    <h3>Choosing the Right Pricing Plan</h3>
     <table>
-      <tr><th>Workload</th><th>Best choice</th><th>Why</th></tr>
-      <tr><td>Dev, testing, learning</td><td>On-Demand</td><td>Unpredictable, start/stop often</td></tr>
-      <tr><td>Production DB (constant traffic)</td><td>Reserved Instances</td><td>Predictable 24/7 usage, save up to 72%</td></tr>
-      <tr><td>Flexible web app + DB mix</td><td>Savings Plans</td><td>Consistent $/hr spend, flexible instance types</td></tr>
-      <tr><td>Batch processing, analytics</td><td>Spot Instances</td><td>Tolerates interruption, save up to 90%</td></tr>
-      <tr><td>Compliance-regulated workload</td><td>Dedicated Host</td><td>Needs physical server isolation</td></tr>
+      <tr><th>Workload Type</th><th>Recommended Plan</th><th>Rationale</th></tr>
+      <tr><td>Learning, dev/test, temporary jobs</td><td>On-Demand</td><td>No commitment, short runtime.</td></tr>
+      <tr><td>Production databases running 24/7</td><td>Reserved Instances</td><td>Predictable usage, maximum long-term savings.</td></tr>
+      <tr><td>Flexible web servers + microservices</td><td>Savings Plans</td><td>Consistent hourly spend with server flexibility.</td></tr>
+      <tr><td>Big data processing, video rendering</td><td>Spot Instances</td><td>Can tolerate sudden server termination, maximum cost savings (up to 90%).</td></tr>
     </table>
-
-    <div class="callout exam">
-      <strong>Exam tip:</strong> Exam scenarios test whether you can match a workload description to a pricing model. E.g. "database running 24/7 with predictable demand" → Reserved Instance.
-    </div>
   </section>
 
   <!-- 6 -->
   <section class="lecture" id="s6">
     <h2><span class="lecture-num">6</span>Hands-On: Launch Your First EC2 Instance</h2>
 
-    <p><strong>Goal:</strong> launch an Amazon Linux instance, bootstrap a simple web server via User Data, and understand the launch parameters.</p>
+    <p><strong>Objective:</strong> Launch an Amazon Linux server, configure a Security Group, and run a User Data script to start a web server.</p>
 
     <ol>
-      <li><strong>EC2 Console</strong> → Instances → <strong>Launch Instances</strong></li>
-      <li><strong>Name</strong> it, e.g. "My First Instance" (becomes the Name tag)</li>
-      <li><strong>Choose an AMI:</strong> Amazon Linux 2 (Quick Start) — free-tier eligible, 64-bit x86</li>
-      <li><strong>Instance type:</strong> <code>t2.micro</code> — free-tier eligible (1 vCPU, 1 GB RAM, burstable)</li>
-      <li><strong>Key pair:</strong> create a new one (e.g. <code>my-ec2-key</code>), download the <code>.pem</code> file — needed for SSH</li>
-      <li><strong>Security group:</strong> allow the traffic below</li>
-      <li><strong>Storage:</strong> default 8 GB EBS (gp3), delete-on-termination enabled</li>
-      <li><strong>User Data</strong> (under Advanced Details) — paste the bootstrap script below</li>
-      <li>Review, confirm <code>t2.micro</code> + HTTP allowed, click <strong>Launch Instance</strong></li>
+      <li>Go to <strong>EC2 Console</strong> → Click <strong>Launch Instance</strong>.</li>
+      <li>Enter Name: e.g., <code>My First Web Server</code>.</li>
+      <li>Select Operating System (AMI): <strong>Amazon Linux 2</strong> (Free-tier eligible).</li>
+      <li>Select Instance Type: <code>t2.micro</code> (1 vCPU, 1 GB RAM — Free-tier eligible).</li>
+      <li>Key Pair: Create a new Key Pair (e.g., <code>my-key.pem</code>) and download it to log into the terminal safely.</li>
+      <li>Network Settings / Security Group: Configure rules to allow inbound traffic (see table below).</li>
+      <li>User Data: Expand <strong>Advanced Details</strong> and paste the shell script below.</li>
+      <li>Click <strong>Launch Instance</strong>.</li>
     </ol>
 
     <table>
-      <tr><th>Type</th><th>Protocol</th><th>Port</th><th>Source</th><th>Purpose</th></tr>
-      <tr><td>SSH</td><td>TCP</td><td>22</td><td>Your IP (or <code>0.0.0.0/0</code> for learning only)</td><td>Terminal access</td></tr>
-      <tr><td>HTTP</td><td>TCP</td><td>80</td><td><code>0.0.0.0/0</code></td><td>Web traffic</td></tr>
-      <tr><td>HTTPS</td><td>TCP</td><td>443</td><td><code>0.0.0.0/0</code></td><td>Encrypted web traffic (optional)</td></tr>
+      <tr><th>Traffic Type</th><th>Protocol</th><th>Port</th><th>Source</th><th>Purpose</th></tr>
+      <tr><td>SSH</td><td>TCP</td><td>22</td><td>Your IP (or <code>0.0.0.0/0</code> for practice)</td><td>Terminal command access.</td></tr>
+      <tr><td>HTTP</td><td>TCP</td><td>80</td><td><code>0.0.0.0/0</code> (Anywhere)</td><td>Public web traffic.</td></tr>
+      <tr><td>HTTPS</td><td>TCP</td><td>443</td><td><code>0.0.0.0/0</code> (Anywhere)</td><td>Encrypted secure web traffic.</td></tr>
     </table>
 
-    <div class="callout warn">
-      <strong>Security note:</strong> <code>0.0.0.0/0</code> means "anywhere on the internet." Fine for learning, but in production restrict SSH to your own IP only.
-    </div>
-
-    <h3>The bootstrap script</h3>
+    <h3>User Data Bootstrap Script</h3>
     <pre><code>#!/bin/bash
 yum update -y
 yum install -y httpd
@@ -651,23 +623,11 @@ systemctl enable httpd
 echo "&lt;h1&gt;My First AWS Web Server!&lt;/h1&gt;" &gt; /var/www/html/index.html</code></pre>
 
     <dl>
-      <dt><code>#!/bin/bash</code></dt><dd>Shebang — run this as a bash script</dd>
-      <dt><code>yum update -y</code></dt><dd>Update all packages (yum = Amazon Linux's package manager; -y = auto-yes to prompts)</dd>
-      <dt><code>yum install -y httpd</code></dt><dd>Install Apache web server (httpd = HTTP daemon)</dd>
-      <dt><code>systemctl start httpd</code></dt><dd>Start Apache immediately</dd>
-      <dt><code>systemctl enable httpd</code></dt><dd>Make Apache start automatically on every future boot</dd>
+      <dt><code>yum update -y</code></dt><dd>Updates software packages automatically.</dd>
+      <dt><code>yum install -y httpd</code></dt><dd>Installs the Apache HTTP Web Server software.</dd>
+      <dt><code>systemctl start httpd</code></dt><dd>Starts the web server immediately.</dd>
+      <dt><code>systemctl enable httpd</code></dt><dd>Ensures Apache starts automatically whenever the server reboots.</dd>
     </dl>
-
-    <div class="callout tip">
-      <strong>Why <code>enable</code> matters:</strong> Without it, Apache stops for good if the instance reboots. <code>enable</code> is essential for production reliability.
-    </div>
-
-    <h3>Verify it worked</h3>
-    <ul>
-      <li>Wait for status <strong>Running</strong>, copy the <strong>Public IPv4 address</strong></li>
-      <li>Paste into your browser (e.g. <code>http://52.123.45.67</code>)</li>
-      <li>You should see "My First AWS Web Server!"</li>
-    </ul>
   </section>
 
   <!-- 7 -->
@@ -694,52 +654,37 @@ echo "&lt;h1&gt;My First AWS Web Server!&lt;/h1&gt;" &gt; /var/www/html/index.ht
         <text x="545" y="85" text-anchor="middle" font-size="12" font-weight="bold">Terminated</text>
         <text x="545" y="130" text-anchor="middle" font-size="10" fill="#6b7280">Permanent — cannot undo</text>
       </svg>
-      <div class="diagram-caption">Running ↔ Stopped is reversible. Terminated is final — the instance is gone for good.</div>
+      <div class="diagram-caption">Stopping a server is reversible (like shutting down your laptop). Terminating a server is permanent deletion.</div>
     </div>
 
     <table>
-      <tr><th>State</th><th>Description</th><th>Charged?</th></tr>
-      <tr><td><strong>Running</strong></td><td>Active, can accept traffic</td><td>✅ Yes — every second</td></tr>
-      <tr><td><strong>Stopped</strong></td><td>Powered off but still exists (like a shut-down PC)</td><td>❌ No compute charge, but EBS storage still costs</td></tr>
-      <tr><td><strong>Terminated</strong></td><td>Permanently deleted</td><td>❌ No</td></tr>
-      <tr><td><strong>Stopping / Starting</strong></td><td>Transitioning between states</td><td>❌ Usually not charged</td></tr>
+      <tr><th>Server State</th><th>Description</th><th>Billing Status</th></tr>
+      <tr><td><strong>Running</strong></td><td>Server is online and active.</td><td>✅ Billed for compute hours.</td></tr>
+      <tr><td><strong>Stopped</strong></td><td>Server is powered off. Computer state is preserved on disk.</td><td>❌ No compute charge (EBS storage drive is still billed).</td></tr>
+      <tr><td><strong>Terminated</strong></td><td>Server and attached root disk are permanently deleted.</td><td>❌ All billing stops completely.</td></tr>
     </table>
 
-    <div class="callout tip"><strong>STOP</strong> = power off, keep the machine and its config — you can start it again later. You lose compute charges but keep storage costs.</div>
-    <div class="callout exam"><strong>TERMINATE</strong> = permanently delete. No more charges at all. Use this when you're completely done with an instance.</div>
-
     <div class="callout warn">
-      <strong>For this course:</strong> Always <strong>terminate</strong> instances after finishing a lab to avoid ongoing charges. Use "stop" only for a short pause (e.g. overnight).
+      <strong>Lab Rule:</strong> Always <strong>Terminate</strong> practice servers when finished to avoid accidental background charges!
     </div>
-
-    <p><strong>How to stop/terminate:</strong> EC2 → Instances → select instance → <em>Instance State</em> dropdown → choose Stop or Terminate → confirm.</p>
   </section>
 
   <!-- 8 -->
   <section class="lecture" id="s8">
     <h2><span class="lecture-num">8</span>Connecting via SSH (Optional)</h2>
 
-    <p>To log in and run commands directly on your instance, you need the <code>.pem</code> key file and the instance's public IP.</p>
+    <p><strong>SSH (Secure Shell)</strong> allows you to log into your Linux EC2 server terminal securely using your private key file (<code>.pem</code>).</p>
 
-    <pre><code># On macOS/Linux terminal:
-chmod 400 /path/to/my-ec2-key.pem
-ssh -i /path/to/my-ec2-key.pem ec2-user@YOUR_PUBLIC_IP
+    <pre><code># Set key file permissions (macOS / Linux terminal):
+chmod 400 /path/to/my-key.pem
 
-# Example:
-ssh -i ~/Downloads/my-ec2-key.pem ec2-user@52.123.45.67</code></pre>
+# SSH command syntax:
+ssh -i /path/to/my-key.pem ec2-user@YOUR_PUBLIC_IP</code></pre>
 
     <dl>
-      <dt><code>chmod 400</code></dt><dd>Restrict file permissions so only you can read the key (required by SSH)</dd>
-      <dt><code>ec2-user</code></dt><dd>Default username for Amazon Linux (Ubuntu uses <code>ubuntu</code>, Debian uses <code>admin</code>, etc.)</dd>
+      <dt><code>chmod 400</code></dt><dd>Locks permissions so only your user account can read the private key (SSH blocks connection if key permissions are too open).</dd>
+      <dt><code>ec2-user</code></dt><dd>Default login username for Amazon Linux (Ubuntu uses <code>ubuntu</code>).</dd>
     </dl>
-
-    <div class="callout tip">
-      <strong>Windows users:</strong> Use PuTTY or WSL with the SSH command above — you may need to convert the <code>.pem</code> to <code>.ppk</code> with PuTTYgen.
-    </div>
-
-    <div class="callout warn">
-      <strong>Never share your <code>.pem</code> file</strong> — anyone who has it can log into your instances. Treat it like a password.
-    </div>
   </section>
 
   <hr class="section-break">
@@ -749,36 +694,30 @@ ssh -i ~/Downloads/my-ec2-key.pem ec2-user@52.123.45.67</code></pre>
     <h2>📋 Cheat Sheet</h2>
 
     <div class="summary-box">
-      <h3>Key facts to remember</h3>
+      <h3>Key Concepts to Remember</h3>
       <ul>
-        <li>EC2 User Data runs <strong>once</strong>, at first boot, with <strong>root</strong> privileges</li>
-        <li><code>t2.micro</code> = free tier eligible: 1 vCPU, 1 GB RAM</li>
-        <li>Security groups: EC2 instance should only accept traffic on the ports it actually needs (80/443/22)</li>
-        <li>Root volume: deleted by default when instance is terminated (Delete on Termination = enabled)</li>
+        <li>EC2 User Data scripts run <strong>once</strong> during first boot with <strong>root</strong> permissions.</li>
+        <li><code>t2.micro</code> is Free Tier eligible (1 vCPU, 1 GB RAM).</li>
+        <li>Security Groups act as stateful firewalls controlling network port access (e.g., Port 22 for SSH, Port 80 for HTTP).</li>
+        <li>Root EBS volumes are set to <strong>Delete on Termination</strong> by default.</li>
       </ul>
     </div>
 
     <div class="summary-box">
-      <h3>Pricing model quick reference</h3>
+      <h3>EC2 Pricing Reference</h3>
       <table>
-        <tr><th>Model</th><th>Discount</th><th>Best for</th></tr>
-        <tr><td>On-Demand</td><td>0%</td><td>Unpredictable/short-term</td></tr>
-        <tr><td>Reserved (1-3yr)</td><td>Up to 72%</td><td>Steady-state (databases)</td></tr>
-        <tr><td>Savings Plans</td><td>Up to 70%</td><td>Flexible instance types, fixed $/hr spend</td></tr>
-        <tr><td>Spot</td><td>Up to 90%</td><td>Fault-tolerant batch jobs</td></tr>
-        <tr><td>Dedicated Host</td><td>Varies</td><td>Compliance / BYOL</td></tr>
-        <tr><td>Capacity Reservation</td><td>0%</td><td>Guarantee capacity exists in an AZ</td></tr>
+        <tr><th>Model</th><th>Discount</th><th>Best Use Case</th></tr>
+        <tr><td>On-Demand</td><td>0%</td><td>Short-term, unpredictable, learning/testing.</td></tr>
+        <tr><td>Reserved Instances</td><td>Up to 72%</td><td>24/7 steady production servers (databases).</td></tr>
+        <tr><td>Savings Plans</td><td>Up to 70%</td><td>Flexible server fleets with constant hourly spend.</td></tr>
+        <tr><td>Spot Instances</td><td>Up to 90%</td><td>Fault-tolerant batch processing (can be terminated anytime).</td></tr>
+        <tr><td>Dedicated Hosts</td><td>Varies</td><td>Physical hardware isolation for compliance/licenses.</td></tr>
       </table>
     </div>
 
     <div class="summary-box">
-      <h3>Mental model recap</h3>
-      <ul>
-        <li><strong>EC2</strong> = rent a virtual machine, configure it exactly how you want, pay only while running</li>
-        <li><strong>User Data</strong> = automation script that runs once, at first launch</li>
-        <li><strong>Stop</strong> = pause (reversible) · <strong>Terminate</strong> = delete forever</li>
-        <li>Always terminate lab instances when done to avoid ongoing charges</li>
-      </ul>
+      <h3>Mental Model Summary</h3>
+      <p>EC2 lets you rent virtual computers on demand. User Data scripts automate initial software installation. Stop a server to pause compute charges; Terminate a server to delete it permanently and stop all billing.</p>
     </div>
   </section>
 

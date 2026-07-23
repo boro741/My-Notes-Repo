@@ -300,7 +300,7 @@
 
   <header class="page-header">
     <h1>Section 7 — AWS Fundamentals: ELB + ASG</h1>
-    <p>My notes while watching Stephane Maarek's Udemy course · Simple English, diagrams included, no dark theme.</p>
+    <p>My notes while watching Stephane Maarek's Udemy course · Written in simple English with clear explanations and diagrams.</p>
   </header>
 
   <nav class="toc">
@@ -330,38 +330,38 @@
   <section class="lecture" id="l58">
     <h2><span class="lecture-num">58</span>High Availability and Scalability</h2>
 
-    <p><strong>Scalability</strong> = your system can handle more load by adapting. Two types:</p>
+    <p><strong>Scalability</strong> means your web application can easily handle higher user traffic by adjusting its computing power. There are two main ways to scale:</p>
     <ul>
-      <li><strong>Vertical scaling</strong> — make one instance bigger (scale up/down)</li>
-      <li><strong>Horizontal scaling</strong> (elasticity) — add more instances (scale out/in)</li>
+      <li><strong>Vertical scaling</strong> — making a single server bigger and more powerful (scaling up or down).</li>
+      <li><strong>Horizontal scaling</strong> (elasticity) — adding more servers to share the total workload (scaling out or in).</li>
     </ul>
 
     <div class="analogy">
       🏢 <strong>Call center analogy:</strong><br>
-      • <strong>Vertical scaling</strong> = replacing a junior operator (5 calls/min) with a senior operator (10 calls/min). Same person, better/bigger.<br>
-      • <strong>Horizontal scaling</strong> = hiring more operators (2, 3, 6...) instead of upgrading one. More people sharing the work.<br>
-      • <strong>High availability</strong> = having operators in two different buildings (New York + San Francisco) so if one building loses power, the other keeps working.
+      • <strong>Vertical scaling</strong> = Replacing a junior operator (handles 5 calls/min) with a senior expert (handles 10 calls/min). It is the same desk, just a more powerful worker.<br>
+      • <strong>Horizontal scaling</strong> = Hiring 5 extra operators to share incoming customer calls. More people share the work.<br>
+      • <strong>High Availability (HA)</strong> = Running call centers in two different cities (like Mumbai and Bangalore). If the Mumbai office loses power, the Bangalore office keeps answering calls seamlessly.
     </div>
 
     <table>
-      <tr><th>Concept</th><th>Meaning</th><th>Typical use case</th></tr>
-      <tr><td>Vertical scaling</td><td>Bigger instance (e.g. t2.micro → t2.large)</td><td>Non-distributed systems like databases (RDS, ElastiCache). Has a hardware limit.</td></tr>
-      <tr><td>Horizontal scaling</td><td>More instances (scale out/in)</td><td>Distributed / modern web apps. Easy in the cloud (just launch more EC2s).</td></tr>
-      <tr><td>High Availability (HA)</td><td>Run across ≥ 2 Availability Zones (data centers)</td><td>Survive the loss of one data center.</td></tr>
+      <tr><th>Concept</th><th>Meaning</th><th>Everyday Example &amp; Use Case</th></tr>
+      <tr><td>Vertical scaling</td><td>Upgrading to a bigger EC2 instance (e.g. <code>t2.micro</code> → <code>t2.large</code> with more CPU &amp; RAM).</td><td>Single databases (like RDS or ElastiCache) that cannot split work across servers easily. Has a hardware limit.</td></tr>
+      <tr><td>Horizontal scaling</td><td>Adding more EC2 instances (scale out) or removing extra ones (scale in).</td><td>Modern web applications. Very easy in the cloud because you can launch new EC2 servers in seconds.</td></tr>
+      <tr><td>High Availability (HA)</td><td>Running your app across ≥ 2 Availability Zones (separate physical data centers in a region).</td><td>Ensures your system stays online even if an entire data center experiences a power cut or disaster.</td></tr>
     </table>
 
     <div class="callout exam">
-      <strong>Exam tip:</strong> HA can be <em>passive</em> (e.g. RDS Multi-AZ standby, only takes over on failure) or <em>active</em> (e.g. horizontal scaling, all instances working at the same time). Don't assume HA always means "active."
+      <strong>Exam tip:</strong> High Availability can be <em>passive</em> (e.g., RDS Multi-AZ standby database sitting idle until the main DB fails) or <em>active</em> (e.g., horizontal scaling where all EC2 instances process user traffic simultaneously). HA does not always mean all servers are active.
     </div>
 
-    <p><strong>EC2 size range:</strong> smallest = <code>t2.nano</code> (0.5 GB RAM, 1 vCPU) → biggest = <code>u-12tb1.metal</code> (12.3 TB RAM, 450 vCPUs).</p>
+    <p><strong>EC2 Size Range:</strong> AWS provides a wide range of virtual server sizes — from the smallest <code>t2.nano</code> (0.5 GB RAM, 1 vCPU) to massive servers like <code>u-12tb1.metal</code> (12.3 TB RAM, 450 vCPUs).</p>
   </section>
 
   <!-- 59 -->
   <section class="lecture" id="l59">
     <h2><span class="lecture-num">59</span>Elastic Load Balancing (ELB) Overview</h2>
 
-    <p>A <strong>load balancer</strong> is a server (or a group of servers) that spreads incoming traffic across multiple backend EC2 instances. Users only ever talk to <em>one</em> address — the load balancer — and never know which actual EC2 instance answered them.</p>
+    <p>A <strong>load balancer</strong> is a dedicated server (or managed group of servers) that receives incoming web traffic and distributes it evenly across multiple backend EC2 instances (virtual computers rented in the cloud). Users only ever visit <em>one single front door</em> — the load balancer — and never know which backend server answered them.</p>
 
     <div class="diagram">
       <svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg">
@@ -389,42 +389,43 @@
         <rect x="480" y="150" width="120" height="40" rx="6" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
         <text x="540" y="175" text-anchor="middle" font-size="12">EC2 Instance 3</text>
       </svg>
-      <div class="diagram-caption">Each user connects to one endpoint (the load balancer). Each request is spread across different backend EC2 instances.</div>
+      <div class="diagram-caption">Every user connects to one central entry point (the load balancer). The load balancer spreads incoming requests across backend EC2 instances.</div>
     </div>
 
     <h3>Why use a load balancer?</h3>
     <ul>
-      <li>Single point of access (one DNS name for your app)</li>
-      <li>Seamlessly handles failure of downstream instances (via health checks)</li>
-      <li>Provides SSL termination (HTTPS)</li>
-      <li>Enforces stickiness with cookies</li>
-      <li>High availability across zones</li>
-      <li>Separates public traffic from private traffic</li>
+      <li><strong>Single front door:</strong> Gives your app one single web address (DNS hostname).</li>
+      <li><strong>Automatic fault tolerance:</strong> Uses health checks to detect failed servers and stop sending traffic to them.</li>
+      <li><strong>SSL termination:</strong> Handles secure HTTPS encryption centrally.</li>
+      <li><strong>Sticky sessions:</strong> Uses cookies to keep a user attached to the same backend server if needed.</li>
+      <li><strong>High Availability:</strong> Spreads traffic smoothly across multiple Availability Zones (data centers).</li>
+      <li><strong>Network security:</strong> Keeps backend EC2 servers hidden inside a private network safe from direct public internet access.</li>
     </ul>
 
-    <p>ELB is a <strong>managed service</strong> — AWS handles upgrades, maintenance, and HA for you. It's cheaper and easier than running/managing your own load balancer, and integrates with EC2, ASG, ECS, ACM, CloudWatch, Route 53, WAF, Global Accelerator, and more.</p>
+    <p>ELB is a fully <strong>managed service</strong> — AWS automatically handles server maintenance, security upgrades, and high availability for you. It is cheaper and more reliable than managing your own load balancing software, and connects directly with EC2, ASG, ECS, ACM, CloudWatch, Route 53, WAF, and Global Accelerator.</p>
 
     <h3>Health Checks</h3>
-    <p>The load balancer checks a <strong>port</strong> and a <strong>route</strong> (e.g. <code>HTTP:4567/health</code>). If the instance doesn't respond with <code>200 OK</code>, it's marked <strong>unhealthy</strong> and traffic stops going to it.</p>
+    <p>The load balancer regularly pings a <strong>port</strong> and a <strong>web route</strong> on each server (e.g. <code>HTTP:80/health</code>). If an instance replies with a <code>200 OK</code> status, it is healthy. If it fails to respond correctly, ELB marks it <strong>unhealthy</strong> and immediately stops sending web traffic to it.</p>
 
     <h3>The 4 Types of AWS Load Balancers</h3>
     <table>
-      <tr><th>Load Balancer</th><th>Since</th><th>Layer</th><th>Protocols</th><th>Status</th></tr>
-      <tr><td>Classic Load Balancer (CLB)</td><td>2009</td><td>4 &amp; 7</td><td>HTTP, HTTPS, TCP, SSL</td><td><span class="badge old">Deprecated</span></td></tr>
-      <tr><td>Application Load Balancer (ALB)</td><td>2016</td><td>7</td><td>HTTP, HTTPS, WebSocket</td><td><span class="badge new">Recommended</span></td></tr>
-      <tr><td>Network Load Balancer (NLB)</td><td>2017</td><td>4</td><td>TCP, TLS, UDP</td><td><span class="badge new">Recommended</span></td></tr>
-      <tr><td>Gateway Load Balancer (GWLB)</td><td>2020</td><td>3</td><td>IP</td><td><span class="badge new">Newest</span></td></tr>
+      <tr><th>Load Balancer</th><th>Since</th><th>OSI Layer</th><th>Protocols</th><th>Status</th></tr>
+      <tr><td>Classic Load Balancer (CLB)</td><td>2009</td><td>Layer 4 &amp; 7</td><td>HTTP, HTTPS, TCP, SSL</td><td><span class="badge old">Deprecated</span></td></tr>
+      <tr><td>Application Load Balancer (ALB)</td><td>2016</td><td>Layer 7 (HTTP)</td><td>HTTP, HTTPS, WebSocket</td><td><span class="badge new">Recommended</span></td></tr>
+      <tr><td>Network Load Balancer (NLB)</td><td>2017</td><td>Layer 4 (Transport)</td><td>TCP, TLS, UDP</td><td><span class="badge new">Recommended</span></td></tr>
+      <tr><td>Gateway Load Balancer (GWLB)</td><td>2020</td><td>Layer 3 (Network)</td><td>IP packets</td><td><span class="badge new">Newest</span></td></tr>
     </table>
 
-    <p>Load balancers can be <strong>internal</strong> (private) or <strong>external / internet-facing</strong> (public).</p>
+    <p>Load balancers can be configured as <strong>internal</strong> (private within your network) or <strong>external / internet-facing</strong> (accessible to the public internet).</p>
 
-    <h3>Security Groups Setup (important pattern!)</h3>
+    <h3>Security Group Setup (Crucial AWS Architecture Pattern!)</h3>
+    <p>Security Group = A virtual security guard standing at the door.</p>
     <ul>
-      <li><strong>Load Balancer's Security Group:</strong> allow HTTP(80)/HTTPS(443) from <code>0.0.0.0/0</code> (anywhere)</li>
-      <li><strong>EC2 Instance's Security Group:</strong> allow HTTP(80) traffic <em>only</em> from the Load Balancer's Security Group (not from an IP range!)</li>
+      <li><strong>Load Balancer's Security Group:</strong> Allow incoming HTTP (port 80) and HTTPS (port 443) traffic from anywhere on the internet (<code>0.0.0.0/0</code>).</li>
+      <li><strong>EC2 Instance's Security Group:</strong> Allow HTTP traffic <em>only</em> from the Load Balancer's Security Group ID (not directly from public IP addresses!).</li>
     </ul>
     <div class="callout exam">
-      <strong>Exam tip:</strong> This is a very common exam pattern — EC2 instances should only accept traffic that comes from the ELB, referenced by security group, not by CIDR range.
+      <strong>Exam tip:</strong> This is a very common exam pattern — backend EC2 instances must only accept traffic originating from the ELB's Security Group ID, blocking direct public access.
     </div>
   </section>
 
@@ -432,7 +433,7 @@
   <section class="lecture" id="l60">
     <h2><span class="lecture-num">60</span>Note: About the Classic Load Balancer (CLB)</h2>
     <div class="callout">
-      The Classic Load Balancer is <strong>deprecated</strong> and being removed from the AWS Console. It's also removed from the exam, so this course (and these notes) skip its hands-on and deep detail.
+      The Classic Load Balancer is <strong>deprecated</strong> and has been retired from the AWS Console and AWS Certification exams. Therefore, hands-on practice for CLB is skipped.
     </div>
   </section>
 
@@ -440,23 +441,23 @@
   <section class="lecture" id="l61">
     <h2><span class="lecture-num">61</span>Application Load Balancer (ALB)</h2>
 
-    <p>ALB is a <strong>Layer 7</strong> (HTTP/HTTPS only) load balancer. It routes traffic to multiple applications, grouped into <strong>target groups</strong>.</p>
+    <p>ALB operates at <strong>Layer 7</strong> (the application layer handling HTTP/HTTPS web traffic). It inspects web requests and routes traffic to backend servers grouped into <strong>target groups</strong>.</p>
 
     <h3>Key Features</h3>
     <ul>
-      <li>Load balance to multiple applications on the <em>same</em> EC2 instance (via containers/ECS)</li>
-      <li>Supports HTTP/2 and WebSockets</li>
-      <li>Supports redirects (e.g. HTTP → HTTPS)</li>
-      <li>Supports <strong>routing rules</strong>:
+      <li>Load balance across multiple applications running on the <em>same</em> EC2 server (using Docker containers / Amazon ECS).</li>
+      <li>Supports modern web protocols like HTTP/2 and WebSockets.</li>
+      <li>Supports automatic web redirects (e.g. redirecting unencrypted HTTP traffic to secure HTTPS).</li>
+      <li>Supports intelligent <strong>routing rules</strong>:
         <ul>
-          <li><strong>Path-based</strong>: <code>example.com/users</code> vs <code>example.com/posts</code></li>
-          <li><strong>Host-based</strong>: <code>one.example.com</code> vs <code>other.example.com</code></li>
-          <li><strong>Query string / header based</strong>: e.g. <code>?platform=mobile</code> vs <code>?platform=desktop</code></li>
+          <li><strong>Path-based routing:</strong> Send <code>example.com/users</code> to User servers and <code>example.com/posts</code> to Post servers.</li>
+          <li><strong>Host-based routing:</strong> Send <code>one.example.com</code> and <code>other.example.com</code> to different target groups.</li>
+          <li><strong>Query string / header routing:</strong> Route requests based on URL parameters (e.g. <code>?platform=mobile</code> vs <code>?platform=desktop</code>).</li>
         </ul>
       </li>
     </ul>
 
-    <p>ALB is great for <strong>microservices</strong> and <strong>container-based</strong> apps (dynamic port mapping with ECS). Unlike CLB (1 load balancer per app), a single ALB can front <em>many</em> applications.</p>
+    <p>ALB is ideal for <strong>microservices</strong> and <strong>containerized applications</strong> (supporting dynamic port mapping with Amazon ECS). Unlike CLB (which required 1 load balancer per app), a single ALB can manage web traffic for <em>many</em> apps at once.</p>
 
     <div class="diagram">
       <svg viewBox="0 0 640 260" xmlns="http://www.w3.org/2000/svg">
@@ -477,24 +478,24 @@
         <text x="355" y="195" text-anchor="middle" font-size="12" font-weight="bold">Target Group 2</text>
         <text x="355" y="212" text-anchor="middle" font-size="11">Search Service (EC2s)</text>
       </svg>
-      <div class="diagram-caption">One ALB routes /user requests to one microservice and /search requests to a completely different microservice.</div>
+      <div class="diagram-caption">One ALB routes /user web requests to one target group and /search requests to a completely separate target group.</div>
     </div>
 
-    <h3>Target Groups can be:</h3>
+    <h3>Target Groups Can Contain:</h3>
     <ul>
-      <li>EC2 instances (can be managed by an Auto Scaling Group)</li>
-      <li>ECS tasks</li>
-      <li>Lambda functions (yes — serverless!)</li>
-      <li>Private IP addresses (on-premises servers)</li>
+      <li>EC2 instances (managed automatically by an Auto Scaling Group)</li>
+      <li>Amazon ECS tasks (Docker containers)</li>
+      <li>AWS Lambda functions (serverless backend code)</li>
+      <li>Private IP addresses (on-premises physical servers)</li>
     </ul>
-    <p>Health checks happen <strong>at the target group level</strong>, so an ALB can front a mix of AWS EC2 instances and on-premises servers in different target groups.</p>
+    <p>Health checks operate <strong>at the target group level</strong>, so an ALB can monitor different backend services independently.</p>
 
-    <h3>Good to know</h3>
+    <h3>Important Details to Know</h3>
     <ul>
-      <li>ALB gives you a fixed DNS hostname (not an IP)</li>
-      <li>Your app never sees the client's real IP directly — it's in the <code>X-Forwarded-For</code> header</li>
-      <li><code>X-Forwarded-Port</code> and <code>X-Forwarded-Proto</code> tell you the port and protocol used</li>
-      <li>The load balancer performs <strong>connection termination</strong>: client → LB (public IP), then LB → EC2 (private IP)</li>
+      <li>ALB provides a fixed DNS hostname (web link), not a static IP address.</li>
+      <li>Your backend EC2 server sees the Load Balancer's private IP as the request origin. To get the user's real IP, your app code reads the <code>X-Forwarded-For</code> HTTP header.</li>
+      <li>Headers <code>X-Forwarded-Port</code> and <code>X-Forwarded-Proto</code> report the original port and protocol (HTTP/HTTPS) used by the client.</li>
+      <li>The load balancer performs <strong>connection termination</strong>: client → LB (over public IP), then LB → EC2 (over private network).</li>
     </ul>
   </section>
 
@@ -502,87 +503,87 @@
   <section class="lecture" id="l6263">
     <h2><span class="lecture-num">62-63</span>Application Load Balancer — Hands-On</h2>
 
-    <h3>Part 1: Basic setup</h3>
+    <h3>Part 1: Basic Setup</h3>
     <ol>
-      <li>Launch 2 EC2 instances (Amazon Linux 2, t2.micro, no key pair needed — use EC2 Instance Connect) with a user-data script that serves "Hello World" via HTTP</li>
-      <li>Confirm each instance individually returns "Hello World" via its public IP</li>
-      <li>Create an ALB (<code>DemoALB</code>) — internet-facing, IPv4, deployed across all AZs</li>
-      <li>Create a new security group for the ALB (<code>demo-sg-load-balancer</code>) allowing HTTP from anywhere</li>
-      <li>Create a <strong>target group</strong> (<code>demo-tg-alb</code>) — protocol HTTP, port 80 — and register both EC2 instances</li>
-      <li>Link the target group to the ALB's listener on port 80</li>
-      <li>Once ALB is <code>active</code>, use its DNS name — refreshing shows the response alternating between both instances = load balancing works ✅</li>
+      <li>Launch 2 EC2 instances (Amazon Linux 2, t2.micro) with a user-data startup script that serves "Hello World" over HTTP.</li>
+      <li>Verify each instance returns "Hello World" individually using its public IP address.</li>
+      <li>Create an ALB (<code>DemoALB</code>) — internet-facing, IPv4, deployed across all Availability Zones.</li>
+      <li>Create a security group for the ALB (<code>demo-sg-load-balancer</code>) allowing incoming HTTP traffic from anywhere.</li>
+      <li>Create a <strong>target group</strong> (<code>demo-tg-alb</code>) — HTTP protocol on port 80 — and register both EC2 instances.</li>
+      <li>Link the target group to the ALB's listener on port 80.</li>
+      <li>Once ALB status is <code>active</code>, visit its DNS name in your browser. Refreshing shows responses alternating between both instances = load balancing works cleanly! ✅</li>
     </ol>
     <div class="callout tip">
-      <strong>Health check proof:</strong> Stop one EC2 instance → it becomes "unhealthy" in the target group within ~30s → ALB only responds from the healthy instance. Start it again → after health checks pass, it's back in rotation.
+      <strong>Health check proof:</strong> Stop one EC2 instance → it becomes "unhealthy" in the target group within ~30s → ALB only routes traffic to the remaining healthy instance. Start it back up → after passing health checks, it rejoins traffic rotation automatically.
     </div>
 
-    <h3>Part 2: Security tightening + routing rules</h3>
+    <h3>Part 2: Security Tightening &amp; Routing Rules</h3>
     <ul>
-      <li><strong>Restrict direct EC2 access:</strong> edit the EC2 security group's inbound HTTP rule — remove "anywhere," instead allow traffic only from the <strong>ALB's security group</strong>. After this, hitting the EC2 public IP directly times out, but the ALB still works fine.</li>
+      <li><strong>Restrict direct EC2 access:</strong> Edit the EC2 security group's HTTP rule — remove public internet access and allow traffic <em>only</em> from the <strong>ALB's security group ID</strong>. Direct access to the EC2 public IP now times out, while access via ALB DNS works perfectly.</li>
       <li><strong>Listener Rules:</strong> Add a custom rule on the ALB listener:
         <ul>
           <li>Condition: Path = <code>/error</code></li>
-          <li>Action: Return a fixed response — status <code>404</code>, body "Not found, custom error"</li>
-          <li>Priority: e.g. <code>5</code> (lower number = higher priority; default rule has lowest priority)</li>
+          <li>Action: Return a fixed HTTP response — status <code>404</code>, body "Not found, custom error"</li>
+          <li>Priority: e.g. <code>5</code> (lower number = higher priority)</li>
         </ul>
-        Now visiting <code>&lt;alb-dns&gt;/error</code> returns the custom 404 instead of hitting a target group.
+        Now visiting <code>&lt;alb-dns&gt;/error</code> immediately returns the custom 404 response without sending traffic to backend target groups.
       </li>
     </ul>
-    <p>Other condition types available: host-header, HTTP request method, source IP, query string, HTTP header.</p>
-    <p>Other action types available: forward to target group(s), redirect to a URL, or return a fixed response.</p>
+    <p>Available condition types: host-header, HTTP method, source IP, query string, HTTP header.</p>
+    <p>Available action types: forward to target group(s), redirect to URL, or return a fixed response.</p>
   </section>
 
   <!-- 64 -->
   <section class="lecture" id="l64">
     <h2><span class="lecture-num">64</span>Network Load Balancer (NLB)</h2>
 
-    <p>NLB is a <strong>Layer 4</strong> load balancer — handles <strong>TCP and UDP</strong> traffic.</p>
+    <p>NLB is a <strong>Layer 4</strong> load balancer that handles high-speed <strong>TCP and UDP</strong> network traffic.</p>
 
     <div class="callout exam">
-      <strong>Exam trigger words:</strong> "UDP", "TCP", "extreme/ultra performance — millions of requests/sec, low latency", or "static IP" → think <strong>Network Load Balancer</strong>.
+      <strong>Exam trigger words:</strong> When a question mentions "UDP", "TCP", "extreme/ultra performance — millions of requests per second", "ultra-low latency (milliseconds)", or "static IP address per AZ" → choose <strong>Network Load Balancer</strong>.
     </div>
 
     <h3>Key Features</h3>
     <ul>
-      <li>Extremely high performance: millions of requests/sec, ultra-low latency</li>
-      <li>One <strong>static IP per Availability Zone</strong> — you can also assign an Elastic IP per AZ</li>
+      <li>Ultra-high performance: handles millions of requests per second with ultra-low latency (in milliseconds).</li>
+      <li>Provides one <strong>static IP address per Availability Zone</strong> — you can also assign an Elastic IP per AZ for a fixed public IP.</li>
     </ul>
 
-    <h3>Target Groups can be:</h3>
+    <h3>Target Groups Can Contain:</h3>
     <ul>
       <li>EC2 instances</li>
-      <li>IP addresses (must be private — can point to your own on-prem data center servers)</li>
-      <li>An <strong>Application Load Balancer</strong> (!) — NLB in front of ALB gives you fixed IPs <em>and</em> ALB's smart HTTP routing rules together</li>
+      <li>Private IP addresses (pointing to your on-premises servers)</li>
+      <li>An <strong>Application Load Balancer</strong> (NLB in front of ALB gives you static IP addresses combined with ALB's smart Layer 7 HTTP routing rules!)</li>
     </ul>
 
-    <p><strong>Health checks</strong> on NLB target groups support 3 protocols: TCP, HTTP, HTTPS.</p>
+    <p><strong>Health checks</strong> on NLB target groups support 3 protocols: TCP, HTTP, and HTTPS.</p>
   </section>
 
   <!-- 65 -->
   <section class="lecture" id="l65">
     <h2><span class="lecture-num">65</span>Network Load Balancer — Hands-On</h2>
     <ol>
-      <li>Create NLB (<code>DemoNLB</code>) — internet-facing, IPv4, across all AZs. Each AZ gets a fixed IPv4 (or you can use an Elastic IP)</li>
-      <li>Attach a security group (<code>demo-sg-nlb</code>) — allow HTTP (port 80) from anywhere</li>
-      <li>Listener: TCP on port 80 → forward to target group</li>
-      <li>Create target group (<code>demo-tg-nlb</code>) — TCP on port 80, health check protocol = HTTP (since our app is HTTP), register the 2 EC2 instances</li>
+      <li>Create an NLB (<code>DemoNLB</code>) — internet-facing, IPv4, across all AZs. Each AZ gets a fixed static IPv4 address.</li>
+      <li>Attach a security group (<code>demo-sg-nlb</code>) — allow HTTP (port 80) from anywhere.</li>
+      <li>Configure Listener: TCP on port 80 → forward to target group.</li>
+      <li>Create target group (<code>demo-tg-nlb</code>) — TCP on port 80, health check protocol = HTTP, and register the 2 EC2 instances.</li>
     </ol>
     <div class="callout">
-      <strong>Gotcha encountered:</strong> After creating the NLB, targets showed "unhealthy." Reason: the EC2 security group only allowed traffic from the <em>ALB's</em> security group, not the NLB's. Fix: add an inbound rule allowing HTTP from the <strong>NLB's security group</strong> too. After that, health checks passed and traffic load-balanced correctly between both instances.
+      <strong>Troubleshooting note:</strong> After creating the NLB, target instances appeared "unhealthy". Reason: the EC2 security group only allowed traffic from the <em>ALB's</em> security group. Fix: add an inbound rule allowing HTTP traffic from the <strong>NLB's security group ID</strong>. After that, health checks passed and load balancing worked cleanly.
     </div>
-    <p><strong>Cleanup:</strong> Delete the NLB (and optionally its target group/security group) when done, to avoid ongoing costs.</p>
+    <p><strong>Cleanup:</strong> Delete the NLB and associated resources when finished to avoid unnecessary cloud charges.</p>
   </section>
 
   <!-- 66 -->
   <section class="lecture" id="l66">
     <h2><span class="lecture-num">66</span>Gateway Load Balancer (GWLB)</h2>
 
-    <p>Used to deploy, scale, and manage a fleet of <strong>third-party network virtual appliances</strong> in AWS — e.g. firewalls, intrusion detection/prevention systems (IDPS), deep packet inspection tools.</p>
+    <p>GWLB is used to deploy, scale, and manage a fleet of <strong>third-party network virtual appliances</strong> in AWS — such as firewalls, intrusion detection and prevention systems (IDPS), and deep packet inspection tools.</p>
 
-    <p>Operates at <strong>Layer 3</strong> (network layer, IP packets) — lower than ALB (L7) or NLB (L4). It has two jobs in one:</p>
+    <p>Operates at <strong>Layer 3</strong> (Network IP packet layer) — lower than ALB (L7) or NLB (L4). It performs two major roles in one service:</p>
     <ul>
-      <li><strong>Transparent network gateway</strong> — single entry/exit point for all traffic in the VPC</li>
-      <li><strong>Load balancer</strong> — distributes that traffic across a target group of virtual appliances</li>
+      <li><strong>Transparent network gateway:</strong> Acts as a single entry and exit point for all network traffic entering your VPC.</li>
+      <li><strong>Load balancer:</strong> Distributes network traffic across a target group of virtual security appliances.</li>
     </ul>
 
     <div class="diagram">
@@ -606,17 +607,17 @@
         <line x1="270" y1="150" x2="270" y2="210" stroke="#9ca3af" stroke-width="2" stroke-dasharray="4"/>
         <text x="360" y="225" text-anchor="middle" font-size="11" fill="#6b7280">if accepted → traffic goes on to your application</text>
       </svg>
-      <div class="diagram-caption">GWLB routes all VPC traffic through inspection appliances first (via modified route tables). Accepted traffic continues to the app; rejected traffic is dropped.</div>
+      <div class="diagram-caption">GWLB routes all incoming VPC network traffic through security inspection appliances first. Approved traffic continues to your app; harmful traffic is dropped.</div>
     </div>
 
-    <h3>Target Groups can be:</h3>
+    <h3>Target Groups Can Contain:</h3>
     <ul>
       <li>EC2 instances (registered by instance ID)</li>
-      <li>IP addresses (must be private)</li>
+      <li>Private IP addresses</li>
     </ul>
 
     <div class="callout exam">
-      <strong>Exam tip:</strong> GWLB uses the <strong>GENEVE protocol on port 6081</strong>. If you see that mentioned, think Gateway Load Balancer. No deep hands-on needed for the exam — just understand the diagram above.
+      <strong>Exam tip:</strong> GWLB uses the <strong>GENEVE protocol on port 6081</strong>. When an exam question mentions GENEVE protocol or port 6081, choose Gateway Load Balancer.
     </div>
   </section>
 
@@ -624,28 +625,32 @@
   <section class="lecture" id="l67">
     <h2><span class="lecture-num">67</span>Sticky Sessions (Session Affinity)</h2>
 
-    <p>Normally, an ELB spreads every request across all backend instances. With <strong>sticky sessions</strong>, once a client is routed to an instance, all of that client's future requests go back to the <em>same</em> instance — useful so users don't lose session data (e.g. login state).</p>
+    <p>Normally, an ELB distributes each web request evenly across backend servers. With <strong>sticky sessions</strong>, once a user connects to a specific server, all their subsequent requests are routed back to that <em>same</em> server. This prevents losing session state (e.g. login credentials or shopping cart items).</p>
 
-    <p>Supported on: <strong>CLB, ALB, and NLB</strong>. Works via a <strong>cookie</strong> with an expiration date — once it expires, the client may be sent to a different instance.</p>
+    <p>Supported on: <strong>CLB, ALB, and NLB</strong>. Works using a browser <strong>cookie</strong> with a defined expiration time.</p>
 
-    <div class="callout">
-      <strong>Trade-off:</strong> Sticky sessions can cause an <strong>imbalanced load</strong> if some users are much "stickier"/more active than others.
+    <div class="analogy">
+      🛒 <strong>Analogy:</strong> Like going to a supermarket billing counter. Instead of jumping to a different cashier for every item in your shopping basket, you stick with the same cashier until your billing is complete.
     </div>
 
-    <h3>Two types of cookies</h3>
+    <div class="callout">
+      <strong>Trade-off:</strong> Sticky sessions can cause an <strong>uneven load distribution</strong> if some users are much more active than others on a single server.
+    </div>
+
+    <h3>Three Types of Cookies</h3>
     <table>
-      <tr><th>Type</th><th>Generated by</th><th>Cookie name</th><th>Notes</th></tr>
-      <tr><td>Application-based cookie</td><td>Your application (custom)</td><td>Custom name (per target group)</td><td>Cannot use reserved names: <code>AWSALB</code>, <code>AWSALBAPP</code>, <code>AWSALBTG</code></td></tr>
-      <tr><td>Application cookie (LB-generated)</td><td>The ALB itself</td><td><code>AWSALBAPP</code></td><td>—</td></tr>
-      <tr><td>Duration-based cookie</td><td>The load balancer</td><td><code>AWSALB</code> (ALB) / <code>AWSELB</code> (CLB)</td><td>Expiry set by the load balancer</td></tr>
+      <tr><th>Type</th><th>Generated By</th><th>Cookie Name</th><th>Notes</th></tr>
+      <tr><td>Application-based cookie</td><td>Your application code</td><td>Custom name (per target group)</td><td>Cannot use reserved names: <code>AWSALB</code>, <code>AWSALBAPP</code>, <code>AWSALBTG</code></td></tr>
+      <tr><td>Application cookie (LB-generated)</td><td>The ALB itself</td><td><code>AWSALBAPP</code></td><td>Automated application cookie</td></tr>
+      <tr><td>Duration-based cookie</td><td>The load balancer</td><td><code>AWSALB</code> (ALB) / <code>AWSELB</code> (CLB)</td><td>Expiration period controlled by load balancer</td></tr>
     </table>
 
-    <h3>Hands-On steps</h3>
+    <h3>Hands-On Steps</h3>
     <ol>
-      <li>Go to Target Group → Actions → Edit attributes → Stickiness</li>
-      <li>Turn stickiness ON, choose type: <strong>Load balancer generated cookie</strong> or <strong>Application-based cookie</strong> (needs a custom cookie name)</li>
-      <li>Set duration (1 second – 7 days); default used: 1 day</li>
-      <li>Save → refresh the ALB URL repeatedly → same instance keeps responding (verified via browser dev tools → Network tab → cookies)</li>
+      <li>Navigate to Target Group → Actions → Edit attributes → Stickiness.</li>
+      <li>Enable stickiness, select cookie type (Load balancer generated or Application-based).</li>
+      <li>Set expiration duration (range: 1 second to 7 days; default: 1 day).</li>
+      <li>Save settings → refresh the ALB web link repeatedly → the exact same EC2 instance continues answering (verified via browser inspect tools → Network tab → Cookies).</li>
     </ol>
   </section>
 
@@ -653,7 +658,7 @@
   <section class="lecture" id="l68">
     <h2><span class="lecture-num">68</span>Cross-Zone Load Balancing</h2>
 
-    <p>Question: when you have an uneven number of EC2 instances across AZs, does each load balancer node send traffic only to instances in <em>its own</em> AZ, or spread it across <em>all</em> AZs?</p>
+    <p>When you have an uneven number of EC2 instances across Availability Zones (AZs), does each load balancer node send traffic only to local instances in its own AZ, or spread traffic evenly across <em>all</em> instances in <em>all</em> AZs?</p>
 
     <div class="diagram">
       <svg viewBox="0 0 680 260" xmlns="http://www.w3.org/2000/svg">
@@ -671,7 +676,7 @@
         <rect x="180" y="110" width="70" height="30" rx="6" fill="#a7f3d0" stroke="#059669"/>
         <text x="215" y="130" text-anchor="middle" font-size="10">EC2</text>
 
-        <!-- AZ2 instances: 8 (draw 4x2 grid to represent 8) -->
+        <!-- AZ2 instances: 8 -->
         <rect x="380" y="110" width="60" height="26" rx="5" fill="#a7f3d0" stroke="#059669"/><text x="410" y="128" text-anchor="middle" font-size="9">EC2</text>
         <rect x="445" y="110" width="60" height="26" rx="5" fill="#a7f3d0" stroke="#059669"/><text x="475" y="128" text-anchor="middle" font-size="9">EC2</text>
         <rect x="510" y="110" width="60" height="26" rx="5" fill="#a7f3d0" stroke="#059669"/><text x="540" y="128" text-anchor="middle" font-size="9">EC2</text>
@@ -684,34 +689,34 @@
         <text x="170" y="200" text-anchor="middle" font-size="11" fill="#6b7280">2 EC2 instances</text>
         <text x="510" y="200" text-anchor="middle" font-size="11" fill="#6b7280">8 EC2 instances</text>
 
-        <text x="340" y="235" text-anchor="middle" font-size="12" fill="#374151">Client sends 50% traffic to each LB node</text>
+        <text x="340" y="235" text-anchor="middle" font-size="12" fill="#374151">Clients send 50% traffic to each LB node</text>
       </svg>
-      <div class="diagram-caption">Uneven setup: AZ1 has 2 instances, AZ2 has 8 instances. Cross-zone balancing decides whether traffic stays within each AZ or spreads across all 10 instances.</div>
+      <div class="diagram-caption">Uneven setup: AZ1 has 2 instances, AZ2 has 8 instances. Cross-zone balancing determines whether traffic stays within each local AZ or distributes across all 10 instances equally.</div>
     </div>
 
     <table>
       <tr><th>Setting</th><th>Behavior</th></tr>
-      <tr><td><strong>Cross-zone ON</strong></td><td>Each LB node distributes evenly across <em>all</em> registered instances in <em>all</em> AZs (e.g. each of the 10 instances gets 10% of total traffic)</td></tr>
-      <tr><td><strong>Cross-zone OFF</strong></td><td>Each LB node only sends to instances in <em>its own</em> AZ (so with an uneven split, instances in the smaller AZ get more traffic each — e.g. 25% per instance vs a lot less in the busier AZ)</td></tr>
+      <tr><td><strong>Cross-zone ON</strong></td><td>Each LB node distributes traffic evenly across <em>all</em> registered instances in <em>all</em> AZs (each of the 10 instances gets 10% of total traffic).</td></tr>
+      <tr><td><strong>Cross-zone OFF</strong></td><td>Each LB node sends traffic <em>only</em> to instances in its own AZ. (Instances in AZ1 receive 25% traffic each, while instances in AZ2 receive only 6.25% traffic each).</td></tr>
     </table>
 
-    <h3>Defaults per Load Balancer type</h3>
+    <h3>Default Settings per Load Balancer Type</h3>
     <table>
-      <tr><th>Load Balancer</th><th>Default</th><th>Charges for cross-AZ data if enabled?</th></tr>
-      <tr><td>ALB</td><td>Always ON (can't fully disable at LB level, but can override per target group)</td><td>No charge</td></tr>
-      <tr><td>NLB / GWLB</td><td>OFF</td><td>Yes, you pay for inter-AZ data transfer</td></tr>
-      <tr><td>CLB</td><td>OFF</td><td>No charge even if enabled</td></tr>
+      <tr><th>Load Balancer</th><th>Default Setting</th><th>Data Transfer Fees?</th></tr>
+      <tr><td>ALB</td><td>Always ON</td><td>No extra charge</td></tr>
+      <tr><td>NLB / GWLB</td><td>OFF</td><td>Yes, inter-AZ data transfer fees apply if enabled</td></tr>
+      <tr><td>CLB</td><td>OFF</td><td>No extra charge if enabled</td></tr>
     </table>
-    <div class="callout tip">For ALB, you can override cross-zone balancing per <strong>target group</strong> (inherit / force on / force off).</div>
+    <div class="callout tip">For ALB, you can customize cross-zone load balancing at the <strong>target group level</strong>.</div>
   </section>
 
   <!-- 69-70 -->
   <section class="lecture" id="l6970">
     <h2><span class="lecture-num">69-70</span>SSL/TLS Certificates</h2>
 
-    <p><strong>SSL</strong> (Secure Sockets Layer) encrypts data in transit ("in-flight encryption"). <strong>TLS</strong> (Transport Layer Security) is the newer, actually-used version — but people (including the instructor) still often say "SSL" out of habit.</p>
+    <p><strong>SSL</strong> (Secure Sockets Layer) encrypts data in transit over the internet. <strong>TLS</strong> (Transport Layer Security) is the modern, secure version of SSL. People often say "SSL" out of habit, but AWS uses modern TLS.</p>
 
-    <p>Public certificates are issued by <strong>Certificate Authorities (CAs)</strong> like Comodo, Symantec, GoDaddy, GlobalSign, DigiCert, Let's Encrypt. They expire and must be renewed.</p>
+    <p>Public SSL certificates are issued by trusted <strong>Certificate Authorities (CAs)</strong> like DigiCert, Let's Encrypt, or AWS Certificate Manager (ACM). Certificates expire and must be renewed regularly.</p>
 
     <div class="diagram">
       <svg viewBox="0 0 620 140" xmlns="http://www.w3.org/2000/svg">
@@ -726,20 +731,20 @@
         <rect x="500" y="45" width="100" height="50" rx="8" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
         <text x="550" y="75" text-anchor="middle" font-size="11">EC2</text>
       </svg>
-      <div class="diagram-caption">SSL/TLS termination: client-to-LB is encrypted (HTTPS); LB-to-EC2 can be plain HTTP since it stays inside the private VPC network.</div>
+      <div class="diagram-caption">SSL Termination: Client-to-LB traffic is encrypted (HTTPS); LB-to-EC2 traffic can travel as plain HTTP over the secure private VPC network.</div>
     </div>
 
     <ul>
-      <li>Load balancer uses an <strong>X.509 certificate</strong>, managed via <strong>ACM</strong> (AWS Certificate Manager) — you can also upload your own</li>
-      <li>An HTTPS listener needs a <strong>default certificate</strong>, plus an optional list of extra certs for multiple domains</li>
+      <li>Load balancers use an <strong>X.509 certificate</strong>, managed seamlessly via <strong>AWS Certificate Manager (ACM)</strong>.</li>
+      <li>An HTTPS listener requires a default certificate, plus an optional list of additional certificates for multi-domain support.</li>
     </ul>
 
     <h3>SNI — Server Name Indication</h3>
-    <p><strong>Problem it solves:</strong> how do you load multiple SSL certs on one server so it can serve multiple websites?</p>
-    <p><strong>How:</strong> the client tells the server which hostname it wants during the initial SSL handshake, so the server knows which certificate to load.</p>
+    <p><strong>Problem it solves:</strong> How do you host multiple SSL certificates on a single load balancer so it can serve multiple different website domains?</p>
+    <p><strong>How it works:</strong> The client specifies which website domain (hostname) it wants to reach during the initial SSL handshake. The load balancer reads this and selects the matching SSL certificate.</p>
 
     <div class="callout exam">
-      SNI only works on <strong>newer</strong> load balancers: <strong>ALB, NLB, and CloudFront</strong>. It does <strong>NOT</strong> work on the Classic Load Balancer.
+      SNI works on modern load balancers: <strong>ALB, NLB, and CloudFront</strong>. It does <strong>NOT</strong> work on Classic Load Balancer.
     </div>
 
     <div class="diagram">
@@ -765,29 +770,23 @@
         <line x1="390" y1="90" x2="450" y2="52" stroke="#9ca3af" stroke-width="2"/>
         <line x1="390" y1="110" x2="450" y2="147" stroke="#9ca3af" stroke-width="2"/>
       </svg>
-      <div class="diagram-caption">SNI lets one ALB use the right SSL certificate and route to the right target group, based on which hostname the client asked for.</div>
+      <div class="diagram-caption">SNI enables a single ALB to serve the correct SSL certificate and route to the correct target group based on the domain requested by the client.</div>
     </div>
 
-    <h3>SSL support summary</h3>
+    <h3>SSL Support Summary</h3>
     <table>
-      <tr><th>Load Balancer</th><th>Multiple SSL certs?</th></tr>
-      <tr><td>CLB</td><td>Only 1 cert — need multiple CLBs for multiple certs/hostnames</td></tr>
-      <tr><td>ALB</td><td>Yes — multiple listeners, multiple certs, uses SNI</td></tr>
-      <tr><td>NLB</td><td>Yes — multiple listeners, multiple certs, uses SNI</td></tr>
+      <tr><th>Load Balancer</th><th>Multiple SSL Certificates Support?</th></tr>
+      <tr><td>CLB</td><td>Only 1 cert (requires multiple CLBs for multiple domains)</td></tr>
+      <tr><td>ALB</td><td>Yes — supports multiple listeners, certs, and SNI</td></tr>
+      <tr><td>NLB</td><td>Yes — supports multiple listeners, certs, and SNI</td></tr>
     </table>
-
-    <h3>Hands-On</h3>
-    <ul>
-      <li><strong>ALB:</strong> Add listener → HTTPS, port 443 → forward to target group → set security policy → attach certificate from ACM (or IAM, or import directly)</li>
-      <li><strong>NLB:</strong> Add listener → TLS → forward to target group → security policy → certificate from ACM/IAM/import → optional ALPN (Application Layer Protocol Negotiation) setting</li>
-    </ul>
   </section>
 
   <!-- 71 -->
   <section class="lecture" id="l71">
     <h2><span class="lecture-num">71</span>Connection Draining</h2>
 
-    <p>Also called <strong>Deregistration Delay</strong> on ALB/NLB (only called "Connection Draining" on CLB). Gives in-flight requests time to complete before an instance is fully taken out of service (deregistered / marked unhealthy).</p>
+    <p>Also known as <strong>Deregistration Delay</strong> on ALB/NLB. Gives active, in-flight requests time to complete before an EC2 instance is fully taken out of service (deregistered or marked unhealthy).</p>
 
     <div class="diagram">
       <svg viewBox="0 0 640 160" xmlns="http://www.w3.org/2000/svg">
@@ -809,20 +808,20 @@
         <text x="260" y="40" font-size="9" fill="#dc2626">no new connections</text>
         <line x1="300" y1="90" x2="200" y2="115" stroke="#059669" stroke-width="2"/>
       </svg>
-      <div class="diagram-caption">Draining instance finishes existing requests; new users are routed only to healthy instances.</div>
+      <div class="diagram-caption">A draining instance completes existing active requests; new users are routed exclusively to remaining healthy instances.</div>
     </div>
 
     <ul>
-      <li>Existing connections to the draining instance are given time to finish</li>
-      <li>New connections are routed to other healthy instances only</li>
-      <li>Configurable: <strong>1 – 3,600 seconds</strong> (default: <strong>300 seconds / 5 min</strong>)</li>
-      <li>Set to <code>0</code> to disable draining completely</li>
+      <li>Active connections on draining instances are given time to finish processing.</li>
+      <li>New incoming connections are directed exclusively to healthy instances.</li>
+      <li>Configurable delay range: <strong>1 to 3,600 seconds</strong> (default: <strong>300 seconds / 5 minutes</strong>).</li>
+      <li>Set delay to <code>0</code> to disable connection draining completely.</li>
     </ul>
 
     <table>
-      <tr><th>Your traffic pattern</th><th>Recommended draining time</th></tr>
-      <tr><td>Short requests (&lt; 1 sec)</td><td>Low, e.g. 30 seconds — instance can be removed quickly</td></tr>
-      <tr><td>Long requests (uploads, long-lived connections)</td><td>High — but instance takes longer to fully go away</td></tr>
+      <tr><th>Your Traffic Pattern</th><th>Recommended Draining Delay</th></tr>
+      <tr><td>Short requests (&lt; 1 sec)</td><td>Low (e.g. 30 seconds) — instances are deregistered quickly.</td></tr>
+      <tr><td>Long requests (file uploads, active sessions)</td><td>High — gives active uploads time to complete safely.</td></tr>
     </table>
   </section>
 
@@ -830,13 +829,13 @@
   <section class="lecture" id="l72">
     <h2><span class="lecture-num">72</span>Auto Scaling Groups (ASG) Overview</h2>
 
-    <p>An <strong>ASG</strong> automatically adds (scale out) or removes (scale in) EC2 instances to match changing load.</p>
+    <p>An <strong>Auto Scaling Group (ASG)</strong> automatically adds (scales out) or removes (scales in) EC2 instances to match changing user traffic demand seamlessly.</p>
 
-    <h3>Core capacity settings</h3>
+    <h3>Core Capacity Settings</h3>
     <ul>
-      <li><strong>Minimum capacity</strong> — fewest instances allowed</li>
-      <li><strong>Desired capacity</strong> — the target number right now</li>
-      <li><strong>Maximum capacity</strong> — most instances allowed</li>
+      <li><strong>Minimum Capacity:</strong> Fewest instances allowed in the group.</li>
+      <li><strong>Desired Capacity:</strong> Target number of instances running right now.</li>
+      <li><strong>Maximum Capacity:</strong> Most instances allowed in the group.</li>
     </ul>
 
     <div class="diagram">
@@ -845,15 +844,15 @@
         <circle cx="80" cy="60" r="8" fill="#dc2626"/><text x="80" y="90" text-anchor="middle" font-size="11">Min = 2</text>
         <circle cx="260" cy="60" r="8" fill="#d97706"/><text x="260" y="90" text-anchor="middle" font-size="11">Desired = 4</text>
         <circle cx="420" cy="60" r="8" fill="#059669"/><text x="420" y="90" text-anchor="middle" font-size="11">Max = 7</text>
-        <text x="250" y="30" text-anchor="middle" font-size="12" fill="#374151">ASG can scale between Min and Max</text>
+        <text x="250" y="30" text-anchor="middle" font-size="12" fill="#374151">ASG automatically scales between Min and Max capacity</text>
       </svg>
     </div>
 
-    <h3>ASG "superpowers"</h3>
+    <h3>ASG Key Capabilities</h3>
     <ul>
-      <li>Auto-registers new instances with a linked <strong>load balancer</strong></li>
-      <li>Auto-terminates unhealthy instances and replaces them with new ones</li>
-      <li><strong>ASG itself is free</strong> — you only pay for the underlying EC2 instances (and other resources) it creates</li>
+      <li>Automatically registers newly launched instances with a linked <strong>load balancer</strong>.</li>
+      <li>Automatically terminates unhealthy instances and replaces them with fresh ones.</li>
+      <li><strong>ASG service is completely FREE</strong> — you pay only for the underlying EC2 instances it provisions.</li>
     </ul>
 
     <div class="diagram">
@@ -875,22 +874,19 @@
         <rect x="440" y="160" width="130" height="40" rx="6" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
         <text x="505" y="185" text-anchor="middle" font-size="11">EC2 (ASG)</text>
 
-        <text x="505" y="215" text-anchor="middle" font-size="11" fill="#6b7280">Auto Scaling Group manages these instances together</text>
+        <text x="505" y="215" text-anchor="middle" font-size="11" fill="#6b7280">Auto Scaling Group manages instance capacity automatically</text>
       </svg>
-      <div class="diagram-caption">ASG + ELB combo: ELB spreads traffic and reports health; ASG uses that health info to replace bad instances and scale count up/down.</div>
+      <div class="diagram-caption">ELB + ASG Architecture: ELB distributes web traffic and monitors health; ASG replaces unhealthy servers and adjusts server count up or down.</div>
     </div>
 
     <h3>Launch Template</h3>
-    <p>Defines how new EC2 instances in the ASG should be created: AMI, instance type, user data script, EBS volumes, security groups, SSH key pair, IAM role, network/subnet info, load balancer info.</p>
-    <div class="callout">
-      <strong>Note:</strong> "Launch configurations" are the old/deprecated way — use <strong>Launch Templates</strong> now.
-    </div>
+    <p>A blueprint defining how ASG provisions new EC2 instances: AMI ID, instance type, user data startup script, EBS storage volumes, security groups, SSH key pairs, IAM roles, and subnet configurations.</p>
 
     <h3>CloudWatch Alarms + ASG</h3>
-    <p>A CloudWatch alarm (e.g. "average CPU too high") can trigger a <strong>scaling action</strong> in the ASG — this is the "auto" in Auto Scaling Group. Based on the alarm, you define:</p>
+    <p>A CloudWatch alarm (e.g. "average CPU utilization exceeds 70%") triggers an automated <strong>scaling policy</strong> in your ASG:</p>
     <ul>
-      <li><strong>Scale-out policy</strong> — increase instance count</li>
-      <li><strong>Scale-in policy</strong> — decrease instance count</li>
+      <li><strong>Scale-out policy:</strong> Increases instance count when traffic surges.</li>
+      <li><strong>Scale-in policy:</strong> Decreases instance count when traffic subsides to save costs.</li>
     </ul>
   </section>
 
@@ -898,30 +894,30 @@
   <section class="lecture" id="l73">
     <h2><span class="lecture-num">73</span>Auto Scaling Groups — Hands-On</h2>
     <ol>
-      <li>Terminate any leftover EC2 instances first (start clean)</li>
-      <li>Create a <strong>Launch Template</strong> (<code>my demo template</code>) — Amazon Linux 2, t2.micro, key pair, existing security group, same user-data script used before</li>
-      <li>Create the ASG (<code>Demo ASG</code>) using that launch template</li>
-      <li>Choose VPC + multiple AZs, AZ distribution = "balanced best effort"</li>
-      <li>Attach to the <strong>existing ALB target group</strong> (<code>demo-tg-alb</code>) from earlier lectures</li>
-      <li>Enable both <strong>EC2 health checks</strong> and <strong>load balancer health checks</strong></li>
-      <li>Set desired = min = max = 1 initially (no auto scaling policy yet)</li>
+      <li>Clean up existing EC2 instances.</li>
+      <li>Create a <strong>Launch Template</strong> (<code>my demo template</code>) — Amazon Linux 2, t2.micro, security group allowing HTTP, user data script.</li>
+      <li>Create the ASG (<code>Demo ASG</code>) using the launch template.</li>
+      <li>Select VPC and multiple Availability Zones.</li>
+      <li>Attach the ASG to the existing ALB Target Group (<code>demo-tg-alb</code>).</li>
+      <li>Enable both <strong>EC2 health checks</strong> and <strong>ELB health checks</strong>.</li>
+      <li>Set initial capacity: Desired = Min = Max = 1.</li>
     </ol>
 
-    <h3>What happens after creation</h3>
+    <h3>Verification &amp; Behavior</h3>
     <ul>
-      <li>Check the <strong>Activity</strong> tab — shows "Launching a new EC2 instance" as the ASG brings capacity from 0 → 1</li>
-      <li>New instance registers into the target group — initially "unhealthy" while bootstrapping, then "healthy" once ready</li>
-      <li>Refreshing the ALB now returns "Hello World" — proof the ASG-created instance is serving traffic through the load balancer</li>
+      <li>Check the <strong>Activity</strong> tab — records "Launching a new EC2 instance" as ASG scales from 0 to 1 instance.</li>
+      <li>Instance registers in the Target Group — initially "unhealthy" during bootstrapping (startup script execution), then becomes "healthy" once ready.</li>
+      <li>Refreshing the ALB DNS returns "Hello World" — confirming traffic is being served through the load balancer cleanly.</li>
     </ul>
 
     <div class="callout exam">
-      <strong>Troubleshooting tip:</strong> If instances keep failing health checks and get terminated/replaced in a loop, the usual causes are: (1) a security group misconfiguration, or (2) a broken EC2 user-data script.
+      <strong>Troubleshooting tip:</strong> If ASG instances continually fail health checks and get terminated/replaced in an endless loop, check: (1) security group configuration, or (2) broken user-data startup scripts.
     </div>
 
-    <h3>Manual scaling test</h3>
+    <h3>Manual Scaling Test</h3>
     <ul>
-      <li>Edit ASG: desired = 2 (and raise max to allow it) → a 2nd instance launches and joins the target group</li>
-      <li>Edit ASG: desired = 1 again → ASG picks one instance to terminate and deregister, back down to 1</li>
+      <li>Edit ASG: set Desired = 2 (and raise Max) → a 2nd instance launches and joins the target group.</li>
+      <li>Edit ASG: set Desired = 1 → ASG terminates and deregisters 1 instance, returning capacity to 1.</li>
     </ul>
   </section>
 
@@ -929,55 +925,55 @@
   <section class="lecture" id="l7475">
     <h2><span class="lecture-num">74-75</span>Auto Scaling Groups — Scaling Policies</h2>
 
-    <h3>Types of scaling policies</h3>
+    <h3>Types of Scaling Policies</h3>
     <table>
-      <tr><th>Type</th><th>How it works</th></tr>
-      <tr><td><strong>Dynamic — Target Tracking</strong></td><td>Simplest. Pick a metric (e.g. CPU utilization) + target value (e.g. 40%). ASG automatically scales out/in to keep the metric near that target. Creates CloudWatch alarms for you automatically.</td></tr>
-      <tr><td><strong>Dynamic — Step Scaling</strong></td><td>You define a CloudWatch alarm + different "steps" of response depending on how far over the threshold the alarm is (e.g. way over → add 10 units, slightly over → add 1 unit).</td></tr>
-      <tr><td><strong>Dynamic — Simple Scaling</strong></td><td>One CloudWatch alarm → one fixed action (e.g. add 2 units, or add 10% of group size).</td></tr>
-      <tr><td><strong>Scheduled Scaling</strong></td><td>For known, predictable patterns — e.g. "every Friday at 5 PM, raise min capacity to 10."</td></tr>
-      <tr><td><strong>Predictive Scaling</strong></td><td>Machine-learning based — continuously forecasts load from historical data and schedules scaling ahead of time. Good for cyclical/recurring traffic patterns.</td></tr>
+      <tr><th>Policy Type</th><th>How It Works</th></tr>
+      <tr><td><strong>Dynamic — Target Tracking</strong></td><td>Simplest policy. Pick a metric (e.g. average CPU utilization) and target value (e.g. 40%). ASG automatically scales out/in to maintain that target metric.</td></tr>
+      <tr><td><strong>Dynamic — Step Scaling</strong></td><td>Triggers multi-step responses based on CloudWatch alarm thresholds (e.g. CPU &gt; 50% → add 1 instance; CPU &gt; 80% → add 3 instances).</td></tr>
+      <tr><td><strong>Dynamic — Simple Scaling</strong></td><td>One alarm triggers one fixed action (e.g. add 2 instances).</td></tr>
+      <tr><td><strong>Scheduled Scaling</strong></td><td>For predictable traffic patterns (e.g. "raise minimum capacity to 10 every Friday at 5 PM").</td></tr>
+      <tr><td><strong>Predictive Scaling</strong></td><td>Uses Machine Learning to analyze historical traffic patterns and scale capacity ahead of expected demand surges.</td></tr>
     </table>
 
-    <h3>Good metrics to scale on</h3>
+    <h3>Good Metrics for Auto Scaling</h3>
     <ul>
-      <li><strong>CPU Utilization</strong> — most common, general-purpose metric</li>
-      <li><strong>RequestCountPerTarget</strong> — application-specific (e.g. "each instance handles 1,000 requests optimally")</li>
-      <li><strong>Average Network In/Out</strong> — for network-bound apps (heavy uploads/downloads)</li>
-      <li><strong>Custom CloudWatch metric</strong> — anything specific to your app</li>
+      <li><strong>CPU Utilization:</strong> Most common general-purpose metric.</li>
+      <li><strong>RequestCountPerTarget:</strong> Application-specific (e.g. keep requests per server at ~1,000).</li>
+      <li><strong>Average Network In/Out:</strong> For bandwidth-heavy applications (video uploads/downloads).</li>
+      <li><strong>Custom CloudWatch Metrics:</strong> Custom metrics exported directly from your app code.</li>
     </ul>
 
     <h3>Scaling Cooldown</h3>
-    <p>After any scale-out/scale-in activity, the ASG enters a <strong>cooldown period</strong> (default <strong>300 seconds / 5 min</strong>) during which it won't launch or terminate more instances — this lets metrics stabilize after the change.</p>
+    <p>After scaling out or scaling in, the ASG enters a <strong>cooldown period</strong> (default: <strong>300 seconds / 5 minutes</strong>). During cooldown, ASG blocks additional scaling actions, giving metrics time to stabilize.</p>
     <div class="callout tip">
-      <strong>Tip:</strong> Use a pre-baked/ready-to-use AMI so new instances are ready to serve traffic faster — this lets you use a shorter cooldown and get more responsive scaling. Also enable <strong>detailed monitoring</strong> (1-minute metric granularity) for faster reactions.
+      <strong>Optimization tip:</strong> Use custom AMIs with pre-installed software so instances start faster. This permits shorter cooldown periods and faster auto-scaling responses.
     </div>
 
-    <h3>Hands-On: Target Tracking demo</h3>
+    <h3>Hands-On: Target Tracking Demo</h3>
     <ol>
-      <li>Create a Target Tracking policy: metric = Average CPU Utilization, target = 40%</li>
-      <li>Set ASG max capacity higher than min (e.g. min=1, max=3) so it has room to scale</li>
-      <li>SSH into an instance via EC2 Instance Connect, install the <code>stress</code> tool, run <code>stress -c 4</code> to push CPU to 100%</li>
-      <li>Watch CloudWatch → Alarms: two alarms auto-created — <strong>AlarmHigh</strong> (CPU &gt; 40% for 3 datapoints in 3 min → scale out) and <strong>AlarmLow</strong> (CPU &lt; ~28% for 15 datapoints → scale in)</li>
-      <li>Once AlarmHigh triggers, ASG activity log shows a new instance launching (1 → 2, then even 2 → 3 while CPU was still high)</li>
-      <li>Reboot the stressed instance(s) to bring CPU back down → after ~15 minutes AlarmLow triggers → ASG scales back in (3 → 2 → 1), terminating instances one at a time</li>
+      <li>Create a Target Tracking policy: metric = Average CPU Utilization, target = 40%.</li>
+      <li>Set ASG max capacity higher than min (e.g. min=1, max=3) to allow room for scaling.</li>
+      <li>SSH into instance via EC2 Instance Connect, install the <code>stress</code> tool, run <code>stress -c 4</code> to push CPU utilization to 100%.</li>
+      <li>Observe CloudWatch Alarms: two alarms auto-created — <strong>AlarmHigh</strong> (CPU &gt; 40% → scale out) and <strong>AlarmLow</strong> (CPU &lt; ~28% → scale in).</li>
+      <li>When AlarmHigh triggers, ASG Activity log records new instances launching (1 → 2 → 3).</li>
+      <li>Reboot stressed instance to restore normal CPU → AlarmLow triggers after ~15 minutes → ASG scales capacity back down (3 → 2 → 1).</li>
     </ol>
-    <div class="callout">Remember to delete the scaling policy after testing to avoid leaving it running.</div>
+    <div class="callout">Remember to delete the test scaling policy after completing hands-on verification.</div>
   </section>
 
   <!-- 76 -->
   <section class="lecture" id="l76">
     <h2><span class="lecture-num">76</span>Auto Scaling Groups — Instance Refresh</h2>
 
-    <p><strong>Instance Refresh</strong> lets you update an entire ASG to use a <strong>new launch template</strong> (e.g. after updating the underlying AMI) — without manually terminating instances one by one and waiting.</p>
+    <p><strong>Instance Refresh</strong> updates an entire ASG to a <strong>new launch template</strong> (e.g. after updating an AMI ID) with zero application downtime.</p>
 
-    <h3>How it works</h3>
+    <h3>How It Works</h3>
     <ol>
-      <li>Update your Launch Template (e.g. new AMI version)</li>
-      <li>Call <strong>Start Instance Refresh</strong></li>
-      <li>Set a <strong>minimum healthy percentage</strong> (e.g. 60%) — controls how many instances can be taken down at once</li>
-      <li>ASG terminates old instances gradually and launches new ones (with the new template) to replace them</li>
-      <li>Optionally set a <strong>warm-up time</strong> — how long to wait before assuming a new instance is ready to serve traffic</li>
+      <li>Update your Launch Template to a new version.</li>
+      <li>Click <strong>Start Instance Refresh</strong>.</li>
+      <li>Set a <strong>Minimum Healthy Percentage</strong> (e.g. 60%) to ensure sufficient active capacity throughout the update.</li>
+      <li>ASG gradually terminates old instances and provisions new instances running the updated template.</li>
+      <li>Optionally configure a <strong>warm-up time</strong> — period to wait before marking a new instance as ready to serve traffic.</li>
     </ol>
 
     <div class="callout tip">Over time, every instance running the old launch template gets replaced — with no downtime, since the minimum healthy percentage ensures enough capacity stays up throughout.</div>
@@ -990,35 +986,35 @@
     <h2>📋 Full Section Cheat Sheet</h2>
 
     <div class="summary-box">
-      <h3>Load Balancer decision guide</h3>
+      <h3>Load Balancer Decision Guide</h3>
       <table>
         <tr><th>If you need...</th><th>Use</th></tr>
-        <tr><td>HTTP/HTTPS, path/host-based routing, microservices, containers, Lambda targets</td><td><strong>ALB</strong></td></tr>
+        <tr><td>HTTP/HTTPS, path/host routing, microservices, containers, Lambda targets</td><td><strong>ALB</strong></td></tr>
         <tr><td>TCP/UDP, extreme performance, static IP per AZ</td><td><strong>NLB</strong></td></tr>
-        <tr><td>Firewall/IDS inspection of all network traffic</td><td><strong>GWLB</strong></td></tr>
-        <tr><td>Legacy / old exam questions only</td><td>CLB (deprecated, avoid)</td></tr>
+        <tr><td>Firewall and IDPS inspection of all network traffic</td><td><strong>GWLB</strong></td></tr>
+        <tr><td>Legacy application support</td><td>CLB (deprecated, avoid)</td></tr>
       </table>
     </div>
 
     <div class="summary-box">
-      <h3>Key numbers to remember</h3>
+      <h3>Key Numbers to Remember</h3>
       <ul>
-        <li>Security groups: LB allows 80/443 from <code>0.0.0.0/0</code>; EC2 allows 80 only from <em>LB's security group</em></li>
-        <li>Sticky session cookie names: <code>AWSALB</code> (duration), <code>AWSALBAPP</code> (app cookie, LB-generated), custom name for fully custom app cookie</li>
-        <li>Connection Draining / Deregistration Delay: default <strong>300s</strong>, range 1–3600s, 0 = disabled</li>
-        <li>ASG scaling cooldown: default <strong>300s</strong></li>
-        <li>GWLB protocol: <strong>GENEVE on port 6081</strong></li>
-        <li>Cross-zone balancing default: <strong>ALB = ON</strong> (free), <strong>NLB/GWLB = OFF</strong> (costs $ if turned on), <strong>CLB = OFF</strong> (free if turned on)</li>
+        <li>Security Groups: LB allows HTTP(80)/HTTPS(443) from <code>0.0.0.0/0</code>; EC2 allows port 80 <em>only from LB Security Group ID</em>.</li>
+        <li>Sticky Session Cookies: <code>AWSALB</code> (duration), <code>AWSALBAPP</code> (LB app cookie), custom name (app cookie).</li>
+        <li>Connection Draining Delay: Default <strong>300s</strong> (range: 1–3600s, 0 = disabled).</li>
+        <li>ASG Scaling Cooldown: Default <strong>300s</strong>.</li>
+        <li>GWLB Protocol: <strong>GENEVE on port 6081</strong>.</li>
+        <li>Cross-Zone Balancing Defaults: <strong>ALB = ON</strong> (free), <strong>NLB/GWLB = OFF</strong> (paid cross-AZ data), <strong>CLB = OFF</strong> (free).</li>
       </ul>
     </div>
 
     <div class="summary-box">
-      <h3>Mental model recap</h3>
+      <h3>Mental Model Recap</h3>
       <ul>
-        <li><strong>Vertical scaling</strong> = bigger instance. <strong>Horizontal scaling</strong> = more instances. <strong>High Availability</strong> = spread across multiple AZs.</li>
-        <li><strong>ELB</strong> = single entry point + health checks + traffic spreading across EC2s.</li>
-        <li><strong>ASG</strong> = automatically keeps the right number of healthy EC2 instances running, and can react to CloudWatch alarms to scale in/out.</li>
-        <li><strong>ELB + ASG together</strong> = the classic AWS pattern for a scalable, highly available web application.</li>
+        <li><strong>Vertical scaling</strong> = Bigger server. <strong>Horizontal scaling</strong> = More servers. <strong>High Availability</strong> = Multi-AZ deployment.</li>
+        <li><strong>ELB</strong> = Front-door entry point + health checks + traffic distribution across EC2 instances.</li>
+        <li><strong>ASG</strong> = Automatically maintains correct server count and replaces failed instances using CloudWatch alarms.</li>
+        <li><strong>ELB + ASG combined</strong> = Classic AWS architecture for scalable, highly available web applications.</li>
       </ul>
     </div>
   </section>

@@ -324,9 +324,9 @@
 <section class="card" id="rds-overview">
   <div class="card-title"><div class="badge">1</div><h2>Amazon RDS Overview</h2></div>
 
-  <p><strong>RDS</strong> = Relational Database Service. It's AWS's <em>managed</em> service for SQL databases. "Managed" is the key word — AWS handles the boring, risky operational work so you can just use the database.</p>
+  <p><strong>RDS</strong> stands for <strong>Relational Database Service</strong>. It is AWS's <em>managed database service</em> for traditional SQL databases. "Managed" means AWS takes care of routine operational tasks so you can focus on building your application.</p>
 
-  <p>Engines RDS supports (memorize this list — it comes up on the exam):</p>
+  <p>Database engines supported by RDS (memorize this list for the AWS exam):</p>
   <ul>
     <li><code>PostgreSQL</code></li>
     <li><code>MySQL</code></li>
@@ -334,40 +334,40 @@
     <li><code>Oracle</code></li>
     <li><code>Microsoft SQL Server</code></li>
     <li><code>IBM DB2</code></li>
-    <li><code>Aurora</code> — AWS's own proprietary database engine (covered in its own section below)</li>
+    <li><code>Aurora</code> — AWS's proprietary database engine (covered in detail below)</li>
   </ul>
 
-  <p>Why use RDS instead of just installing a database yourself on an EC2 instance? Because RDS gives you, for free (well, included):</p>
+  <p>Why use RDS instead of manually installing a database on an EC2 instance? RDS includes these automated features out-of-the-box:</p>
   <ul>
-    <li>Automated provisioning + OS patching</li>
-    <li>Continuous backups + <strong>Point-in-Time Restore</strong> (roll back to a specific timestamp)</li>
-    <li>Monitoring dashboards</li>
-    <li>Read Replicas (scale reads)</li>
-    <li>Multi-AZ (disaster recovery)</li>
-    <li>Maintenance windows for upgrades</li>
-    <li>Vertical scaling (bigger instance type) and horizontal scaling (add read replicas)</li>
-    <li>Storage backed by EBS</li>
+    <li>Automated database setup and OS security patching</li>
+    <li>Continuous automated backups with <strong>Point-in-Time Restore</strong> (rollback data to an exact second in time)</li>
+    <li>Built-in CloudWatch monitoring dashboards</li>
+    <li>Read Replicas (to scale read query performance)</li>
+    <li>Multi-AZ deployment (for high availability and disaster recovery)</li>
+    <li>Maintenance windows for scheduled software upgrades</li>
+    <li>Vertical scaling (upgrading CPU/RAM size) and horizontal scaling (adding read replicas)</li>
+    <li>Storage backed by AWS EBS volumes</li>
   </ul>
 
   <div class="callout warning">
-    <strong class="label">Don't forget</strong>
-    You cannot SSH into an RDS instance. It's a managed service — AWS owns the underlying EC2 box, not you. That's the trade-off for all the automation you get.
+    <strong class="label">Important Limitation</strong>
+    You cannot SSH into an RDS database server. Because RDS is a managed service, AWS maintains full ownership of the underlying OS and server infrastructure.
   </div>
 
   <h3>RDS Storage Auto Scaling</h3>
-  <p>You pick an initial storage size (say 20 GB) when creating the DB. If your app writes a lot of data and you're about to run out of space, RDS can automatically grow the storage for you — no downtime, no manual resizing.</p>
+  <p>When creating a database, you assign an initial storage size (e.g. 20 GB). If your application writes heavy data and approaches storage limits, RDS automatically expands your database storage without causing downtime.</p>
 
-  <p>Auto scaling kicks in when <strong>all</strong> of these are true:</p>
+  <p>Storage Auto Scaling triggers when <strong>all three conditions</strong> are met:</p>
   <ul>
-    <li>Free storage is less than 10% of allocated storage</li>
-    <li>The low-storage condition has lasted more than 5 minutes</li>
-    <li>At least 6 hours have passed since the last storage modification</li>
+    <li>Free storage space drops below 10% of total allocated storage.</li>
+    <li>The low-storage condition persists for more than 5 minutes.</li>
+    <li>At least 6 hours have passed since the previous storage expansion.</li>
   </ul>
-  <p>You also set a <strong>maximum storage threshold</strong> so it doesn't grow forever. Works across all RDS engines. Great for apps with unpredictable workloads.</p>
+  <p>You can define a <strong>Maximum Storage Threshold</strong> to control cost limits. Supported across all RDS engines.</p>
 
   <div class="analogy">
-    <strong class="label">Analogy</strong>
-    Storage Auto Scaling is like a phone plan that automatically bumps your data allowance when you're about to hit your cap — instead of you manually calling to upgrade every time.
+    <strong class="label">Real-World Analogy</strong>
+    RDS Storage Auto Scaling is like a mobile data plan that automatically tops up your data allowance when you reach 90% usage — saving you from manual intervention or service disconnection.
   </div>
 </section>
 
@@ -376,21 +376,21 @@
   <div class="card-title"><div class="badge">2</div><h2>RDS Read Replicas vs Multi-AZ</h2></div>
 
   <div class="callout key">
-    <strong class="label">Exam key point</strong>
-    This is one of the most heavily tested topics. Read Replicas = scaling reads. Multi-AZ = disaster recovery. Don't mix them up.
+    <strong class="label">AWS Exam Core Concept</strong>
+    Read Replicas = Scaling read performance. Multi-AZ = High availability and disaster recovery. Never confuse these two features on the exam!
   </div>
 
   <h3>Read Replicas</h3>
-  <p>Read Replicas help you scale <strong>reads</strong>. You can create up to <strong>15</strong> read replicas, and they can be:</p>
+  <p>Read Replicas help scale heavy <strong>read query traffic</strong>. You can create up to <strong>15 Read Replicas</strong> for a master database across:</p>
   <ul>
-    <li>Within the same Availability Zone</li>
-    <li>Cross-AZ (different AZ, same region)</li>
-    <li>Cross-Region</li>
+    <li>The same Availability Zone</li>
+    <li>Different Availability Zones within the same Region (Cross-AZ)</li>
+    <li>Different AWS Regions (Cross-Region)</li>
   </ul>
 
-  <p>Replication from the main (source) database to the replicas is <strong>asynchronous</strong> — meaning replicas are <strong>eventually consistent</strong>. If your app reads from a replica right after a write, it might read slightly stale data because replication hasn't caught up yet.</p>
+  <p>Data replication from the master database to replicas is <strong>asynchronous</strong> — meaning replicas are <strong>eventually consistent</strong>. A read query made to a replica immediately after a write to the master might briefly return slightly old data until replication catches up.</p>
 
-  <p>A replica can also be <strong>promoted</strong> to become its own standalone database (it then leaves the replication relationship permanently).</p>
+  <p>A Read Replica can also be <strong>promoted</strong> to a standalone master database (which breaks the replication link permanently).</p>
 
   <div class="diagram">
     <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg">
@@ -430,25 +430,25 @@
       <text x="245" y="185" class="sub">async replication</text>
     </svg>
   </div>
-  <p class="caption">One main database taking reads/writes, replicating asynchronously to two read replicas that only serve reads.</p>
+  <p class="caption">Master database handles read/write queries and replicates asynchronously to two read-only replicas.</p>
 
   <div class="callout warning">
-    <strong class="label">Important</strong>
-    Read Replicas only accept <code>SELECT</code> statements. You cannot run <code>INSERT</code>, <code>UPDATE</code>, or <code>DELETE</code> on them.
+    <strong class="label">Important Rule</strong>
+    Read Replicas accept <code>SELECT</code> queries only. You cannot execute <code>INSERT</code>, <code>UPDATE</code>, or <code>DELETE</code> statements directly on a Read Replica.
   </div>
 
-  <p><strong>Classic use case:</strong> a production app hits the main DB. A new analytics/reporting team wants to run heavy queries on the same data. Instead of pointing them at the production DB (which would slow it down), spin up a Read Replica and point the reporting app there. Production stays fast and unaffected.</p>
+  <p><strong>Primary Use Case:</strong> Production application users hit the master database for normal operations. An analytics team wants to run heavy reporting queries on the same dataset. Point the reporting queries at a Read Replica so production performance remains fast and unaffected.</p>
 
-  <p><strong>Networking cost:</strong> replication traffic between the main DB and a replica in a <em>different AZ but same region</em> is <strong>free</strong> (RDS is a managed service, so AWS absorbs that cross-AZ cost). Replication to a <strong>cross-region</strong> replica <strong>does</strong> incur a network fee.</p>
+  <p><strong>Network Data Transfer Costs:</strong> Data replication between a master DB and a replica in a <em>different AZ within the same Region</em> is <strong>free of charge</strong> (AWS covers cross-AZ data fees for RDS). Replication to a <strong>Cross-Region</strong> replica incurs standard AWS inter-region network charges.</p>
 
-  <h3>Multi-AZ</h3>
-  <p>Multi-AZ is mainly for <strong>Disaster Recovery</strong>, not scaling. There's one Master (in AZ A) and one Standby (in AZ B). Replication here is <strong>synchronous</strong> — a write isn't considered complete until the standby has it too.</p>
+  <h3>Multi-AZ Deployment</h3>
+  <p>Multi-AZ is designed for <strong>High Availability and Disaster Recovery</strong>. AWS provisions one Primary Master database in AZ-A and a Standby replica in AZ-B. Replication between Primary and Standby is <strong>synchronous</strong> — a write operation is confirmed only after both databases store it safely.</p>
 
-  <p>Your app connects to a single DNS name. If the Master fails (AZ outage, instance failure, storage failure), RDS automatically fails over to the standby — same DNS name, no code changes needed.</p>
+  <p>Your application connects using a single database DNS address. If the Primary Master fails (due to data center outage, instance failure, or storage issues), RDS automatically switches (fails over) connection routing to the Standby — requiring zero application code changes.</p>
 
   <div class="callout warning">
-    <strong class="label">Don't forget</strong>
-    Nobody can read from or write to the standby directly. It exists purely as a failover target — it is <strong>not</strong> for scaling reads.
+    <strong class="label">Important Rule</strong>
+    Applications cannot read from or write to the Standby database directly. The Standby exists strictly as an automatic failover target — it does <strong>NOT</strong> scale read traffic.
   </div>
 
   <div class="diagram">
@@ -481,41 +481,41 @@
       <text x="350" y="138" text-anchor="middle" class="sub2">synchronous replication</text>
     </svg>
   </div>
-  <p class="caption">Multi-AZ: one DNS name, synchronous replication to a standby that only activates on failover.</p>
+  <p class="caption">Multi-AZ Architecture: Single database DNS address with synchronous replication to a standby database activated only on failover.</p>
 
   <div class="callout tip">
-    <strong class="label">Good to know</strong>
-    You <em>can</em> combine both — set up a Read Replica <em>and</em> make it Multi-AZ for disaster recovery. Common exam question.
+    <strong class="label">Best Practice</strong>
+    You can combine both features — set up a Read Replica and configure it as Multi-AZ for high availability. Common exam scenario.
   </div>
 
-  <p>Switching a database from Single-AZ to Multi-AZ is a <strong>zero-downtime</strong> operation — just click "Modify" and enable Multi-AZ. Behind the scenes: RDS takes a snapshot of the main DB, restores it as a new standby, then establishes synchronous replication between the two.</p>
+  <p>Modifying a database from Single-AZ to Multi-AZ is a <strong>zero-downtime operation</strong>. RDS takes a snapshot of the primary database, restores it in a secondary AZ, and establishes synchronous replication.</p>
 </section>
 
 <!-- 3. RDS HANDS ON -->
 <section class="card" id="rds-hands-on">
   <div class="card-title"><div class="badge">3</div><h2>Amazon RDS — Hands-On</h2></div>
-  <p>Quick walkthrough of creating an RDS database from the console:</p>
+  <p>Step-by-step summary of launching an RDS database from the AWS Console:</p>
   <ul>
-    <li><strong>Engine:</strong> chose MySQL for simplicity (Aurora, PostgreSQL, etc. also available)</li>
-    <li><strong>Template:</strong> Free Tier → only Single-AZ deployment available. Production template unlocks Multi-AZ instance (2 instances) or Multi-AZ cluster (3 instances)</li>
-    <li><strong>Credentials:</strong> self-managed password, or let <code>AWS Secrets Manager</code> manage it (more secure, but costs extra)</li>
-    <li><strong>Instance class:</strong> <code>db.t4g.micro</code> / <code>db.t3.micro</code> (free tier eligible)</li>
-    <li><strong>Storage:</strong> 20 GB, with the option to enable Storage Auto Scaling up to a max (e.g. 1000 GB)</li>
-    <li><strong>Connectivity:</strong> public access = yes (so you can connect from your laptop), new security group created, port <code>3306</code> (MySQL default)</li>
+    <li><strong>Engine Choice:</strong> MySQL selected for simplicity (PostgreSQL, MariaDB, Oracle, SQL Server available).</li>
+    <li><strong>Deployment Template:</strong> Free Tier (Single-AZ). Production template unlocks Multi-AZ Instance (2 nodes) or Multi-AZ Cluster (3 nodes).</li>
+    <li><strong>Credentials:</strong> Self-managed master password or integration with <code>AWS Secrets Manager</code>.</li>
+    <li><strong>Instance Class:</strong> <code>db.t4g.micro</code> / <code>db.t3.micro</code> (Free Tier eligible).</li>
+    <li><strong>Storage:</strong> 20 GB allocated storage with Storage Auto Scaling enabled up to 1,000 GB maximum limit.</li>
+    <li><strong>Connectivity:</strong> Public accessibility enabled (allows direct client connection), Security Group configured to allow port <code>3306</code> (MySQL default port).</li>
   </ul>
 
-  <p>Connected using a MySQL client (SQL Electron) with the endpoint, port 3306, username <code>admin</code>, and the initial database name. Ran basic <code>CREATE TABLE</code> / <code>INSERT</code> / <code>SELECT</code> statements — just to prove the connection works (this SQL syntax itself is out of exam scope).</p>
+  <p>Connected using a SQL client (SQL Electron) via database Endpoint URL, Port 3306, Username <code>admin</code>, and master password. Verified basic table creation (<code>CREATE TABLE</code>), data insertion (<code>INSERT</code>), and retrieval (<code>SELECT</code>).</p>
 
-  <p>Other things doable straight from the console:</p>
+  <p>Console Operations Available:</p>
   <ul>
-    <li>Create a Read Replica directly, optionally as Multi-AZ</li>
-    <li>View monitoring metrics: CPU utilization, DB connection count, etc.</li>
-    <li>Take snapshots → restore to a point in time, or migrate a snapshot to a different region</li>
+    <li>Create Read Replicas directly (Single-AZ or Multi-AZ).</li>
+    <li>Monitor CPU utilization, memory, and active DB connections via CloudWatch metrics.</li>
+    <li>Take manual DB Snapshots, perform Point-in-Time Restores, or copy snapshots across AWS Regions.</li>
   </ul>
 
   <div class="callout tip">
-    <strong class="label">Cleanup steps</strong>
-    To delete an RDS instance: Modify → disable Delete/Termination Protection → Apply immediately → then Delete (optionally skip the final snapshot).
+    <strong class="label">Deletion Steps</strong>
+    To safely delete an RDS instance: Modify instance → Disable Deletion Protection → Apply Immediately → Select Delete (optionally skip final snapshot creation).
   </div>
 </section>
 
@@ -523,31 +523,31 @@
 <section class="card" id="aurora">
   <div class="card-title"><div class="badge">4</div><h2>Amazon Aurora</h2></div>
 
-  <p>Aurora is AWS's own proprietary database engine (not open-source), built to be wire-compatible with <strong>PostgreSQL</strong> and <strong>MySQL</strong> — meaning your existing drivers just work.</p>
+  <p><strong>Amazon Aurora</strong> is AWS's cloud-native relational database engine, engineered to be fully compatible with <strong>PostgreSQL</strong> and <strong>MySQL</strong>. Existing drivers and application code work without modification.</p>
 
-  <p>Because it's cloud-optimized, Aurora claims:</p>
+  <p>Cloud optimization benefits claimed by AWS:</p>
   <ul>
-    <li><strong>5x</strong> performance over MySQL on RDS</li>
-    <li><strong>3x</strong> performance over PostgreSQL on RDS</li>
-    <li>~20% more expensive than RDS, but more cost-efficient at scale</li>
+    <li><strong>5x performance throughput</strong> over standard MySQL on RDS</li>
+    <li><strong>3x performance throughput</strong> over standard PostgreSQL on RDS</li>
+    <li>~20% higher cost than standard RDS, but significantly more cost-efficient at scale</li>
   </ul>
 
-  <h3>Storage</h3>
-  <p>Aurora storage auto-grows: starts at 10 GB, scales automatically up to <strong>256 TB</strong>. You never manually manage disk sizing.</p>
+  <h3>Storage Architecture</h3>
+  <p>Aurora storage grows automatically in 10 GB increments up to <strong>256 TB</strong>. You never need to manage disk allocation or volume resizing manually.</p>
 
-  <p>Every write is stored as <strong>6 copies across 3 AZs</strong>. Aurora only needs:</p>
+  <p>Every write operation is replicated automatically into <strong>6 copies across 3 Availability Zones</strong>. Aurora quorum rules:</p>
   <ul>
-    <li><strong>4 out of 6</strong> copies for a write to succeed</li>
-    <li><strong>3 out of 6</strong> copies for a read to succeed</li>
+    <li><strong>4 out of 6 copies</strong> required for a successful write operation</li>
+    <li><strong>3 out of 6 copies</strong> required for a successful read operation</li>
   </ul>
-  <p>This means Aurora can lose an entire AZ and keep working. It also self-heals — corrupted data blocks get repaired automatically via peer-to-peer replication in the background, across hundreds of storage volumes (not just one).</p>
+  <p>Aurora easily survives the complete loss of an Availability Zone. It also features self-healing storage — damaged disk blocks are repaired automatically in the background via peer-to-peer storage replication.</p>
 
-  <p>Up to <strong>15 read replicas</strong>, replication lag typically <strong>sub-10ms</strong> (faster than MySQL replication). Failover is near-instant — much faster than RDS Multi-AZ failover.</p>
+  <p>Supports up to <strong>15 Read Replicas</strong> with sub-10ms replication lag. Failover is automated and completes in under 30 seconds.</p>
 
   <h3>Writer &amp; Reader Endpoints</h3>
-  <p>There's one <strong>Master</strong> that takes all writes. If it fails, failover happens in under 30 seconds on average, and one of the read replicas gets promoted.</p>
+  <p>An Aurora cluster contains one <strong>Master Writer</strong> instance for write operations. If the Master fails, Aurora promotes one of the Read Replicas automatically.</p>
 
-  <p>Because the Master can change after a failover, Aurora gives you a <strong>writer endpoint</strong> — a stable DNS name that always points at whichever instance is currently the master. Similarly, a <strong>reader endpoint</strong> automatically load-balances connections across all read replicas (load balancing happens at the <em>connection</em> level, not per-statement).</p>
+  <p>To keep connections simple after failover, Aurora provides a <strong>Writer Endpoint</strong> (a static DNS name pointing to the active master) and a <strong>Reader Endpoint</strong> (a static DNS name load-balancing read connections across all active read replicas at the connection level).</p>
 
   <div class="diagram">
     <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg">
@@ -594,38 +594,36 @@
       <path d="M560,190 L500,240" class="a"/>
     </svg>
   </div>
-  <p class="caption">Writer endpoint always tracks the current master; reader endpoint load-balances across all replicas. All instances share one auto-expanding storage volume.</p>
+  <p class="caption">Writer Endpoint tracks the active Master; Reader Endpoint load-balances queries across replicas. All instances share a unified, self-scaling storage layer.</p>
 
-  <p>Other Aurora features: automatic failover, backups, isolation/security, one-click ("push-button") scaling, zero-downtime patching, advanced monitoring, and <strong>Backtrack</strong> — rewind the database to any point in time without relying on backups (and you can change your mind about the target time and rewind again).</p>
+  <p>Additional Aurora Features: Automated failover, continuous backups, zero-downtime engine patching, custom endpoint creation, and <strong>Backtrack</strong> (rewind database data to a past timestamp instantly without restoring from backups).</p>
 </section>
 
 <!-- 5. AURORA HANDS ON -->
 <section class="card" id="aurora-hands-on">
   <div class="card-title"><div class="badge">5</div><h2>Amazon Aurora — Hands-On</h2></div>
-  <p>Key options seen while creating an Aurora cluster:</p>
+  <p>Key configuration choices during Aurora cluster deployment:</p>
   <ul>
-    <li><strong>Engine:</strong> MySQL-compatible or PostgreSQL-compatible</li>
-    <li><strong>Storage config:</strong> <code>Aurora Standard</code> (cost-effective) vs <code>I/O-Optimized</code> (for high read/write workloads)</li>
-    <li><strong>Serverless v2:</strong> instead of picking an instance type, you set a min/max <strong>ACU</strong> (Aurora Capacity Unit) range and it scales automatically between them</li>
-    <li><strong>Availability:</strong> option to add an Aurora Replica (reader) in a different AZ for HA + fast failover + read scaling</li>
-    <li><strong>Local write forwarding:</strong> writes sent to a reader get auto-forwarded to the writer instance — simplifies connection management</li>
-    <li><strong>Authentication:</strong> username/password, IAM-based, or Kerberos-based</li>
+    <li><strong>Engine Choice:</strong> MySQL-compatible or PostgreSQL-compatible.</li>
+    <li><strong>Storage Class:</strong> <code>Aurora Standard</code> (cost-effective) vs <code>I/O-Optimized</code> (for heavy read/write workloads).</li>
+    <li><strong>Serverless v2:</strong> Automatically scales database capacity units (ACUs) up or down based on real-time traffic spikes.</li>
+    <li><strong>Availability:</strong> Add Aurora Replicas across different Availability Zones for instant failover and read scaling.</li>
+    <li><strong>Local Write Forwarding:</strong> Write operations sent to reader instances automatically forward to the writer instance.</li>
+    <li><strong>Authentication:</strong> Standard password, IAM database authentication, or Kerberos.</li>
   </ul>
 
-  <p>After creation you get a <strong>regional cluster</strong> with separate writer and reader instances in different AZs, each with its own endpoint, plus the cluster-level writer/reader endpoints your app should actually use.</p>
+  <p>Deploying provisions a regional cluster with separate writer and reader endpoints for application connection strings.</p>
 
-  <p>Extra console features worth knowing:</p>
+  <p>Important Cluster Features:</p>
   <ul>
-    <li>Add more readers to scale read capacity</li>
-    <li>Create a cross-region read replica</li>
-    <li>Restore to a point in time</li>
-    <li><strong>Replica auto-scaling policy</strong> — e.g. "keep average replica utilization at 60%; scale between 1 and 15 replicas"</li>
-    <li><strong>Global database</strong> feature — add other AWS regions (requires a compatible instance size, e.g. "large")</li>
+    <li>Auto-scaling policies for read replicas (e.g., target 60% CPU utilization, scale from 1 to 15 replicas).</li>
+    <li>Cross-Region Read Replicas and <strong>Aurora Global Database</strong> for low-latency global reads and cross-region disaster recovery.</li>
+    <li>Point-in-Time Restores and snapshot exports.</li>
   </ul>
 
   <div class="callout tip">
-    <strong class="label">Cleanup steps</strong>
-    Delete order matters: delete the reader instance first, then the writer instance, and only then can you delete the whole cluster.
+    <strong class="label">Proper Deletion Sequence</strong>
+    To delete an Aurora Cluster: Delete reader instances first → Delete the master writer instance → Delete the overall Cluster container.
   </div>
 </section>
 
@@ -634,14 +632,14 @@
   <div class="card-title"><div class="badge">6</div><h2>RDS &amp; Aurora Security</h2></div>
 
   <table>
-    <tr><th>Area</th><th>Details</th></tr>
-    <tr><td>Encryption at rest</td><td>Uses KMS. Must be set <strong>at launch time</strong>. If the master isn't encrypted, replicas can't be either.</td></tr>
-    <tr><td>Encrypting an existing unencrypted DB</td><td>Not a toggle — take a snapshot, then restore that snapshot as an encrypted database.</td></tr>
-    <tr><td>Encryption in-flight</td><td>Enabled by default (TLS). Clients use AWS-provided root certificates.</td></tr>
-    <tr><td>Authentication</td><td>Classic username/password, or IAM roles (e.g. an EC2 instance's IAM role can authenticate directly)</td></tr>
-    <tr><td>Network access</td><td>Controlled via Security Groups (ports, IPs, other SGs)</td></tr>
-    <tr><td>SSH access</td><td>Not possible (managed service) — unless using <strong>RDS Custom</strong></td></tr>
-    <tr><td>Audit logs</td><td>Can be enabled; expire after a while unless sent to <code>CloudWatch Logs</code> for long-term retention</td></tr>
+    <tr><th>Security Domain</th><th>Implementation &amp; Rules</th></tr>
+    <tr><td>Encryption at Rest</td><td>Uses AWS KMS keys. Must be enabled <strong>at initial database launch</strong>. If master is unencrypted, read replicas cannot be encrypted.</td></tr>
+    <tr><td>Encrypting Unencrypted DB</td><td>Take an unencrypted DB snapshot → Copy snapshot with KMS encryption enabled → Restore snapshot as a new encrypted database.</td></tr>
+    <tr><td>Encryption In-Flight</td><td>TLS/SSL encryption enabled by default. Clients verify server identity using AWS-provided root certificates.</td></tr>
+    <tr><td>Authentication</td><td>Standard username/password credentials, or IAM Database Authentication (e.g., EC2 IAM role authenticates to DB without hardcoded credentials).</td></tr>
+    <tr><td>Network Protection</td><td>VPC Security Groups restrict access by IP address, port (e.g. 3306, 5432), or Security Group ID.</td></tr>
+    <tr><td>SSH Access</td><td>Direct SSH access blocked (managed service) — unless using <strong>RDS Custom</strong> for OS control.</td></tr>
+    <tr><td>Audit Logging</td><td>Database logs can be exported directly to <code>AWS CloudWatch Logs</code> for long-term retention and audit compliance.</td></tr>
   </table>
 </section>
 
@@ -649,22 +647,22 @@
 <section class="card" id="rds-proxy">
   <div class="card-title"><div class="badge">7</div><h2>RDS Proxy</h2></div>
 
-  <p>RDS Proxy sits between your application and your RDS/Aurora database and <strong>pools and shares connections</strong>. Instead of every app instance opening its own connection to the database, they all connect to the proxy, and the proxy maintains a smaller pool of actual connections to the database.</p>
+  <p><strong>RDS Proxy</strong> is a fully managed, highly available database proxy that sits between your applications and your RDS/Aurora database to <strong>pool and share database connections</strong>. Instead of every client opening individual connections, they connect to RDS Proxy, which reuses a smaller pool of stable database connections.</p>
 
   <div class="analogy">
-    <strong class="label">Analogy</strong>
-    Think of RDS Proxy like a receptionist for the database. Instead of a hundred visitors all trying to squeeze through one office door at once, they check in with the receptionist, who manages a handful of open doors efficiently.
+    <strong class="label">Real-World Analogy</strong>
+    RDS Proxy acts like an office receptionist. Instead of 100 visitors trying to squeeze into an executive room at once, they check in with the receptionist, who coordinates entrance through a few open doors efficiently.
   </div>
 
-  <p>Why it matters:</p>
+  <p>Key Benefits:</p>
   <ul>
-    <li>Reduces stress on DB resources (CPU/RAM) by minimizing open connections and timeouts</li>
-    <li>Fully <strong>serverless</strong>, auto-scaling, and highly available across multiple AZs</li>
-    <li>Reduces <strong>failover time by up to 66%</strong> — the proxy absorbs the failover, so your app just keeps talking to the proxy without needing to handle reconnect logic itself</li>
-    <li>Supports MySQL, PostgreSQL, MariaDB, Microsoft SQL Server, and Aurora (MySQL/PostgreSQL)</li>
-    <li><strong>No application code changes</strong> needed — just point your connection string at the proxy instead of the DB</li>
-    <li>Can <strong>enforce IAM authentication</strong>, with credentials stored securely in <code>AWS Secrets Manager</code></li>
-    <li>RDS Proxy is <strong>never publicly accessible</strong> — only reachable from within your VPC</li>
+    <li>Prevents database CPU/RAM exhaustion from connection flooding and frequent timeouts.</li>
+    <li>Fully <strong>serverless</strong>, auto-scaling, and deployed across multiple Availability Zones.</li>
+    <li>Reduces database <strong>failover switch time by up to 66%</strong> because RDS Proxy handles connection failovers without dropping client sessions.</li>
+    <li>Supports MySQL, PostgreSQL, MariaDB, Microsoft SQL Server, and Aurora engines.</li>
+    <li>Requires <strong>zero application code changes</strong> — update your connection string to point at the proxy endpoint.</li>
+    <li>Enforces IAM Authentication securely with credentials saved in <code>AWS Secrets Manager</code>.</li>
+    <li><strong>Strictly private:</strong> RDS Proxy is never publicly accessible over the internet; reachable only within your VPC.</li>
   </ul>
 
   <div class="diagram">
@@ -698,11 +696,11 @@
       <path d="M380,95 L500,95" class="ax"/>
     </svg>
   </div>
-  <p class="caption">Many short-lived clients (e.g. Lambda functions) connect to RDS Proxy, which pools those connections down into far fewer actual database connections.</p>
+  <p class="caption">AWS Lambda functions scale rapidly and open hundreds of connections; RDS Proxy consolidates them into a small pool of database connections.</p>
 
   <div class="callout tip">
-    <strong class="label">Common exam scenario</strong>
-    Lambda functions can spin up in huge numbers and open a connection each time — this floods a database with connections. RDS Proxy is the standard fix: Lambdas connect to the proxy, and the proxy pools those into a manageable number of real DB connections.
+    <strong class="label">Classic AWS Exam Scenario</strong>
+    Serverless AWS Lambda functions scale instantly and risk overwhelming database connection limits. Solution: Route Lambda database traffic through RDS Proxy to manage connection pooling safely.
   </div>
 </section>
 
@@ -710,70 +708,64 @@
 <section class="card" id="elasticache-overview">
   <div class="card-title"><div class="badge">8</div><h2>ElastiCache Overview</h2></div>
 
-  <p>Just like RDS gives you managed relational databases, <strong>ElastiCache</strong> gives you managed <strong>Redis</strong> or <strong>Memcached</strong> — in-memory data stores with very high performance and low latency.</p>
+  <p>While RDS manages relational SQL databases on disk, <strong>ElastiCache</strong> provides managed <strong>Redis</strong> or <strong>Memcached</strong> in-memory data stores that deliver ultra-high performance and sub-millisecond response times.</p>
 
-  <p>Main use cases:</p>
+  <p>Primary Use Cases:</p>
   <ul>
-    <li><strong>Reduce database load</strong> for read-heavy workloads by caching common query results</li>
-    <li><strong>Make applications stateless</strong> by storing user session data in the cache instead of on a specific server</li>
+    <li><strong>Reduce database load:</strong> Cache frequent read queries in memory so backend databases perform fewer expensive disk operations.</li>
+    <li><strong>Stateless application architecture:</strong> Store user session data (like shopping cart or login state) in ElastiCache so any web server can handle subsequent user requests.</li>
   </ul>
 
-  <p>AWS handles the same managed-service benefits as RDS: OS patching, setup, monitoring, failure recovery, backups.</p>
+  <p>Managed Benefits: Automated hardware setup, security patching, monitoring, failure recovery, and automated backups.</p>
 
   <div class="callout warning">
-    <strong class="label">Important</strong>
-    ElastiCache is not a switch you just flip on. It requires real <strong>application code changes</strong> — your app needs logic to check the cache before/after hitting the database.
+    <strong class="label">Code Integration Requirement</strong>
+    ElastiCache is not an automatic database toggle. Using ElastiCache requires <strong>application code changes</strong> — your code must explicitly query the cache before falling back to the database.
   </div>
 
-  <h3>Caching architecture (query caching)</h3>
-  <p>App checks ElastiCache first. If the data's there → <strong>cache hit</strong>, return it directly (database untouched). If not → <strong>cache miss</strong>, read from the database, then write the result into the cache so the next request for the same data is a hit.</p>
+  <h3>Query Caching Pattern</h3>
+  <p>Application queries ElastiCache first. If data exists → <strong>Cache Hit</strong> (return data immediately, database untouched). If data is missing → <strong>Cache Miss</strong> (read data from relational database, then store it in ElastiCache so future queries hit the cache).</p>
 
-  <p>Because data now lives in two places, you need a <strong>cache invalidation strategy</strong> so stale data doesn't get served — this is the fundamentally hard part of caching.</p>
+  <p>Because data lives in two places, you must implement a <strong>cache invalidation strategy</strong> to prevent serving outdated (stale) data.</p>
 
-  <h3>Session storage architecture</h3>
-  <p>User logs in → session data gets written to ElastiCache. If the user's next request lands on a different server/instance of your app, that instance can still fetch the session from ElastiCache — so the user stays logged in. This is what "stateless application" means in practice.</p>
+  <h3>Session Storage Pattern</h3>
+  <p>User logs in → session token stored in ElastiCache. When the user's next request hits a different application instance, that instance retrieves session data from ElastiCache instantly. This makes application servers completely stateless.</p>
 
-  <h3>Redis vs Memcached</h3>
+  <h3>Redis vs Memcached Comparison</h3>
   <table>
-    <tr><th></th><th>Redis</th><th>Memcached</th></tr>
-    <tr><td>High availability</td><td>Multi-AZ with auto-failover</td><td>No replication, no HA (except serverless version)</td></tr>
-    <tr><td>Scaling reads</td><td>Read replicas</td><td>Sharding across multiple nodes</td></tr>
-    <tr><td>Durability</td><td>AOF persistence; backup/restore (OSS version)</td><td>Backup/restore only on serverless version</td></tr>
-    <tr><td>Data structures</td><td>Supports sets, sorted sets (great for leaderboards)</td><td>Simpler key-value</td></tr>
-    <tr><td>Architecture</td><td>Node replicated to another node</td><td>Multiple nodes partitioning (sharding) data, multi-threaded</td></tr>
+    <tr><th>Feature</th><th>Redis</th><th>Memcached</th></tr>
+    <tr><td>High Availability</td><td>Multi-AZ with automatic failover</td><td>No native replication or HA (except Serverless)</td></tr>
+    <tr><td>Scaling Reads</td><td>Read Replicas supported</td><td>Sharding (partitioning data across nodes)</td></tr>
+    <tr><td>Persistence &amp; Backup</td><td>AOF disk persistence; snapshots &amp; backups</td><td>No persistence (data cleared on restart)</td></tr>
+    <tr><td>Data Structures</td><td>Supports strings, sets, sorted sets, hashes, lists</td><td>Simple Key-Value store only</td></tr>
+    <tr><td>Architecture</td><td>Primary node replicated to replica nodes</td><td>Multi-threaded, multi-node memory partitioning</td></tr>
   </table>
 
   <div class="analogy">
-    <strong class="label">Analogy</strong>
-    Redis is like a small team with a backup member who has copies of everything — if the lead is out, the backup steps in with no data loss. Memcached is like splitting the work across many independent desks — fast and simple, but if one desk's drawer gets knocked over, that portion of the data is just gone.
-  </div>
-
-  <div class="callout key">
-    <strong class="label">Exam note</strong>
-    The exam rarely asks you to choose Redis vs Memcached directly, but it's useful reference knowledge for use-case-based questions.
+    <strong class="label">Real-World Analogy</strong>
+    Redis is like a working group with a dedicated assistant making duplicate copies — if the manager is absent, the assistant steps in without losing data. Memcached is like splitting files across separate drawers — fast, but if a drawer breaks, that specific partition of data disappears.
   </div>
 </section>
 
 <!-- 9. ELASTICACHE HANDS ON -->
 <section class="card" id="elasticache-hands-on">
   <div class="card-title"><div class="badge">9</div><h2>ElastiCache — Hands-On</h2></div>
-  <p>Creating a cluster from the console:</p>
+  <p>Creating an ElastiCache Cluster from the AWS Console:</p>
   <ul>
-    <li><strong>Engine choice:</strong> Valkey (recommended Redis replacement), Memcached, or Redis OSS</li>
-    <li><strong>Deployment option:</strong> serverless, or node-based cluster</li>
-    <li><strong>Cluster mode disabled:</strong> single shard, one primary node, up to 5 read replicas. <strong>Cluster mode enabled:</strong> multiple shards across multiple servers</li>
-    <li><strong>Multi-AZ:</strong> for HA / automatic failover of the primary node (costs more)</li>
-    <li><strong>Subnet group:</strong> defines which subnets the cache can run in</li>
-    <li><strong>Encryption:</strong> at-rest (needs a KMS key) and in-transit; enabling in-transit unlocks access control via <code>Redis AUTH</code> token or a user group ACL</li>
-    <li><strong>Security groups</strong> control which applications can reach the cluster over the network</li>
-    <li>Backups, maintenance windows, and log export to CloudWatch — same idea as RDS</li>
+    <li><strong>Engine Options:</strong> Valkey (AWS recommended Redis replacement), Memcached, or Redis OSS.</li>
+    <li><strong>Deployment Type:</strong> Serverless or Node-based cluster.</li>
+    <li><strong>Cluster Mode:</strong> Disabled (single primary node, up to 5 read replicas) vs Enabled (multi-shard distribution).</li>
+    <li><strong>Multi-AZ:</strong> Enable automatic failover for high availability.</li>
+    <li><strong>Subnet Group:</strong> Specifies private VPC subnets hosting cache nodes.</li>
+    <li><strong>Security &amp; Encryption:</strong> Encryption at-rest (KMS key) and in-transit; unlocks <code>Redis AUTH</code> token authentication.</li>
+    <li><strong>Security Groups:</strong> Controls network access ports (default Redis port: 6379, Memcached port: 11211).</li>
   </ul>
 
-  <p>Once created, you get a primary endpoint (and a reader endpoint if replicas exist) that your application code connects to.</p>
+  <p>Deployment yields primary and reader endpoint URLs for integration into application code.</p>
 
   <div class="callout tip">
-    <strong class="label">Cleanup</strong>
-    Action → Delete on the cluster, skip the backup, type the cluster name to confirm.
+    <strong class="label">Cleanup Steps</strong>
+    Select cluster → Actions → Delete → Skip final snapshot → Type cluster name to confirm deletion.
   </div>
 </section>
 
@@ -781,16 +773,16 @@
 <section class="card" id="elasticache-strategies">
   <div class="card-title"><div class="badge">10</div><h2>ElastiCache Strategies</h2></div>
 
-  <p>Before caching anything, ask:</p>
+  <p>Four evaluation questions before implementing caching:</p>
   <ol>
-    <li><strong>Is it safe to cache?</strong> Some data can tolerate being slightly stale (eventually consistent); some can't.</li>
-    <li><strong>Is caching effective for this data?</strong> Good fit: data that changes slowly and only a few keys are frequently requested. Bad fit: data that changes very fast and you need the full key space every time.</li>
-    <li><strong>Is the data structured correctly for caching?</strong> e.g. key-value pairs or pre-computed aggregations work well.</li>
-    <li><strong>Which caching design pattern fits best?</strong> — this is the main one, covered below.</li>
+    <li><strong>Is data safe to cache?</strong> Suitable for data tolerant of brief eventual consistency; avoid caching data requiring real-time accuracy (e.g. bank balances).</li>
+    <li><strong>Is caching effective?</strong> Highly effective for slow-changing data with high read frequency. Poor fit for rapidly changing datasets.</li>
+    <li><strong>Is data structured properly?</strong> Formatted as key-value pairs or pre-computed summaries.</li>
+    <li><strong>Which caching pattern fits?</strong> (Lazy Loading vs Write Through).</li>
   </ol>
 
-  <h3>Lazy Loading (a.k.a. Cache-Aside, Lazy Population)</h3>
-  <p>All three names mean the same strategy: <strong>only cache data that was actually requested</strong>.</p>
+  <h3>Lazy Loading (Cache-Aside Pattern)</h3>
+  <p>Strategy: <strong>Cache data only when explicitly requested by an application user.</strong></p>
 
   <div class="diagram">
     <svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg">
@@ -817,12 +809,12 @@
       <text x="420" y="120" class="sy">3. write result to cache</text>
     </svg>
   </div>
-  <p class="caption">On a cache miss: read from RDS, then write the result into ElastiCache so the next identical request is a hit.</p>
+  <p class="caption">On a cache miss: Read from RDS database, then store result in ElastiCache for future queries.</p>
 
-  <p><strong>Pros:</strong> only requested data gets cached (efficient), and if the cache is wiped it's not fatal — just slower until it "warms up" again (every read has to hit RDS and get re-cached).</p>
-  <p><strong>Cons:</strong> a cache miss costs <strong>3 network round trips</strong> (app→cache miss, app→DB read, app→cache write) — worse latency than going straight to the DB. Also risk of <strong>stale data</strong> if RDS is updated but the cache isn't.</p>
+  <p><strong>Pros:</strong> Efficient cache memory usage (only requested data is cached). Cache failures are not fatal — requests fall back to database.</p>
+  <p><strong>Cons:</strong> Cache misses incur <strong>3 network hops</strong> (App→Cache Miss → App→DB Read → App→Cache Write). Risk of serving stale data if database updates occur without cache eviction.</p>
 
-  <p>Pseudocode:</p>
+  <p>Pseudocode Implementation:</p>
   <pre><code>def get_user(user_id):
     record = cache.get(user_id)
     if record is None:
@@ -831,55 +823,42 @@
         cache.set(user_id, record)
     return record</code></pre>
 
-  <h3>Write Through</h3>
-  <p>Update (or add to) the cache <strong>at the same time</strong> you update the database.</p>
+  <h3>Write Through Pattern</h3>
+  <p>Strategy: <strong>Update or insert data into the cache simultaneously whenever a database write occurs.</strong></p>
 
-  <p><strong>Pros:</strong> data in the cache is <strong>never stale</strong> — every RDS write is immediately mirrored to the cache. Users generally expect writes to take a little longer than reads anyway, so the extra cost is well-hidden.</p>
-  <p><strong>Cons:</strong> a <strong>write penalty</strong> — each write now needs 2 calls (DB + cache) instead of 1. Also, data is missing from the cache until it's actually written — so Write Through is usually combined with Lazy Loading to also handle reads. That combination can lead to <strong>cache churn</strong>: lots of data ends up cached that may never actually get read (a problem if your cache is small).</p>
+  <p><strong>Pros:</strong> Data in cache is <strong>never stale</strong>. Write latency overhead is acceptable to users who expect writes to take time.</p>
+  <p><strong>Cons:</strong> Write latency penalty (2 write operations per update: DB + Cache). Unrequested data fills cache memory (cache churn).</p>
 
-  <p>Pseudocode:</p>
+  <p>Pseudocode Implementation:</p>
   <pre><code>def save_user(user_id, values):
     record = db.query("UPDATE users SET ... WHERE id = ?", user_id, values)
     cache.set(user_id, record)
     return record</code></pre>
 
-  <h3>Cache Eviction &amp; TTL</h3>
-  <p>Caches have limited size, so data eventually gets evicted:</p>
+  <h3>Cache Eviction Policies &amp; TTL</h3>
+  <p>Because cache memory is limited, old data is evicted using:</p>
   <ul>
-    <li>Explicit deletion</li>
-    <li><strong>LRU</strong> (Least Recently Used) — evicted when memory is full and the item hasn't been touched recently</li>
-    <li><strong>TTL</strong> (Time To Live) — item auto-expires after a set duration (seconds to days depending on the data — leaderboards, comments, activity streams, etc.)</li>
+    <li>Explicit deletion via application code.</li>
+    <li><strong>LRU (Least Recently Used):</strong> Evicts items that haven't been accessed recently when memory fills up.</li>
+    <li><strong>TTL (Time To Live):</strong> Items auto-expire after a set duration (e.g. 5 minutes or 1 hour).</li>
   </ul>
-  <p>If you're seeing too many evictions, your cache is undersized — scale it up or out.</p>
-
-  <div class="callout tip">
-    <strong class="label">Practical recommendations</strong>
-    Start with Lazy Loading — it's simple and works as a foundation for most read-heavy cases. Add Write Through only as a targeted optimization if staleness is a real problem. Use TTL almost everywhere except when Write Through is already keeping data fresh. And only cache data where staleness is acceptable — e.g. user profiles and blog content, not pricing or bank balances.
-  </div>
-
-  <div class="callout key">
-    <strong class="label">Worth remembering</strong>
-    "There are two hard things in Computer Science: cache invalidation, and naming things." Caching sounds simple but gets genuinely tricky fast.
-  </div>
 </section>
 
 <!-- 11. MEMORYDB -->
 <section class="card" id="memorydb">
   <div class="card-title"><div class="badge">11</div><h2>Amazon MemoryDB for Redis</h2></div>
 
-  <p>A Redis-compatible, <strong>durable</strong>, in-memory <em>database</em> — not just a cache. The key difference from Redis/ElastiCache: Redis is designed as a cache with some durability bolted on; MemoryDB is designed to actually <strong>be</strong> your database, with a Redis-compatible API.</p>
+  <p><strong>Amazon MemoryDB for Redis</strong> is a Redis-compatible, <strong>durable in-memory database</strong> designed to serve as a primary database (not just an ephemeral cache).</p>
 
   <ul>
-    <li>Ultra-fast: over <strong>160 million requests/second</strong></li>
-    <li>Durable via a <strong>Multi-AZ transaction log</strong></li>
-    <li>Scales from tens of GB up to hundreds of TB</li>
+    <li>Ultra-fast performance: Handles over <strong>160 million requests per second</strong>.</li>
+    <li>High durability: Uses a <strong>Multi-AZ transactional log</strong> for zero data loss guarantees.</li>
+    <li>Seamless scaling: Scales from gigabytes to hundreds of terabytes of memory.</li>
   </ul>
 
-  <p>Use cases: web/mobile apps, online gaming, media streaming — anywhere you have lots of microservices needing fast, Redis-compatible, durable data access.</p>
-
   <div class="analogy">
-    <strong class="label">Analogy</strong>
-    ElastiCache Redis is a helpful sticky note next to your real filing cabinet (RDS). MemoryDB is the filing cabinet itself — just built to be blazingly fast, using the same Redis "language" you already know.
+    <strong class="label">Real-World Analogy</strong>
+    ElastiCache Redis is like keeping a quick sticky note next to your main file cabinet (RDS). MemoryDB is the main file cabinet itself — engineered to be blazingly fast using the exact same Redis commands.
   </div>
 </section>
 
@@ -887,34 +866,31 @@
 <section class="card cheatsheet" id="cheatsheet">
   <h2>Cheat Sheet</h2>
 
-  <h3>Key facts to remember</h3>
+  <h3>Key Facts to Remember</h3>
   <ul>
-    <li>RDS engines: PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, IBM DB2, Aurora</li>
-    <li>No SSH into RDS/Aurora (managed service) — except RDS Custom</li>
-    <li>Storage Auto Scaling: triggers at &lt;10% free, lasting &gt;5 min, with 6h cooldown since last change</li>
-    <li>Read Replicas: up to 15, asynchronous, eventually consistent, <code>SELECT</code>-only, free replication within-region across AZs, paid cross-region</li>
-    <li>Multi-AZ: synchronous, one DNS name, automatic failover, standby is <strong>not</strong> for reads/writes, zero-downtime to enable</li>
-    <li>Aurora: 6 copies across 3 AZs, needs 4/6 for writes and 3/6 for reads, up to 15 replicas, sub-10ms replica lag, storage auto-grows to 256 TB, has writer + reader endpoints, Backtrack for point-in-time rewind</li>
-    <li>RDS Proxy: pools connections, cuts failover time up to 66%, enforces IAM auth, VPC-only (never public), no app code changes needed</li>
-    <li>ElastiCache: Redis (HA, replicas, durability, sorted sets) vs Memcached (sharding, multi-threaded, no HA except serverless)</li>
-    <li>Lazy Loading = cache-aside = only cache what's requested; Write Through = cache never stale but write penalty; combine both for reads + freshness</li>
-    <li>MemoryDB for Redis = a full durable database with a Redis API, not just a cache</li>
+    <li>RDS Engines: PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, IBM DB2, Aurora.</li>
+    <li>No SSH access to RDS/Aurora servers (managed service).</li>
+    <li>Storage Auto Scaling: Triggers when free storage &lt;10%, low storage duration &gt;5 min, and &gt;6 hours since last change.</li>
+    <li>Read Replicas: Up to 15, asynchronous replication, eventually consistent, <code>SELECT</code> queries only, free within-region cross-AZ data replication.</li>
+    <li>Multi-AZ: Synchronous replication, single DNS address, automatic failover, standby database is <strong>not</strong> accessible for read/write queries.</li>
+    <li>Aurora: Replicates 6 copies across 3 AZs (requires 4/6 for writes, 3/6 for reads), up to 15 read replicas with sub-10ms lag, auto-expanding storage up to 256 TB, features Writer and Reader Endpoints, includes Backtrack for instant rewind.</li>
+    <li>RDS Proxy: Pools database connections, cuts failover time by up to 66%, enforces IAM authentication, VPC-only private access.</li>
+    <li>ElastiCache: Redis (high availability, replicas, disk persistence, data structures) vs Memcached (multi-threaded, pure key-value, no HA).</li>
+    <li>Lazy Loading (Cache-Aside): Caches only requested data. Write Through: Keeps cache fresh on every DB write.</li>
+    <li>MemoryDB for Redis: A fully durable primary database with a Redis API.</li>
   </ul>
 
-  <h3>Decision guide</h3>
+  <h3>Decision Guide</h3>
   <table>
-    <tr><th>Need</th><th>Use</th></tr>
-    <tr><td>Scale read throughput</td><td>Read Replicas (RDS) or Aurora Replicas</td></tr>
-    <tr><td>Disaster recovery / automatic failover</td><td>Multi-AZ (RDS) — built-in by default in Aurora</td></tr>
-    <tr><td>Too many DB connections from many clients (e.g. Lambda)</td><td>RDS Proxy</td></tr>
-    <tr><td>Reduce DB load for repeated reads</td><td>ElastiCache (Lazy Loading, maybe + Write Through)</td></tr>
-    <tr><td>Make app stateless across servers</td><td>Store sessions in ElastiCache</td></tr>
-    <tr><td>Need Redis API but as a real durable primary database</td><td>MemoryDB for Redis</td></tr>
-    <tr><td>Highest performance MySQL/PostgreSQL-compatible DB</td><td>Aurora</td></tr>
+    <tr><th>Requirement</th><th>Recommended AWS Service</th></tr>
+    <tr><td>Scale read query throughput</td><td>Read Replicas (RDS) or Aurora Replicas</td></tr>
+    <tr><td>Disaster recovery &amp; automatic failover</td><td>Multi-AZ (RDS) — native built-in feature in Aurora</td></tr>
+    <tr><td>High connection count from serverless functions (Lambda)</td><td>RDS Proxy</td></tr>
+    <tr><td>Reduce database load for frequent reads</td><td>ElastiCache (Lazy Loading / Write Through)</td></tr>
+    <tr><td>Stateless web application architecture</td><td>Store session state in ElastiCache</td></tr>
+    <tr><td>Durable primary database with ultra-fast Redis API</td><td>Amazon MemoryDB for Redis</td></tr>
+    <tr><td>Highest performance MySQL/PostgreSQL database</td><td>Amazon Aurora</td></tr>
   </table>
-
-  <h3>Mental model</h3>
-  <p>RDS takes the operational pain out of running a relational database — patching, backups, scaling — and gives you two separate levers: Read Replicas for scaling reads, and Multi-AZ for surviving failures. Aurora is RDS's more powerful, cloud-native cousin that bakes in fast self-healing storage and near-instant failover by design. RDS Proxy sits in front of any of these to keep connection counts sane. ElastiCache and MemoryDB then add a fast in-memory layer in front of (or instead of) your database — ElastiCache as a bolt-on cache your app has to explicitly manage (with real tradeoffs between speed and staleness), and MemoryDB as a durable, Redis-speaking database in its own right.</p>
 </section>
 
 <a class="back-to-top" href="#top">↑ Back to top</a>

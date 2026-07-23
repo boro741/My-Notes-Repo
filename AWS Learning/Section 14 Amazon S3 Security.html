@@ -370,7 +370,7 @@
 
 <header id="top">
   <h1><span>Section 14</span> — Amazon S3 Security</h1>
-  <p class="subtitle">My notes on S3 encryption, CORS, MFA Delete, access logs, pre-signed URLs, access points, and Object Lambda.</p>
+  <p class="subtitle">A clear and simple guide to S3 encryption, CORS, MFA Delete, access logging, pre-signed URLs, access points, and Object Lambda.</p>
 </header>
 
 <nav class="toc">
@@ -394,14 +394,14 @@
 <section class="card" id="encryption">
   <h2><span class="badge">1</span> S3 Encryption Overview</h2>
 
-  <p>There are four ways to encrypt objects in S3. The exam wants you to know exactly when to use which.</p>
+  <p><strong>Encryption</strong> scrambles your plain data into secret code so unauthorized users cannot read it. <strong>Encryption at Rest</strong> protects data sitting on physical disks inside AWS data centers. Amazon S3 provides four main ways to encrypt objects at rest. The exam tests whether you know exactly when to use each method.</p>
 
   <table>
-    <tr><th>Method</th><th>Who manages the key</th><th>Required header</th><th>Notes</th></tr>
-    <tr><td><code>SSE-S3</code></td><td>AWS (you never see the key)</td><td><code>x-amz-server-side-encryption: AES256</code></td><td>Default for new buckets/objects. Encryption type is AES-256.</td></tr>
-    <tr><td><code>SSE-KMS</code></td><td>You, via AWS KMS</td><td><code>x-amz-server-side-encryption: aws:kms</code></td><td>You control the key; usage is logged in CloudTrail. Reading/writing needs KMS API calls (<code>GenerateDataKey</code>, <code>Decrypt</code>), which count against KMS quotas.</td></tr>
-    <tr><td><code>SSE-C</code></td><td>You, entirely outside AWS</td><td>Key passed in HTTP headers, every request</td><td>S3 never stores your key — it's used once then discarded. Must use HTTPS.</td></tr>
-    <tr><td>Client-side encryption</td><td>You, fully</td><td>N/A — nothing sent to AWS about encryption</td><td>Data is encrypted before it ever leaves the client, and decrypted after download, all client-side (e.g. via the Client-Side Encryption Library).</td></tr>
+    <tr><th>Encryption Method</th><th>Who Manages the Key</th><th>Required HTTP Header</th><th>Key Details</th></tr>
+    <tr><td><code>SSE-S3</code></td><td>AWS manages keys completely</td><td><code>x-amz-server-side-encryption: AES256</code></td><td>Default encryption for all new S3 buckets/objects. Uses military-grade AES-256 encryption. Fully automatic and free.</td></tr>
+    <tr><td><code>SSE-KMS</code></td><td>You manage keys via AWS KMS</td><td><code>x-amz-server-side-encryption: aws:kms</code></td><td>You control key access policies and audit usage via AWS CloudTrail logs. Each upload/download calls KMS APIs (<code>GenerateDataKey</code>, <code>Decrypt</code>), which count towards KMS quota limits.</td></tr>
+    <tr><td><code>SSE-C</code></td><td>You manage keys outside AWS</td><td>Key provided in HTTP headers on every request</td><td>AWS never stores your encryption key. S3 uses the key to encrypt/decrypt once and discards it immediately. <strong>Requires HTTPS</strong> connection.</td></tr>
+    <tr><td>Client-Side Encryption</td><td>You manage everything locally</td><td>None (S3 receives already encrypted data)</td><td>Data is encrypted on your local machine/app before uploading to S3, and decrypted locally after downloading. AWS sees only scrambled bytes.</td></tr>
   </table>
 
   <div class="diagram">
@@ -442,23 +442,23 @@
       <text class="svg-text" x="350" y="194" text-anchor="middle" font-size="10">Amazon S3 (stores blob as-is)</text>
     </svg>
   </div>
-  <p class="caption">The four encryption paths differ only in <em>who holds the key</em> and <em>where encryption happens</em> — S3, KMS, the client with a custom key, or the client entirely on its own.</p>
+  <p class="caption">The 4 encryption options differ by <em>who holds the key</em> and <em>where encryption occurs</em> — inside S3, via KMS, on client with custom key header, or fully on client side.</p>
 
   <div class="callout key">
-    <strong class="tag">Exam point</strong>
-    SSE-KMS can hit <strong>API throttling</strong> on very high-throughput buckets, because every encrypt/decrypt is a call to KMS (5,000–30,000 requests/sec depending on region, though this can be raised via Service Quotas).
+    <strong class="tag">Exam Point</strong>
+    High-volume applications using <strong>SSE-KMS</strong> can hit <strong>KMS API Throttling limits</strong> (5,000 to 30,000 requests/sec depending on region). This is because every read/write triggers a call to KMS to generate or decrypt data keys.
   </div>
 
-  <h3>Encryption in transit (SSL/TLS)</h3>
+  <h3>Encryption in Transit (SSL/TLS)</h3>
   <ul>
-    <li>S3 has both an HTTP endpoint (unencrypted) and an HTTPS endpoint (encrypted in flight).</li>
-    <li><strong>SSE-C requires HTTPS</strong> — you can't use it over plain HTTP.</li>
-    <li>To force HTTPS-only access, attach a bucket policy that denies any request where <code>aws:SecureTransport</code> is <code>false</code>.</li>
+    <li><strong>Encryption in Transit</strong> protects data traveling over the internet between client and S3 using SSL/TLS (HTTPS).</li>
+    <li>S3 provides unencrypted HTTP endpoints and encrypted HTTPS endpoints. <strong>SSE-C strictly requires HTTPS.</strong></li>
+    <li>To force HTTPS-only connections, attach an S3 bucket policy denying requests where <code>aws:SecureTransport</code> condition is <code>false</code>.</li>
   </ul>
 
   <div class="callout tip">
-    <strong class="tag">Good to know</strong>
-    A short companion note in the transcript mentions <strong>DSSE-KMS</strong> ("double" SSE-KMS, released June 2023) — essentially KMS encryption applied twice for extra strength. The instructor doesn't teach it in depth since it wasn't (at time of recording) an exam topic.
+    <strong class="tag">Good to Know</strong>
+    AWS also supports <strong>DSSE-KMS</strong> (Dual-layer Server-Side Encryption with KMS), which applies two layers of KMS encryption for high-security compliance needs.
   </div>
 </section>
 
@@ -467,16 +467,16 @@
   <h2><span class="badge">2</span> S3 Encryption Hands On</h2>
 
   <ul>
-    <li>When creating a bucket, you must choose a <strong>default encryption</strong>: SSE-S3, SSE-KMS, or DSSE-KMS.</li>
-    <li>Uploaded objects inherit the bucket's default encryption — visible under the object's <strong>Properties → Server-side encryption settings</strong>.</li>
-    <li>You can override the encryption for an individual object (Properties → Edit). If versioning is enabled, editing the encryption creates a <strong>new version</strong> of the object rather than modifying it in place.</li>
-    <li>For SSE-KMS, you pick a KMS key — either your own (costs money monthly) or the default <code>aws/s3</code> key AWS provides for free.</li>
-    <li>SSE-KMS has a <strong>Bucket Key</strong> option that reduces KMS API calls (and therefore cost) — enabled by default. It has no effect if you're just using SSE-S3.</li>
+    <li>When creating an S3 bucket, you set default encryption to <strong>SSE-S3</strong> or <strong>SSE-KMS</strong>.</li>
+    <li>Uploaded objects automatically inherit the bucket's default encryption settings, visible under object <strong>Properties → Server-side encryption settings</strong>.</li>
+    <li>You can override default encryption for individual objects. If S3 Versioning is enabled, changing an object's encryption type creates a <strong>new object version</strong>.</li>
+    <li>When selecting <strong>SSE-KMS</strong>, you can use your custom KMS Customer Managed Key (CMK) or AWS's default <code>aws/s3</code> key.</li>
+    <li>Enabling the <strong>S3 Bucket Key</strong> setting for SSE-KMS reduces KMS API request volume and cuts KMS costs up to 99%.</li>
   </ul>
 
   <div class="callout warning">
-    <strong class="tag">Don't forget</strong>
-    <code>SSE-C</code> is <strong>not available in the console</strong> at all — you can only use it via the CLI/SDK. Client-side encryption also isn't a console setting, since it happens entirely outside AWS before upload.
+    <strong class="tag">Important Warning</strong>
+    <code>SSE-C</code> is <strong>not available in the AWS Management Console UI</strong>. It can only be configured via AWS CLI or SDK code. Similarly, client-side encryption is handled entirely in application code before uploading.
   </div>
 </section>
 
@@ -485,26 +485,27 @@
   <h2><span class="badge">3</span> S3 Default Encryption vs Bucket Policies</h2>
 
   <ul>
-    <li>Every bucket now defaults to <strong>SSE-S3</strong> automatically for new objects — but you can change the default to something else, like SSE-KMS.</li>
-    <li>You can also <strong>force</strong> encryption using a bucket policy — e.g. deny any <code>PutObject</code> call that's missing the correct encryption header (like the KMS or SSE-C header).</li>
+    <li>Every S3 bucket automatically applies <strong>SSE-S3</strong> default encryption to newly uploaded objects unless configured otherwise.</li>
+    <li>You can enforce strict encryption rules using an <strong>S3 Bucket Policy</strong> — for example, denying <code>s3:PutObject</code> requests that lack proper encryption headers (such as requiring SSE-KMS headers).</li>
   </ul>
 
   <div class="callout key">
-    <strong class="tag">Exam point</strong>
-    <strong>Bucket policies are evaluated before default encryption settings.</strong> So a policy can reject an upload outright if it doesn't meet your encryption requirements, regardless of what the bucket's default encryption is set to.
+    <strong class="tag">Exam Point</strong>
+    <strong>S3 Bucket Policies are evaluated before default encryption settings.</strong> If an incoming file upload violates a bucket policy encryption condition, S3 denies the upload immediately before default encryption can process it.
   </div>
 </section>
 
 <!-- 4. CORS -->
 <section class="card" id="cors">
-  <h2><span class="badge">4</span> S3 CORS</h2>
+  <h2><span class="badge">4</span> S3 CORS (Cross-Origin Resource Sharing)</h2>
 
-  <p><strong>CORS</strong> = Cross-Origin Resource Sharing — a browser-level security mechanism, not an S3-specific one. It comes up as one exam question, so it's worth understanding properly.</p>
+  <p><strong>CORS</strong> is a standard web browser security rule that restricts web pages from requesting resources from a different domain origin than the one serving the web page.</p>
 
   <ul>
-    <li>An <strong>origin</strong> = scheme (protocol) + host (domain) + port. E.g. for <code>https://www.example.com</code>, the port is implied to be 443, protocol is HTTPS, and the host is <code>www.example.com</code>.</li>
-    <li>Two URLs share the <strong>same origin</strong> only if scheme, host, and port all match.</li>
-    <li>If a browser on one origin tries to fetch resources from a <em>different</em> origin, that request will be blocked <strong>unless</strong> the other origin explicitly allows it via <code>Access-Control-Allow-Origin</code> headers.</li>
+    <li>An <strong>Origin</strong> consists of: <strong>Scheme (Protocol)</strong> + <strong>Host (Domain)</strong> + <strong>Port Number</strong>.<br>
+    Example: In <code>https://www.example.com:443</code>, Scheme = <code>https</code>, Host = <code>www.example.com</code>, Port = <code>443</code>.</li>
+    <li>Two URLs share the <strong>same origin</strong> only when their scheme, host domain, and port number match exactly.</li>
+    <li>If a browser running a web app on <code>www.example.com</code> attempts to fetch images or assets from <code>www.other-domain.com</code>, the browser blocks the request unless <code>www.other-domain.com</code> returns explicit <code>Access-Control-Allow-Origin</code> CORS headers permitting access.</li>
   </ul>
 
   <div class="diagram">
@@ -527,14 +528,14 @@
       <text class="svg-label" x="400" y="180" text-anchor="middle" font-size="9">If allowed, browser makes the real GET/PUT/DELETE request to www.other.com</text>
     </svg>
   </div>
-  <p class="caption">Before fetching a resource from a different origin, the browser sends a preflight request asking permission; only if the target origin's CORS headers allow it does the real request go through.</p>
+  <p class="caption">Before requesting assets across different domains, the browser sends an HTTP OPTIONS preflight request. If CORS headers approve, the main request executes.</p>
 
-  <h3>How this applies to S3</h3>
-  <p>If a static website hosted on one S3 bucket needs to pull assets (images, etc.) from <em>another</em> S3 bucket, that's a cross-origin request. Unless the asset bucket's <strong>CORS configuration</strong> explicitly allows the website's origin, the browser will block the request.</p>
+  <h3>How CORS Applies to S3</h3>
+  <p>If a static website hosted on one S3 bucket fetches images, fonts, or scripts from a <em>second</em> S3 bucket, web browsers block the fetch call as cross-origin. To fix this, configure the second S3 bucket's <strong>CORS Configuration</strong> to allow requests from the first website's origin URL.</p>
 
   <div class="callout key">
-    <strong class="tag">Exam point</strong>
-    Quick fix: configure CORS on the target S3 bucket to allow the specific origin, or use <code>*</code> to allow all origins.
+    <strong class="tag">Exam Point</strong>
+    "Website on S3 Bucket A cannot load images from S3 Bucket B due to browser error." → Fix by configuring CORS on Bucket B to explicitly allow Bucket A's origin domain (or <code>*</code> for all origins).
   </div>
 </section>
 
@@ -543,68 +544,62 @@
   <h2><span class="badge">5</span> S3 CORS Hands On</h2>
 
   <ol>
-    <li>Bucket A hosts a static website (<code>index.html</code>) that <code>fetch()</code>es an <code>extra-page.html</code> file.</li>
-    <li>While <code>extra-page.html</code> lives in the <strong>same bucket</strong>, the fetch works fine — same origin, no CORS needed.</li>
-    <li>Move <code>extra-page.html</code> to a <strong>different bucket</strong> (in another region, made public, also hosting a static website) and point <code>index.html</code>'s fetch at that bucket's URL instead.</li>
-    <li>Reloading the page now shows no visible error, but the browser's <strong>developer console</strong> reveals: <code>Cross-Origin Request Blocked</code> — missing <code>Access-Control-Allow-Origin</code> header.</li>
+    <li>Bucket A hosts a static website running JavaScript <code>fetch()</code> to load <code>extra-page.html</code>.</li>
+    <li>When <code>extra-page.html</code> resides in the <strong>same bucket (Bucket A)</strong>, requests succeed because they share the same origin.</li>
+    <li>Moving <code>extra-page.html</code> to a <strong>different bucket (Bucket B)</strong> causes the browser developer console to log a <code>Cross-Origin Request Blocked</code> error due to missing CORS headers.</li>
+    <li>To resolve the error, add a JSON <strong>CORS Configuration</strong> to Bucket B, putting Bucket A's website origin URL under <code>AllowedOrigins</code>:</li>
   </ol>
 
-  <div class="callout warning">
-    <strong class="tag">Don't forget</strong>
-    The fix is to add a <strong>CORS configuration</strong> (JSON) on the bucket being fetched <em>from</em>, listing the requesting bucket's website URL (no trailing slash) under <code>AllowedOrigins</code>.
+  <div class="callout tip">
+    <strong class="tag">CORS JSON Configuration Example</strong>
+    <code>[{"AllowedHeaders":["*"],"AllowedMethods":["GET"],"AllowedOrigins":["http://bucket-a.s3-website.us-east-1.amazonaws.com"],"ExposeHeaders":[]}]</code>
   </div>
 
-  <p>After saving the CORS config, refreshing the page loads the extra page successfully. In the browser's Network tab, the response now includes <code>Access-Control-Allow-Methods: GET</code> and <code>Access-Control-Allow-Origin</code> matching the requesting bucket's origin — proof CORS is now correctly configured.</p>
+  <p>Once saved, refreshing Bucket A's webpage allows it to fetch <code>extra-page.html</code> successfully. Response headers include <code>Access-Control-Allow-Origin</code> matching Bucket A's URL.</p>
 </section>
 
 <!-- 6. MFA DELETE -->
 <section class="card" id="mfa-delete">
   <h2><span class="badge">6</span> S3 MFA Delete</h2>
 
-  <p><strong>MFA Delete</strong> forces a user to provide a code from their MFA device (phone app, hardware token, etc.) before certain destructive operations can happen.</p>
+  <p><strong>MFA (Multi-Factor Authentication) Delete</strong> requires entering an 6-digit OTP code from an authenticator device (like Google Authenticator app or hardware token) before performing destructive bucket operations.</p>
 
   <table>
-    <tr><th>Operation</th><th>MFA required?</th></tr>
-    <tr><td>Permanently delete an object version</td><td>Yes</td></tr>
-    <tr><td>Suspend versioning on the bucket</td><td>Yes</td></tr>
-    <tr><td>Enable versioning</td><td>No</td></tr>
-    <tr><td>List deleted versions</td><td>No</td></tr>
+    <tr><th>S3 Bucket Operation</th><th>Is MFA Code Required?</th></tr>
+    <tr><td>Permanently deleting an object version</td><td><strong>Yes</strong></td></tr>
+    <tr><td>Suspending Versioning on the bucket</td><td><strong>Yes</strong></td></tr>
+    <tr><td>Enabling Versioning for the first time</td><td>No</td></tr>
+    <tr><td>Listing deleted object versions</td><td>No</td></tr>
   </table>
 
   <div class="callout warning">
-    <strong class="tag">Don't forget</strong>
-    Versioning must already be enabled to use MFA Delete. And crucially: <strong>only the bucket owner (root account)</strong> can enable or disable MFA Delete — and it can <em>only</em> be done via the CLI, not the console UI.
+    <strong class="tag">Crucial Requirement</strong>
+    S3 Versioning must be enabled on the bucket to use MFA Delete. Crucially: <strong>ONLY the Root Account owner</strong> can enable or disable MFA Delete — and it can <strong>ONLY be configured via AWS CLI</strong> (not via the AWS Console UI).
   </div>
 
-  <h3>Hands-on recap</h3>
+  <h3>Step-by-Step Implementation</h3>
   <ul>
-    <li>Requires setting up an MFA device on the <strong>root account</strong> beforehand, plus temporary root access keys just for this one operation (delete them immediately afterward!).</li>
-    <li>Enable via CLI: put bucket versioning with <code>MfaDelete=Enabled</code>, passing the MFA device ARN and a current MFA code.</li>
-    <li>Once enabled, normal object deletes (adding a delete marker) still work fine — but <strong>permanently deleting a specific version ID</strong> is blocked unless a valid MFA code is supplied via the CLI.</li>
-    <li>Disabling it uses the same CLI command with <code>MfaDelete=Disabled</code> (and a fresh MFA code).</li>
+    <li>Configure MFA on your AWS <strong>Root Account</strong> and generate temporary root access keys (delete access keys immediately after setup!).</li>
+    <li>Run the AWS CLI command <code>aws s3api put-bucket-versioning</code> with <code>--versioning-configuration Status=Enabled,MFADelete=Enabled</code>, passing the root MFA device serial number and live 6-digit code.</li>
+    <li>Once active, standard object deletion (which adds a soft Delete Marker) works normally. However, <strong>permanently deleting a specific version ID</strong> is blocked unless authorized with a valid root MFA code via CLI.</li>
   </ul>
-
-  <div class="callout warning">
-    <strong class="tag">Important</strong>
-    Using the root account and root access keys is generally discouraged — this is one of the few legitimate reasons to do so. Deactivate/delete the temporary root access keys as soon as you're done.
-  </div>
 </section>
 
 <!-- 7. ACCESS LOGS -->
 <section class="card" id="access-logs">
   <h2><span class="badge">7</span> S3 Access Logs</h2>
 
-  <p>For audit purposes, S3 can log <strong>every request</strong> made to a bucket (authorized or denied, from any account) into log files stored in another S3 bucket. You can then analyze those logs with a tool like <strong>Amazon Athena</strong>.</p>
+  <p>For compliance and security auditing, <strong>S3 Server Access Logging</strong> records <strong>every request</strong> made to your bucket (authorized access, access denied, reads, writes, across any AWS account). Logs are saved as log files in a target S3 bucket, which you can query using <strong>Amazon Athena</strong> (SQL analytics service).</p>
 
   <ul>
-    <li>The logging (target) bucket must be in the <strong>same AWS region</strong> as the bucket being monitored.</li>
-    <li>Enabling logging automatically updates the target bucket's policy to allow the S3 logging service to write into it.</li>
-    <li>Logs aren't instant — it can take a while (the instructor mentions a couple of hours) before the first log files show up.</li>
+    <li>The target logging bucket must reside in the <strong>same AWS Region</strong> as the source bucket being monitored.</li>
+    <li>Enabling logging automatically updates the target bucket policy to permit S3's logging service write access.</li>
+    <li>Log delivery takes time to appear (typically 1 to 2 hours for initial log files to populate).</li>
   </ul>
 
   <div class="callout warning">
-    <strong class="tag">Don't forget</strong>
-    Never set a bucket's logging destination to be <strong>itself</strong>. That creates an infinite logging loop — every log write generates another log entry, which generates another, and so on — and your storage costs will explode.
+    <strong class="tag">Critical Warning</strong>
+    <strong>NEVER set a bucket's access log destination to be itself!</strong> Doing so creates an infinite logging loop — writing a log file generates a new request event, which writes another log file, causing massive unnecessary storage charges!
   </div>
 </section>
 
@@ -612,12 +607,12 @@
 <section class="card" id="presigned-urls">
   <h2><span class="badge">8</span> S3 Pre-signed URLs</h2>
 
-  <p>A pre-signed URL is a temporary, signed link to a specific S3 object. Whoever holds the URL inherits the <strong>permissions of whoever generated it</strong> (for a GET or a PUT) — even if the bucket/object is otherwise private.</p>
+  <p>A <strong>Pre-signed URL</strong> is a temporary, cryptographically signed URL link that grants temporary access to a specific private S3 object. Whoever holds the pre-signed link inherits the <strong>IAM permissions of the user who generated it</strong> (for file download GET or file upload PUT requests).</p>
 
   <table>
-    <tr><th>Generated via</th><th>Max expiration</th></tr>
-    <tr><td>S3 Console</td><td>Up to 12 hours</td></tr>
-    <tr><td>CLI</td><td>Up to 168 hours</td></tr>
+    <tr><th>Generation Method</th><th>Maximum URL Expiration Lifetime</th></tr>
+    <tr><td>AWS Management Console UI</td><td>Up to <strong>12 hours</strong> max</td></tr>
+    <tr><td>AWS CLI / SDK Code</td><td>Up to <strong>168 hours (7 days)</strong> max</td></tr>
   </table>
 
   <div class="diagram">
@@ -634,28 +629,21 @@
       <text class="svg-text" x="690" y="107" text-anchor="middle" font-size="11">External user</text>
     </svg>
   </div>
-  <p class="caption">The owner signs a URL carrying their own permissions, then hands it to someone who otherwise has no access — the URL works only until it expires.</p>
+  <p class="caption">The object owner generates a pre-signed URL carrying their credentials and hands it to a user. The user accesses the file until the link expires.</p>
 
-  <h3>Use cases</h3>
+  <h3>Common Real-World Use Cases</h3>
   <ul>
-    <li>Only allow logged-in users to download a premium video from a private bucket.</li>
-    <li>Dynamically generate download links for an ever-changing list of users.</li>
-    <li>Temporarily allow a specific user to upload a file to a specific location, while keeping the bucket private overall.</li>
+    <li>Allow logged-in premium website subscribers to download private video files.</li>
+    <li>Generate temporary, time-bound download links dynamically inside a web application.</li>
+    <li>Allow an external user to upload a file directly to a private S3 bucket without opening public bucket write access.</li>
   </ul>
-
-  <h3>Hands-on: generating one from the console</h3>
-  <ol>
-    <li>Select the object → <strong>Object actions → Share with a pre-signed URL</strong>.</li>
-    <li>Pick an expiration (minutes or hours).</li>
-    <li>The generated URL can be shared with anyone — they get access to that one object until it expires, even though the bucket stays private.</li>
-  </ol>
 </section>
 
 <!-- 9. ACCESS POINTS -->
 <section class="card" id="access-points">
   <h2><span class="badge">9</span> S3 Access Points</h2>
 
-  <p>A bucket with lots of different data (finance, sales, etc.) and lots of different user groups can end up with one giant, unmanageable bucket policy. <strong>S3 Access Points</strong> solve this by splitting security management into smaller, focused pieces.</p>
+  <p>When an S3 bucket holds shared data accessed by multiple teams (such as Finance, Sales, and Analytics), managing access through one single S3 Bucket Policy becomes extremely complex. <strong>S3 Access Points</strong> simplify security management by creating dedicated access endpoints with distinct policies.</p>
 
   <div class="diagram">
     <svg viewBox="0 0 780 210" xmlns="http://www.w3.org/2000/svg">
@@ -678,19 +666,12 @@
       <text class="svg-label" x="675" y="170" text-anchor="middle" font-size="9">Analytics users (read-only, both prefixes)</text>
     </svg>
   </div>
-  <p class="caption">Each access point has its own policy scoped to a prefix and permission level — finance and sales teams each get their own door, analytics gets a read-only door into both.</p>
+  <p class="caption">Each Access Point features its own DNS domain name and policy restricted to specific folder prefixes and permissions, keeping bucket management clean.</p>
 
   <ul>
-    <li>Each access point gets its own <strong>DNS name</strong> and its own attached policy (very similar in structure to a bucket policy).</li>
-    <li>An access point can be reachable from the <strong>internet</strong> or scoped to a <strong>VPC</strong> for private traffic only.</li>
-    <li>Result: a much simpler bucket policy overall, plus individually scoped, easier-to-manage access point policies — this is how you scale S3 access management.</li>
-  </ul>
-
-  <h3>VPC origin for access points</h3>
-  <ul>
-    <li>To let an EC2 instance in a VPC reach an access point privately (without going over the public internet), create a <strong>VPC endpoint</strong>.</li>
-    <li>The VPC endpoint has its own policy that must allow access to both the target bucket and the access point.</li>
-    <li>End result: three layers of security working together — the VPC endpoint policy, the access point policy, and the S3 bucket policy.</li>
+    <li>Each Access Point gets a unique <strong>DNS domain name</strong> and its own attached policy (structured like a bucket policy).</li>
+    <li>Access Points can be configured as <strong>Internet-facing</strong> or restricted to a private <strong>VPC Origin</strong>.</li>
+    <li><strong>VPC Access Points:</strong> Combine with an S3 Interface VPC Endpoint to allow EC2 instances inside a private subnet to reach S3 Access Points without traversing the public internet.</li>
   </ul>
 </section>
 
@@ -698,7 +679,7 @@
 <section class="card" id="object-lambda">
   <h2><span class="badge">10</span> S3 Object Lambda</h2>
 
-  <p>What if different applications need <em>different versions</em> of the same object — without duplicating the whole bucket? <strong>S3 Object Lambda</strong> builds on access points to transform objects on the fly, as they're retrieved.</p>
+  <p>What if different applications require different versions or formats of the same S3 object? Instead of duplicating files across multiple buckets, <strong>S3 Object Lambda</strong> processes and transforms files on the fly during retrieval.</p>
 
   <div class="diagram">
     <svg viewBox="0 0 780 220" xmlns="http://www.w3.org/2000/svg">
@@ -727,21 +708,20 @@
       <text class="svg-label" x="110" y="215" text-anchor="middle" font-size="9">→ Lambda enriches data → gets enriched object</text>
     </svg>
   </div>
-  <p class="caption">One bucket, one set of objects — but different apps get different transformed versions on the fly via S3 Object Lambda, instead of storing multiple copies.</p>
+  <p class="caption">A single S3 bucket stores original data, while S3 Object Lambda automatically transforms data on the fly based on which app makes the request.</p>
 
-  <h3>How it works</h3>
+  <h3>How Object Lambda Works</h3>
   <ol>
-    <li>App calls an <strong>S3 Object Lambda access point</strong> (instead of the bucket/regular access point directly).</li>
-    <li>This invokes a <strong>Lambda function</strong>, which fetches the original object from S3 and runs custom code on it.</li>
-    <li>The transformed result is what the calling app actually receives.</li>
+    <li>An application calls an <strong>S3 Object Lambda Access Point</strong>.</li>
+    <li>This automatically triggers an <strong>AWS Lambda function</strong>, which fetches the original object from S3 and executes custom code on it.</li>
+    <li>The transformed result is returned to the requesting application.</li>
   </ol>
 
-  <h3>Use cases</h3>
+  <h3>Key Use Cases</h3>
   <ul>
-    <li>Redact PII (personally identifiable information) for analytics or non-production environments.</li>
-    <li>Convert data formats on the fly (e.g. XML → JSON).</li>
-    <li>Resize or watermark images dynamically — even with a watermark specific to the requesting user.</li>
-    <li>Enrich objects with extra data (e.g. looking up a customer loyalty database) for a marketing app, without duplicating the bucket.</li>
+    <li>Automatically redact PII (Personally Identifiable Information like Aadhaar/PAN numbers or email addresses) for analytics or testing environments.</li>
+    <li>Convert file data formats on the fly (e.g., converting XML files to JSON format).</li>
+    <li>Resize or add dynamic watermarks to images based on requesting user identity.</li>
   </ul>
 </section>
 
@@ -749,35 +729,35 @@
 <section class="card cheatsheet" id="cheatsheet">
   <h2><span class="badge">✓</span> Cheat Sheet</h2>
 
-  <h3>Key facts to remember</h3>
+  <h3>Key Facts to Remember</h3>
   <ul>
-    <li>4 encryption types: <code>SSE-S3</code> (AWS key, default), <code>SSE-KMS</code> (your KMS key, CloudTrail logging, watch KMS quotas), <code>SSE-C</code> (your own key, HTTPS required, CLI/SDK only), client-side (fully outside AWS).</li>
-    <li>Bucket policies are evaluated <strong>before</strong> default encryption settings — a policy can force/require encryption regardless of the default.</li>
-    <li>CORS is a browser security feature; fix cross-bucket asset loading by adding a CORS config on the bucket being fetched from, allowing the requesting origin (or <code>*</code>).</li>
-    <li>MFA Delete guards permanent version deletes and versioning suspension; only the root account can toggle it, and only via CLI.</li>
-    <li>Access logs go to a bucket in the <strong>same region</strong>; never point a bucket's logs at itself (infinite loop).</li>
-    <li>Pre-signed URLs inherit the signer's permissions; console max 12 hours, CLI max 168 hours.</li>
-    <li>Access Points let you split one bucket policy into many smaller, scoped policies (per prefix, per user group); each has its own DNS name and can be internet- or VPC-facing.</li>
-    <li>S3 Object Lambda = access point + Lambda function, to transform objects on the fly (redact, enrich, convert, watermark) without duplicating data.</li>
+    <li><strong>4 Encryption Methods:</strong> <code>SSE-S3</code> (AWS keys, default), <code>SSE-KMS</code> (user KMS keys, CloudTrail audit logs, watch API limits), <code>SSE-C</code> (customer keys passed in headers over HTTPS, CLI/SDK only), and Client-Side Encryption (encrypt locally before upload).</li>
+    <li><strong>Policy Evaluation:</strong> S3 Bucket Policies are evaluated <strong>before</strong> default bucket encryption rules.</li>
+    <li><strong>CORS:</strong> Browser security mechanism. Resolve cross-bucket file fetching issues by adding a CORS configuration to the target bucket allowing the requester's origin.</li>
+    <li><strong>MFA Delete:</strong> Protects against permanent version deletion and versioning suspension. Requires versioning enabled, Root Account credentials, and AWS CLI commands.</li>
+    <li><strong>Access Logs:</strong> Record all bucket requests to a target bucket in the <strong>same AWS region</strong>. Never log a bucket to itself! Analyze logs with Athena.</li>
+    <li><strong>Pre-signed URLs:</strong> Grant temporary access inheriting creator permissions. Console max 12 hours, CLI/SDK max 168 hours (7 days).</li>
+    <li><strong>Access Points:</strong> Simplify multi-team bucket permissions by creating prefix-scoped access endpoints with unique DNS names and policies.</li>
+    <li><strong>Object Lambda:</strong> Combines Access Points with Lambda functions to transform or sanitize S3 object content dynamically during retrieval without storing duplicates.</li>
   </ul>
 
-  <h3>Decision guide</h3>
+  <h3>Decision Guide</h3>
   <table>
-    <tr><th>Need</th><th>Use</th></tr>
-    <tr><td>Simplest default protection for objects</td><td>SSE-S3 (default)</td></tr>
-    <tr><td>Control + audit trail on encryption keys</td><td>SSE-KMS</td></tr>
-    <tr><td>Bring your own key, S3 never stores it</td><td>SSE-C (CLI/SDK only)</td></tr>
-    <tr><td>Full control over encryption process</td><td>Client-side encryption</td></tr>
-    <tr><td>Website assets blocked from loading cross-bucket</td><td>Configure CORS on the source bucket</td></tr>
-    <tr><td>Extra protection against accidental permanent deletes</td><td>MFA Delete</td></tr>
-    <tr><td>Audit who accessed what in a bucket</td><td>S3 Access Logs → analyze with Athena</td></tr>
-    <tr><td>Give a one-off temporary link to a private object</td><td>Pre-signed URL</td></tr>
-    <tr><td>Manage access for many teams on one bucket</td><td>S3 Access Points</td></tr>
-    <tr><td>Serve different transformed versions of the same object</td><td>S3 Object Lambda</td></tr>
+    <tr><th>Requirement</th><th>AWS Security Solution</th></tr>
+    <tr><td>Default, effortless encryption at rest</td><td>SSE-S3</td></tr>
+    <tr><td>Auditable key management with CloudTrail tracking</td><td>SSE-KMS</td></tr>
+    <tr><td>Provide custom keys without storing keys in AWS</td><td>SSE-C (HTTPS / CLI only)</td></tr>
+    <tr><td>Encrypt data completely before sending to cloud</td><td>Client-Side Encryption</td></tr>
+    <tr><td>Fix website cross-bucket image/asset loading errors</td><td>Configure S3 CORS on target bucket</td></tr>
+    <tr><td>Prevent accidental or malicious permanent file deletion</td><td>S3 MFA Delete (Root CLI only)</td></tr>
+    <tr><td>Audit all read/write request activity on a bucket</td><td>S3 Access Logging → Amazon Athena</td></tr>
+    <tr><td>Provide time-bound access link to private S3 files</td><td>S3 Pre-signed URL</td></tr>
+    <tr><td>Manage complex permissions for multiple teams on one bucket</td><td>S3 Access Points</td></tr>
+    <tr><td>Redact PII or transform files on the fly during download</td><td>S3 Object Lambda</td></tr>
   </table>
 
-  <h3>Mental model</h3>
-  <p>This section is all about controlling exactly who can touch your S3 data, and how it's protected while at rest and in transit: encryption (in its four flavors) protects the bytes themselves; CORS controls which websites' browsers are allowed to fetch your objects; MFA Delete and access logs are safety nets against accidental or malicious changes and give you an audit trail; pre-signed URLs let you hand out narrow, time-boxed access without touching bucket-wide permissions; and access points (plus Object Lambda on top) let a single bucket serve many different teams and use cases securely, each with their own door and — if needed — their own on-the-fly transformed view of the data.</p>
+  <h3>Mental Model</h3>
+  <p>S3 security focuses on data protection, access governance, and content transformation. <strong>Encryption</strong> (SSE-S3, SSE-KMS, SSE-C, Client-side) protects data at rest and in transit. <strong>CORS</strong> controls cross-origin web browser permissions. <strong>MFA Delete</strong> and <strong>Access Logs</strong> protect data integrity and maintain audit trails. <strong>Pre-signed URLs</strong> grant temporary access without altering bucket policies. Finally, <strong>Access Points</strong> and <strong>Object Lambda</strong> allow large enterprise buckets to scale access control cleanly and deliver dynamically processed data to different applications.</p>
 </section>
 
 <a class="back-to-top" href="#top">↑ Back to top</a>

@@ -288,7 +288,7 @@
 
   <header class="page-header">
     <h1>Section 4 — IAM &amp; AWS CLI</h1>
-    <p>My notes while watching Stephane Maarek's Udemy course · Simple English, diagrams included, no dark theme.</p>
+    <p>My notes while watching Stephane Maarek's Udemy course · Simple English, diagrams included, clean layout.</p>
   </header>
 
   <nav class="toc">
@@ -318,16 +318,20 @@
   <section class="lecture" id="l11">
     <h2><span class="lecture-num">11</span>IAM Introduction: Users, Groups, Policies</h2>
 
-    <p><strong>IAM</strong> = Identity and Access Management. It's a <strong>global service</strong> — users and groups you create aren't tied to any one region.</p>
+    <p><strong>IAM</strong> stands for <strong>Identity and Access Management</strong>. It is the security gatekeeper for your AWS account. IAM is a <strong>global service</strong> — this means the users, groups, and permissions you create apply everywhere across the world, without picking a specific AWS Region (like Mumbai or N. Virginia).</p>
 
-    <p>When you first make an AWS account, you get a <strong>root user</strong> automatically. The only thing the root account should be used for is initial account setup — after that, stop using it and never share it. Instead, create individual <strong>IAM users</strong>: one IAM user = one physical person in your organization.</p>
+    <div class="analogy">
+      🏢 <strong>Real-World Analogy:</strong> Think of IAM like the security administration of a large corporate office building. It controls who can enter the building (Authentication) and which specific rooms or floors they can visit (Authorization).
+    </div>
+
+    <p>When you create a brand-new AWS account, you start with a <strong>Root User</strong>. The Root User has complete control over everything. You should only use the Root User once to set up your account. After that, lock it away safely and create individual <strong>IAM Users</strong> for daily work. Rule of thumb: <strong>One IAM user = One real person in your company</strong> (e.g., Alice, Bob, or Rahul).</p>
 
     <h3>Users and Groups</h3>
     <ul>
-      <li>Users can be collected into <strong>groups</strong> to make managing permissions easier (e.g. a "Developers" group).</li>
-      <li><strong>Groups can only contain users</strong> — never other groups.</li>
-      <li>A user doesn't have to belong to a group (allowed, but not best practice).</li>
-      <li>A user <strong>can belong to multiple groups</strong> at once.</li>
+      <li><strong>IAM Groups</strong> are collections of users (e.g., a "Developers" group or an "Admins" group) that make assigning permissions fast and easy.</li>
+      <li><strong>Groups only hold users</strong> — you can never put a group inside another group.</li>
+      <li>A user does not have to join a group, but putting users in groups is the best security practice.</li>
+      <li>A user <strong>can belong to multiple groups at the same time</strong> (e.g., Charles can be in both "Developers" and "Audit Team").</li>
     </ul>
 
     <div class="diagram">
@@ -354,14 +358,14 @@
 
         <text x="340" y="245" text-anchor="middle" font-size="11" fill="#374151">Charles is in Developers + Audit Team · David is in Operations + Audit Team</text>
       </svg>
-      <div class="diagram-caption">Groups only ever contain users. A user (like Charles or David) can belong to more than one group at the same time; Fred belongs to none.</div>
+      <div class="diagram-caption">Groups only contain users. A user (like Charles or David) can belong to more than one group at the same time; Fred belongs to none.</div>
     </div>
 
-    <h3>Policies — how permissions actually get granted</h3>
-    <p>Users and groups get permissions through <strong>IAM Policies</strong> — JSON documents that describe, in a fairly plain way, what a user or group is allowed (or not allowed) to do. You don't need to be a programmer to read one.</p>
+    <h3>IAM Policies — How Permissions Are Granted</h3>
+    <p>Users and groups get permissions through <strong>IAM Policies</strong>. A policy is a standard <strong>JSON document</strong> (a simple text-based rulebook) that defines what actions a user or group can or cannot perform on AWS.</p>
 
     <div class="callout warning">
-      <strong>Least privilege principle:</strong> never give a user more permissions than their job needs. Letting everyone do everything is a security and cost risk — a careless new user could launch expensive resources or break things.
+      <strong>Principle of Least Privilege (Security Rule):</strong> Never give a user more permissions than they need for their job. Giving full admin access to everyone creates high security risks and accidental costs — for instance, a fresh hire could accidentally delete production databases or start expensive servers!
     </div>
   </section>
 
@@ -369,42 +373,43 @@
   <section class="lecture" id="l1213">
     <h2><span class="lecture-num">12-13</span>Users &amp; Groups Hands-On + Multi-Session Sign-In</h2>
 
-    <h3>Creating a user</h3>
+    <h3>Steps to Create an IAM User</h3>
     <ol>
-      <li>IAM console → <strong>Users</strong> → create user (e.g. <code>Stephane</code>), give console access.</li>
-      <li>Choose <strong>"create an IAM user"</strong> (simpler, and the one the exam cares about) rather than IAM Identity Center.</li>
-      <li>Set a password — for a real teammate, leave it auto-generated and force a change on first login; for yourself, set a custom one.</li>
-      <li>For permissions, it's better to <strong>create/attach a group</strong> (e.g. group <code>admin</code> with the <code>AdministratorAccess</code> policy) than to attach a policy straight to the user.</li>
-      <li><strong>Tags</strong> (optional key/value metadata, e.g. <code>department = engineering</code>) can be attached to most AWS resources, including users.</li>
+      <li>Open the IAM Console → Click <strong>Users</strong> → Click <strong>Create user</strong> (e.g., username <code>Stephane</code>), and check the box for AWS Management Console access.</li>
+      <li>Select <strong>"I want to create an IAM user"</strong> (this is traditional IAM, which is tested in the AWS CCP exam).</li>
+      <li>Set up a password: For a teammate, auto-generate a password and check "User must create a new password at next sign-in". For personal testing, pick a custom password.</li>
+      <li>Set permissions: Instead of attaching permissions directly to the user, click <strong>Add user to group</strong> and attach a group (e.g., an <code>admin</code> group with <code>AdministratorAccess</code> policy).</li>
+      <li><strong>Tags</strong> (optional key-value pairs like <code>Department = Engineering</code>) can be attached to help organize and track resources.</li>
     </ol>
-    <p>Once created, the user's permissions page shows <code>AdministratorAccess</code> as <em>inherited via the group</em>, not attached directly — this is exactly why grouping users is the recommended pattern.</p>
+    <p>After creation, the user's permissions summary will show that access is <em>inherited from the group</em>. Grouping users keeps permissions neat and easy to audit.</p>
 
-    <h3>Signing in as an IAM user</h3>
+    <h3>Signing In as an IAM User</h3>
     <ul>
-      <li>Your account has a <strong>Sign-in URL</strong> built from your account ID — you can replace the ID with a custom, unique <strong>account alias</strong> to make the URL friendlier.</li>
-      <li>To be logged in as root and as an IAM user <em>at the same time</em>, open a private/incognito browser window for the second login.</li>
+      <li>AWS provides a unique <strong>Sign-in URL</strong> containing your 12-digit Account ID.</li>
+      <li>You can create a custom <strong>Account Alias</strong> (e.g., <code>my-company-aws</code>) to replace the ugly ID number with a friendly URL link.</li>
+      <li>To stay logged into both your Root account and an IAM User simultaneously, use an Incognito / Private Browser Window.</li>
     </ul>
 
     <div class="callout warning">
-      <strong>Don't lose access to both logins.</strong> If you lose your root account login and your admin login, you're in serious trouble — AWS support can't always bail you out.
+      <strong>Important Warning:</strong> Always safeguard your credentials. If you get locked out of both your Root user and Admin IAM user, recovery can be very difficult.
     </div>
 
-    <h3>Multi-session sign-in (newer console feature)</h3>
-    <p>Instead of juggling private browser windows, you can turn on <strong>multi-session support</strong> in the console and add multiple sessions (root, different IAM users, even different accounts) as tabs inside the <em>same</em> browser window. Each session is fully isolated — resources created in one session's account don't show up in another's.</p>
+    <h3>Multi-Session Sign-In (Console Feature)</h3>
+    <p>AWS allows <strong>multi-session support</strong> in the console. You can switch between or stay logged into multiple AWS accounts (Root, IAM user 1, IAM user 2) inside separate tabs in the <em>same</em> web browser window without getting logged out.</p>
   </section>
 
   <!-- 14 -->
   <section class="lecture" id="l14">
     <h2><span class="lecture-num">14</span>IAM Policies (Structure)</h2>
 
-    <p>Where a policy is attached changes who it affects:</p>
+    <p>Where you attach an IAM Policy determines who gets affected:</p>
     <ul>
-      <li><strong>Attached at the group level</strong> → applies to every member of that group.</li>
-      <li><strong>Inline policy</strong> → attached directly to one specific user, regardless of which group(s) they're in.</li>
-      <li>A user in more than one group (or with an inline policy on top) simply <strong>inherits and combines permissions from every source</strong> — e.g. Charles gets whatever Developers has, plus whatever Audit Team has.</li>
+      <li><strong>Group Level Policy:</strong> Applies to every user inside that group automatically.</li>
+      <li><strong>Inline / User Policy:</strong> Attached directly to one specific user.</li>
+      <li><strong>Combined Permissions:</strong> If a user belongs to multiple groups and has an inline policy, AWS simply <strong>combines all allowed permissions together</strong>.</li>
     </ul>
 
-    <h3>Anatomy of a policy document</h3>
+    <h3>Structure of an IAM Policy Document</h3>
     <div class="diagram">
       <svg viewBox="0 0 640 260" xmlns="http://www.w3.org/2000/svg">
         <rect x="20" y="20" width="600" height="220" rx="10" fill="#f9fafb" stroke="#9ca3af" stroke-width="2"/>
@@ -425,11 +430,27 @@
         <text x="330" y="165" font-size="11">Resource — the list of resources affected</text>
         <text x="330" y="185" font-size="11" fill="#6b7280">Condition — optional, when the statement applies</text>
       </svg>
-      <div class="diagram-caption">Every IAM policy is Version + optional Id + one or more Statements. Each statement needs Effect, Principal, Action, and Resource to make sense.</div>
+      <div class="diagram-caption">Every IAM policy contains Version + optional Id + one or more Statements. Key statement fields: Effect, Principal, Action, and Resource.</div>
     </div>
 
+    <p>An IAM Policy JSON is built from these core elements:</p>
+    <ul>
+      <li><strong>Version:</strong> The policy language version (always use <code>"2012-10-17"</code>).</li>
+      <li><strong>Id:</strong> An optional identifier for the policy.</li>
+      <li><strong>Statement:</strong> The main body, containing one or more rule blocks:
+        <ul>
+          <li><strong>Sid:</strong> An optional statement ID for labeling the block.</li>
+          <li><strong>Effect:</strong> Set to either <code>"Allow"</code> or <code>"Deny"</code>.</li>
+          <li><strong>Principal:</strong> The account, user, or role this policy applies to (required in resource-based policies).</li>
+          <li><strong>Action:</strong> The specific list of AWS API actions allowed or denied (e.g., <code>s3:GetObject</code>, <code>iam:ListUsers</code>).</li>
+          <li><strong>Resource:</strong> The specific AWS resources being targeted (e.g., a specific S3 bucket or <code>"*"</code> for all resources).</li>
+          <li><strong>Condition (Optional):</strong> Rules specifying when the policy applies (e.g., only when MFA is active or from a specific IP address).</li>
+        </ul>
+      </li>
+    </ul>
+
     <div class="callout warning">
-      <strong>Exam tip:</strong> know <code>Effect</code>, <code>Principal</code>, <code>Action</code>, and <code>Resource</code> cold — these are the parts that actually decide who can do what to which resource.
+      <strong>Exam Tip:</strong> Memorize the key statement fields: <code>Effect</code>, <code>Principal</code>, <code>Action</code>, and <code>Resource</code>. These four fields define who can perform what action on which resource!
     </div>
   </section>
 
@@ -437,25 +458,25 @@
   <section class="lecture" id="l15">
     <h2><span class="lecture-num">15</span>IAM Policies Hands-On</h2>
 
-    <h3>Watching permissions disappear (and come back)</h3>
+    <h3>Testing Permissions in Practice</h3>
     <ol>
-      <li>Removed the <code>Stephane</code> user from the <code>admin</code> group → immediately lost admin access.</li>
-      <li>Refreshing the IAM console then threw <strong>Access Denied</strong> for <code>iam:ListUsers</code> — proof the permission really was gone.</li>
-      <li>Fixed it by attaching the managed policy <code>IAMReadOnlyAccess</code> directly to the user — enough to view users/groups again, but <strong>not enough to create a group</strong> (tried it, got denied) — a clean demo of least-privilege in action.</li>
-      <li>Re-added the user to the <code>admin</code> group to restore full admin rights, and cleaned up the test group afterwards.</li>
+      <li>Removed user <code>Stephane</code> from the <code>admin</code> group → all administrator privileges disappeared instantly.</li>
+      <li>Refreshed the IAM page → received an <strong>Access Denied</strong> error for <code>iam:ListUsers</code>, proving permissions are enforced immediately.</li>
+      <li>Attached the AWS-managed policy <code>IAMReadOnlyAccess</code> directly to the user → user could view IAM resources again, but attempting to create a new user resulted in an Access Denied error.</li>
+      <li>Re-added user to the <code>admin</code> group to restore full admin access.</li>
     </ol>
 
-    <h3>Reading existing managed policies</h3>
+    <h3>Understanding AWS Managed Policies</h3>
     <table>
-      <tr><th>Policy</th><th>What its JSON actually says</th></tr>
-      <tr><td><code>AdministratorAccess</code></td><td><code>Action: *</code>, <code>Resource: *</code> — allow literally everything on everything</td></tr>
-      <tr><td><code>IAMReadOnlyAccess</code></td><td>A defined list like <code>Get*</code> and <code>List*</code> on <code>Resource: *</code> — the <code>*</code> groups many related API calls together (e.g. <code>Get*</code> covers <code>GetUser</code>, <code>GetGroup</code>, etc.)</td></tr>
+      <tr><th>Policy Name</th><th>JSON Meaning</th></tr>
+      <tr><td><code>AdministratorAccess</code></td><td><code>Action: *</code>, <code>Resource: *</code> — allows every action on every AWS resource.</td></tr>
+      <tr><td><code>IAMReadOnlyAccess</code></td><td>Uses wildcards like <code>Get*</code> and <code>List*</code> — allows reading data without making changes.</td></tr>
     </table>
 
-    <p>You can also build your own custom policy with the <strong>visual editor</strong> — pick a service (e.g. IAM), tick specific actions (e.g. <code>ListUsers</code>, <code>GetUser</code>), choose which resources it applies to, and AWS generates the matching JSON for you automatically.</p>
+    <p>You can also use the <strong>Visual Editor</strong> in the AWS Console to pick services and tick actions visually. AWS automatically generates the clean JSON policy code for you!</p>
 
     <div class="callout tip">
-      <strong>Tip:</strong> a user's final permissions can be the sum of several sources at once — one or more groups plus any policy attached directly to the user. Check all of them when troubleshooting "why can/can't this user do X."
+      <strong>Troubleshooting Tip:</strong> If a user cannot perform an action, check all permission sources — individual user policies, group policies, and role policies.
     </div>
   </section>
 
@@ -463,18 +484,22 @@
   <section class="lecture" id="l16">
     <h2><span class="lecture-num">16</span>IAM MFA Overview</h2>
 
-    <p>Two layers of defense for your accounts:</p>
+    <p>To secure your AWS account, use two defense mechanisms:</p>
 
-    <h3>1. Password policy</h3>
+    <h3>1. Strong Password Policy</h3>
     <ul>
-      <li>Minimum password length, required character types (uppercase, lowercase, number, non-alphanumeric).</li>
-      <li>Allow (or not) users to change their own password.</li>
-      <li>Force password expiration (e.g. every 90 days).</li>
+      <li>Set minimum password length and enforce character requirements (uppercase, lowercase, numbers, non-alphanumeric symbols).</li>
+      <li>Allow or block users from changing their own passwords.</li>
+      <li>Force password expiration (e.g., mandatory reset every 90 days).</li>
       <li>Prevent password reuse.</li>
     </ul>
 
     <h3>2. Multi-Factor Authentication (MFA)</h3>
-    <p>MFA combines <strong>something you know</strong> (your password) with <strong>something you have</strong> (a physical or virtual device). Even if a password is stolen, the account stays safe because the attacker also needs the physical device.</p>
+    <p><strong>MFA</strong> requires two factors to log in: <strong>something you know</strong> (your password) + <strong>something you have</strong> (your phone or physical security key).</p>
+
+    <div class="analogy">
+      💳 <strong>Real-World Analogy:</strong> MFA is like withdrawing money from an ATM. You need your physical ATM card (something you have) <em>and</em> your secret 4-digit PIN (something you know). Knowing the PIN alone is useless without the card!
+    </div>
 
     <div class="diagram">
       <svg viewBox="0 0 640 170" xmlns="http://www.w3.org/2000/svg">
@@ -487,17 +512,17 @@
         <text x="130" y="133" text-anchor="middle" font-size="11">+ MFA device</text>
         <text x="330" y="125" font-size="11" fill="#059669">→ stolen password alone isn't enough</text>
       </svg>
-      <div class="diagram-caption">MFA doesn't replace the password — it adds a second, physical requirement on top of it.</div>
+      <div class="diagram-caption">MFA does not replace your password — it adds an essential physical layer of security on top of it.</div>
     </div>
 
-    <h3>MFA device options</h3>
+    <h3>MFA Device Options</h3>
     <table>
-      <tr><th>Device type</th><th>Notes</th></tr>
-      <tr><td>Virtual MFA (Google Authenticator)</td><td>App-based, works with one account at a time per phone</td></tr>
-      <tr><td>Virtual MFA (Authy)</td><td>App-based, supports multiple accounts/tokens on a single device — root, IAM users, other accounts, all together</td></tr>
-      <tr><td>U2F Security Key (e.g. YubiKey by Yubico)</td><td>Physical key, third-party to AWS; one key can serve multiple root/IAM users</td></tr>
-      <tr><td>Hardware key fob (e.g. by Gemalto)</td><td>Physical device, third-party to AWS</td></tr>
-      <tr><td>GovCloud hardware fob (by SurePassID)</td><td>Third-party, only for the US government AWS GovCloud</td></tr>
+      <tr><th>Device Type</th><th>Details</th></tr>
+      <tr><td>Virtual MFA (Google Authenticator)</td><td>Mobile phone app, generates time-based 6-digit security codes.</td></tr>
+      <tr><td>Virtual MFA (Authy)</td><td>Mobile/desktop app, supports multi-device sync and managing multiple account tokens.</td></tr>
+      <tr><td>U2F Security Key (YubiKey)</td><td>Physical USB hardware key plugged into your laptop.</td></tr>
+      <tr><td>Hardware Key Fob (Gemalto)</td><td>Physical keychain device displaying rotating security codes.</td></tr>
+      <tr><td>GovCloud Hardware Fob (SurePassID)</td><td>Special hardware token for US Government AWS accounts.</td></tr>
     </table>
   </section>
 
@@ -506,16 +531,15 @@
     <h2><span class="lecture-num">17</span>IAM MFA Hands-On</h2>
 
     <ol>
-      <li><strong>Password policy:</strong> Account Settings → Password Policy → use the IAM default or customize length, character requirements, expiration, and reuse rules.</li>
-      <li><strong>MFA on the root user:</strong> account name → Security Credentials → assign an MFA device.</li>
-      <li>Name the device (e.g. "my iPhone"), choose <strong>Authenticator app</strong> as the type.</li>
-      <li>Scan the QR code shown by AWS using a compatible app (e.g. Twilio Authy).</li>
-      <li>Enter <strong>two consecutive codes</strong> from the app — this proves the device is set up correctly and in sync — then click Add MFA.</li>
-      <li>From then on, logging in needs your password <em>and</em> the current code from the app.</li>
+      <li><strong>Setting Password Policy:</strong> Account Settings → Password Policy → choose AWS defaults or set custom rules (length, expiration, character rules).</li>
+      <li><strong>Enabling MFA on Root User:</strong> Click Account Name → Security Credentials → Assign MFA Device.</li>
+      <li>Name the device (e.g., "My iPhone"), select <strong>Authenticator app</strong>.</li>
+      <li>Scan the displayed QR code using your phone app (Google Authenticator or Authy).</li>
+      <li>Enter <strong>two consecutive 6-digit codes</strong> from the app to sync the device, then click <strong>Add MFA</strong>.</li>
     </ol>
 
     <div class="callout warning">
-      <strong>Real risk:</strong> students have locked themselves out of their AWS accounts by losing the phone/device tied to their MFA. If you're at real risk of losing your device, don't enable MFA casually — keep the device safe, and remember you can remove an MFA device later if needed.
+      <strong>Important Warning:</strong> Keep your MFA device safe! If you lose your phone/device tied to MFA, you could get locked out of your AWS account.
     </div>
   </section>
 
@@ -523,7 +547,7 @@
   <section class="lecture" id="l18">
     <h2><span class="lecture-num">18</span>Access Keys, CLI &amp; SDK</h2>
 
-    <p>There are three ways to access AWS:</p>
+    <p>There are 3 ways to interact with AWS services:</p>
 
     <div class="diagram">
       <svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg">
@@ -544,29 +568,35 @@
         <text x="510" y="103" text-anchor="middle" font-size="12" font-weight="bold">AWS API</text>
         <text x="510" y="121" text-anchor="middle" font-size="11">/ Services</text>
       </svg>
-      <div class="diagram-caption">All three paths ultimately hit the same AWS APIs — they just differ in how you authenticate and where you're calling from.</div>
+      <div class="diagram-caption">All three options call the exact same underlying AWS APIs. They only differ in how you authenticate and where you run them.</div>
     </div>
 
     <ul>
-      <li><strong>Access keys</strong> = Access Key ID (like a username) + Secret Access Key (like a password). Generated per-user from the console, and treated exactly like credentials — never shared, never someone else's.</li>
-      <li><strong>CLI</strong> (Command Line Interface) — open-source, lets you manage AWS from a terminal and script/automate tasks; an alternative to the web console. Every command starts with <code>aws</code>.</li>
-      <li><strong>SDK</strong> (Software Development Kit) — language-specific libraries (JavaScript, Python, PHP, .NET, Ruby, Java, Go, Node.js, C++, plus Mobile and IoT SDKs) so your own application code can call AWS APIs directly, secured with the same access keys.</li>
+      <li><strong>AWS Management Console:</strong> Web browser interface using username, password, and MFA.</li>
+      <li><strong>AWS CLI (Command Line Interface):</strong> Terminal tool that lets you control AWS services using commands and scripts. Every CLI command starts with <code>aws</code>.</li>
+      <li><strong>AWS SDK (Software Development Kit):</strong> Code libraries (Python, Java, JavaScript, C++, Node.js, etc.) that let software applications call AWS APIs programmatically.</li>
+      <li><strong>Access Keys:</strong> Created in the IAM Console for CLI and SDK access. Made of two parts:
+        <ul>
+          <li><strong>Access Key ID:</strong> Works like a username.</li>
+          <li><strong>Secret Access Key:</strong> Works like a password. <em>Never share this key with anyone!</em></li>
+        </ul>
+      </li>
     </ul>
 
     <div class="callout tip">
-      <strong>Fun fact:</strong> the AWS CLI itself is built on top of <code>Boto</code>, the AWS SDK for Python.
+      <strong>Fact:</strong> The AWS CLI itself is written in Python and uses <code>Boto3</code> (the AWS SDK for Python)!
     </div>
   </section>
 
   <!-- 19-21 -->
   <section class="lecture" id="l1921">
     <h2><span class="lecture-num">19-21</span>AWS CLI Setup (Windows / Mac / Linux)</h2>
-    <p>The Windows and Linux setup lectures were pure screen-recording walkthroughs of AWS's official installers, with no extra narration beyond following AWS's own install guide for each OS.</p>
-    <p>On <strong>macOS</strong>: search for "installing the AWS CLI version 2 on macOS," download the <code>.pkg</code> graphical installer, click through Continue → Agree → Install (choose "install for all users"), then open a terminal (e.g. iTerm) and confirm with:</p>
+    <p>Installing the AWS CLI v2 is straightforward on all operating systems:</p>
+    <p>On <strong>macOS</strong>: Download the official <code>.pkg</code> installer, follow the wizard instructions, open your Terminal, and verify installation with:</p>
     <p><code>aws --version</code></p>
-    <p>A correct install returns something like <code>aws-cli 2.0.10</code>.</p>
+    <p>A successful install outputs something like <code>aws-cli/2.x.x</code>.</p>
     <div class="callout tip">
-      <strong>General rule regardless of OS:</strong> install the official AWS CLI v2 package for your platform, then verify with <code>aws --version</code> before moving on.
+      <strong>Installation Rule:</strong> Download official installers from AWS documentation and always verify using <code>aws --version</code> in your terminal.
     </div>
   </section>
 
@@ -574,36 +604,40 @@
   <section class="lecture" id="l22">
     <h2><span class="lecture-num">22</span>AWS CLI Hands-On</h2>
     <ol>
-      <li>Create access keys: user → Security Credentials → Create access key. AWS will nudge you toward alternatives (CloudShell, IAM Identity Center) first — for learning purposes, confirm you understand the recommendation and create the key anyway.</li>
-      <li>The secret key is only shown <strong>once</strong> at creation time — save it immediately.</li>
-      <li>Configure the CLI locally: <code>aws configure</code>, then enter the Access Key ID, Secret Access Key, a default region (e.g. <code>eu-west-1</code>), and a default output format.</li>
-      <li>Test it: <code>aws iam list-users</code> — returns the same kind of information (username, UserId, ARN, created date) you'd see in the console.</li>
+      <li>Generate Access Keys: User → Security Credentials → Create access key.</li>
+      <li>Download or copy your Secret Access Key immediately — AWS displays it <strong>only once</strong>!</li>
+      <li>Configure your local CLI: Open your terminal, run <code>aws configure</code>, and input your Access Key ID, Secret Access Key, default region (e.g., <code>ap-south-1</code> for Mumbai or <code>eu-west-1</code>), and default output format (JSON).</li>
+      <li>Test CLI access: Run <code>aws iam list-users</code> to display users in JSON format.</li>
     </ol>
 
     <div class="callout tip">
-      <strong>Permissions are identical everywhere.</strong> Removing a user from their permission-granting group blocks them in the console <em>and</em> makes the same CLI call fail with a permissions error — the CLI isn't a backdoor around IAM.
+      <strong>Same Permissions Everywhere:</strong> The CLI respects IAM policies completely. If an IAM user lacks permissions in the web console, running the command via CLI will fail with the exact same <em>Access Denied</em> error.
     </div>
   </section>
 
   <!-- 23 -->
   <section class="lecture" id="l23">
     <h2><span class="lecture-num">23</span>AWS CloudShell</h2>
-    <p><strong>CloudShell</strong> is a free, browser-based terminal built into the AWS console (icon top-right) — an alternative to installing the CLI locally. It's not available in every region, so if you want to use it, pick one of the regions where it's supported.</p>
+    <p><strong>AWS CloudShell</strong> is a free, browser-based terminal built right inside the AWS Management Console (accessible via the prompt icon in the top header bar).</p>
     <ul>
-      <li>Comes with the AWS CLI pre-installed and already authenticated as whichever identity you're logged in as — no <code>aws configure</code> needed.</li>
-      <li>Default region = whichever region your CloudShell session is currently in (rather than needing <code>--region</code> flags).</li>
-      <li>Gives you a small persistent file storage area — files you create (e.g. via <code>echo</code>) stick around even after restarting the session.</li>
-      <li>Supports uploading and downloading files, adjustable font size/theme, and multiple tabs/split panes.</li>
+      <li>No local installation needed — AWS CLI comes pre-installed and automatically logged in as your current user session.</li>
+      <li>Sets your current AWS Console Region as the default region automatically.</li>
+      <li>Includes persistent storage (files created in CloudShell remain saved between sessions).</li>
+      <li>Supports uploading/downloading files and multiple tab layouts.</li>
     </ul>
     <div class="callout tip">
-      <strong>Bottom line:</strong> if CloudShell is available in your region and works for you, it's a convenient zero-setup alternative to a local terminal. If not, your locally configured CLI works exactly the same for the rest of the course.
+      <strong>Summary:</strong> CloudShell is a zero-setup browser terminal. If it is available in your selected region, you can use it instantly without setting up a local terminal!
     </div>
   </section>
 
   <!-- 24 -->
   <section class="lecture" id="l24">
     <h2><span class="lecture-num">24</span>IAM Roles for AWS Services</h2>
-    <p>Some AWS services need to perform actions on your behalf — and just like users, they need permissions to do so. That's what an <strong>IAM Role</strong> is for: an identity meant to be used by an AWS service (like an EC2 instance or a Lambda function), not by a person.</p>
+    <p>Just like real people need IAM Users to access AWS, AWS services (like EC2 servers or Lambda functions) need permission to access other AWS services. We give permissions to AWS services using <strong>IAM Roles</strong>.</p>
+
+    <div class="analogy">
+      🪪 <strong>Real-World Analogy:</strong> An IAM Role is like a <strong>temporary visitor pass or entry badge</strong>. When a contractor enters an office, they receive a temporary badge giving them access to specific rooms for a limited time. They do not get a permanent employee ID card!
+    </div>
 
     <div class="diagram">
       <svg viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg">
@@ -621,34 +655,34 @@
         <rect x="510" y="65" width="110" height="50" rx="8" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
         <text x="565" y="95" text-anchor="middle" font-size="12" font-weight="bold">AWS API</text>
       </svg>
-      <div class="diagram-caption">The EC2 instance assumes the role, and the role's attached policy decides what it's allowed to call.</div>
+      <div class="diagram-caption">The EC2 server assumes the IAM Role, gaining temporary permissions to call AWS APIs safely without storing access keys.</div>
     </div>
 
-    <p>Common examples: <strong>EC2 instance roles</strong>, <strong>Lambda function roles</strong>, <strong>CloudFormation roles</strong> — any service that needs to act against AWS on its own.</p>
+    <p>Common examples include <strong>EC2 Instance Roles</strong> and <strong>Lambda Function Roles</strong>.</p>
   </section>
 
   <!-- 25 -->
   <section class="lecture" id="l25">
     <h2><span class="lecture-num">25</span>IAM Roles Hands-On</h2>
     <ol>
-      <li>IAM console → Roles → Create role.</li>
-      <li>Choose <strong>"AWS service"</strong> as the trusted entity type, then pick which service (e.g. EC2).</li>
-      <li>Attach a policy (e.g. <code>IAMReadOnlyAccess</code>) defining what the role can do.</li>
-      <li>Name it (e.g. <code>DemoRoleForEC2</code>) and confirm — the trusted entity setup is what allows the EC2 service specifically to assume this role.</li>
+      <li>Go to IAM Console → Click <strong>Roles</strong> → Click <strong>Create role</strong>.</li>
+      <li>Select <strong>AWS service</strong> as the trusted entity, and pick <strong>EC2</strong>.</li>
+      <li>Attach the required policy (e.g., <code>IAMReadOnlyAccess</code>).</li>
+      <li>Name the role (e.g., <code>DemoRoleForEC2</code>) and click Create.</li>
     </ol>
-    <p>The role isn't actually put to use yet — it'll get attached to a real EC2 instance later in the course — but the role itself is ready with its permissions in place.</p>
+    <p>Once created, this role can be assigned to an EC2 instance so the server can talk to AWS APIs securely without embedding hardcoded access keys in application code!</p>
   </section>
 
   <!-- 26 -->
   <section class="lecture" id="l26">
     <h2><span class="lecture-num">26</span>IAM Security Tools</h2>
     <table>
-      <tr><th>Tool</th><th>Scope</th><th>What it shows</th></tr>
-      <tr><td>IAM Credentials Report</td><td>Account-level</td><td>All users in the account and the status of their various credentials</td></tr>
-      <tr><td>IAM Access Advisor</td><td>Per-user</td><td>Which service permissions a user has, and when each was last actually used</td></tr>
+      <tr><th>Security Tool</th><th>Scope</th><th>Function</th></tr>
+      <tr><td>IAM Credentials Report</td><td>Account-wide</td><td>Downloads a CSV list of all account users and their security details (passwords, MFA, keys).</td></tr>
+      <tr><td>IAM Access Advisor</td><td>Per-user level</td><td>Shows which AWS service permissions a user has, and when they last actually accessed each service.</td></tr>
     </table>
     <div class="callout tip">
-      <strong>Why it matters:</strong> Access Advisor directly supports the least-privilege principle — it shows you which granted permissions are actually unused, so you can trim them down.
+      <strong>Why Access Advisor is Useful:</strong> Access Advisor enforces the Principle of Least Privilege. If a user has permission to 20 services but only uses 2, you can safely remove the unused 18 permissions!
     </div>
   </section>
 
@@ -657,39 +691,33 @@
     <h2><span class="lecture-num">27</span>IAM Security Tools Hands-On</h2>
 
     <h3>Credentials Report</h3>
-    <p>IAM → Credential report → Download — generates a CSV with one row per user (including root), showing: when the user was created, whether a console password is set and when it was last used/changed, upcoming password rotation, whether <strong>MFA is active</strong>, whether access keys exist and when they were last rotated/used.</p>
-    <p>Great for spotting stale accounts or credentials that deserve a security review.</p>
+    <p>Go to IAM → Click <strong>Credential report</strong> → Click <strong>Download Report</strong>. This generates a CSV spreadsheet detailing every user's creation date, password status, MFA status, access key rotation dates, and last activity time.</p>
 
     <h3>Access Advisor</h3>
-    <p>User → Access Advisor tab shows every service the user has permission to access and whether/when they actually used it (e.g. IAM, EC2, Organizations accessed; Alexa for Business never touched). It can also tell you <em>which</em> attached policy granted access to a given service — handy for untangling permissions that came from multiple sources.</p>
-
-    <div class="callout tip">
-      <strong>Practical use:</strong> if Access Advisor shows a user has permissions to dozens of services but only ever touches a handful, that's your signal to tighten their policy down to just what they actually use.
-    </div>
+    <p>Select any IAM User → Click the <strong>Access Advisor</strong> tab. It lists every AWS service allowed for that user alongside the last accessed timestamp (e.g., "Accessed 2 days ago" vs "Never accessed"). Use this data to trim unnecessary permissions.</p>
   </section>
 
   <!-- 28 -->
   <section class="lecture" id="l28">
     <h2><span class="lecture-num">28</span>IAM Best Practices</h2>
     <ul>
-      <li>Don't use the root account except for initial account setup.</li>
-      <li>One AWS user = one physical person — never share your login with a friend or colleague; create them their own user instead.</li>
-      <li>Put users in groups and manage permissions at the group level.</li>
-      <li>Set a strong password policy.</li>
-      <li>Enable and enforce MFA.</li>
-      <li>Use roles (not shared credentials) to give permissions to AWS services, including EC2 instances.</li>
-      <li>If accessing AWS via CLI/SDK, generate access keys and keep them just as secret as a password.</li>
-      <li>Regularly audit permissions with the IAM Credentials Report and IAM Access Advisor.</li>
+      <li>Do not use the Root Account for daily tasks — use it only for initial account setup.</li>
+      <li>One IAM User per real person — never share account login credentials.</li>
+      <li>Assign users to Groups and manage permissions at the Group level.</li>
+      <li>Enforce a strong password policy and mandatory MFA.</li>
+      <li>Use IAM Roles to grant permissions to AWS services (like EC2 instances).</li>
+      <li>Keep Access Keys secret and rotate them periodically.</li>
+      <li>Audit permissions regularly using IAM Credentials Report and Access Advisor.</li>
     </ul>
     <div class="callout warning">
-      <strong>Never, ever, ever share your IAM user credentials or access keys.</strong> This is repeated for a reason — it's the most common way accounts get compromised.
+      <strong>Critical Rule:</strong> Never leak or commit Access Keys or passwords into public code repositories like GitHub!
     </div>
   </section>
 
   <!-- 29 -->
   <section class="lecture" id="l29">
     <h2><span class="lecture-num">29</span>Shared Responsibility Model for IAM</h2>
-    <p>A recurring exam topic: knowing what AWS handles versus what you handle.</p>
+    <p>AWS splits security responsibilities between AWS and the Customer:</p>
 
     <div class="diagram">
       <svg viewBox="0 0 640 200" xmlns="http://www.w3.org/2000/svg">
@@ -708,10 +736,8 @@
         <text x="350" y="130" font-size="11">• Applying least-privilege permissions</text>
         <text x="350" y="150" font-size="11">• Monitoring &amp; reviewing access patterns</text>
       </svg>
-      <div class="diagram-caption">AWS secures the infrastructure underneath IAM; everything about how you configure and use IAM is on you.</div>
+      <div class="diagram-caption">AWS secures the cloud infrastructure (Security OF the Cloud). You secure your IAM setup and user access (Security IN the Cloud).</div>
     </div>
-
-    <p>In short: AWS is responsible for the infrastructure itself; you're responsible for how you configure and use it — creating identities, enabling MFA, rotating keys, and reviewing who has access to what.</p>
   </section>
 
   <hr class="section-break">
@@ -719,37 +745,35 @@
   <!-- Final Summary -->
   <section class="lecture" id="lsummary">
     <h2>📋 Cheat Sheet</h2>
-    <p>Lecture 30's own recap lines up with everything above: IAM users map to real people; groups collect users (never other groups); policies (JSON documents) grant permissions to users, groups, or roles; roles are identities for AWS services; MFA and password policies protect accounts; the CLI/SDK (via access keys) give programmatic access; and credential reports plus Access Advisor let you audit it all.</p>
 
     <div class="summary-box">
-      <h3>Core building blocks</h3>
+      <h3>Core Building Blocks</h3>
       <table>
-        <tr><th>Concept</th><th>What it is</th></tr>
-        <tr><td>IAM User</td><td>One physical person; has console password and/or access keys</td></tr>
-        <tr><td>IAM Group</td><td>Collection of users only (never other groups); a way to share policies</td></tr>
-        <tr><td>IAM Policy</td><td>JSON document granting/denying permissions — attachable to users, groups, or roles</td></tr>
-        <tr><td>IAM Role</td><td>An identity for AWS services (EC2, Lambda, CloudFormation, etc.), not people</td></tr>
-        <tr><td>Access Keys</td><td>Access Key ID + Secret Access Key — credentials for CLI/SDK access</td></tr>
+        <tr><th>Concept</th><th>Simple Explanation</th></tr>
+        <tr><td>IAM User</td><td>One physical person; logs in with password or access keys.</td></tr>
+        <tr><td>IAM Group</td><td>Collection of users only; inherits permissions as a team.</td></tr>
+        <tr><td>IAM Policy</td><td>JSON rulebook defining allowed/denied actions.</td></tr>
+        <tr><td>IAM Role</td><td>Temporary identity pass for AWS services (EC2, Lambda).</td></tr>
+        <tr><td>Access Keys</td><td>Access Key ID + Secret Access Key for CLI and SDK access.</td></tr>
       </table>
     </div>
 
     <div class="summary-box">
-      <h3>Key facts to remember</h3>
+      <h3>Key Exam Facts to Remember</h3>
       <ul>
-        <li>IAM is a <strong>global</strong> service — no region selection.</li>
-        <li>Groups contain <strong>only users</strong>, never other groups; a user can be in multiple groups.</li>
-        <li>Policy structure: <code>Version</code> + optional <code>Id</code> + <code>Statement(s)</code> — each statement needs <code>Effect</code>, <code>Principal</code>, <code>Action</code>, <code>Resource</code> (<code>Condition</code> optional).</li>
-        <li>Least privilege: never grant more access than the job requires.</li>
-        <li>MFA = password (know) + device (have); options include Google Authenticator/Authy (virtual), YubiKey (U2F), hardware key fobs, and a GovCloud-specific fob.</li>
-        <li>Three access paths: Console (user/pass + MFA), CLI (access keys, terminal), SDK (access keys, in-app code) — the AWS CLI is itself built on the Python SDK, Boto.</li>
-        <li>CloudShell = free browser-based terminal, pre-authenticated, but region-limited.</li>
-        <li>Audit tools: IAM Credentials Report (account-wide credential status) and IAM Access Advisor (per-user, last-accessed services).</li>
+        <li>IAM is a <strong>global</strong> service (not region-bound).</li>
+        <li>Groups contain <strong>only users</strong>, never other groups.</li>
+        <li>IAM Policy structure: <code>Version</code> + <code>Statement(s)</code> (containing <code>Effect</code>, <code>Principal</code>, <code>Action</code>, <code>Resource</code>, <code>Condition</code>).</li>
+        <li>Least Privilege: Grant only minimum required permissions.</li>
+        <li>MFA = Password (something you know) + Device (something you have).</li>
+        <li>CloudShell = Free, zero-setup browser terminal built into the AWS Console.</li>
+        <li>Audit Tools: IAM Credentials Report (CSV for account users) and IAM Access Advisor (service last-accessed dates).</li>
       </ul>
     </div>
 
     <div class="summary-box">
-      <h3>Mental model recap</h3>
-      <p>Root account is for setup only — everything day-to-day happens through IAM users, grouped for easy permission management, with policies spelling out exactly what's allowed. Roles do the same job as users but for AWS services instead of people. MFA and strong password policies protect the login; access keys protect programmatic access via the CLI/SDK — and both deserve the same secrecy as a password. Credentials reports and Access Advisor are how you keep checking that nobody has more access than they actually use.</p>
+      <h3>Mental Model Summary</h3>
+      <p>Root account is for initial account setup only. Day-to-day work is done using IAM Users grouped into Teams. IAM Policies define exact permissions using JSON rules. IAM Roles act as temporary entry passes for AWS services. MFA protects human logins, while Access Keys protect CLI/SDK access. Audit tools keep your account secure by identifying unused permissions.</p>
     </div>
   </section>
 

@@ -370,7 +370,7 @@
 
 <header id="top">
   <h1><span>Section 13</span> — Advanced Amazon S3</h1>
-  <p class="subtitle">My notes on lifecycle rules, event notifications, S3 performance tricks, and object tags & metadata.</p>
+  <p class="subtitle">A clear and simple guide to S3 lifecycle rules, event notifications, performance optimization, and object tags & metadata.</p>
 </header>
 
 <nav class="toc">
@@ -390,7 +390,7 @@
 <section class="card" id="lifecycle">
   <h2><span class="badge">1</span> S3 Lifecycle Rules & S3 Analytics</h2>
 
-  <p>Objects can move between storage classes over time — either manually, or automatically using <strong>Lifecycle Rules</strong>.</p>
+  <p>Think of an Amazon S3 Bucket as an <strong>unlimited digital locker</strong> in the cloud. Over time, stored files (objects) get older and are used less frequently. You can move these files between different storage classes to save money — either manually or automatically using <strong>Lifecycle Rules</strong>.</p>
 
   <div class="diagram">
     <svg viewBox="0 0 780 170" xmlns="http://www.w3.org/2000/svg">
@@ -419,36 +419,36 @@
       <text class="svg-text" x="180" y="154" text-anchor="middle" font-size="10">Deep Archive</text>
     </svg>
   </div>
-  <p class="caption">Objects can transition through storage classes in many valid orders — e.g. Standard → Standard-IA → Intelligent-Tiering → One-Zone-IA → Flexible Retrieval / Deep Archive.</p>
+  <p class="caption">Objects move step-by-step through cheaper storage tiers — e.g., Standard → Standard-IA → Intelligent-Tiering → One-Zone-IA → Flexible Retrieval / Deep Archive.</p>
 
-  <h3>What a lifecycle rule can do</h3>
+  <h3>What a Lifecycle Rule Can Do</h3>
   <ul>
-    <li><strong>Transition actions</strong> — move an object to another storage class after N days. E.g. move to Standard-IA after 60 days, or to Glacier after 6 months.</li>
-    <li><strong>Expiration actions</strong> — delete objects after N days (e.g. delete log files after 365 days), delete old versions of objects if versioning is enabled, or clean up <strong>incomplete multi-part uploads</strong> older than a certain age (e.g. 2 weeks).</li>
-    <li>Rules can apply to the whole bucket, to a specific <strong>prefix</strong> (path), or to objects with specific <strong>tags</strong>.</li>
+    <li><strong>Transition Actions</strong> — automatically move an object to a cheaper storage class after a specific number of days. (Example: Move files to Standard-IA after 60 days, or to S3 Glacier after 180 days).</li>
+    <li><strong>Expiration Actions</strong> — automatically delete files after a set period to save space. (Example: Delete log files after 365 days, delete old file versions, or clean up <strong>incomplete multi-part uploads</strong> older than 14 days).</li>
+    <li><strong>Targeting Rules</strong> — rules can apply to the entire bucket, a specific folder/prefix (path), or only to objects carrying specific <strong>tags</strong>.</li>
   </ul>
 
-  <h3>Exam-style scenarios</h3>
+  <h3>Exam-Style Scenarios</h3>
   <div class="callout key">
     <strong class="tag">Scenario 1</strong>
-    An app on EC2 creates thumbnails from uploaded profile photos. Thumbnails are easy to recreate and only need to be kept 60 days; source images need instant access for 60 days, then users can tolerate up to a 6-hour wait. <strong>Solution:</strong> keep source images on Standard, transition to Glacier after 60 days. Use a prefix to separate thumbnails, store them on One-Zone-IA (infrequently accessed, recreatable), and expire them after 60 days.
+    An application running on EC2 creates small thumbnails from uploaded profile photos. Thumbnails can be remade easily if lost and are only needed for 60 days. Source photos need instant access for 60 days, after which users can wait up to 6 hours for retrieval. <strong>Solution:</strong> Store original photos in Standard, then transition them to S3 Glacier after 60 days. Put thumbnails under a separate prefix folder, store them in One-Zone-IA (cheaper, single data-center storage), and set an expiration rule to auto-delete them after 60 days.
   </div>
 
   <div class="callout key">
     <strong class="tag">Scenario 2</strong>
-    Company policy: deleted objects must be recoverable instantly for 30 days, then recoverable within 48 hours for up to 365 days. <strong>Solution:</strong> enable <strong>versioning</strong> (deletes just add a delete marker, so the object is recoverable), then set a rule to transition non-current versions to Standard-IA, and later to Glacier Deep Archive for long-term archival.
+    Company rule: Deleted files must be instantly recoverable for 30 days, and recoverable within 48 hours for up to 365 days. <strong>Solution:</strong> Enable <strong>S3 Versioning</strong> (deleting a file only attaches a "delete marker", keeping old versions safe). Next, add a lifecycle rule to move non-current (old) versions to Standard-IA after 30 days, and then to S3 Glacier Deep Archive for long-term storage up to 365 days.
   </div>
 
   <h3>S3 Analytics</h3>
-  <p>Not sure what the "right" number of days is for a transition? <strong>S3 Analytics</strong> gives recommendations — but only for <strong>Standard</strong> and <strong>Standard-IA</strong> (not One-Zone-IA or Glacier).</p>
+  <p>If you do not know the exact number of days to wait before moving files, <strong>S3 Analytics</strong> helps you decide by giving smart recommendations. However, it only works for <strong>Standard</strong> and <strong>Standard-IA</strong> storage classes (not One-Zone-IA or Glacier).</p>
   <ul>
-    <li>Produces a <strong>CSV report</strong> with statistics and recommendations.</li>
-    <li>Updated daily; takes <strong>24–48 hours</strong> to start showing useful data.</li>
+    <li>Generates daily <strong>CSV reports</strong> containing file usage statistics and transition recommendations.</li>
+    <li>Takes <strong>24 to 48 hours</strong> after enabling to start displaying useful data.</li>
   </ul>
 
   <div class="callout tip">
     <strong class="tag">Tip</strong>
-    Use the S3 Analytics CSV report as your starting point for designing (or improving) lifecycle rules, rather than guessing at transition timings.
+    Always check the S3 Analytics CSV report to plan your lifecycle rules accurately instead of guessing transition days.
   </div>
 </section>
 
@@ -456,29 +456,29 @@
 <section class="card" id="lifecycle-hands-on">
   <h2><span class="badge">2</span> S3 Lifecycle Rules Hands On</h2>
 
-  <p>Lifecycle rules are created under a bucket's <strong>Management</strong> tab. Once you name a rule and choose its scope (e.g. all objects in the bucket), you get <strong>five possible rule actions</strong>:</p>
+  <p>You can create lifecycle rules under the <strong>Management</strong> tab of your S3 bucket. After naming the rule and selecting its scope (such as all objects or specific folders), you can pick from <strong>five main rule actions</strong>:</p>
 
   <table>
-    <tr><th>Action</th><th>What it does</th></tr>
-    <tr><td>Move current versions between storage classes</td><td>Transitions the most recent (displayed) version of an object — e.g. to Standard-IA after 30 days, Intelligent-Tiering after 60, Glacier Instant Retrieval after 90, Flexible Retrieval after 180, Deep Archive after 365</td></tr>
-    <tr><td>Move non-current versions between storage classes</td><td>Transitions older/overwritten versions — e.g. straight to Glacier Flexible Retrieval after 90 days since they likely won't be needed</td></tr>
-    <tr><td>Expire current versions of objects</td><td>Deletes the current version after a set number of days (e.g. 700 days)</td></tr>
-    <tr><td>Permanently delete non-current versions</td><td>Cleans up old versions after a set number of days (e.g. 700 days)</td></tr>
-    <tr><td>Delete expired objects / delete markers / incomplete multi-part uploads</td><td>Housekeeping cleanup action</td></tr>
+    <tr><th>Action</th><th>What It Does</th></tr>
+    <tr><td>Move current versions between storage classes</td><td>Moves the latest (active) version of a file to cheaper tiers — e.g., to Standard-IA after 30 days, Intelligent-Tiering after 60 days, Glacier Instant Retrieval after 90 days, Flexible Retrieval after 180 days, and Deep Archive after 365 days.</td></tr>
+    <tr><td>Move non-current versions between storage classes</td><td>Moves older or overwritten versions of files — e.g., straight to Glacier Flexible Retrieval after 90 days since they are rarely accessed.</td></tr>
+    <tr><td>Expire current versions of objects</td><td>Automatically deletes the current active version of files after N days (e.g., 700 days).</td></tr>
+    <tr><td>Permanently delete non-current versions</td><td>Permanently removes old, replaced versions after N days (e.g., 700 days) to free up storage space.</td></tr>
+    <tr><td>Delete expired objects / delete markers / incomplete multi-part uploads</td><td>Housekeeping cleanup action to remove leftover temporary data and hidden delete markers.</td></tr>
   </table>
 
-  <p>You can stack as many transitions as you like, and the console shows a <strong>timeline preview</strong> of what will happen to current vs. non-current versions of your objects before you save the rule.</p>
+  <p>You can combine multiple transition stages in a single rule. The AWS console displays a helpful <strong>timeline preview</strong> showing exact timeline shifts for current and old file versions before you save.</p>
 </section>
 
 <!-- 3. EVENT NOTIFICATIONS -->
 <section class="card" id="events">
   <h2><span class="badge">3</span> S3 Event Notifications</h2>
 
-  <p>S3 can notify other services when things happen in a bucket — object created, object removed, object restored, replication events, etc. You can also filter events (e.g. only react to <code>.jpeg</code> files).</p>
+  <p>S3 can trigger automatic notification alerts whenever specific events occur inside a bucket — such as uploading a new object, deleting an object, restoring an object, or completing a replication. You can also filter events (for example, triggering alerts only for <code>.jpeg</code> files).</p>
 
-  <p><strong>Use case example:</strong> automatically generate a thumbnail every time an image is uploaded to S3.</p>
+  <p><strong>Real-world example:</strong> Automatically resize and create a thumbnail image every time a user uploads a new photo to S3.</p>
 
-  <h3>Where events can go</h3>
+  <h3>Where Event Notifications Can Go</h3>
   <div class="diagram">
     <svg viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg">
       <rect class="svg-box-accent" x="20" y="80" width="140" height="50" rx="6"/>
@@ -502,24 +502,24 @@
       <text class="svg-label" x="650" y="75" text-anchor="middle" font-size="9">→ 18+ possible destinations</text>
     </svg>
   </div>
-  <p class="caption">S3 events can go directly to SNS, SQS, or Lambda — and every event also lands in EventBridge, which can fan it out to 18+ other AWS services with more advanced filtering.</p>
+  <p class="caption">S3 events can be sent directly to SNS, SQS, or Lambda. Additionally, all events can flow into EventBridge to reach 18+ AWS destinations with advanced filtering.</p>
 
-  <h3>Direct targets: SNS, SQS, Lambda</h3>
+  <h3>Direct Destination Targets: SNS, SQS, Lambda</h3>
   <ul>
-    <li>S3 doesn't use an IAM role to deliver events. Instead, the <strong>target</strong> needs a resource policy that allows S3 to talk to it:
+    <li>S3 does not use an IAM Role to deliver event notifications. Instead, the <strong>destination resource</strong> must have a <strong>Resource-based Policy</strong> attached that grants S3 permission to communicate with it:
       <ul>
-        <li><strong>SNS</strong> — attach an <strong>SNS resource access policy</strong> allowing S3 to publish messages.</li>
-        <li><strong>SQS</strong> — attach an <strong>SQS resource access policy</strong> allowing S3 to send messages.</li>
-        <li><strong>Lambda</strong> — attach a <strong>Lambda resource policy</strong> allowing S3 to invoke the function.</li>
+        <li><strong>SNS (Simple Notification Service - Pub/Sub messaging service)</strong> — Attach an <strong>SNS Access Policy</strong> allowing S3 to publish messages.</li>
+        <li><strong>SQS (Simple Queue Service - Message queue service)</strong> — Attach an <strong>SQS Access Policy</strong> allowing S3 to send messages into the queue.</li>
+        <li><strong>Lambda (Serverless code execution)</strong> — Attach a <strong>Lambda Resource Policy</strong> allowing S3 to invoke the function.</li>
       </ul>
     </li>
-    <li>This works the same way conceptually as an S3 bucket policy — just attached to the other resource instead.</li>
-    <li>Events are typically delivered within seconds, but can occasionally take a minute or more.</li>
+    <li>This functions similarly to an S3 Bucket Policy, but is attached directly to the target destination service.</li>
+    <li>Notifications are usually delivered within seconds, though occasional delays of a minute or more can happen.</li>
   </ul>
 
   <div class="callout key">
-    <strong class="tag">Exam point</strong>
-    Remember the three direct Event Notification targets: <strong>SNS</strong>, <strong>SQS</strong>, and <strong>Lambda</strong>. Also remember that <strong>every</strong> S3 event can additionally flow into <strong>EventBridge</strong>, unlocking advanced filtering (by metadata, object size, name), multiple simultaneous destinations, and features like event archiving/replay.</p>
+    <strong class="tag">Exam Point</strong>
+    Remember the 3 direct Event Notification targets: <strong>SNS</strong>, <strong>SQS</strong>, and <strong>Lambda</strong>. Also remember that <strong>all</strong> S3 events can additionally stream into <strong>Amazon EventBridge</strong>. This enables advanced rule filtering (by file size, name, or metadata), sending to multiple destinations at once, and features like event archiving and replay.
   </div>
 </section>
 
@@ -527,26 +527,26 @@
 <section class="card" id="events-hands-on">
   <h2><span class="badge">4</span> S3 Event Notifications Hands On</h2>
 
-  <p>Setting up an event notification (bucket <strong>Properties → Event notifications</strong>) gives you two paths:</p>
+  <p>To configure an event notification in the AWS Console, open your bucket's <strong>Properties → Event notifications</strong> tab. You have two main approaches:</p>
   <ol>
-    <li><strong>Create an event notification</strong> directly (to SNS, SQS, or Lambda), or</li>
-    <li>Enable the <strong>EventBridge integration</strong> toggle to send everything to EventBridge instead.</li>
+    <li><strong>Create an event notification directly</strong> to send alerts to SNS, SQS, or Lambda, or</li>
+    <li>Enable the <strong>EventBridge integration toggle</strong> to stream all events to Amazon EventBridge instead.</li>
   </ol>
 
-  <h3>Walkthrough: notify SQS on object creation</h3>
+  <h3>Step-by-Step: Send Notification to SQS on File Creation</h3>
   <ol>
-    <li>Create an SQS queue first (e.g. <code>DemoS3Notification</code>).</li>
-    <li>Create the event notification, choose event type <strong>"All object create events"</strong>, and pick the SQS queue as the destination.</li>
+    <li>Create an SQS queue first (e.g., named <code>DemoS3Notification</code>).</li>
+    <li>In S3, create an event notification, select the event type <strong>"All object create events"</strong>, and pick your SQS queue as the target destination.</li>
   </ol>
 
   <div class="callout warning">
-    <strong class="tag">Don't forget</strong>
-    Saving the notification will fail with an error if the SQS queue doesn't yet allow S3 to send messages into it. You must edit the queue's <strong>access policy</strong> (via the SQS Policy Generator: Effect = Allow, Principal = anyone, Action = SendMessage, Resource = the queue ARN) before S3 can successfully validate and deliver to it.
+    <strong class="tag">Important Warning</strong>
+    Saving the event notification will fail with an error if the SQS queue policy does not explicitly permit S3 to send messages into it! You must edit the queue's <strong>Access Policy</strong> (Effect = Allow, Principal = Service: s3.amazonaws.com, Action = sqs:SendMessage, Resource = Queue ARN) before S3 can validate and deliver messages.
   </div>
 
   <ul>
-    <li>Once the access policy is fixed, saving the notification triggers an automatic <strong>test event</strong> in the queue to confirm connectivity.</li>
-    <li>Uploading a real file (e.g. <code>coffee.jpg</code>) then generates an actual event message in the queue with <code>eventName: ObjectCreatedPut</code> and the object's key — exactly the kind of message you'd use to trigger something like thumbnail generation.</li>
+    <li>After granting proper policy permissions, saving the notification automatically sends a <strong>test message</strong> to the SQS queue to confirm connectivity.</li>
+    <li>Uploading an actual file (e.g., <code>coffee.jpg</code>) sends a real event message containing <code>eventName: ObjectCreatedPut</code> along with the object key — perfect for triggering automated background tasks like image processing.</li>
   </ul>
 </section>
 
@@ -554,25 +554,25 @@
 <section class="card" id="performance">
   <h2><span class="badge">5</span> S3 Performance</h2>
 
-  <h3>Baseline performance</h3>
+  <h3>Baseline Performance Limits</h3>
   <ul>
-    <li>S3 automatically scales to a very high request volume with low latency — <strong>100–200ms</strong> to get the first byte.</li>
-    <li><strong>3,500 PUT/COPY/POST/DELETE</strong> requests per second, <strong>per prefix</strong>.</li>
-    <li><strong>5,500 GET/HEAD</strong> requests per second, <strong>per prefix</strong>.</li>
-    <li>There's no limit on the number of prefixes in a bucket, so performance scales by spreading objects across more prefixes.</li>
+    <li>S3 automatically scales to handle huge request volumes with very low <strong>latency</strong> (the delay before data transfer starts: <strong>100–200ms</strong> for the first byte).</li>
+    <li><strong>3,500 PUT / COPY / POST / DELETE</strong> requests per second, <strong>per prefix</strong>.</li>
+    <li><strong>5,500 GET / HEAD</strong> requests per second, <strong>per prefix</strong>.</li>
+    <li>There is no limit on the number of prefixes you can create in an S3 bucket. You can easily boost total performance by distributing files across multiple prefixes.</li>
   </ul>
 
   <div class="analogy">
-    <strong class="tag">Analogy</strong>
-    A "prefix" is just everything between the bucket name and the object name — e.g. for <code>bucket/folder1/sub1/file</code>, the prefix is <code>folder1/sub1</code>. Each distinct prefix gets its <em>own</em> 3,500/5,500 allowance, like each checkout lane at a store having its own throughput — more lanes (prefixes) means more total customers served per second.
+    <strong class="tag">Everyday Analogy</strong>
+    A <strong>"prefix"</strong> is simply the folder path between the bucket name and file name — e.g., in <code>my-bucket/photos/vacation/pic.jpg</code>, the prefix is <code>photos/vacation/</code>. Think of each prefix as a separate billing counter at a supermarket (like DMart). Each counter can process 3,500 writes or 5,500 reads per second independently. Opening more counters (prefixes) allows you to serve vastly more total customers per second!
   </div>
 
-  <p>Example: 4 objects spread across 4 different prefixes, read evenly, can together achieve <strong>22,000 GET/HEAD requests/second</strong> (4 × 5,500).</p>
+  <p><strong>Example:</strong> Distributing files across 4 distinct prefixes yields a combined read speed of <strong>22,000 GET/HEAD requests per second</strong> (4 prefixes × 5,500 requests/sec).</p>
 
-  <h3>Speeding up uploads: Multi-part upload</h3>
+  <h3>Speeding Up Uploads: Multi-Part Upload</h3>
   <ul>
-    <li><strong>Recommended</strong> for files over 100 MB, <strong>required</strong> for files over 5 GB.</li>
-    <li>Splits a file into parts and uploads them <strong>in parallel</strong>, maximizing bandwidth use; S3 reassembles the parts once all are uploaded.</li>
+    <li><strong>Recommended</strong> for uploading files larger than 100 MB, and <strong>mandatory</strong> for files larger than 5 GB.</li>
+    <li>Splits a large file into smaller chunks and uploads them <strong>in parallel (simultaneously)</strong> using available network bandwidth. Once all chunks arrive, S3 reassembles them into the original file.</li>
   </ul>
 
   <div class="diagram">
@@ -595,12 +595,12 @@
       <text class="svg-text" x="545" y="80" text-anchor="middle" font-size="11">Amazon S3</text>
     </svg>
   </div>
-  <p class="caption">Multi-part upload splits a large file into chunks that upload in parallel, then S3 reassembles them.</p>
+  <p class="caption">Multi-part upload breaks a large file into smaller pieces, uploads them simultaneously in parallel, and S3 stitches them back together.</p>
 
-  <h3>Speeding up transfers over distance: S3 Transfer Acceleration</h3>
+  <h3>Speeding Up Long-Distance Transfers: S3 Transfer Acceleration</h3>
   <ul>
-    <li>Works for both upload and download. Compatible with multi-part upload.</li>
-    <li>Routes your transfer through the nearest AWS <strong>edge location</strong> (200+ worldwide) instead of the public internet all the way to the target region.</li>
+    <li>Accelerates both file uploads and downloads over long geographical distances. Fully compatible with Multi-part upload.</li>
+    <li>Routes data through the nearest AWS <strong>Edge Location</strong> (over 200 worldwide points of presence) via a fast local hop, then uses AWS's high-speed private fiber-optic backbone network to reach the target S3 bucket region.</li>
   </ul>
 
   <div class="diagram">
@@ -617,13 +617,13 @@
       <text class="svg-text" x="685" y="68" text-anchor="middle" font-size="11">S3 Bucket (Australia)</text>
     </svg>
   </div>
-  <p class="caption">Transfer acceleration minimizes the distance traveled over the public internet by routing through a nearby edge location, then uses AWS's fast private backbone the rest of the way.</p>
+  <p class="caption">Transfer Acceleration minimizes public internet latency by connecting to a nearby AWS Edge Location and traveling across AWS's private high-speed global network.</p>
 
-  <h3>Speeding up downloads: S3 Byte-Range Fetches</h3>
+  <h3>Speeding Up Downloads: S3 Byte-Range Fetches</h3>
   <ul>
-    <li>Parallelize <strong>GET</strong> requests by fetching specific byte ranges of a file at once.</li>
-    <li>Improves resilience too — if one byte-range request fails, you can retry just that smaller range instead of the whole file.</li>
-    <li>Also useful to fetch just <strong>part</strong> of a file — e.g. reading only the first 50 bytes to grab a header, without downloading the whole thing.</li>
+    <li>Parallelize <strong>GET</strong> requests by downloading specific byte ranges (chunks) of a large file simultaneously.</li>
+    <li>Improves download resilience — if a single byte-range request fails, you retry only that failed chunk instead of restarting the full download.</li>
+    <li>Allows fetching partial data — e.g., downloading just the first 50 bytes of a file to read metadata headers without downloading the rest of the file.</li>
   </ul>
 </section>
 
@@ -631,27 +631,27 @@
 <section class="card" id="tags-metadata">
   <h2><span class="badge">6</span> S3 Object Tags & Metadata</h2>
 
-  <h3>User-defined metadata</h3>
+  <h3>User-Defined Metadata</h3>
   <ul>
-    <li>Key-value pairs attached to an object, set at upload time.</li>
-    <li>User-defined metadata keys must start with <code>x-amz-meta-</code> (to distinguish them from AWS-generated metadata like <code>Content-Length</code> or <code>Content-Type</code>).</li>
-    <li>Example: <code>x-amz-meta-origin: paris</code>.</li>
+    <li>Custom key-value pairs assigned to an object during file upload.</li>
+    <li>Custom metadata keys must begin with <code>x-amz-meta-</code> to distinguish them from standard AWS system metadata (such as <code>Content-Length</code> or <code>Content-Type</code>).</li>
+    <li>Example: <code>x-amz-meta-origin: mumbai</code>.</li>
   </ul>
 
-  <h3>Object tags</h3>
+  <h3>Object Tags</h3>
   <ul>
-    <li>Also key-value pairs, but more commonly used — same concept as tags elsewhere in AWS.</li>
-    <li>Useful for <strong>fine-grained permissions</strong> (e.g. only allow access to objects with a specific tag) and for <strong>analytics</strong> (e.g. group S3 Analytics results by tag).</li>
-    <li>Example: <code>Project: Blue</code>, <code>PHI: True</code>.</li>
+    <li>Key-value pairs attached to S3 objects, used widely across AWS services.</li>
+    <li>Useful for configuring <strong>fine-grained IAM permissions</strong> (e.g., allowing access only to objects tagged <code>Department: Finance</code>) and for <strong>cost allocation / analytics grouping</strong>.</li>
+    <li>Example: <code>Project: Alpha</code>, <code>Confidential: True</code>.</li>
   </ul>
 
   <div class="callout warning">
-    <strong class="tag">Important</strong>
-    Neither metadata nor tags are <strong>searchable</strong> in Amazon S3. You cannot filter or query objects by metadata or tag values directly on S3.
+    <strong class="tag">Critical Limitation</strong>
+    Neither metadata nor tags are <strong>searchable</strong> within Amazon S3! You cannot query or search objects by metadata or tag values directly inside S3.
   </div>
 
-  <h3>How do you search, then?</h3>
-  <p>Build an <strong>external index</strong> in a database — e.g. <strong>DynamoDB</strong> — that stores the metadata/tags in a searchable form. You query that index, and the search results point you to the matching objects in S3.</p>
+  <h3>How to Search S3 Objects by Tags or Metadata?</h3>
+  <p>To enable search capability, build an <strong>external searchable index</strong> using a database service like <strong>Amazon DynamoDB</strong>. Save object metadata/tags into DynamoDB when uploading files to S3. You can then quickly query DynamoDB, which returns pointers to the matching S3 objects.</p>
 
   <div class="diagram">
     <svg viewBox="0 0 700 130" xmlns="http://www.w3.org/2000/svg">
@@ -665,11 +665,11 @@
       <text class="svg-text" x="625" y="72" text-anchor="middle" font-size="11">S3 Objects</text>
     </svg>
   </div>
-  <p class="caption">Since S3 can't search metadata/tags itself, queries hit an external index (like DynamoDB) which then points to the matching objects stored in S3.</p>
+  <p class="caption">Because S3 cannot search metadata/tags directly, application queries search an external database index (like DynamoDB), which points to the target files in S3.</p>
 
   <div class="callout key">
-    <strong class="tag">Exam point</strong>
-    "How would you make S3 objects searchable by metadata/tags?" → build an external searchable index (e.g. DynamoDB) that mirrors the metadata/tags, then resolve search results back to S3 objects.
+    <strong class="tag">Exam Point</strong>
+    "How do you make S3 object metadata or tags searchable?" → Create an external searchable index in a database like DynamoDB that mirrors the metadata/tags, and query that database to locate S3 objects.
   </div>
 </section>
 
@@ -677,33 +677,33 @@
 <section class="card cheatsheet" id="cheatsheet">
   <h2><span class="badge">✓</span> Cheat Sheet</h2>
 
-  <h3>Key facts to remember</h3>
+  <h3>Key Facts to Remember</h3>
   <ul>
-    <li>Lifecycle rules = transition actions (move between storage classes) + expiration actions (delete objects, old versions, or incomplete multi-part uploads); can target a whole bucket, a prefix, or specific tags.</li>
-    <li>S3 Analytics gives transition recommendations, but only for Standard ↔ Standard-IA; report updates daily and takes 24–48 hrs to populate.</li>
-    <li>S3 Event Notifications can go directly to <strong>SNS</strong>, <strong>SQS</strong>, or <strong>Lambda</strong> (each needs a resource policy authorizing S3), or to <strong>EventBridge</strong> (all events flow there too, unlocking 18+ destinations and advanced filtering).</li>
-    <li>Baseline performance: 3,500 PUT/COPY/POST/DELETE and 5,500 GET/HEAD requests per second, <strong>per prefix</strong> — no limit on number of prefixes.</li>
-    <li>Multi-part upload: recommended over 100MB, required over 5GB — parallelizes uploads.</li>
-    <li>Transfer Acceleration: routes through edge locations to minimize public-internet travel; works for upload & download; compatible with multi-part upload.</li>
-    <li>Byte-Range Fetches: parallelize/resume GETs, or fetch just part of a file (like a header).</li>
-    <li>Metadata (<code>x-amz-meta-*</code>) and tags are both key-value pairs on objects, but <strong>neither is searchable</strong> — tags are also useful for fine-grained permissions and analytics grouping.</li>
-    <li>To search S3 objects by metadata/tags, build an external searchable index (e.g. DynamoDB) that mirrors that data.</li>
+    <li><strong>Lifecycle Rules:</strong> Combine transition actions (moving files across storage classes) and expiration actions (deleting objects, old versions, or incomplete multi-part uploads). Rules can target the full bucket, a prefix (folder path), or object tags.</li>
+    <li><strong>S3 Analytics:</strong> Provides storage transition recommendations, but works ONLY for Standard ↔ Standard-IA. Reports refresh daily and take 24–48 hours to start displaying data.</li>
+    <li><strong>S3 Event Notifications:</strong> Send alerts directly to <strong>SNS</strong>, <strong>SQS</strong>, or <strong>Lambda</strong> (each requires a Resource Policy granting access to S3), or to <strong>Amazon EventBridge</strong> (which unlocks 18+ destinations and advanced filtering).</li>
+    <li><strong>Baseline Performance:</strong> Supports 3,500 PUT/COPY/POST/DELETE and 5,500 GET/HEAD requests per second <strong>per prefix</strong>. Buckets can have unlimited prefixes.</li>
+    <li><strong>Multi-Part Upload:</strong> Recommended for files over 100 MB, required for files over 5 GB. Uploads chunks in parallel for maximum speed.</li>
+    <li><strong>Transfer Acceleration:</strong> Routes traffic through nearby AWS Edge Locations over AWS's private high-speed backbone to speed up long-distance transfers.</li>
+    <li><strong>Byte-Range Fetches:</strong> Downloads file chunks in parallel to speed up GET requests, resume broken downloads, or fetch partial file headers.</li>
+    <li><strong>Metadata & Tags:</strong> Key-value attributes on objects. <strong>Neither is searchable directly in S3.</strong> Tags are useful for fine-grained IAM permissions and cost reporting.</li>
+    <li><strong>Searching S3:</strong> Build an external database index (e.g., DynamoDB) to store and search object tags or metadata.</li>
   </ul>
 
-  <h3>Decision guide</h3>
+  <h3>Decision Guide</h3>
   <table>
-    <tr><th>Need</th><th>Feature</th></tr>
-    <tr><td>Automatically move/delete objects over time</td><td>Lifecycle rules</td></tr>
-    <tr><td>Figure out the right transition timing</td><td>S3 Analytics (Standard/Standard-IA only)</td></tr>
-    <tr><td>React to uploads/deletes automatically</td><td>Event Notifications → SNS / SQS / Lambda / EventBridge</td></tr>
-    <tr><td>Upload a huge file fast</td><td>Multi-part upload</td></tr>
-    <tr><td>Upload/download fast across long distances</td><td>Transfer Acceleration</td></tr>
-    <tr><td>Download large files fast / resiliently</td><td>Byte-Range Fetches</td></tr>
-    <tr><td>Search objects by custom attributes</td><td>External index (e.g. DynamoDB) fed by tags/metadata</td></tr>
+    <tr><th>Requirement</th><th>AWS Feature</th></tr>
+    <tr><td>Automate moving or deleting aging files</td><td>S3 Lifecycle Rules</td></tr>
+    <tr><td>Determine ideal storage transition timing</td><td>S3 Analytics (Standard to Standard-IA only)</td></tr>
+    <tr><td>Trigger automated actions when files are uploaded/deleted</td><td>S3 Event Notifications → SNS / SQS / Lambda / EventBridge</td></tr>
+    <tr><td>Upload large files (>100MB / >5GB) quickly</td><td>Multi-Part Upload</td></tr>
+    <tr><td>Upload or download files quickly across global regions</td><td>S3 Transfer Acceleration</td></tr>
+    <tr><td>Download large files quickly or resume interrupted downloads</td><td>S3 Byte-Range Fetches</td></tr>
+    <tr><td>Search objects by custom metadata or tags</td><td>External Indexing with DynamoDB + S3 Tags/Metadata</td></tr>
   </table>
 
-  <h3>Mental model</h3>
-  <p>This section is about running S3 efficiently at scale: lifecycle rules automate moving or deleting objects as they age so you're not manually managing storage tiers; event notifications let other AWS services react instantly when something happens in a bucket; performance features (multi-part upload, transfer acceleration, byte-range fetches) exist because S3 itself scales extremely well per-prefix but a single connection or single request doesn't — so you parallelize and route smartly; and tags/metadata add context to objects, but since S3 can't search on them, real search means building your own index elsewhere and using S3 purely as the object store.</p>
+  <h3>Mental Model</h3>
+  <p>Advanced S3 centers on managing object storage efficiently at scale. <strong>Lifecycle rules</strong> automate moving and deleting aging objects to save costs. <strong>Event notifications</strong> allow AWS services to react instantly to bucket activity. <strong>Performance features</strong> (Multi-part upload, Transfer Acceleration, Byte-Range fetches) let you bypass single-connection speed limits by parallelizing transfers and using AWS's edge network. Finally, <strong>tags and metadata</strong> help organize data, but since S3 cannot search them directly, real-world searching requires building an external database index like DynamoDB.</p>
 </section>
 
 <a class="back-to-top" href="#top">↑ Back to top</a>

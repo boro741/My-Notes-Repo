@@ -370,7 +370,7 @@
 
 <header id="top">
   <h1><span>Section 15</span> — CloudFront</h1>
-  <p class="subtitle">My notes on CloudFront as a CDN — caching, invalidations, cache behaviors, origins, geo restriction, signed URLs, and advanced options.</p>
+  <p class="subtitle">A clear and simple guide to CloudFront CDN — caching, invalidations, cache behaviors, origins, geo restriction, signed URLs, and advanced settings.</p>
 </header>
 
 <nav class="toc">
@@ -396,12 +396,11 @@
 <section class="card" id="overview">
   <h2><span class="badge">1</span> CloudFront Overview</h2>
 
-  <p>CloudFront is AWS's <strong>CDN (Content Delivery Network)</strong>. Whenever you see "CDN" on the exam, think CloudFront.</p>
+  <p><strong>Amazon CloudFront</strong> is AWS's <strong>Content Delivery Network (CDN)</strong> service. On the exam, whenever a scenario asks for a global CDN or caching network to improve user speed, CloudFront is the answer.</p>
 
   <ul>
-    <li>It caches your website/content at <strong>edge locations</strong> around the world, so users get content from somewhere close to them → lower latency, better experience.</li>
-    <li>Made up of hundreds of points of presence globally (edge locations + caches).</li>
-    <li>Because content is spread globally, CloudFront also provides <strong>DDoS protection</strong> — an attack hitting one location doesn't take down everything, and it works alongside AWS Shield and WAF (covered later in the security section).</li>
+    <li>It caches website static content (images, videos, HTML/CSS) at hundreds of global <strong>Edge Locations</strong> (Points of Presence) close to users. This drastically reduces <strong>latency</strong> (network lag and delay).</li>
+    <li>Because content is distributed across AWS's global edge network, CloudFront also offers built-in <strong>DDoS Protection</strong> (Distributed Denial of Service attack defense) in combination with AWS Shield and AWS WAF.</li>
   </ul>
 
   <div class="diagram">
@@ -431,25 +430,25 @@
       <path class="svg-arrow" d="M620,155 Q 530,140 460,110"/>
     </svg>
   </div>
-  <p class="caption">The first user in a region pulls content from the origin through their nearest edge location; every later user nearby gets served straight from that edge's cache.</p>
+  <p class="caption">The first user in a region pulls file content from the origin server through their nearest Edge Location. Subsequent users nearby get served instantly from that Edge Location's cache.</p>
 
-  <h3>Origins CloudFront can connect to</h3>
+  <h3>Origins Supported by CloudFront</h3>
   <ul>
-    <li><strong>Amazon S3 bucket</strong> — for distributing/caching files, or even uploading files to S3 through CloudFront. Secured via <strong>Origin Access Control (OAC)</strong>.</li>
-    <li><strong>VPC origin</strong> — connect privately to things inside your VPC: private application load balancers, network load balancers, or EC2 instances.</li>
-    <li><strong>Custom origin over HTTP</strong> — e.g. an S3 static website (must be enabled as a website first) or any public HTTP backend, like a public load balancer.</li>
+    <li><strong>Amazon S3 Bucket:</strong> Store and cache files globally. Secured using <strong>Origin Access Control (OAC)</strong> to block direct public access to S3.</li>
+    <li><strong>VPC Origin:</strong> Securely fetch data from private backend resources inside a VPC (Application Load Balancer, Network Load Balancer, or EC2 instances) without exposing them to the internet.</li>
+    <li><strong>Custom HTTP Origin:</strong> Any public HTTP web server, such as an S3 Static Website endpoint or an external web server.</li>
   </ul>
 
-  <h3>How it works at a high level</h3>
-  <p>A client's HTTP request hits an edge location. If the content is already cached there, it's served immediately. If not, the edge location fetches it from the origin, serves it, and <strong>caches it locally</strong> so the next request for the same content doesn't need to go back to the origin.</p>
+  <h3>High-Level Architecture</h3>
+  <p>When a client requests a file, the HTTP request arrives at the nearest CloudFront Edge Location. If the file is cached locally (<strong>Cache Hit</strong>), it returns instantly. If not (<strong>Cache Miss</strong>), the Edge Location fetches the file from the Origin backend server, caches it locally for future requests, and delivers it to the user.</p>
 
-  <h3>CloudFront vs S3 Cross-Region Replication</h3>
+  <h3>CloudFront vs S3 Cross-Region Replication (CRR)</h3>
   <table>
-    <tr><th></th><th>CloudFront</th><th>S3 Cross-Region Replication</th></tr>
-    <tr><td>Coverage</td><td>Global edge network (~216 points of presence)</td><td>Only the specific regions you set up</td></tr>
-    <tr><td>Freshness</td><td>Cached, e.g. for about a day</td><td>Updated near real-time, no caching</td></tr>
-    <tr><td>Direction</td><td>Read (caching)</td><td>Read-only replicated copy</td></tr>
-    <tr><td>Best for</td><td>Static content that needs to be fast everywhere</td><td>Dynamic content that changes often, needed at low latency in a few regions</td></tr>
+    <tr><th>Feature</th><th>Amazon CloudFront</th><th>S3 Cross-Region Replication (CRR)</th></tr>
+    <tr><td>Global Coverage</td><td>Global Edge Network (200+ Edge Locations)</td><td>Replicates data only to specified AWS Regions</td></tr>
+    <tr><td>Data Freshness</td><td>Cached content (subject to TTL expiry)</td><td>Near real-time read-only data replication</td></tr>
+    <tr><td>Request Type</td><td>Read caching & fast global upload routing</td><td>Read-only secondary bucket copies</td></tr>
+    <tr><td>Best Use Case</td><td>Static files and website media served fast worldwide</td><td>Dynamic data requiring low-latency read access in specific regions</td></tr>
   </table>
 </section>
 
@@ -458,19 +457,19 @@
   <h2><span class="badge">2</span> CloudFront Hands On</h2>
 
   <ul>
-    <li>Create an S3 bucket, upload some files (private by default) — trying the plain Object URL gives <code>Access Denied</code>; the console's "Open" link works because it generates a pre-signed URL.</li>
-    <li>Create a CloudFront distribution: choose a plan (the <strong>Free plan</strong> covers plenty — enough requests/month, always-on DNS protection, geographic traffic blocking, global CDN, free TLS certs). Paid plans add things like edge key-value store, advanced DDoS protection, uptime SLA.</li>
-    <li>Set origin type = <strong>Amazon S3</strong>, point it at your bucket, and allow CloudFront private access to the bucket using the recommended origin/cache settings.</li>
+    <li>Create a private S3 bucket and upload media files. Accessing the direct S3 Object URL yields an <code>Access Denied</code> error.</li>
+    <li>Create a CloudFront distribution. Pick an appropriate distribution plan (the <strong>Free Tier plan</strong> includes generous monthly request quotas, free TLS certificates, and basic protection).</li>
+    <li>Select your S3 bucket as the origin and configure <strong>Origin Access Control (OAC)</strong> to grant CloudFront exclusive access.</li>
   </ul>
 
   <div class="callout tip">
-    <strong class="tag">Good to know</strong>
-    Creating the distribution automatically updates your S3 bucket policy to allow access <strong>only</strong> from your CloudFront distribution — you can see this new statement under the bucket's Permissions tab.
+    <strong class="tag">Good to Know</strong>
+    Configuring OAC automatically generates an S3 Bucket Policy snippet that allows read requests coming <em>only</em> from your CloudFront distribution ID.
   </div>
 
   <ul>
-    <li>Once deployed, visiting the CloudFront domain name directly gives <code>Access Denied</code> (there's no default file at the root) — but a specific path like <code>/coffee.jpg</code> or <code>/index.html</code> loads correctly, even though the underlying S3 objects are private.</li>
-    <li>Reloading a previously-requested file (like <code>/beach.jpeg</code>) is <strong>near-instant</strong> — that's the cache doing its job.</li>
+    <li>Once deployed, visiting the bare CloudFront distribution domain returns <code>Access Denied</code> (since no root default file is set), but visiting explicit file paths like <code>/coffee.jpg</code> loads immediately.</li>
+    <li>Reloading previously requested files yields <strong>near-instant response times</strong> because CloudFront serves them straight from its local Edge Location cache.</li>
   </ul>
 </section>
 
@@ -479,9 +478,9 @@
   <h2><span class="badge">3</span> Caching & Cache Policies</h2>
 
   <ul>
-    <li>Cache lives at <strong>each edge location</strong> — as many caches as edge locations.</li>
-    <li>Every cached object is identified by a <strong>Cache Key</strong>. By default, that's just the <strong>hostname</strong> + <strong>resource path</strong> of the URL (e.g. <code>mywebsite.com</code> + <code>/content/stories/example-story.html</code>).</li>
-    <li>Goal: maximize the <strong>cache hit ratio</strong> (minimize requests back to the origin).</li>
+    <li>Every CloudFront Edge Location maintains its own local cache store.</li>
+    <li>Each cached file is indexed by a unique <strong>Cache Key</strong>. By default, the Cache Key consists of the <strong>Domain Name (Hostname)</strong> + <strong>URL Path</strong> (e.g., <code>mywebsite.com/images/banner.jpg</code>).</li>
+    <li>The main objective of caching is to maximize the <strong>Cache Hit Ratio</strong> (serving requests from the edge while minimizing backend origin calls).</li>
   </ul>
 
   <div class="diagram">
@@ -499,33 +498,33 @@
       <text class="svg-label" x="635" y="125" text-anchor="middle" font-size="9">response gets cached at the edge for next time</text>
     </svg>
   </div>
-  <p class="caption">A cache miss forwards the request to the origin, then stores the response at the edge so the next matching request is served instantly.</p>
+  <p class="caption">A Cache Miss sends the request to the origin, then stores the response at the edge so subsequent matching requests are served instantly.</p>
 
-  <h3>Enhancing the Cache Key: Cache Policy</h3>
-  <p>Sometimes content varies by user, device, language, or location — so you may want to include more than just hostname + path in the Cache Key. A <strong>CloudFront Cache Policy</strong> lets you configure:</p>
+  <h3>Customizing the Cache Key: Cache Policies</h3>
+  <p>When web content varies based on user language, device type, or session cookies, you can include extra request elements in the Cache Key using a <strong>Cache Policy</strong>:</p>
   <ul>
-    <li><strong>Headers</strong> — none, a whitelist of specific headers, all, or all-except.</li>
-    <li><strong>Cookies</strong> — none, whitelist, all, or all-except.</li>
-    <li><strong>Query strings</strong> — none, whitelist, all, or all-except.</li>
-    <li><strong>TTL</strong> — from 0 seconds up to 1 year (also controllable via <code>Cache-Control</code> or <code>Expires</code> headers).</li>
+    <li><strong>HTTP Headers:</strong> Include specific headers (e.g., <code>Accept-Language</code>) in the Cache Key.</li>
+    <li><strong>Cookies:</strong> Include session or user cookies in the Cache Key.</li>
+    <li><strong>Query Strings:</strong> Include URL parameters in the Cache Key.</li>
+    <li><strong>TTL (Time To Live):</strong> Define minimum, maximum, and default caching durations (also configurable via HTTP <code>Cache-Control</code> response headers).</li>
   </ul>
 
   <div class="callout key">
-    <strong class="tag">Exam point</strong>
-    Whatever headers/cookies/query strings you include in the Cache Key are <strong>automatically forwarded to the origin</strong> too. E.g. whitelisting a <code>language</code> header means it's both part of the cache key <em>and</em> sent to the origin so it can respond in the right language.
+    <strong class="tag">Exam Point</strong>
+    All HTTP Headers, Cookies, or Query Strings included in a <strong>Cache Policy</strong> are <strong>automatically forwarded to the origin backend server</strong>.
   </div>
 
   <div class="callout warning">
-    <strong class="tag">Don't forget</strong>
-    The more you include in the Cache Key (especially "all" query strings/cookies/headers), the <strong>worse</strong> your cache hit ratio gets — more variations mean fewer requests share a cached entry.
+    <strong class="tag">Warning on Cache Hit Ratio</strong>
+    Including too many parameters (or choosing "All" headers/cookies) in your Cache Policy <strong>lowers your Cache Hit Ratio</strong> because fewer requests will share exact matching Cache Keys.
   </div>
 
   <h3>Origin Request Policy</h3>
-  <p>What if you want to forward extra data to the origin <strong>without</strong> it affecting the Cache Key? That's what an <strong>Origin Request Policy</strong> is for — it can add extra headers, cookies, or query strings to the origin request (even ones the viewer never sent, like a secret API key), but none of that extra data is part of the cache key.</p>
+  <p>If your backend origin server requires specific HTTP headers, cookies, or query strings to process requests, but you <strong>do NOT want them to affect caching</strong>, use an <strong>Origin Request Policy</strong>. It forwards necessary data to the origin without altering the Edge Cache Key.</p>
 
   <div class="analogy">
-    <strong class="tag">Analogy</strong>
-    Think of the Cache Policy as deciding what goes on the "label" you use to file something away (so similar requests find the same cached copy), while the Origin Request Policy is extra info stapled to the request when you actually go ask the origin for something — it helps the origin do its job, but doesn't change how things get filed in the cache.
+    <strong class="tag">Everyday Analogy</strong>
+    Think of a <strong>Cache Policy</strong> as the filing label on a library book (determining where the book is stored and found on the shelf). Think of an <strong>Origin Request Policy</strong> as a sticky note with extra instructions handed directly to the librarian (origin) when ordering a new book — it helps the librarian fulfill the request without changing how books are filed on the shelf.
   </div>
 </section>
 
@@ -533,16 +532,16 @@
 <section class="card" id="invalidations">
   <h2><span class="badge">4</span> Cache Invalidations</h2>
 
-  <p>If you update your origin content, edge locations won't know until the cached copy's <strong>TTL expires</strong>. If you need the update to show up immediately, you can force a refresh — that's a <strong>CloudFront invalidation</strong>.</p>
+  <p>When you update files on your origin backend server, CloudFront Edge Locations continue serving old cached versions until their <strong>TTL (Time To Live) expires</strong>. To force CloudFront to serve new content immediately, perform a <strong>Cache Invalidation</strong>.</p>
 
   <ul>
-    <li>You pass in a file path — either <code>/*</code> to invalidate everything, or something scoped like <code>/images/*</code>.</li>
-    <li>Invalidated files are removed from every edge location's cache — the next request for them forces a fresh fetch from the origin.</li>
+    <li>Specify file path patterns to invalidate — e.g., <code>/*</code> to clear all cached files, or targeted paths like <code>/images/*</code> or <code>/index.html</code>.</li>
+    <li>Invalidated files are removed from all global Edge Location caches, forcing subsequent user requests to fetch fresh copies from the origin.</li>
   </ul>
 
   <div class="callout tip">
-    <strong class="tag">Tip</strong>
-    Invalidate only what changed (e.g. <code>/index.html</code> and <code>/images/*</code>) rather than always nuking the whole cache with <code>/*</code>, to avoid unnecessary origin load.
+    <strong class="tag">Best Practice Tip</strong>
+    Target specific updated file paths (e.g., <code>/index.html</code>) during invalidations rather than clearing the full cache with <code>/*</code> to avoid unnecessary load spikes on your origin server.
   </div>
 </section>
 
@@ -550,11 +549,11 @@
 <section class="card" id="behaviors">
   <h2><span class="badge">5</span> Cache Behaviors</h2>
 
-  <p>You can route different <strong>URL path patterns</strong> to different origins or apply different caching rules per path. E.g. <code>/images/*</code> → S3, <code>/api/*</code> → your app origin, <code>/*</code> (the <strong>default cache behavior</strong>) → whatever's left.</p>
+  <p><strong>Cache Behaviors</strong> allow routing different URL path patterns to different origin servers or applying separate caching rules per path. For example, route <code>/images/*</code> to an S3 bucket, <code>/api/*</code> to an Application Load Balancer, and <code>/*</code> (Default Cache Behavior) to a main web server.</p>
 
   <div class="callout key">
-    <strong class="tag">Exam point</strong>
-    The default cache behavior (<code>/*</code>) is always evaluated <strong>last</strong> — more specific path patterns are checked first, and if nothing matches, it falls back to the default.
+    <strong class="tag">Exam Point</strong>
+    The <strong>Default Cache Behavior (<code>/*</code>) is always evaluated LAST</strong>. CloudFront checks specific path patterns first, and falls back to the default behavior only if no specific pattern matches.
   </div>
 
   <div class="diagram">
@@ -577,13 +576,7 @@
       <text class="svg-text" x="375" y="145" text-anchor="middle" font-size="9">→ default origin</text>
     </svg>
   </div>
-  <p class="caption">Cache behaviors route requests to different origins based on the path — most specific pattern wins, default (/*) always catches whatever's left.</p>
-
-  <h3>Use case: gating access with a login page</h3>
-  <p>Set up a cache behavior for <code>/login</code> that goes to an EC2 instance which generates <strong>CloudFront signed cookies</strong>. The user then uses those signed cookies to access the default cache behavior (everything else, e.g. an S3 bucket). If they try to access content without logging in first, the default behavior can be configured to require signed cookies, redirecting them back to <code>/login</code>.</p>
-
-  <h3>Use case: maximizing cache hits</h3>
-  <p>Static content (e.g. from S3) can use a simple cache policy with no headers/cookies to maximize hits. Dynamic content (e.g. a REST API behind a load balancer + EC2) may need headers/cookies in the cache policy to serve correctly personalized responses.</p>
+  <p class="caption">Cache behaviors direct incoming request paths to matching origins. Specific rules take priority, and the default behavior catches remaining traffic.</p>
 </section>
 
 <!-- 6. CACHING HANDS ON -->
@@ -591,25 +584,25 @@
   <h2><span class="badge">6</span> Caching & Invalidations Hands On</h2>
 
   <ul>
-    <li>In the distribution's default behavior, you can create a <strong>Cache Policy</strong> (set TTL min/max/default, choose which headers/cookies/query strings go into the cache key) and, optionally, an <strong>Origin Request Policy</strong> (extra headers/cookies/query strings forwarded to the origin only).</li>
-    <li>You can add a <strong>new cache behavior</strong> (e.g. for <code>/images/*</code>) pointing to a different origin, with its own cache key and origin request policy — multiple behaviors coexist, most specific wins.</li>
+    <li>Within distribution settings, configure a <strong>Cache Policy</strong> (setting TTL boundaries and Cache Key headers/cookies) and optionally attach an <strong>Origin Request Policy</strong>.</li>
+    <li>Add custom Cache Behaviors (such as <code>/images/*</code>) to direct specific paths to secondary origins with tailored rules.</li>
   </ul>
 
-  <h3>Demonstrating TTL + invalidation</h3>
+  <h3>Hands-On Walkthrough: Cache TTL & Invalidation</h3>
   <ol>
-    <li>Edit <code>index.html</code>, re-upload it to S3 (overwriting, since versioning isn't enabled here).</li>
-    <li>Opening the file directly from S3 shows the updated content immediately.</li>
-    <li>Refreshing the <strong>CloudFront</strong> URL still shows the <strong>old</strong> content — because it's cached and the TTL (1 day) hasn't expired yet.</li>
-    <li>Creating an invalidation for <code>/*</code> clears the cache, and refreshing the CloudFront URL now shows the updated content, freshly fetched from S3.</li>
+    <li>Edit <code>index.html</code> and upload the revised file to S3.</li>
+    <li>Viewing the object directly via S3 shows updated text immediately.</li>
+    <li>Refreshing the CloudFront URL continues showing <strong>old cached text</strong> because the 24-hour TTL has not expired.</li>
+    <li>Creating a Cache Invalidation for <code>/*</code> purges Edge caches. Refreshing CloudFront now retrieves and displays the updated page from S3.</li>
   </ol>
 </section>
 
-<!-- 7. ALB/EC2 ORIGIN -->
+<!-- 7. ALB ORIGIN -->
 <section class="card" id="alb-origin">
   <h2><span class="badge">7</span> ALB/EC2 as an Origin</h2>
 
-  <h3>The new, better way: VPC origins</h3>
-  <p>Lets CloudFront deliver content directly from apps hosted in your <strong>private subnets</strong> — private ALBs, NLBs, or EC2 instances — without exposing anything to the public internet.</p>
+  <h3>Modern Approach: CloudFront VPC Origins</h3>
+  <p><strong>VPC Origins</strong> allow CloudFront to connect directly and securely to private backend applications hosted inside <strong>private subnets</strong> (Private ALBs, Private NLBs, or EC2 instances) without assigning public IP addresses or exposing backends to the internet.</p>
 
   <div class="diagram">
     <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
@@ -626,55 +619,45 @@
       <text class="svg-label" x="630" y="82" text-anchor="middle" font-size="9">Private EC2 instances</text>
     </svg>
   </div>
-  <p class="caption">VPC origins let CloudFront reach private ALBs, NLBs, or EC2 instances directly — nothing needs to be exposed to the public internet.</p>
+  <p class="caption">VPC Origins connect CloudFront directly to private VPC resources, eliminating public internet exposure for backend servers.</p>
 
-  <h3>The old way (before VPC origins existed)</h3>
+  <h3>Legacy Approach (Before VPC Origins)</h3>
   <ul>
-    <li>Your EC2 instance or ALB had to be <strong>public</strong>.</li>
-    <li>You'd look up the full list of CloudFront's public edge-location IPs and configure your security group to allow traffic <strong>only</strong> from those IPs.</li>
+    <li>Required making ALB or EC2 instances public.</li>
+    <li>Required maintaining Security Group rules restricted exclusively to CloudFront's public IP address prefix lists.</li>
   </ul>
-
-  <div class="callout warning">
-    <strong class="tag">Don't forget</strong>
-    The old method was tedious (manually tracking CloudFront's IP list) and riskier — if someone accidentally loosens the security group, your instance becomes exposed to more than just CloudFront. VPC origins avoid this risk entirely since the backend never needs a public IP.
-  </div>
 </section>
 
 <!-- 8. GEO RESTRICTION -->
 <section class="card" id="geo-restriction">
   <h2><span class="badge">8</span> Geo Restriction</h2>
 
-  <p>Restrict who can access your distribution based on the <strong>country</strong> they're connecting from (determined via a third-party geo-IP database).</p>
+  <p>Control access to your distribution based on the geographical country of connecting users (determined via Geo-IP location lookup):</p>
 
   <ul>
-    <li><strong>Allow list</strong> — only approved countries can access.</li>
-    <li><strong>Block list</strong> — banned countries are denied.</li>
-    <li>Use case: enforcing copyright restrictions on content by region.</li>
+    <li><strong>Allow List:</strong> Only specified approved countries can access content.</li>
+    <li><strong>Block List:</strong> Denies access to users from blacklisted countries.</li>
+    <li><strong>Use Case:</strong> Enforce copyright and licensing territorial restrictions.</li>
   </ul>
-
-  <div class="callout warning">
-    <strong class="tag">Don't forget</strong>
-    Geo restriction (like other security options) wasn't available on the <strong>Free plan</strong> at the time of recording — you needed a paid plan or "Pay as You Go" billing to access it under the distribution's Security settings.
-  </div>
 </section>
 
 <!-- 9. SIGNED URL / COOKIES -->
 <section class="card" id="signed-url">
   <h2><span class="badge">9</span> Signed URL / Signed Cookies</h2>
 
-  <p>Want to make a CloudFront distribution private, but still give specific people access to premium/paid content — while knowing who has access to what? Use a <strong>CloudFront signed URL</strong> or <strong>signed cookie</strong>.</p>
+  <p>To restrict access to premium or paid website content while serving data through CloudFront, use <strong>CloudFront Signed URLs</strong> or <strong>Signed Cookies</strong>.</p>
 
-  <p>When creating either, you attach a policy defining:</p>
+  <p>A Signed URL or Cookie carries an attached signature policy specifying:</p>
   <ul>
-    <li><strong>Expiration</strong> — when it stops working.</li>
-    <li><strong>IP ranges</strong> allowed to use it (if you know your clients' IPs).</li>
-    <li><strong>Trusted signers</strong> — which accounts are allowed to create signed URLs/cookies.</li>
+    <li><strong>Expiration Date/Time:</strong> When access permission expires.</li>
+    <li><strong>Allowed IP Addresses:</strong> Restricts usage to specific client IP ranges.</li>
+    <li><strong>Trusted Signers:</strong> AWS accounts authorized to issue signed signatures.</li>
   </ul>
 
   <table>
-    <tr><th></th><th>Signed URL</th><th>Signed Cookie</th></tr>
-    <tr><td>Scope</td><td>One URL per file</td><td>One cookie can unlock many files</td></tr>
-    <tr><td>Best for</td><td>Sharing individual files</td><td>Giving access to a batch of content (e.g. a whole premium section of a site)</td></tr>
+    <tr><th>Feature</th><th>CloudFront Signed URL</th><th>CloudFront Signed Cookie</th></tr>
+    <tr><td>Access Scope</td><td>Grants access to <strong>one individual file</strong></td><td>Grants access to <strong>multiple files or entire site sections</strong></td></tr>
+    <tr><td>Best Use Case</td><td>Single premium file downloads</td><td>Batch content access (e.g., subscriber-only video catalog)</td></tr>
   </table>
 
   <div class="diagram">
@@ -693,16 +676,15 @@
       <text class="svg-text" x="640" y="92" text-anchor="middle" font-size="10">CloudFront → S3 (OAC)</text>
     </svg>
   </div>
-  <p class="caption">The app authenticates the user, generates a signed URL via the AWS SDK, and hands it back — the client then uses it directly against CloudFront.</p>
+  <p class="caption">The application authenticates the user, generates a Signed URL, and returns it. The client uses the Signed URL directly with CloudFront.</p>
 
   <h3>CloudFront Signed URL vs S3 Pre-signed URL</h3>
   <table>
-    <tr><th></th><th>CloudFront Signed URL</th><th>S3 Pre-signed URL</th></tr>
-    <tr><td>Works with</td><td>Any origin (S3, HTTP backend, etc.)</td><td>S3 only</td></tr>
-    <tr><td>Key management</td><td>Account-wide key pair or key group; can be managed by any sufficiently-permissioned IAM user (key groups) — or root only (old key pair method)</td><td>Issued using the signer's own IAM credentials/permissions</td></tr>
-    <tr><td>Filtering</td><td>By IP, path, date, expiration</td><td>Limited lifetime only</td></tr>
-    <tr><td>Caching</td><td>Leverages all of CloudFront's caching</td><td>No caching layer</td></tr>
-    <tr><td>Use when</td><td>CloudFront sits in front of S3 (bucket policy restricts direct S3 access to CloudFront/OAC)</td><td>Users access S3 directly, no CloudFront involved</td></tr>
+    <tr><th>Feature</th><th>CloudFront Signed URL</th><th>S3 Pre-signed URL</th></tr>
+    <tr><td>Origin Support</td><td>Works with any origin (S3, ALB, EC2, HTTP)</td><td>Works strictly with Amazon S3 only</td></tr>
+    <tr><td>Key Management</td><td>Managed via IAM Key Groups or Key Pairs</td><td>Issued using creator's IAM user credentials</td></tr>
+    <tr><td>Advanced Filtering</td><td>Filter by IP range, date, path, expiration</td><td>Limited expiration lifetime only</td></tr>
+    <tr><td>Caching Advantage</td><td>Leverages global CloudFront Edge Caching</td><td>No caching layer (direct S3 hit)</td></tr>
   </table>
 </section>
 
@@ -710,25 +692,24 @@
 <section class="card" id="key-groups">
   <h2><span class="badge">10</span> Signed URL — Key Groups & Hands On</h2>
 
-  <h3>Two ways to manage signing keys</h3>
+  <h3>Two Ways to Manage Signing Keys</h3>
   <table>
-    <tr><th>Method</th><th>Details</th></tr>
-    <tr><td><strong>Trusted key group</strong> (recommended)</td><td>Manage via APIs, rotate keys, secure with IAM. Any sufficiently-permissioned IAM user can manage it.</td></tr>
-    <tr><td>Account CloudFront key pair (old method)</td><td>Requires the <strong>root account</strong> and the AWS console — no APIs, can't be automated, not recommended.</td></tr>
+    <tr><th>Management Method</th><th>Key Details</th></tr>
+    <tr><td><strong>Trusted Key Groups</strong> (Recommended)</td><td>Manage public keys via AWS APIs, rotate keys seamlessly, and control permissions via IAM. Supported for devops automation.</td></tr>
+    <tr><td>Account CloudFront Key Pairs (Legacy)</td><td>Requires Root Account console access. Cannot be automated via APIs. Not recommended.</td></tr>
   </table>
 
-  <h3>Hands-on: setting up a trusted key group</h3>
+  <h3>Setup Steps for Trusted Key Groups</h3>
   <ol>
-    <li>Generate an RSA key pair, <strong>2,048-bit</strong> (private key + public key).</li>
-    <li>The <strong>private key</strong> goes on your application (e.g. EC2 instances) — used to sign URLs. Keep it secret.</li>
-    <li>The <strong>public key</strong> gets uploaded into CloudFront (under Key Management → Public Keys) — used to verify signatures.</li>
-    <li>Create a <strong>Key Group</strong> and add up to 5 public keys to it.</li>
-    <li>CloudFront references this key group to validate signed URLs/cookies generated by your app.</li>
+    <li>Generate a 2,048-bit RSA Public/Private Key Pair locally on your system.</li>
+    <li>Keep the <strong>Private Key</strong> secret on your web application server (used by code to sign URLs).</li>
+    <li>Upload the <strong>Public Key</strong> to CloudFront under <strong>Key Management → Public Keys</strong> (used by CloudFront to verify signatures).</li>
+    <li>Create a <strong>Key Group</strong> and add the public key to it. Attach the Key Group to your CloudFront Cache Behavior.</li>
   </ol>
 
   <div class="callout key">
-    <strong class="tag">Exam point</strong>
-    The old CloudFront key-pair method (root account, AWS console, security credentials page) still exists, but the <strong>recommended, current approach is public keys + key groups</strong>, since it supports IAM permissions and API automation.
+    <strong class="tag">Exam Point</strong>
+    The modern, recommended AWS practice for CloudFront URL signing is <strong>Public Keys + Key Groups</strong> because it supports automation via AWS APIs and standard IAM access control.
   </div>
 </section>
 
@@ -736,22 +717,20 @@
 <section class="card" id="advanced">
   <h2><span class="badge">11</span> Advanced Concepts</h2>
 
-  <h3>Pricing & Price Classes</h3>
-  <p>Data transfer cost out of CloudFront varies by continent/region — e.g. the first 10TB out of the US/Canada/Mexico costs ~$0.08/GB, while the same in India costs about ~$0.17/GB. Cost per GB also drops the more total data you transfer (e.g. over 5PB out of the US drops to ~$0.02/GB).</p>
+  <h3>Price Classes</h3>
+  <p>Outbound data transfer costs vary across continents. To optimize cost, select a <strong>Price Class</strong> that restricts edge locations used by your distribution:</p>
 
-  <p>To control cost, you can limit which edge locations serve your distribution using a <strong>Price Class</strong>:</p>
   <table>
-    <tr><th>Price Class</th><th>Coverage</th></tr>
-    <tr><td>Price Class All</td><td>All edge locations worldwide — best performance, highest cost</td></tr>
-    <tr><td>Price Class 200</td><td>Most regions, excludes the priciest ones</td></tr>
-    <tr><td>Price Class 100</td><td>Only the least expensive regions (e.g. North America & Europe)</td></tr>
+    <tr><th>Price Class</th><th>Edge Location Coverage</th></tr>
+    <tr><td><strong>Price Class All</strong></td><td>All global Edge Locations (highest performance, highest cost)</td></tr>
+    <tr><td><strong>Price Class 200</strong></td><td>Includes most regions, excluding expensive locations</td></tr>
+    <tr><td><strong>Price Class 100</strong></td><td>Includes only lowest-cost regions (North America & Europe)</td></tr>
   </table>
 
   <h3>Multiple Origins vs Origin Groups</h3>
-  <p>These solve <strong>different</strong> problems:</p>
   <ul>
-    <li><strong>Multiple origins + cache behaviors</strong> — route by path/content type, e.g. <code>/api/*</code> → Application Load Balancer, everything else → S3.</li>
-    <li><strong>Origin Groups</strong> — high availability / failover. One <strong>primary</strong> + one <strong>secondary</strong> origin; if the primary errors out, CloudFront retries the same request against the secondary.</li>
+    <li><strong>Multiple Origins + Cache Behaviors:</strong> Route traffic by request path pattern (e.g., <code>/api/*</code> to ALB, <code>/*</code> to S3).</li>
+    <li><strong>Origin Groups (Failover):</strong> Combine a <strong>Primary Origin</strong> and a <strong>Secondary Origin</strong>. If the primary fails with HTTP errors (e.g., 500, 502, 503, 504), CloudFront automatically retries against the secondary origin.</li>
   </ul>
 
   <div class="diagram">
@@ -768,10 +747,10 @@
       <text class="svg-text" x="85" y="114" text-anchor="middle" font-size="10">Secondary origin</text>
     </svg>
   </div>
-  <p class="caption">In an origin group, CloudFront automatically retries a failed request against the secondary origin — e.g. two S3 buckets in different regions kept in sync via replication, giving region-level disaster recovery.</p>
+  <p class="caption">An Origin Group automatically routes failed requests from the primary origin to a secondary backup origin for high availability.</p>
 
   <h3>Field-Level Encryption</h3>
-  <p>Adds extra protection for specific sensitive fields (e.g. credit card numbers) <strong>on top of</strong> HTTPS encryption in transit — using asymmetric encryption.</p>
+  <p>Encrypts specific sensitive POST data fields (such as credit card numbers or PAN/Aadhaar numbers) at the CloudFront Edge Location before transmitting across the network.</p>
 
   <div class="diagram">
     <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
@@ -787,11 +766,11 @@
       <text class="svg-label" x="700" y="95" text-anchor="middle" font-size="9">Web server: decrypts with private key</text>
     </svg>
   </div>
-  <p class="caption">Only the sensitive field (e.g. a credit card number) gets its own layer of encryption at the edge — everything in between (CloudFront, the load balancer) passes it along encrypted, and only the web server holding the private key can decrypt it.</p>
+  <p class="caption">Field-level encryption encrypts sensitive fields at the edge. Intermediary servers (load balancers) cannot read the data; only the backend server holding the private key decrypts it.</p>
 
   <ul>
-    <li>Up to <strong>10 fields</strong> can be marked for field-level encryption per request.</li>
-    <li>Only the origin/web server with the <strong>private key</strong> can decrypt those fields — CloudFront and any load balancer in between never see the plaintext.</li>
+    <li>Supports encrypting up to <strong>10 specific fields</strong> per HTTP request payload.</li>
+    <li>Only the target backend origin holding the private key can decrypt the data fields.</li>
   </ul>
 </section>
 
@@ -799,12 +778,12 @@
 <section class="card" id="real-time-logs">
   <h2><span class="badge">12</span> Real-Time Logs</h2>
 
-  <p>CloudFront can stream every request it receives, in real time, into a <strong>Kinesis Data Stream</strong> — useful for monitoring, analyzing, and reacting to content delivery performance.</p>
+  <p>CloudFront can stream request telemetry in real time directly to an <strong>Amazon Kinesis Data Stream</strong> for monitoring and analytics.</p>
 
   <ul>
-    <li>For near-real-time (batch) processing instead, send the same stream through <strong>Kinesis Data Firehose</strong> to a destination like S3 or OpenSearch.</li>
-    <li>You control the <strong>sampling rate</strong> — the percentage of requests captured (useful to avoid overwhelming the stream on high-traffic endpoints).</li>
-    <li>You can also choose which <strong>fields</strong> and which <strong>cache behaviors/path patterns</strong> get logged (e.g. only requests to <code>/images/*</code>).</li>
+    <li>Stream data through <strong>Kinesis Data Firehose</strong> to deliver log files to S3 buckets or OpenSearch.</li>
+    <li>Configure custom <strong>sampling rates</strong> (percentage of requests logged) to manage throughput.</li>
+    <li>Filter logging to specific fields and Cache Behaviors.</li>
   </ul>
 </section>
 
@@ -812,41 +791,35 @@
 <section class="card cheatsheet" id="cheatsheet">
   <h2><span class="badge">✓</span> Cheat Sheet</h2>
 
-  <h3>Key facts to remember</h3>
+  <h3>Key Facts to Remember</h3>
   <ul>
-    <li>CDN on the exam = CloudFront. Caches content at edge locations globally, lowering latency and adding DDoS resilience.</li>
-    <li>Origins: S3 (via OAC), VPC origin (private ALB/NLB/EC2 — the modern secure way), or custom HTTP origin.</li>
-    <li>CloudFront vs S3 CRR: CloudFront = global caching (~1 day TTL) for static content; CRR = near-real-time, read-only, region-to-region replication for dynamic content.</li>
-    <li>Default Cache Key = hostname + resource path; extend it with headers/cookies/query strings via a <strong>Cache Policy</strong> — but anything you add is also forwarded to the origin and hurts your hit ratio.</li>
-    <li>Need to forward extra data to the origin <em>without</em> affecting the cache key? Use an <strong>Origin Request Policy</strong>.</li>
-    <li>Force fresh content immediately (before TTL expires) with a <strong>Cache Invalidation</strong> — scope it (e.g. <code>/images/*</code>) rather than always using <code>/*</code>.</li>
-    <li><strong>Cache behaviors</strong> route by path pattern to different origins; the default (<code>/*</code>) always evaluates last.</li>
-    <li><strong>Geo restriction</strong>: allow-list or block-list by country (via geo-IP lookup).</li>
-    <li><strong>Signed URL</strong> = one file per URL; <strong>Signed cookie</strong> = many files per cookie. Trusted key groups are the modern way to manage signing keys (vs. the old root-only CloudFront key pair).</li>
-    <li>CloudFront Signed URL works with any origin type; S3 Pre-signed URL only works directly against S3 (no CloudFront in front).</li>
-    <li><strong>Price classes</strong> trade off edge location coverage vs. cost (All / 200 / 100).</li>
-    <li><strong>Origin groups</strong> (primary + secondary) give automatic failover / high availability — different purpose than multi-origin path-based routing.</li>
-    <li><strong>Field-level encryption</strong> protects specific sensitive fields end-to-end, decryptable only by the origin holding the private key.</li>
-    <li><strong>Real-time logs</strong> stream requests to Kinesis Data Stream (optionally onward via Firehose), with configurable sampling rate and field/path filtering.</li>
+    <li><strong>CDN:</strong> CloudFront caches content at global Edge Locations to reduce latency and protect against DDoS attacks.</li>
+    <li><strong>Origins:</strong> Amazon S3 (via OAC), VPC Origins (private ALBs, NLBs, EC2), or Custom HTTP servers.</li>
+    <li><strong>Cache Policy vs Origin Request Policy:</strong> Cache Policy defines parameters included in the Cache Key (which are also sent to origin). Origin Request Policy forwards extra headers/cookies to origin without altering the Cache Key.</li>
+    <li><strong>Invalidations:</strong> Purge cached files from edge locations before TTL expiration.</li>
+    <li><strong>Cache Behaviors:</strong> Route paths to different origins; default (<code>/*</code>) evaluates last.</li>
+    <li><strong>Geo Restriction:</strong> Whitelist or blocklist traffic by country location.</li>
+    <li><strong>Signed URLs & Cookies:</strong> Secure private distribution files. Use Key Groups for modern automated key management.</li>
+    <li><strong>Origin Groups:</strong> Provide automated primary-to-secondary failover.</li>
+    <li><strong>Field-Level Encryption:</strong> Protects sensitive payload fields end-to-end using edge public key encryption.</li>
   </ul>
 
-  <h3>Decision guide</h3>
+  <h3>Decision Guide</h3>
   <table>
-    <tr><th>Need</th><th>Use</th></tr>
-    <tr><td>Serve static content fast worldwide</td><td>CloudFront + S3 origin</td></tr>
-    <tr><td>Serve private backend (ALB/EC2) securely</td><td>CloudFront VPC origin</td></tr>
-    <tr><td>Refresh cached content immediately</td><td>Cache invalidation</td></tr>
-    <tr><td>Different content/origin per path</td><td>Cache behaviors</td></tr>
-    <tr><td>Failover if an origin goes down</td><td>Origin groups</td></tr>
-    <tr><td>Restrict by country</td><td>Geo restriction</td></tr>
-    <tr><td>Give one file's worth of temporary access</td><td>Signed URL</td></tr>
-    <tr><td>Give a batch of files' worth of temporary access</td><td>Signed cookie</td></tr>
-    <tr><td>Protect one sensitive field end-to-end</td><td>Field-level encryption</td></tr>
-    <tr><td>Reduce edge coverage to save cost</td><td>Lower price class</td></tr>
+    <tr><th>Requirement</th><th>AWS Feature</th></tr>
+    <tr><td>Global static website acceleration</td><td>CloudFront + S3 Origin (with OAC)</td></tr>
+    <tr><td>Secure private backend distribution</td><td>CloudFront VPC Origin</td></tr>
+    <tr><td>Force immediate edge cache refresh</td><td>CloudFront Cache Invalidation</td></tr>
+    <tr><td>Route path traffic to different backends</td><td>CloudFront Cache Behaviors</td></tr>
+    <tr><td>High availability origin failover</td><td>CloudFront Origin Groups</td></tr>
+    <tr><td>Restrict access by country</td><td>CloudFront Geo Restriction</td></tr>
+    <tr><td>Time-bound single file access</td><td>CloudFront Signed URL</td></tr>
+    <tr><td>Time-bound batch file access</td><td>CloudFront Signed Cookie</td></tr>
+    <tr><td>Protect sensitive payload fields end-to-end</td><td>Field-Level Encryption</td></tr>
   </table>
 
-  <h3>Mental model</h3>
-  <p>CloudFront is a global cache sitting in front of your real backend (S3, ALB, EC2, or any HTTP origin): it decides what to cache and how (cache policies, cache keys), how to invalidate stale content, how to route different paths to different places (cache behaviors and origin groups), how to keep things private and controlled (VPC origins, signed URLs/cookies, geo restriction, field-level encryption), and how to keep costs down by choosing how far around the world you actually need edge coverage (price classes) — all while giving you visibility into what's happening through real-time logs.</p>
+  <h3>Mental Model</h3>
+  <p>CloudFront acts as a high-speed global caching shield in front of backend origins. <strong>Cache Policies</strong> govern what gets cached at the edge. <strong>VPC Origins</strong> and <strong>OAC</strong> secure backend infrastructure. <strong>Signed URLs, Cookies, Geo Restriction,</strong> and <strong>Field-Level Encryption</strong> enforce data privacy and security, while <strong>Origin Groups</strong> deliver fault-tolerant origin failover.</p>
 </section>
 
 <a class="back-to-top" href="#top">↑ Back to top</a>

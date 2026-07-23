@@ -369,8 +369,8 @@
 <div class="wrap">
 
 <header id="top">
-  <h1><span>Section 12</span> — AWS CLI, SDK, IAM Roles & Policies</h1>
-  <p class="subtitle">My notes on EC2 instance metadata, CLI profiles & MFA, the AWS SDK, exponential backoff, and request signing (SigV4).</p>
+  <h1><span>Section 12</span> — AWS CLI, SDK, IAM Roles &amp; Policies</h1>
+  <p class="subtitle">Notes on EC2 instance metadata, CLI profiles &amp; MFA, AWS SDK usage, exponential backoff, and SigV4 request signing.</p>
 </header>
 
 <nav class="toc">
@@ -381,7 +381,7 @@
     <li><a href="#cli-profiles">AWS CLI Profiles</a></li>
     <li><a href="#cli-mfa">AWS CLI with MFA</a></li>
     <li><a href="#sdk">AWS SDK Overview</a></li>
-    <li><a href="#backoff">Exponential Backoff & Service Limit Increase</a></li>
+    <li><a href="#backoff">Exponential Backoff &amp; Service Limit Increase</a></li>
     <li><a href="#sigv4">AWS Signature v4 Signing (SigV4)</a></li>
     <li><a href="#cheatsheet">Cheat Sheet</a></li>
   </ol>
@@ -391,25 +391,30 @@
 <section class="card" id="imds">
   <h2><span class="badge">1</span> EC2 Instance Metadata (IMDS)</h2>
 
-  <p>IMDS (Instance Metadata Service) lets an EC2 instance learn about <em>itself</em> — without needing an IAM role just to ask "who am I?". The instance talks to a special local URL:</p>
+  <p><strong>IMDS (Instance Metadata Service)</strong> allows an EC2 instance to query information about <em>itself</em> without needing an IAM access key stored inside the server. The EC2 instance queries a special local link-local IP address:</p>
   <p><code>http://169.254.169.254</code></p>
 
+  <div class="analogy">
+    <strong class="tag">Real-world Analogy</strong>
+    Think of IMDS like an EC2 instance looking into a mirror in its room to check its own ID badge details (instance ID, private IP, public IP, and attached IAM role).
+  </div>
+
   <ul>
-    <li>From this URL you can get things like the instance name, public IP, private IP, and more.</li>
-    <li>You can also retrieve the <strong>IAM role name</strong> attached to the instance, and even get temporary <strong>credentials</strong> for that role.</li>
-    <li>You <strong>cannot</strong> see what IAM <em>policy</em> is attached to the role — just the role's credentials.</li>
+    <li>From this URL, an instance can fetch its hostname, public IP, private IP, and instance type.</li>
+    <li>It can also fetch temporary credentials for the <strong>IAM Role</strong> attached to the server (an IAM Role is like a temporary visitor pass with permissions).</li>
+    <li>You <strong>cannot</strong> see the full JSON security policy document attached to the role — only the temporary security credentials.</li>
   </ul>
 
   <div class="callout key">
-    <strong class="tag">Terminology</strong>
-    <strong>Metadata</strong> = information about the instance itself. <strong>User data</strong> = the launch script you gave the instance at boot. Both are accessible through this same base URL, but this lecture is only about the metadata side.
+    <strong class="tag">Important Difference</strong>
+    <strong>Metadata</strong> = information about the server itself (IPs, role credentials). <strong>User Data</strong> = the startup shell script executed when the server first boots up. Both use <code>169.254.169.254</code>.
   </div>
 
   <h3>IMDSv1 vs IMDSv2</h3>
   <table>
-    <tr><th>Version</th><th>How it works</th><th>Notes</th></tr>
-    <tr><td>IMDSv1</td><td>Query the metadata URL directly</td><td>Simple, but less secure</td></tr>
-    <tr><td>IMDSv2</td><td>Two steps: (1) <code>PUT</code> a request to get a session token, (2) pass that token as a header when calling the metadata URL</td><td>More secure, enabled by default since 2023; more overhead but AWS made this the default for security reasons</td></tr>
+    <tr><th>IMDS Version</th><th>How it Works</th><th>Notes</th></tr>
+    <tr><td>IMDSv1</td><td>Directly query the metadata URL via simple <code>GET</code> request</td><td>Simpler, but vulnerable to SSRF security attacks</td></tr>
+    <tr><td>IMDSv2</td><td>2-step session token process: (1) Send <code>PUT</code> request to get a session token, (2) Pass that token in header <code>X-aws-ec2-metadata-token</code> when sending <code>GET</code></td><td>More secure; default on Amazon Linux 2023 AMIs</td></tr>
   </table>
 
   <div class="diagram">
@@ -423,25 +428,25 @@
       <text class="svg-text" x="95" y="80" text-anchor="middle">EC2 Instance</text>
 
       <path class="svg-arrow" d="M170,65 L290,65"/>
-      <text class="svg-label" x="230" y="55" text-anchor="middle" font-size="10">1. PUT for token</text>
+      <text class="svg-label" x="230" y="55" text-anchor="middle" font-size="10">1. PUT request for token</text>
 
       <rect class="svg-box-accent" x="290" y="30" width="200" height="90" rx="8"/>
       <text class="svg-text" x="390" y="60" text-anchor="middle" font-weight="600">IMDS</text>
       <text class="svg-label" x="390" y="78" text-anchor="middle" font-size="10">169.254.169.254</text>
 
       <path class="svg-arrow" d="M290,95 L172,95"/>
-      <text class="svg-label" x="230" y="110" text-anchor="middle" font-size="10">2. returns token</text>
+      <text class="svg-label" x="230" y="110" text-anchor="middle" font-size="10">2. Returns session token</text>
 
       <path class="svg-arrow" d="M170,130 Q 330,145 490,90" />
-      <text class="svg-label" x="330" y="146" text-anchor="middle" font-size="10">3. GET metadata/credentials with token header</text>
+      <text class="svg-label" x="330" y="146" text-anchor="middle" font-size="10">3. GET metadata with token header</text>
 
       <rect class="svg-box" x="540" y="50" width="200" height="50" rx="6"/>
       <text class="svg-text" x="640" y="72" text-anchor="middle" font-size="11">Metadata / IAM</text>
-      <text class="svg-text" x="640" y="88" text-anchor="middle" font-size="11">role credentials</text>
+      <text class="svg-text" x="640" y="88" text-anchor="middle" font-size="11">Role Credentials</text>
       <path class="svg-arrow" d="M490,75 L540,75"/>
     </svg>
   </div>
-  <p class="caption">IMDSv2 flow: the instance first requests a session token, then uses that token as a header to read its own metadata or IAM role credentials.</p>
+  <p class="caption">IMDSv2 workflow: Request token using PUT → Receive token → Fetch metadata using GET with token header.</p>
 </section>
 
 <!-- 2. IMDS HANDS ON -->
@@ -449,33 +454,26 @@
   <h2><span class="badge">2</span> IMDS Hands On</h2>
 
   <ul>
-    <li>When launching an EC2 instance, under <strong>Advanced details</strong> there's a <strong>Metadata version</strong> setting: <code>V1 and V2</code> or <code>V2 only</code>.</li>
-    <li><strong>Amazon Linux 2023</strong> defaults to <code>V2 only</code>. Older AMIs like <strong>Amazon Linux 2</strong> let you choose either.</li>
+    <li>When launching an EC2 instance, you can choose metadata options: <code>V1 and V2</code> or <code>V2 only</code>.</li>
+    <li><strong>Amazon Linux 2023</strong> enforces <code>V2 only</code> by default.</li>
   </ul>
 
   <div class="callout warning">
-    <strong class="tag">Don't forget</strong>
-    On Amazon Linux 2023, trying IMDSv1 directly (plain <code>curl</code> against the metadata URL) returns <code>401 Unauthorized</code>. You must use the IMDSv2 token flow instead.
+    <strong class="tag">Common Error</strong>
+    On Amazon Linux 2023, attempting a direct IMDSv1 <code>curl</code> command returns <code>401 Unauthorized</code>. You must use the 2-step IMDSv2 token flow instead.
   </div>
 
-  <h3>Using IMDSv2 from the instance</h3>
+  <h3>Fetching Metadata via IMDSv2</h3>
   <ol>
-    <li>Get a token: <code>TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")</code> (the exact command is looked up from AWS docs).</li>
-    <li>Use the token as a header on subsequent requests: <code>curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/</code></li>
-    <li>A <strong>trailing slash</strong> means you're looking at a "directory" (more data inside); no trailing slash means you get an actual value.</li>
-    <li>Examples: <code>.../meta-data/hostname</code> returns the hostname, <code>.../meta-data/local-ipv4</code> returns the private IP.</li>
+    <li>Generate a session token:<br><code>TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")</code></li>
+    <li>Fetch metadata using the token header:<br><code>curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/</code></li>
+    <li>Example paths: <code>.../meta-data/local-ipv4</code> returns the private IP address.</li>
+    <li>IAM credentials path: <code>.../meta-data/iam/security-credentials/your-role-name</code> returns temporary Access Key ID, Secret Access Key, and Session Token.</li>
   </ol>
 
-  <h3>Getting IAM role credentials via IMDS</h3>
-  <ul>
-    <li>Path: <code>.../meta-data/iam/security-credentials/</code></li>
-    <li>With <strong>no IAM role</strong> attached to the instance, this returns <code>404 Not Found</code>.</li>
-    <li>After attaching a role (<strong>EC2 console → Actions → Security → Modify IAM role</strong>) and waiting ~30 seconds, querying <code>.../security-credentials/&lt;role-name&gt;</code> returns a JSON blob with an <strong>Access Key ID</strong>, <strong>Secret Access Key</strong>, <strong>Session Token</strong>, and an <strong>expiration</strong> (roughly an hour or so out).</li>
-  </ul>
-
   <div class="callout tip">
-    <strong class="tag">Good to know</strong>
-    You never have to do this by hand in real usage — the AWS CLI and SDK automatically call IMDS behind the scenes to get an instance's IAM role credentials. This lecture is just showing you what's happening under the hood.
+    <strong class="tag">Good to Know</strong>
+    You do not need to fetch IMDS credentials manually in application code. The AWS SDK and AWS CLI automatically call IMDS in the background to handle authentication.
   </div>
 </section>
 
@@ -483,97 +481,70 @@
 <section class="card" id="cli-profiles">
   <h2><span class="badge">3</span> AWS CLI Profiles</h2>
 
-  <p>If you work with multiple AWS accounts, <strong>profiles</strong> let you store separate sets of credentials locally and switch between them on the command line.</p>
+  <p>If you work across multiple AWS accounts (e.g. Development and Production), <strong>named profiles</strong> let you save separate sets of credentials locally on your laptop.</p>
 
-  <ul>
-    <li>Your <code>~/.aws/credentials</code> file normally has a <code>[default]</code> section with an access key + secret key. <code>~/.aws/config</code> has matching <code>[default]</code> settings like region.</li>
-    <li>To add another account, run <code>aws configure --profile &lt;name&gt;</code> (e.g. <code>aws configure --profile my-other-aws-account</code>) and enter that account's access key, secret key, region, and output format.</li>
-    <li>This creates a new named section (e.g. <code>[my-other-aws-account]</code>) in both the credentials and config files, alongside <code>[default]</code>.</li>
-  </ul>
-
-  <h3>Using a profile</h3>
-  <ul>
-    <li><code>aws s3 ls</code> — runs against the <code>default</code> profile.</li>
-    <li><code>aws s3 ls --profile my-other-aws-account</code> — runs against that specific profile instead.</li>
-  </ul>
-
-  <div class="callout tip">
-    <strong class="tag">Real-world tip</strong>
-    Not an exam topic, but genuinely useful: once you're juggling multiple AWS accounts, always set up named profiles and pass <code>--profile</code> explicitly so you don't accidentally run commands against the wrong account.
+  <div class="analogy">
+    <strong class="tag">Real-world Analogy</strong>
+    Profiles are like carrying multiple identity cards in your wallet for different offices (`[default]`, `[dev]`, `[prod]`). You pick which ID card to present when performing a task.
   </div>
+
+  <h3>Managing Profiles</h3>
+  <ul>
+    <li>Default configuration lives in <code>~/.aws/credentials</code> and <code>~/.aws/config</code>.</li>
+    <li>Configure a new named profile:<br><code>aws configure --profile my-dev-account</code></li>
+    <li>Run a CLI command using a specific profile:<br><code>aws s3 ls --profile my-dev-account</code></li>
+  </ul>
 </section>
 
 <!-- 4. CLI WITH MFA -->
 <section class="card" id="cli-mfa">
-  <h2><span class="badge">4</span> AWS CLI with MFA</h2>
+  <h2><span class="badge">4</span> AWS CLI with Multi-Factor Authentication (MFA)</h2>
 
-  <p>To use Multi-Factor Authentication with the CLI/SDK, you need a <strong>temporary session</strong>, obtained via the API call <code>sts get-session-token</code>.</p>
+  <p>To run AWS CLI commands with MFA security enabled, you generate temporary credentials using the AWS Security Token Service (STS) API call: <code>sts get-session-token</code>.</p>
 
   <div class="callout key">
-    <strong class="tag">Exam point</strong>
-    Remember the API name: <code>STS GetSessionToken</code>. You pass it your MFA device's <strong>serial number</strong>, the current <strong>token code</strong> from the device, and how long you want the credentials to last. It returns a temporary <strong>Access Key ID</strong>, <strong>Secret Access Key</strong>, and <strong>Session Token</strong>.
+    <strong class="tag">Exam Tip</strong>
+    Remember the exact API name: <code>STS GetSessionToken</code>. You pass your MFA device ARN and the current 6-digit code. It returns temporary credentials (Access Key ID, Secret Access Key, and Session Token) valid for a short time.
   </div>
 
-  <h3>Hands-on steps</h3>
-  <ol>
-    <li>In <strong>IAM → your user → Security credentials</strong>, assign a virtual MFA device (scan the QR code with an app like Authy, enter two consecutive MFA codes to confirm).</li>
-    <li>Note the MFA device's ARN — you'll need it as the serial number.</li>
-    <li>Run: <code>aws sts get-session-token --serial-number &lt;mfa-arn&gt; --token-code &lt;current-code&gt;</code></li>
-    <li>This returns temporary credentials (expiring in about an hour).</li>
-    <li>Create a new profile for them: <code>aws configure --profile mfa</code> (enter the temporary access key + secret key).</li>
-    <li>Manually edit <code>~/.aws/credentials</code> to add a line under that profile: <code>aws_session_token = &lt;token&gt;</code> (the <code>configure</code> command doesn't have a prompt for the session token, so you add it directly in the file).</li>
-    <li>Now <code>aws s3 ls --profile mfa</code> makes calls using your temporary, MFA-backed credentials.</li>
-  </ol>
-
-  <div class="callout tip">
-    <strong class="tag">Key takeaway</strong>
-    Even if the hands-on steps feel fiddly, the one thing to remember is: <code>STS GetSessionToken</code> is the API for generating temporary, MFA-authenticated credentials (access key + secret key + session token).
-  </div>
+  <h3>Command Example</h3>
+  <p><code>aws sts get-session-token --serial-number arn:aws:iam::123456789012:mfa/user-mfa --token-code 123456</code></p>
+  <p>Add the returned <code>aws_session_token</code> to your profile inside <code>~/.aws/credentials</code> to execute secure CLI commands.</p>
 </section>
 
 <!-- 5. SDK OVERVIEW -->
 <section class="card" id="sdk">
   <h2><span class="badge">5</span> AWS SDK Overview</h2>
 
-  <p>The <strong>SDK</strong> (Software Development Kit) lets you call AWS services directly from your application's code, instead of going through the CLI.</p>
-
-  <ul>
-    <li>AWS provides official SDKs for many languages: Java, .NET, Node.js, PHP, Python, Go, Ruby, C++ (and the list keeps growing).</li>
-    <li>You use the SDK whenever your code needs to make API calls to AWS services — e.g. DynamoDB or Amazon S3.</li>
-  </ul>
+  <p>The <strong>AWS SDK (Software Development Kit)</strong> allows you to integrate AWS services directly into your application code (Java, Python, Node.js, Go, .NET, C++, etc.).</p>
 
   <div class="analogy">
-    <strong class="tag">Fun fact</strong>
-    The AWS CLI itself is written in Python and uses the Python SDK, <code>Boto3</code>, under the hood. So every time you've been running CLI commands in this course, you've indirectly been using an SDK already.
+    <strong class="tag">Real-world Analogy</strong>
+    Using an SDK is like using a ready-made mobile banking app module inside your code, rather than having to write custom network socket code to talk to the bank's servers manually.
   </div>
 
-  <p>The exam expects you to know <em>when</em> to reach for an SDK (i.e., when you're building an application that needs to call AWS programmatically) — deeper hands-on SDK practice comes later in the course, in the Lambda functions section.</p>
+  <p><strong>Fun Fact:</strong> The AWS CLI tool is written in Python and uses the official Python SDK (<strong>Boto3</strong>) under the hood!</p>
 </section>
 
 <!-- 6. EXPONENTIAL BACKOFF -->
 <section class="card" id="backoff">
-  <h2><span class="badge">6</span> Exponential Backoff & Service Limit Increase</h2>
+  <h2><span class="badge">6</span> Exponential Backoff &amp; Service Quotas</h2>
 
-  <p>AWS has two types of limits ("quotas"):</p>
+  <p>AWS enforces two distinct limits to keep cloud services stable:</p>
+
   <table>
-    <tr><th>Type</th><th>What it limits</th><th>Example</th></tr>
-    <tr><td>API rate limits</td><td>How many times you can call a specific API per second</td><td><code>DescribeInstances</code> (EC2): 100 calls/sec. <code>GetObject</code> (S3): 5,500 GETs/sec per prefix.</td></tr>
-    <tr><td>Service quotas (service limits)</td><td>How many resources you can run at once</td><td>On-Demand Standard instances: up to 1,152 vCPUs per account</td></tr>
+    <tr><th>Limit Type</th><th>Description</th><th>Example</th></tr>
+    <tr><td><strong>API Rate Limits (Throttling)</strong></td><td>Limits how many API requests per second you can send</td><td><code>GetObject</code> on S3: 5,500 GETs/sec per prefix. Throttling error: <code>429 / SlowDown / ProvisionedThroughputExceeded</code></td></tr>
+    <tr><td><strong>Service Quotas (Service Limits)</strong></td><td>Limits total resources running at once in an account</td><td>Maximum number of vCPUs or On-Demand EC2 instances allowed</td></tr>
   </table>
 
-  <ul>
-    <li>Going over an <strong>API rate limit</strong> gets you throttled (intermittent errors) — the fix is an <strong>exponential backoff</strong> retry strategy.</li>
-    <li>If you're <em>consistently</em> hitting rate limits due to real heavy usage, request an <strong>API throttling limit increase</strong> from AWS.</li>
-    <li>Going over a <strong>service quota</strong> means requesting a <strong>service limit increase</strong> (open a support ticket, or call the <strong>Service Quotas API</strong> programmatically).</li>
-  </ul>
+  <h3>Handling Throttling: Exponential Backoff</h3>
+  <p>When an API request gets throttled, retry the request but <strong>double the wait time</strong> after each failed attempt (e.g. 1s → 2s → 4s → 8s → 16s).</p>
 
-  <div class="callout key">
-    <strong class="tag">Exam point</strong>
-    Whenever you see a "throttling exception" in an exam question, the answer is almost always: implement <strong>exponential backoff</strong>.
+  <div class="analogy">
+    <strong class="tag">Real-world Analogy</strong>
+    If a friend's phone line is busy, you don't call every 1 second. You wait 1 minute, then 2 minutes, then 4 minutes so you don't block the network. That is exponential backoff.
   </div>
-
-  <h3>How exponential backoff works</h3>
-  <p>Each time a request is throttled, you retry — but you wait <strong>double</strong> the time before the next retry: 1s → 2s → 4s → 8s → 16s...</p>
 
   <div class="diagram">
     <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
@@ -588,18 +559,18 @@
       <text class="svg-label" x="445" y="27" text-anchor="middle" font-size="10">8s</text>
       <rect class="svg-box-accent" x="680" y="10" width="30" height="90"/>
       <text class="svg-label" x="695" y="5" text-anchor="middle" font-size="10">16s</text>
-      <text class="svg-label" x="45" y="115" text-anchor="middle" font-size="9">retry 1</text>
-      <text class="svg-label" x="135" y="115" text-anchor="middle" font-size="9">retry 2</text>
-      <text class="svg-label" x="265" y="115" text-anchor="middle" font-size="9">retry 3</text>
-      <text class="svg-label" x="445" y="115" text-anchor="middle" font-size="9">retry 4</text>
-      <text class="svg-label" x="695" y="115" text-anchor="middle" font-size="9">retry 5</text>
+      <text class="svg-label" x="45" y="115" text-anchor="middle" font-size="9">Retry 1</text>
+      <text class="svg-label" x="135" y="115" text-anchor="middle" font-size="9">Retry 2</text>
+      <text class="svg-label" x="265" y="115" text-anchor="middle" font-size="9">Retry 3</text>
+      <text class="svg-label" x="445" y="115" text-anchor="middle" font-size="9">Retry 4</text>
+      <text class="svg-label" x="695" y="115" text-anchor="middle" font-size="9">Retry 5</text>
     </svg>
   </div>
-  <p class="caption">Each retry waits twice as long as the last one — this spreads out the load so a server under pressure gets breathing room instead of getting hit even harder.</p>
+  <p class="caption">Exponential backoff doubles the retry waiting time to give busy servers room to recover.</p>
 
   <div class="callout tip">
-    <strong class="tag">Good to know</strong>
-    If you use the AWS SDK, exponential backoff retry logic is <strong>already built in</strong>. If you're calling the raw AWS API yourself, you are responsible for implementing it yourself.
+    <strong class="tag">Exam Rule</strong>
+    If you see "API throttling exception" on the exam, the solution is to implement <strong>exponential backoff</strong>. All AWS SDKs have this retry mechanism built in automatically.
   </div>
 </section>
 
@@ -607,18 +578,13 @@
 <section class="card" id="sigv4">
   <h2><span class="badge">7</span> AWS Signature v4 Signing (SigV4)</h2>
 
-  <p>Every AWS HTTP API call needs to be <strong>signed</strong> so AWS knows who's making the request and whether they're authorized. Signing uses your credentials (access key + secret key) and the signing process itself is called <strong>SigV4 (Signature Version 4)</strong>.</p>
+  <p>Every HTTP API request sent to AWS must be digitally signed with your secret credentials using the <strong>SigV4 (Signature Version 4)</strong> protocol so AWS can verify who sent the request.</p>
 
-  <div class="callout tip">
-    <strong class="tag">Good to know</strong>
-    You don't need to know how to manually compute a SigV4 signature (it's a complicated 4-step process) — the CLI and SDK do this automatically for every request. Some requests, like reading a <em>public</em> S3 object, don't need to be signed at all; most other API calls do.
-  </div>
-
-  <h3>Two ways to send the signature</h3>
+  <h3>Two Ways SigV4 Signatures Are Passed</h3>
   <table>
-    <tr><th>Method</th><th>How</th></tr>
-    <tr><td>Authorization header</td><td>The computed signature is sent in the HTTP <code>Authorization</code> header. This is what the CLI does by default.</td></tr>
-    <tr><td>Query string</td><td>The signature is embedded directly in the URL, under the <code>X-Amz-Signature</code> query parameter.</td></tr>
+    <tr><th>Signing Method</th><th>How Signature Is Sent</th></tr>
+    <tr><td>Authorization Header</td><td>The signature string is included inside the standard HTTP <code>Authorization</code> header (used by default by AWS CLI and SDKs).</td></tr>
+    <tr><td>Query String Parameters</td><td>The signature is attached directly to the URL as a query parameter (e.g. <code>?X-Amz-Signature=...</code>). Used for temporary pre-signed S3 URLs.</td></tr>
   </table>
 
   <div class="diagram">
@@ -627,50 +593,46 @@
       <text class="svg-text" x="110" y="47" text-anchor="middle">HTTP Request</text>
       <path class="svg-arrow" d="M200,42 L320,42"/>
       <rect class="svg-box-accent" x="320" y="20" width="200" height="45" rx="6"/>
-      <text class="svg-text" x="420" y="40" text-anchor="middle" font-size="11">Authorization header</text>
-      <text class="svg-label" x="420" y="55" text-anchor="middle" font-size="9">(what the CLI uses)</text>
+      <text class="svg-text" x="420" y="40" text-anchor="middle" font-size="11">Authorization Header</text>
+      <text class="svg-label" x="420" y="55" text-anchor="middle" font-size="9">(CLI &amp; SDK default)</text>
 
       <rect class="svg-box" x="20" y="90" width="180" height="45" rx="6"/>
       <text class="svg-text" x="110" y="117" text-anchor="middle">HTTP Request</text>
       <path class="svg-arrow" d="M200,112 L320,112"/>
       <rect class="svg-box-accent" x="320" y="90" width="200" height="45" rx="6"/>
-      <text class="svg-text" x="420" y="110" text-anchor="middle" font-size="11">Query string</text>
+      <text class="svg-text" x="420" y="110" text-anchor="middle" font-size="11">Query String</text>
       <text class="svg-label" x="420" y="125" text-anchor="middle" font-size="9">?X-Amz-Signature=...</text>
     </svg>
   </div>
-  <p class="caption">Two valid places to carry a SigV4 signature: baked into the Authorization header, or appended to the URL as a query parameter.</p>
-
-  <p>Example from the console: opening an S3 object generates a browser URL containing a <strong>security token</strong>, the <strong>algorithm</strong> (<code>AWS4-HMAC-SHA256</code> / SigV4), a <strong>date</strong>, an <strong>expiration</strong>, <strong>AMZ credentials</strong> (which account, etc.), and the <strong>AMZ signature</strong> itself — all passed as query string parameters so the browser can fetch the object without a separate Authorization header.</p>
 </section>
 
 <!-- CHEAT SHEET -->
 <section class="card cheatsheet" id="cheatsheet">
   <h2><span class="badge">✓</span> Cheat Sheet</h2>
 
-  <h3>Key facts to remember</h3>
+  <h3>Key Facts to Remember</h3>
   <ul>
-    <li>IMDS base URL: <code>169.254.169.254</code>. IMDSv2 requires a token (via <code>PUT</code>) passed as a header on every subsequent request; IMDSv1 is direct but less secure and disabled by default on newer AMIs (e.g. Amazon Linux 2023).</li>
-    <li>You can read an instance's IAM role credentials from IMDS at <code>.../iam/security-credentials/&lt;role&gt;</code>, but never the policy attached to the role.</li>
-    <li>Use <code>aws configure --profile &lt;name&gt;</code> and <code>--profile &lt;name&gt;</code> on commands to manage multiple AWS accounts from one machine.</li>
-    <li><code>STS GetSessionToken</code> is the API for getting temporary, MFA-backed credentials (access key, secret key, session token).</li>
-    <li>The CLI is built on the Python SDK (<code>Boto3</code>) — SDKs exist for many languages and are how applications call AWS programmatically.</li>
-    <li>Throttling exception → think <strong>exponential backoff</strong>. SDK includes this automatically; raw API usage means you implement it yourself.</li>
-    <li>Two kinds of AWS limits: <strong>API rate limits</strong> (calls/sec, fixed with backoff or a throttling limit increase) vs <strong>service quotas</strong> (resource counts, fixed with a service limit increase / Service Quotas API).</li>
-    <li>Every signed AWS API request uses <strong>SigV4</strong>; the signature travels either in the <code>Authorization</code> header or as an <code>X-Amz-Signature</code> query string parameter.</li>
+    <li>IMDS base URL is <code>169.254.169.254</code>. IMDSv2 uses a 2-step token-based <code>PUT</code> flow for better security.</li>
+    <li>IMDS lets an instance fetch metadata and temporary IAM Role credentials, but not the raw policy document.</li>
+    <li>Use <code>aws configure --profile &lt;name&gt;</code> to manage multiple AWS accounts locally.</li>
+    <li>Use <code>STS GetSessionToken</code> to generate temporary MFA-authenticated CLI credentials.</li>
+    <li>AWS SDKs allow calling AWS services programmatically inside application code. The CLI is built on the Python SDK (Boto3).</li>
+    <li>Handle API Throttling errors using <strong>Exponential Backoff</strong> (built into AWS SDKs).</li>
+    <li>AWS SigV4 signs API requests using either the HTTP <code>Authorization</code> header or URL query parameters (<code>X-Amz-Signature</code>).</li>
   </ul>
 
-  <h3>Decision guide</h3>
+  <h3>Decision Guide</h3>
   <table>
-    <tr><th>Situation</th><th>What to do</th></tr>
-    <tr><td>App needs to call AWS from code</td><td>Use the AWS SDK for your language</td></tr>
-    <tr><td>Managing 2+ AWS accounts locally</td><td>Set up named CLI profiles, pass <code>--profile</code></td></tr>
-    <tr><td>Need temporary MFA-authenticated CLI access</td><td><code>aws sts get-session-token --serial-number ... --token-code ...</code></td></tr>
-    <tr><td>Getting throttled repeatedly by an API</td><td>Implement exponential backoff; if it's a real sustained need, request a rate limit increase</td></tr>
-    <tr><td>Hitting a resource count ceiling (e.g. vCPUs)</td><td>Request a service quota increase</td></tr>
+    <tr><th>Scenario</th><th>Action Required</th></tr>
+    <tr><td>Application code needs to call AWS services</td><td>Use the AWS SDK for your programming language</td></tr>
+    <tr><td>Working with multiple AWS accounts locally</td><td>Configure named CLI profiles (<code>--profile</code>)</td></tr>
+    <tr><td>Running CLI commands with MFA</td><td>Call <code>aws sts get-session-token</code></td></tr>
+    <tr><td>Getting hit with API throttling errors</td><td>Implement Exponential Backoff retries</td></tr>
+    <tr><td>Reaching account EC2 server instance limits</td><td>Request a Service Quota increase</td></tr>
   </table>
 
-  <h3>Mental model</h3>
-  <p>This section is all about the plumbing behind every AWS request: an EC2 instance can ask a special local address who it is and borrow its IAM role's credentials (IMDS); a person can juggle multiple accounts and even prove their identity with MFA to get short-lived credentials (CLI profiles + STS); code talks to AWS the same way the CLI does, just through an SDK instead of a terminal; every request that reaches AWS gets rate-limited and needs to be signed with SigV4 so AWS can trust it; and when things get throttled, the fix is simply to back off exponentially rather than everyone hammering the API harder.</p>
+  <h3>Simple Mental Model</h3>
+  <p>An EC2 server checks its mirror (IMDS at 169.254.169.254) to fetch its own identity and temporary IAM role pass. Developers manage multiple account keys using CLI profiles, execute MFA logins via STS, and write application code using SDKs. All requests to AWS are signed with SigV4 for security, and when AWS throttles busy applications, code backs off exponentially to keep connections running smoothly.</p>
 </section>
 
 <a class="back-to-top" href="#top">↑ Back to top</a>

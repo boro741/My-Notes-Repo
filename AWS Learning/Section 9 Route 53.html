@@ -271,26 +271,26 @@
 <!-- 1. DNS Basics -->
 <div class="card" id="dns-basics">
   <h2><span class="badge">1</span> What is a DNS?</h2>
-  <p>DNS = <strong>Domain Name System</strong>. Its whole job is to translate human-friendly hostnames (like <code>www.google.com</code>) into the IP address of the server you actually need to talk to.</p>
-  <p>Domain names are hierarchical, read right to left in importance:</p>
+  <p>DNS stands for <strong>Domain Name System</strong>. It acts as the <strong>phonebook of the internet</strong>. Its primary role is translating human-friendly web links (like <code>www.google.com</code>) into computer-readable IP addresses (like <code>142.250.190.46</code>) that servers use to communicate.</p>
+  <p>Domain names are structured hierarchically, read from right to left:</p>
   <ul>
-    <li><strong>Root</strong> — the invisible dot at the very end of every domain</li>
-    <li><strong>TLD (top level domain)</strong> — <code>.com</code>, <code>.org</code>, <code>.gov</code></li>
-    <li><strong>Second level domain</strong> — <code>example.com</code></li>
-    <li><strong>Subdomain</strong> — <code>www.example.com</code></li>
-    <li><strong>FQDN (fully qualified domain name)</strong> — <code>api.www.example.com</code></li>
+    <li><strong>Root:</strong> The trailing dot at the end of every web domain (usually hidden).</li>
+    <li><strong>TLD (Top-Level Domain):</strong> The domain extension such as <code>.com</code>, <code>.org</code>, or <code>.gov</code>.</li>
+    <li><strong>Second-Level Domain:</strong> The unique brand name registered (e.g. <code>example.com</code>).</li>
+    <li><strong>Subdomain:</strong> A prefix before the domain name (e.g. <code>www.example.com</code> or <code>api.example.com</code>).</li>
+    <li><strong>FQDN (Fully Qualified Domain Name):</strong> The complete web path (e.g. <code>api.www.example.com.</code>).</li>
   </ul>
 
-  <h3>Key terms</h3>
+  <h3>Key Terminology</h3>
   <ul>
-    <li><strong>Domain registrar</strong> — where you buy/register a domain name (Route 53, GoDaddy, etc.)</li>
-    <li><strong>DNS records</strong> — entries that map names to values (A, AAAA, CNAME, NS...)</li>
-    <li><strong>Zone file</strong> — contains all the DNS records for a domain</li>
-    <li><strong>Name servers</strong> — the servers that actually answer DNS queries</li>
+    <li><strong>Domain Registrar:</strong> An accredited company where you purchase and register domain names (e.g. Amazon Route 53, GoDaddy).</li>
+    <li><strong>DNS Records:</strong> Mapping entries configured inside a domain (e.g. A, AAAA, CNAME, NS records).</li>
+    <li><strong>Zone File:</strong> A text file containing all DNS records configured for a domain.</li>
+    <li><strong>Name Servers:</strong> Special DNS servers that store zone files and answer domain queries.</li>
   </ul>
 
-  <h3>How a DNS lookup actually works</h3>
-  <p>This is the important mental model — a query gets passed along a chain until someone knows the exact answer, and each server just points you closer:</p>
+  <h3>How a Recursive DNS Lookup Works</h3>
+  <p>When you enter a web address, your request travels through a lookup chain until the exact IP address is located:</p>
 
   <div class="diagram">
     <svg viewBox="0 0 760 260" xmlns="http://www.w3.org/2000/svg">
@@ -328,55 +328,54 @@
       <text x="500" y="185" font-size="10" fill="#4b5563">3. "here's the exact IP"</text>
       <text x="30" y="200" font-size="10" fill="#4b5563">4. answer cached &amp; returned to browser</text>
     </svg>
-    <div class="caption">Each server doesn't know the final answer — it just knows who to ask next. The local DNS server does the legwork recursively, then caches the final answer.</div>
+    <div class="caption">Each server points to the next level down. Your local DNS resolver completes the search recursively, then caches the final answer.</div>
   </div>
 
   <div class="analogy">
-    <strong>Analogy</strong>
-    Think of it like asking for directions in an unfamiliar city. You ask a local (root server) who doesn't know your exact destination but says "that street is in this district" (.com). You go to that district and ask again, and someone there says "that building is managed by this company" (example.com's own server), who finally gives you the exact address.
+    <strong>Real-World Analogy</strong>
+    Finding a server IP via DNS is like asking for directions in a new city. You ask a traffic officer (Root server) who says "that area is in the North district" (.com TLD). You travel there and ask a local guide (.com TLD server) who says "that building is managed by AWS Route 53". Route 53 then hands you the exact house number (IP address).
   </div>
 
   <div class="callout tip">
-    <strong>Best practice</strong>
-    DNS is the backbone of the internet — you use it every single time you type a website name, even though it's invisible. Understanding this recursive lookup chain makes TTL, caching, and troubleshooting DNS issues much easier later.
+    <strong>Best Practice</strong>
+    Understanding recursive DNS resolution clarifies why DNS caching, TTL expiry, and propagation delays occur when modifying web server IPs.
   </div>
 </div>
 
 <!-- 2. Route 53 Overview -->
 <div class="card" id="r53-overview">
   <h2><span class="badge">2</span> Route 53 Overview &amp; Hosted Zones</h2>
-  <p>Amazon Route 53 is a highly available, scalable, fully managed, and <strong>authoritative</strong> DNS service. "Authoritative" just means: you, the customer, have full control to update the DNS records.</p>
+  <p><strong>Amazon Route 53</strong> is a highly available, scalable, managed, and <strong>authoritative</strong> DNS service from AWS. "Authoritative" means you maintain full control over configuring domain records.</p>
   <ul>
-    <li>Route 53 is also a <strong>domain registrar</strong> — you can buy domains directly through it (e.g. <code>example.com</code>)</li>
-    <li>It can check the <strong>health</strong> of your resources (more on this later)</li>
-    <li>It's the only AWS service with a <strong>100% availability SLA</strong></li>
+    <li>Acts as a <strong>Domain Registrar</strong> — register and buy custom web domains directly.</li>
+    <li>Performs automated <strong>Health Checks</strong> on your cloud applications.</li>
+    <li>The only AWS service offering a <strong>100% Availability SLA</strong> guarantee.</li>
   </ul>
   <div class="callout">
-    <strong>Where the name comes from</strong>
-    "53" refers to port 53 — the traditional port used by DNS services. Hence, Route <strong>53</strong>.
+    <strong>Origin of the Name:</strong> "53" refers to network Port 53 — the standardized networking port reserved for DNS services.
   </div>
 
-  <h3>What's inside a record</h3>
-  <p>Every DNS record you create in Route 53 contains:</p>
+  <h3>Anatomy of a DNS Record</h3>
+  <p>Every DNS record created in Route 53 contains:</p>
   <ul>
-    <li><strong>Name</strong> — the domain/subdomain, e.g. <code>example.com</code></li>
-    <li><strong>Type</strong> — e.g. <code>A</code>, <code>AAAA</code>, <code>CNAME</code></li>
-    <li><strong>Value</strong> — e.g. <code>12.34.56.78</code></li>
-    <li><strong>Routing policy</strong> — how Route 53 responds to queries</li>
-    <li><strong>TTL</strong> — how long resolvers should cache the answer</li>
+    <li><strong>Domain Name:</strong> The hostname (e.g. <code>example.com</code> or <code>app.example.com</code>).</li>
+    <li><strong>Record Type:</strong> Defines record behavior (e.g. <code>A</code>, <code>AAAA</code>, <code>CNAME</code>).</li>
+    <li><strong>Value:</strong> The target IP address or hostname destination (e.g. <code>12.34.56.78</code>).</li>
+    <li><strong>Routing Policy:</strong> How Route 53 responds to client DNS queries.</li>
+    <li><strong>TTL (Time To Live):</strong> Caching duration allowed for DNS resolvers.</li>
   </ul>
 
-  <h3>Record types you must know for the exam</h3>
+  <h3>Essential AWS Exam Record Types</h3>
   <table>
-    <tr><th>Type</th><th>Maps to</th><th>Notes</th></tr>
-    <tr><td><code>A</code></td><td>Hostname → IPv4 address</td><td>The classic record</td></tr>
-    <tr><td><code>AAAA</code></td><td>Hostname → IPv6 address</td><td>Same idea as A, just IPv6</td></tr>
-    <tr><td><code>CNAME</code></td><td>Hostname → another hostname</td><td>Can't be used at the zone apex (root domain)</td></tr>
-    <tr><td><code>NS</code></td><td>Name servers for the hosted zone</td><td>Controls which servers answer for your zone</td></tr>
+    <tr><th>Record Type</th><th>Target Mapping</th><th>Key Characteristic</th></tr>
+    <tr><td><code>A</code></td><td>Hostname → IPv4 address</td><td>Standard IPv4 address mapping.</td></tr>
+    <tr><td><code>AAAA</code></td><td>Hostname → IPv6 address</td><td>Standard IPv6 address mapping.</td></tr>
+    <tr><td><code>CNAME</code></td><td>Hostname → Hostname</td><td>Points a domain alias to another domain name. <strong>Cannot</strong> be used at the domain apex (root domain).</td></tr>
+    <tr><td><code>NS</code></td><td>Name Servers</td><td>Specifies authoritative name servers managing the domain.</td></tr>
   </table>
 
-  <h3>Hosted zones: public vs private</h3>
-  <p>A <strong>hosted zone</strong> is a container of records that defines how traffic is routed for a domain and its subdomains.</p>
+  <h3>Public vs Private Hosted Zones</h3>
+  <p>A <strong>Hosted Zone</strong> is a container storing DNS records that define traffic routing for a domain.</p>
 
   <div class="diagram">
     <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
@@ -396,63 +395,61 @@
       <text x="530" y="155" text-anchor="middle" font-size="11" fill="#1f2937">Only resolvable from</text>
       <text x="530" y="170" text-anchor="middle" font-size="11" fill="#1f2937">inside your own VPC</text>
     </svg>
-    <div class="caption">Both types work the same way internally — the only difference is who is allowed to ask them questions.</div>
+    <div class="caption">Public hosted zones answer internet queries; Private hosted zones answer queries only from designated Amazon VPCs.</div>
   </div>
 
   <div class="callout warn">
-    <strong>Don't forget</strong>
-    Route 53 is not free. Every hosted zone costs <code>$0.50/month</code>, and registering a domain name costs a minimum of <code>$12/year</code>.
+    <strong>Cost Reminder</strong>
+    Every Route 53 Hosted Zone costs <code>$0.50 per month</code>, and domain registrations start at approximately <code>$12 per year</code>.
   </div>
 </div>
 
 <!-- 3. Registering a domain -->
 <div class="card" id="register-domain">
   <h2><span class="badge">3</span> Registering a Domain (Hands-On)</h2>
-  <p>Steps to register a domain directly through Route 53:</p>
+  <p>Steps to purchase and register a domain name directly in Route 53:</p>
   <ol>
-    <li>Go to <strong>Register Domains</strong> and search for an available name</li>
-    <li>Add it to your basket, choose a <strong>duration</strong> (e.g. 1 year) and whether to <strong>auto-renew</strong></li>
-    <li>Fill in contact info (registrant / admin / tech contact — can all be the same)</li>
-    <li>Enable <strong>privacy protection</strong> so your personal info isn't public</li>
-    <li>Review and submit — this actually charges you money</li>
+    <li>Navigate to <strong>Register Domains</strong> in Route 53 console and search for domain availability.</li>
+    <li>Select subscription term (e.g. 1 year) and enable/disable <strong>auto-renew</strong>.</li>
+    <li>Enter registrant, admin, and technical contact details.</li>
+    <li>Enable <strong>Privacy Protection</strong> to conceal your personal contact details from public WHOIS databases.</li>
+    <li>Review order details and submit payment.</li>
   </ol>
-  <p>After registration (can take minutes to hours), a hosted zone is automatically created with two default records: an <code>NS</code> record (which name servers to use) and an <code>SOA</code> record. From this point, Route 53 is the source of truth for that domain's DNS records.</p>
+  <p>Once registered, Route 53 automatically creates a Public Hosted Zone populated with default <code>NS</code> (Name Server) and <code>SOA</code> (Start of Authority) records.</p>
   <div class="callout warn">
-    <strong>Don't forget</strong>
-    If you turn off auto-renew and forget to renew manually, someone else can register your domain once it expires.
+    <strong>Renewal Caution:</strong> Disabling auto-renew without manual renewal will cause domain expiration, allowing outside parties to register your expired domain.
   </div>
 </div>
 
 <!-- 4. First records + EC2 setup -->
 <div class="card" id="first-records">
   <h2><span class="badge">4</span> First Records &amp; Demo Infrastructure</h2>
-  <p>Creating a record is simple: give it a name (e.g. <code>test.example.com</code>), pick a type (e.g. <code>A</code>), give it a value (an IP), set a TTL, and choose a routing policy (start with <strong>Simple</strong>).</p>
-  <p>To actually verify DNS is working from a terminal, two commands are used throughout this section:</p>
+  <p>To configure a basic record: Enter Record Name (e.g. <code>test.example.com</code>), select Type (e.g. <code>A</code>), enter Value (server IP address), set TTL, and choose Routing Policy (e.g. <strong>Simple</strong>).</p>
+  <p>CLI tools used to query and verify DNS records from a terminal:</p>
   <ul>
-    <li><code>nslookup &lt;domain&gt;</code> — works well on Windows</li>
-    <li><code>dig &lt;domain&gt;</code> — works well on Mac/Linux, and shows more detail (including TTL)</li>
+    <li><code>nslookup &lt;domain&gt;</code> — Standard command line utility on Windows.</li>
+    <li><code>dig &lt;domain&gt;</code> — Detailed query utility on Mac/Linux (displays TTL count down).</li>
   </ul>
-  <p>On AWS CloudShell (Amazon Linux), you may need to install them first:</p>
+  <p>Install on Amazon Linux CloudShell:</p>
   <p><code>sudo yum install -y bind-utils</code></p>
 
-  <h3>Demo infrastructure used for the rest of this section</h3>
-  <p>To demonstrate routing policies later, three EC2 instances were launched (Amazon Linux 2, t2.micro, security group allowing SSH + HTTP from anywhere), each with a bootstrap script that returns a "Hello World" page showing its Availability Zone:</p>
+  <h3>Demo Setup Used Across Examples</h3>
+  <p>Three EC2 instances launched across different AWS Regions (Amazon Linux 2, t2.micro, HTTP port 80 open) serving a basic HTML page identifying their Availability Zone location:</p>
   <ul>
-    <li>One in <strong>eu-central-1</strong> (Frankfurt)</li>
-    <li>One in <strong>us-east-1</strong> (N. Virginia)</li>
-    <li>One in <strong>ap-southeast-1</strong> (Singapore)</li>
+    <li>Server 1: <strong>eu-central-1</strong> (Frankfurt)</li>
+    <li>Server 2: <strong>us-east-1</strong> (N. Virginia)</li>
+    <li>Server 3: <strong>ap-southeast-1</strong> (Singapore)</li>
   </ul>
-  <p>An <strong>Application Load Balancer (ALB)</strong> was also created in <code>eu-central-1</code>, pointing to a target group containing the Frankfurt instance. This whole setup is reused across the TTL, CNAME/Alias, and routing policy demos.</p>
+  <p>An <strong>Application Load Balancer (ALB)</strong> was created in <code>eu-central-1</code> targeting the Frankfurt EC2 instance.</p>
   <div class="callout">
-    <strong>Exam-style key point</strong>
-    Loading a raw IP address directly in the browser works even before any DNS record exists — DNS just gives you a friendlier way to reach the same server.
+    <strong>Key Point:</strong> Browsing directly to an EC2 public IP address bypasses DNS completely. A DNS record simply maps a memorable hostname to that IP address.
   </div>
 </div>
 
 <!-- 5. TTL -->
 <div class="card" id="ttl">
   <h2><span class="badge">5</span> TTL (Time To Live)</h2>
-  <p>TTL tells DNS resolvers (and clients) how long they're allowed to <strong>cache</strong> the answer to a query before asking again.</p>
+  <p><strong>TTL (Time To Live)</strong> instructs web browsers and DNS resolvers how long to <strong>cache</strong> a DNS answer before querying Route 53 again.</p>
 
   <div class="diagram">
     <svg viewBox="0 0 700 150" xmlns="http://www.w3.org/2000/svg">
@@ -472,39 +469,37 @@
       <text x="640" y="55" text-anchor="middle" font-size="11" fill="#1f2937">TTL expires</text>
       <text x="640" y="100" text-anchor="middle" font-size="10" fill="#4b5563">next query asks Route 53 again</text>
     </svg>
-    <div class="caption">While cached, changes to the record won't be seen by clients — they only refresh once the TTL window ends.</div>
+    <div class="caption">While an answer remains cached locally, server IP updates made in Route 53 will not reach clients until the TTL window expires.</div>
   </div>
 
   <table>
-    <tr><th></th><th>High TTL (e.g. 24h)</th><th>Low TTL (e.g. 60s)</th></tr>
-    <tr><td>Traffic / cost to Route 53</td><td>Lower — fewer queries reach Route 53</td><td>Higher — more queries reach Route 53</td></tr>
-    <tr><td>Speed of propagating a record change</td><td>Slow — clients may hold stale data up to 24h</td><td>Fast — clients pick up changes quickly</td></tr>
+    <tr><th>Setting</th><th>High TTL (e.g. 24 Hours)</th><th>Low TTL (e.g. 60 Seconds)</th></tr>
+    <tr><td>Query Traffic / Costs</td><td>Lower — Resolvers cache answers longer, making fewer calls to Route 53.</td><td>Higher — Resolvers query Route 53 frequently.</td></tr>
+    <tr><td>Change Propagation Speed</td><td>Slower — Clients retain old cached IP addresses for up to 24 hours.</td><td>Faster — Clients fetch updated IP addresses rapidly.</td></tr>
   </table>
 
   <div class="callout tip">
-    <strong>Best practice</strong>
-    If you're planning to change a record's value soon, temporarily lower its TTL first, wait for the old TTL window to fully expire everywhere, then make the change — this minimizes the number of clients seeing stale data.
+    <strong>Best Practice</strong>
+    Before performing server migrations, temporarily lower your record TTL (e.g. to 60s). Wait out the previous long TTL duration, perform the server IP migration, and verify rapid client propagation.
   </div>
   <div class="callout warn">
-    <strong>Don't forget</strong>
-    TTL is mandatory for every record type <strong>except Alias records</strong> — Route 53 manages that automatically.
+    <strong>Rule:</strong> TTL configuration is mandatory for all DNS records <strong>except Alias records</strong> (managed automatically by Route 53).
   </div>
-  <p>In the demo, this was verified with <code>dig</code>: the "seconds left" number counts down from the TTL, and a record's underlying value change was invisible to the browser/CLI until the old TTL window fully expired.</p>
 </div>
 
 <!-- 6. CNAME vs Alias -->
 <div class="card" id="cname-alias">
   <h2><span class="badge">6</span> CNAME vs Alias</h2>
-  <p>Both let you point one hostname at another. But they behave differently, and this is a favorite exam topic.</p>
+  <p>Both record types map a domain name to another domain name, but they possess fundamental differences heavily tested on AWS exams.</p>
 
   <table>
-    <tr><th></th><th>CNAME</th><th>Alias</th></tr>
-    <tr><td>Points to</td><td>Any hostname</td><td>Specific AWS resources only</td></tr>
-    <tr><td>Works at zone apex (root domain)?</td><td>❌ No</td><td>✅ Yes</td></tr>
-    <tr><td>Cost</td><td>Normal (or provider) pricing</td><td>Free</td></tr>
-    <tr><td>TTL</td><td>You set it</td><td>Set automatically by Route 53</td></tr>
-    <tr><td>Health check awareness</td><td>No</td><td>Native, built-in</td></tr>
-    <tr><td>Record type</td><td><code>CNAME</code></td><td>Always <code>A</code> or <code>AAAA</code></td></tr>
+    <tr><th>Feature</th><th>CNAME Record</th><th>Alias Record</th></tr>
+    <tr><td>Target Destination</td><td>Any external domain hostname</td><td>Specific AWS resources only (ALB, CloudFront, S3 Website, etc.)</td></tr>
+    <tr><td>Apex / Root Domain Support? (e.g. <code>example.com</code>)</td><td>❌ No (Forbidden at zone apex)</td><td>✅ Yes (Supported at zone apex)</td></tr>
+    <tr><td>Pricing</td><td>Standard Route 53 query pricing</td><td><strong>Free of charge</strong> for AWS targets</td></tr>
+    <tr><td>TTL Management</td><td>Configured manually</td><td>Managed automatically by Route 53</td></tr>
+    <tr><td>Health Check Support</td><td>No native health checks</td><td>Native built-in health check awareness</td></tr>
+    <tr><td>Record Type</td><td><code>CNAME</code></td><td>Configured as <code>A</code> or <code>AAAA</code> type with Alias enabled</td></tr>
   </table>
 
   <div class="diagram">
@@ -531,46 +526,43 @@
       <text x="390" y="155" text-anchor="middle" font-size="11">S3 website / API GW...</text>
       <text x="20" y="188" font-size="11" fill="#16a34a">✓ works at the root domain, free, health-check aware</text>
     </svg>
-    <div class="caption">Alias records extend DNS to solve the exact problem CNAME can't: pointing your root/apex domain at an AWS resource.</div>
+    <div class="caption">Alias records solve the limitation of CNAME records by allowing root apex domains (e.g. example.com) to map directly to AWS managed resources.</div>
   </div>
 
-  <h3>What Alias records can target</h3>
+  <h3>Supported AWS Targets for Alias Records</h3>
   <ul>
-    <li>Elastic Load Balancers (ALB/CLB/NLB)</li>
-    <li>CloudFront Distributions</li>
-    <li>API Gateway</li>
-    <li>Elastic Beanstalk environments</li>
-    <li>S3 <em>websites</em> (not plain S3 buckets)</li>
-    <li>VPC Interface Endpoints</li>
-    <li>Global Accelerator</li>
+    <li>Elastic Load Balancers (ALB, NLB, CLB)</li>
+    <li>Amazon CloudFront Distributions</li>
+    <li>AWS API Gateway Endpoints</li>
+    <li>AWS Elastic Beanstalk environments</li>
+    <li>Amazon S3 Static Website Endpoints (not raw S3 bucket names)</li>
+    <li>Amazon VPC Interface Endpoints</li>
+    <li>AWS Global Accelerator</li>
     <li>Another Route 53 record in the same hosted zone</li>
   </ul>
   <div class="callout warn">
-    <strong>Don't forget</strong>
-    You <strong>cannot</strong> create an alias record pointing to a plain EC2 instance's DNS name. Alias only works for the AWS-managed resource types listed above.
+    <strong>Exam Distinction:</strong> You <strong>cannot</strong> create an Alias record pointing directly to a raw EC2 instance hostname. Alias records target AWS-managed service resources only.
   </div>
-  <p>Demo confirmed: trying to create a CNAME at the zone apex gave <em>"CNAME is not permitted at apex of this zone"</em> — the fix was to instead create an <strong>A record with Alias enabled</strong>, pointing to the ALB, which worked fine.</p>
 </div>
 
 <!-- 7. Simple Routing -->
 <div class="card" id="simple">
   <h2><span class="badge">7</span> Routing Policies &amp; Simple Routing</h2>
-  <p>Route 53 supports 7 routing policies: <strong>Simple, Weighted, Latency, Failover, Geolocation, Geoproximity, IP-based</strong>, and <strong>Multi-Value Answer</strong>.</p>
+  <p>Route 53 offers 7 specialized routing policies: <strong>Simple, Weighted, Latency, Failover, Geolocation, Geoproximity, IP-Based</strong>, and <strong>Multi-Value Answer</strong>.</p>
   <div class="analogy">
-    <strong>Analogy</strong>
-    "Routing" here does not mean traffic passes through Route 53 like a router or load balancer. DNS never touches your actual HTTP traffic — it only answers the question "which IP should I use?" The client then goes directly to that IP.
+    <strong>Core Principle</strong>
+    Route 53 DNS routing does not handle or proxy web traffic. It simply answers client queries with the chosen server IP. Clients then connect directly to that IP address.
   </div>
 
-  <h3>Simple routing</h3>
-  <p>Routes to a single resource — or if a record has multiple values, the client picks one at random. No health checks are supported with simple routing. If used as an Alias, only one AWS resource can be the target.</p>
-  <p>Demo: a record with two IPs in one Simple record returned both values on <code>dig</code>, and the browser picked one at random on each fresh lookup (once the TTL expired).</p>
+  <h3>Simple Routing Policy</h3>
+  <p>Directs traffic to a single resource. If multiple IP values are added to one Simple record, Route 53 returns all values to the client, and the client browser selects one at random. Health checks are <strong>not supported</strong> with Simple routing.</p>
 </div>
 
 <!-- 8. Weighted -->
 <div class="card" id="weighted">
   <h2><span class="badge">8</span> Routing Policy: Weighted</h2>
-  <p>Lets you control what <strong>percentage</strong> of traffic goes to each resource, using relative weights.</p>
-  <p>Formula: <code>traffic % to a record = record's weight ÷ sum of all weights</code>. Weights don't need to add up to 100 — they're just relative to each other.</p>
+  <p>Directs user traffic based on assigned relative <strong>percentage weights</strong>.</p>
+  <p>Calculation Formula: <code>Traffic % for Record A = Weight A ÷ (Sum of All Record Weights)</code>. Weights do not need to add up to 100.</p>
 
   <div class="diagram">
     <svg viewBox="0 0 700 170" xmlns="http://www.w3.org/2000/svg">
@@ -593,40 +585,36 @@
       <line x1="150" y1="85" x2="400" y2="85" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arrow3)"/>
       <line x1="150" y1="85" x2="400" y2="140" stroke="#4b5563" stroke-width="1" marker-end="url(#arrow3)"/>
     </svg>
-    <div class="caption">Thicker line = more traffic. 70% of DNS answers point to us-east-1, 20% to eu-central-1, 10% to ap-southeast-1.</div>
+    <div class="caption">Relative weights distribute DNS query responses: 70% to us-east-1, 20% to eu-central-1, 10% to ap-southeast-1.</div>
   </div>
 
-  <h3>Use cases</h3>
+  <h3>Use Cases</h3>
   <ul>
-    <li>Load balancing across regions</li>
-    <li>Canary-testing a new app version by sending it a small % of traffic</li>
-    <li>Setting a weight of <code>0</code> to stop sending traffic to a resource entirely</li>
+    <li>Load balancing web traffic across regional data centers.</li>
+    <li><strong>Canary Testing:</strong> Route 1% of web traffic to a newly deployed software version while sending 99% to the stable release.</li>
+    <li>Setting a record weight to <code>0</code> stops traffic to that resource completely.</li>
   </ul>
   <div class="callout">
-    <strong>Exam-style key point</strong>
-    All records in a weighted set must share the same name and type. If every record has weight 0, they're all returned with equal weight.
+    <strong>Key Rule:</strong> All records in a weighted record set must share the exact same record name and record type.
   </div>
-  <p>Demo confirmed: with weights 70/20/10 and a 3-second TTL, refreshing repeatedly mostly landed on us-east-1, with occasional hits to the other two — exactly matching the weight ratios.</p>
 </div>
 
 <!-- 9. Latency -->
 <div class="card" id="latency">
   <h2><span class="badge">9</span> Routing Policy: Latency-Based</h2>
-  <p>Routes users to whichever AWS region gives them the <strong>lowest latency</strong> — not necessarily the geographically closest one. Useful when latency is your main concern for user experience.</p>
-  <p>Each record must be tagged with the AWS region it represents (Route 53 can't infer that from a raw IP), and latency records can be combined with health checks.</p>
+  <p>Routes users to the specific AWS Region providing the <strong>lowest network latency</strong> (fastest response time) for their location.</p>
+  <p>Route 53 evaluates real-time network latency data across global AWS regions to determine optimal routing.</p>
 
   <div class="analogy">
-    <strong>Analogy</strong>
-    It's less "which region is on the map closest to me" and more "which region actually responds to me fastest right now" — usually the same thing, but not guaranteed.
+    <strong>Real-World Analogy</strong>
+    Latency routing selects the server that responds the fastest to the user right now, rather than relying purely on geographical map distance.
   </div>
-
-  <p>Demo confirmed with a VPN: from Europe → routed to <code>eu-central-1</code>; connected via Canada → routed to <code>us-east-1</code>; connected via Hong Kong → routed to <code>ap-southeast-1</code>. Note: switching location cleared the local DNS cache, which is why the browser updated immediately, but <code>dig</code> from a fixed CloudShell location kept returning the same region since that machine's location never changed.</p>
 </div>
 
 <!-- 10. Health Checks -->
 <div class="card" id="health-checks">
   <h2><span class="badge">10</span> Health Checks</h2>
-  <p>Health checks let Route 53 monitor whether your resources are actually healthy, so it can automatically stop sending traffic to broken ones.</p>
+  <p>Health checks monitor backend endpoints continuously, allowing Route 53 to stop routing traffic to unhealthy servers automatically.</p>
 
   <div class="diagram">
     <svg viewBox="0 0 700 180" xmlns="http://www.w3.org/2000/svg">
@@ -651,42 +639,33 @@
       <text x="560" y="65" text-anchor="middle" font-size="11" fill="#dc2626">else → unhealthy</text>
       <text x="410" y="140" text-anchor="middle" font-size="11" fill="#1f2937">Rule: if &gt;18% of checkers say "healthy" → Route 53 marks it healthy</text>
     </svg>
-    <div class="caption">Health checkers run from ~15 locations worldwide and hit your endpoint on a schedule, checking for a passing status code.</div>
+    <div class="caption">~15 global health checkers test target endpoints on a schedule, looking for 2xx/3xx HTTP response codes.</div>
   </div>
 
-  <h3>Configuration options</h3>
+  <h3>Key Configuration Parameters</h3>
   <ul>
-    <li><strong>Interval:</strong> standard (30s) or fast (10s, costs more)</li>
-    <li><strong>Protocols:</strong> HTTP, HTTPS, TCP</li>
-    <li><strong>Failure threshold:</strong> how many failures before marked unhealthy</li>
-    <li><strong>String matching:</strong> can check the first 5,120 bytes of the response for specific text</li>
-    <li>Passing codes are <code>2xx</code> or <code>3xx</code></li>
+    <li><strong>Check Intervals:</strong> Standard (30 seconds) or Fast (10 seconds, additional cost).</li>
+    <li><strong>Supported Protocols:</strong> HTTP, HTTPS, TCP.</li>
+    <li><strong>Failure Threshold:</strong> Consecutive failed attempts required before marking an endpoint unhealthy (default: 3).</li>
+    <li><strong>Healthy Response Codes:</strong> HTTP status codes <code>2xx</code> and <code>3xx</code> pass health checks.</li>
   </ul>
   <div class="callout warn">
-    <strong>Don't forget</strong>
-    Health checkers live on the public internet — your security group / firewall must explicitly allow inbound traffic from Route 53's health checker IP ranges, or checks will time out (which looks like a firewall/security-group problem, and usually is).
+    <strong>Firewall Rule:</strong> Route 53 health checkers reside on the public internet. Security groups and firewalls must explicitly allow incoming traffic from public Route 53 Health Checker IP ranges.
   </div>
 
-  <h3>Three types of health checks</h3>
+  <h3>Three Health Check Types</h3>
   <table>
-    <tr><th>Type</th><th>What it monitors</th></tr>
-    <tr><td>Endpoint health check</td><td>A public endpoint directly (app, server, AWS resource)</td></tr>
-    <tr><td>Calculated health check</td><td>Combines other ("child") health checks using AND / OR / NOT logic — up to 256 children, useful for maintenance windows without failing everything</td></tr>
-    <tr><td>CloudWatch alarm health check</td><td>Watches a CloudWatch alarm — the only way to health-check <strong>private</strong> resources, since checkers can't reach inside a VPC</td></tr>
+    <tr><th>Health Check Type</th><th>Monitored Target</th></tr>
+    <tr><td>Endpoint Health Check</td><td>Monitors a public IP or hostname directly over HTTP, HTTPS, or TCP.</td></tr>
+    <tr><td>Calculated Health Check</td><td>Combines multiple child health checks using AND/OR/NOT logic (up to 256 children). Useful for maintenance windows.</td></tr>
+    <tr><td>CloudWatch Alarm Health Check</td><td>Monitors a CloudWatch alarm. Primary method to health-check <strong>private VPC resources</strong> that public checkers cannot reach.</td></tr>
   </table>
-
-  <div class="analogy">
-    <strong>Analogy</strong>
-    For a private resource, Route 53 can't personally knock on its door (it's not on the public internet). Instead, it relies on a CloudWatch alarm as a middleman — like asking a neighbor who does have access to check for you.
-  </div>
-
-  <p>Hands-on: three health checks were created (one per region). Removing the HTTP inbound rule on ap-southeast-1's security group caused that health check to go unhealthy within a short wait, and the "last failed check" view reported a connection timeout — confirming a firewall/security-group cause.</p>
 </div>
 
 <!-- 11. Failover -->
 <div class="card" id="failover">
   <h2><span class="badge">11</span> Routing Policy: Failover</h2>
-  <p>Used for active/passive setups: one <strong>primary</strong> resource and one <strong>secondary</strong> (disaster recovery) resource.</p>
+  <p>Configures Active/Passive disaster recovery: one <strong>Primary</strong> active resource and one <strong>Secondary</strong> standby resource.</p>
 
   <div class="diagram">
     <svg viewBox="0 0 700 170" xmlns="http://www.w3.org/2000/svg">
@@ -711,46 +690,32 @@
       <text x="280" y="60" font-size="10" fill="#16a34a">normal traffic</text>
       <text x="280" y="150" font-size="10" fill="#4b5563">only if primary unhealthy</text>
     </svg>
-    <div class="caption">A health check on the primary is mandatory — if it fails, Route 53 automatically starts answering with the secondary record instead.</div>
+    <div class="caption">A mandatory health check monitors the Primary record. If it fails, Route 53 automatically fails over to answer queries with the Secondary record.</div>
   </div>
 
   <div class="callout">
-    <strong>Exam-style key point</strong>
-    There can only be one primary and one secondary per failover set. The health check on the primary is mandatory; on the secondary it's optional.
+    <strong>Exam Rule:</strong> Failover sets support exactly one Primary and one Secondary record. The health check on the Primary record is mandatory.
   </div>
-  <p>Demo confirmed: with a healthy primary (eu-central-1), requests always answered from eu-central-1. After removing the HTTP inbound rule (making the health check unhealthy), requests automatically failed over to the secondary (us-east-1) — no manual change to the record was needed.</p>
 </div>
 
 <!-- 12. Geolocation -->
 <div class="card" id="geolocation">
   <h2><span class="badge">12</span> Routing Policy: Geolocation</h2>
-  <p>Routes based on <strong>where the user is located</strong> — by continent, country, or even US state. The most specific matching location wins. This is different from Latency-based, which cares about speed, not geography.</p>
+  <p>Routes users based on their <strong>geographic location</strong> (by continent, country, or US state). Distinct from Latency routing, Geolocation routes strictly by user physical location.</p>
   <ul>
-    <li>Always create a <strong>default record</strong> for when there's no location match</li>
-    <li>Can be combined with health checks</li>
+    <li>Always create a <strong>Default Record</strong> to catch users whose location doesn't match specific rules.</li>
+    <li>Use Cases: Website localization (serving local language content), geographic content licensing, location-based load balancing.</li>
   </ul>
-  <h3>Use cases</h3>
-  <ul>
-    <li>Website localization (serve the German version to German users)</li>
-    <li>Restricting content distribution by region</li>
-    <li>Geography-based load balancing</li>
-  </ul>
-  <div class="callout warn">
-    <strong>Don't forget</strong>
-    If a user's location doesn't match any rule (e.g. Mexico when you only defined "Asia" and "United States"), they fall through to the <strong>default</strong> record — not an error.
-  </div>
-  <p>Demo confirmed via VPN: connecting from India → routed to ap-southeast-1; from the United States → routed to us-east-1; from Mexico (no matching rule) → fell through to the default record in eu-central-1.</p>
 </div>
 
 <!-- 13. Geoproximity -->
 <div class="card" id="geoproximity">
   <h2><span class="badge">13</span> Routing Policy: Geoproximity</h2>
-  <p>Routes based on the geographic location of <em>both</em> users and resources, and lets you shift traffic between regions using a number called the <strong>bias</strong>.</p>
+  <p>Routes traffic based on geographic distance between users and resources, allowing you to expand or shrink a region's serving area using a <strong>Bias value</strong>.</p>
   <ul>
-    <li>Increase bias (positive number) → <strong>expand</strong> the region's reach, pulling in more traffic</li>
-    <li>Decrease bias (negative number) → <strong>shrink</strong> the region's reach, sending less traffic there</li>
-    <li>For AWS resources: specify the region. For non-AWS resources (e.g. on-prem): specify latitude/longitude</li>
-    <li>Requires <strong>Route 53 Traffic Flow</strong> (the advanced/visual policy editor) to use bias</li>
+    <li><strong>Positive Bias (+):</strong> Expands a region's geographic reach to capture more user traffic.</li>
+    <li><strong>Negative Bias (-):</strong> Shrinks a region's geographic reach to reduce incoming traffic.</li>
+    <li>Requires <strong>Route 53 Traffic Flow</strong> policy editor.</li>
   </ul>
 
   <div class="diagram">
@@ -772,89 +737,64 @@
       <text x="550" y="135" text-anchor="middle" font-size="10" fill="#4b5563">dividing line shifts left —</text>
       <text x="550" y="150" text-anchor="middle" font-size="10" fill="#4b5563">us-east-1 now covers more ground</text>
     </svg>
-    <div class="caption">Increasing the bias on a region visually "expands" its territory on the map, pulling more users toward it.</div>
-  </div>
-
-  <div class="callout">
-    <strong>Exam-style key point</strong>
-    Remember Geoproximity for one thing: shifting traffic from one region to another by tuning the bias value.
+    <div class="caption">Adjusting positive bias expands a region's geographic coverage zone, shifting user traffic toward it.</div>
   </div>
 </div>
 
 <!-- 14. IP-based -->
 <div class="card" id="ip-based">
   <h2><span class="badge">14</span> Routing Policy: IP-Based</h2>
-  <p>Routes based on the <strong>client's IP address</strong>, using CIDR ranges you define. You tell Route 53: "traffic from this IP range should go to this location."</p>
-  <h3>Use cases</h3>
-  <ul>
-    <li>Optimize performance when you know your users' ISP/IP ranges ahead of time</li>
-    <li>Reduce network costs by directing specific ISPs to specific endpoints</li>
-  </ul>
-  <p>Example: CIDR block starting with <code>203...</code> → routed to <code>1.2.3.4</code>; CIDR block starting with <code>200...</code> → routed to <code>5.6.7.8</code>. Whichever CIDR range a client's IP falls into determines the answer they get.</p>
+  <p>Routes DNS queries based on the <strong>client's IP address CIDR block</strong>. Allows mapping specific client IP ranges (e.g., specific ISP blocks or corporate office networks) to specific endpoints.</p>
 </div>
 
 <!-- 15. Multi-Value -->
 <div class="card" id="multivalue">
   <h2><span class="badge">15</span> Routing Policy: Multi-Value Answer</h2>
-  <p>Returns up to <strong>8 healthy records</strong> per query, and the client picks one. This gives basic client-side load balancing — but it is <strong>not a substitute for a real load balancer (ELB)</strong>.</p>
-  <ul>
-    <li>Can be associated with health checks — only records tied to a <em>healthy</em> health check are returned</li>
-    <li>Different from Simple routing with multiple values, because Simple <strong>cannot</strong> use health checks — so an unhealthy resource could still be handed to a client</li>
-  </ul>
-  <p>Demo: three multi-value A records (US, Asia, EU) each tied to a health check. <code>dig</code> initially returned all 3 IPs. After inverting the EU health check to unhealthy, <code>dig</code> returned only 2 IPs — confirming unhealthy records are automatically excluded.</p>
+  <p>Returns up to <strong>8 healthy records</strong> per query, enabling basic client-side load balancing. Unlike Simple routing, Multi-Value Answer integrates natively with <strong>Health Checks</strong> — filtering out unhealthy records automatically.</p>
 </div>
 
 <!-- 16. Third Party Domains -->
 <div class="card" id="third-party">
   <h2><span class="badge">16</span> 3rd Party Domains &amp; Route 53</h2>
-  <p>Important distinction: a <strong>domain registrar</strong> (where you buy the name) and a <strong>DNS service</strong> (what manages the records) are different things — even though most registrars bundle both.</p>
-  <p>You can mix and match:</p>
-  <ul>
-    <li>Buy your domain from Amazon, but use a different DNS service</li>
-    <li>Buy your domain from a 3rd party (e.g. GoDaddy), but still use Route 53 to manage DNS records</li>
-  </ul>
-  <h3>How to use Route 53 with a domain bought elsewhere</h3>
+  <p>Domain Registrar (purchasing domains) and DNS Management Service (hosting DNS records) are separate roles. You can purchase a domain from a 3rd party registrar (e.g. GoDaddy) and manage its DNS records in Route 53.</p>
+  <h3>Configuration Steps</h3>
   <ol>
-    <li>Create a <strong>public hosted zone</strong> in Route 53 for your domain</li>
-    <li>Copy the 4 <strong>name servers</strong> Route 53 gives you for that hosted zone</li>
-    <li>On the 3rd-party registrar's site (e.g. GoDaddy), update the domain's custom <strong>name server</strong> settings to point to those 4 Route 53 name servers</li>
+    <li>Create a <strong>Public Hosted Zone</strong> in Route 53 for your domain name.</li>
+    <li>Copy the 4 assigned Route 53 <strong>Name Server (NS) addresses</strong>.</li>
+    <li>Log into your 3rd-party domain registrar and replace default name servers with the 4 Route 53 NS addresses.</li>
   </ol>
-  <div class="callout tip">
-    <strong>Best practice</strong>
-    This is a fully supported and common combination — buy cheap/wherever, manage DNS in Route 53 if you want AWS-native features like Alias records and health checks.
-  </div>
 </div>
 
 <!-- 17. Cheat Sheet -->
 <div class="card cheatsheet" id="cheatsheet">
   <h2><span class="badge">★</span> Cheat Sheet</h2>
 
-  <h3>Key facts to remember</h3>
+  <h3>Key Facts to Remember</h3>
   <ul>
-    <li>DNS translates hostnames → IPs, recursively, through root → TLD → domain servers, with caching at each hop</li>
-    <li>Route 53 = authoritative DNS + domain registrar, 100% availability SLA, named after port 53</li>
-    <li>Hosted zone costs <code>$0.50/month</code>; domain registration starts at <code>$12/year</code></li>
-    <li><code>A</code>/<code>AAAA</code> = hostname → IP. <code>CNAME</code> = hostname → hostname (not allowed at zone apex). <code>NS</code> = which servers answer for the zone</li>
-    <li><strong>Alias</strong> records: free, work at the zone apex, only point to specific AWS resources, TTL is automatic, health-check aware. <strong>Cannot</strong> target a raw EC2 DNS name</li>
-    <li>TTL = how long a resolver caches an answer. High TTL = less cost, slower propagation. Low TTL = more cost, faster propagation</li>
-    <li>Health checks: ~15 global checkers, &gt;18% healthy = healthy, 2xx/3xx = pass. Types: endpoint, calculated (AND/OR/NOT of children), CloudWatch alarm (for private resources)</li>
+    <li>DNS translates human domain names → IP addresses recursively via Root → TLD → Authoritative Name Servers.</li>
+    <li>Route 53 provides authoritative DNS, domain registration, and automated health checks backed by a 100% SLA.</li>
+    <li>Hosted zones cost <code>$0.50/month</code>; domain registration starts at ~<code>$12/year</code>.</li>
+    <li><code>A</code> = IPv4, <code>AAAA</code> = IPv6, <code>CNAME</code> = Hostname to Hostname (non-apex only), <code>NS</code> = Name Servers.</li>
+    <li><strong>Alias Records:</strong> Free, apex-supported, target AWS resources (ALB, CloudFront, S3 website, API Gateway), auto-TTL, health-check aware. Cannot target raw EC2 hostnames directly.</li>
+    <li>TTL = Cache duration. High TTL = Lower Route 53 query costs, slower record propagation. Low TTL = Faster propagation, higher query costs.</li>
+    <li>Health Checks: ~15 global checkers; &gt;18% healthy required to pass. HTTP 2xx/3xx pass checks. Types: Endpoint, Calculated, CloudWatch Alarm (for private VPC resources).</li>
   </ul>
 
-  <h3>Routing policy decision guide</h3>
+  <h3>Routing Policy Decision Matrix</h3>
   <table>
-    <tr><th>Policy</th><th>Use when you want to...</th><th>Health checks?</th></tr>
-    <tr><td>Simple</td><td>Point to one resource (or randomly pick among a few)</td><td>No</td></tr>
-    <tr><td>Weighted</td><td>Send a controlled % of traffic to each resource</td><td>Yes</td></tr>
-    <tr><td>Latency-based</td><td>Send users to whichever region responds fastest</td><td>Yes</td></tr>
-    <tr><td>Failover</td><td>Active/passive setup with automatic DR failover</td><td>Yes (mandatory on primary)</td></tr>
-    <tr><td>Geolocation</td><td>Route by the user's actual location (country/continent/state)</td><td>Yes</td></tr>
-    <tr><td>Geoproximity</td><td>Shift traffic between regions using a bias value</td><td>Via Traffic Flow</td></tr>
-    <tr><td>IP-based</td><td>Route by known client IP/CIDR ranges (e.g. specific ISPs)</td><td>N/A</td></tr>
-    <tr><td>Multi-Value Answer</td><td>Return up to 8 healthy records for basic client-side balancing</td><td>Yes</td></tr>
+    <tr><th>Policy</th><th>Best Used For...</th><th>Health Checks?</th></tr>
+    <tr><td>Simple</td><td>Single target or simple random selection across multiple IPs</td><td>No</td></tr>
+    <tr><td>Weighted</td><td>Percentage-based traffic distribution &amp; Canary testing</td><td>Yes</td></tr>
+    <tr><td>Latency-based</td><td>Directing users to the fastest responding AWS Region</td><td>Yes</td></tr>
+    <tr><td>Failover</td><td>Active/Passive disaster recovery failover</td><td>Yes (Mandatory on Primary)</td></tr>
+    <tr><td>Geolocation</td><td>Routing by user geographic location (continent, country, state)</td><td>Yes</td></tr>
+    <tr><td>Geoproximity</td><td>Shifting regional coverage boundaries using a Bias value</td><td>Via Traffic Flow</td></tr>
+    <tr><td>IP-based</td><td>Routing based on client IP CIDR ranges (ISPs, networks)</td><td>N/A</td></tr>
+    <tr><td>Multi-Value Answer</td><td>Returning up to 8 healthy records for client-side balancing</td><td>Yes</td></tr>
   </table>
 
-  <h3>Mental model recap</h3>
-  <p>Route 53 never touches your actual application traffic — it's purely a phone book that answers "which IP should I use?" All the routing policies are just different rules for how that phone book picks an answer: always the same resource (Simple), by percentage (Weighted), by speed (Latency), by failover status (Failover), by user location (Geolocation/Geoproximity), by client IP (IP-based), or by returning several healthy options at once (Multi-Value) — and Alias records are Route 53's special free, apex-friendly way of pointing that phone book directly at AWS-managed resources.</p>
+  <h3>Mental Model Recap</h3>
+  <p>Route 53 DNS never handles actual HTTP application data — it acts purely as the internet's phonebook, answering queries with server IP addresses. Routing policies define how Route 53 selects which IP to return: static choice (Simple), percentage split (Weighted), speed (Latency), disaster recovery (Failover), geographic location (Geolocation/Geoproximity), client IP (IP-Based), or healthy multi-record lists (Multi-Value). Alias records provide Route 53's special free, apex-friendly integration with AWS-managed services.</p>
 </div>
 
 <a href="#top" class="back-to-top">↑ Back to top</a>
