@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 3 — Entrepreneurial Management | Priya's Startup War-Room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Caveat:wght@500;700&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --board:#E9EDEC;
+    --board-line:#C7D0CD;
+    --ink:#1B1F1E;
+    --ink-soft:#4B5754;
+    --marker-blue:#1F5FA8;
+    --marker-red:#C0392B;
+    --marker-green:#237A57;
+    --sticky-yellow:#F7D94C;
+    --sticky-orange:#F2A93B;
+    --sticky-pink:#F5A3BE;
+    --sticky-blue:#9FD8E8;
+    --tape:rgba(255,255,255,0.55);
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    font-family:'Work Sans', sans-serif;
+    color:var(--ink);
+    background:
+      linear-gradient(#dfe6e3 1px, transparent 1px),
+      linear-gradient(90deg, #dfe6e3 1px, transparent 1px),
+      var(--board);
+    background-size: 26px 26px, 26px 26px, cover;
+    padding: 30px 14px 70px;
+  }
+
+  .board{
+    max-width:920px;
+    margin:0 auto;
+    position:relative;
+  }
+
+  /* ---------- Header ---------- */
+  .hero{
+    background:white;
+    border:3px solid var(--ink);
+    border-radius:10px;
+    padding:36px 40px;
+    position:relative;
+    box-shadow: 6px 6px 0 rgba(0,0,0,0.12);
+    margin-bottom:44px;
+  }
+  .hero::before{
+    content:"";
+    position:absolute;
+    top:-14px; left:40px;
+    width:90px; height:26px;
+    background:var(--tape);
+    border:1px solid rgba(0,0,0,0.08);
+    transform:rotate(-4deg);
+  }
+  .hero::after{
+    content:"";
+    position:absolute;
+    top:-10px; right:60px;
+    width:70px; height:24px;
+    background:var(--tape);
+    border:1px solid rgba(0,0,0,0.08);
+    transform:rotate(5deg);
+  }
+  .tag-pill{
+    display:inline-block;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72rem;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    background:var(--ink);
+    color:var(--board);
+    padding:4px 12px;
+    border-radius:20px;
+    margin-bottom:14px;
+  }
+  h1.title{
+    font-family:'Permanent Marker', cursive;
+    font-size:2.5rem;
+    line-height:1.2;
+    margin:0 0 12px;
+    color:var(--marker-blue);
+  }
+  @media (max-width:600px){ h1.title{font-size:1.8rem;} }
+  .subtitle{
+    font-family:'Caveat', cursive;
+    font-size:1.4rem;
+    color:var(--ink-soft);
+    max-width:65ch;
+  }
+  .meta-row{
+    margin-top:18px;
+    display:flex; gap:10px; flex-wrap:wrap;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.75rem;
+    color:var(--ink-soft);
+  }
+  .meta-row span{
+    border:1px solid var(--board-line);
+    background:var(--board);
+    padding:3px 10px;
+    border-radius:4px;
+  }
+
+  /* ---------- Sections ---------- */
+  section{margin:50px 0;}
+  .sec-num{
+    font-family:'Permanent Marker', cursive;
+    font-size:0.95rem;
+    color:var(--marker-red);
+    margin-bottom:4px;
+  }
+  h2{
+    font-family:'Permanent Marker', cursive;
+    font-size:1.65rem;
+    color:var(--ink);
+    margin:0 0 16px;
+    display:inline-block;
+    position:relative;
+  }
+  h2::after{
+    content:"";
+    display:block;
+    height:8px;
+    background:var(--sticky-yellow);
+    opacity:0.6;
+    margin-top:-10px;
+    z-index:-1;
+    position:relative;
+  }
+  h3{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size:1.35rem;
+    color:var(--marker-blue);
+    margin:20px 0 8px;
+  }
+  p{ line-height:1.75; font-size:1.02rem; margin:0 0 14px; }
+  strong{color:var(--marker-blue);}
+
+  /* ---------- sticky notes ---------- */
+  .sticky{
+    position:relative;
+    padding:18px 20px;
+    border-radius:2px;
+    box-shadow:3px 4px 8px rgba(0,0,0,0.15);
+    margin:22px 8px;
+    font-family:'Work Sans', sans-serif;
+  }
+  .sticky::before{
+    content:"";
+    position:absolute;
+    top:-9px; left:50%;
+    transform:translateX(-50%) rotate(-2deg);
+    width:56px; height:16px;
+    background:var(--tape);
+    border:1px solid rgba(0,0,0,0.06);
+  }
+  .sticky.yellow{background:var(--sticky-yellow); transform:rotate(-1deg);}
+  .sticky.orange{background:var(--sticky-orange); transform:rotate(1deg);}
+  .sticky.pink{background:var(--sticky-pink); transform:rotate(-0.6deg);}
+  .sticky.blue{background:var(--sticky-blue); transform:rotate(0.8deg);}
+  .sticky-label{
+    font-family:'Permanent Marker', cursive;
+    font-size:0.95rem;
+    display:block;
+    margin-bottom:6px;
+    color:var(--ink);
+  }
+
+  .mistake{
+    border-left:5px solid var(--marker-red);
+    background:rgba(192,57,43,0.06);
+    padding:14px 18px;
+    margin:20px 0;
+    border-radius:0 6px 6px 0;
+  }
+  .mistake-label{
+    font-family:'Permanent Marker', cursive;
+    color:var(--marker-red);
+    font-size:0.9rem;
+    display:block;
+    margin-bottom:4px;
+  }
+
+  /* ---------- 2x2 matrix ---------- */
+  .matrix-wrap{
+    display:flex;
+    justify-content:center;
+    margin:26px 0;
+  }
+  .matrix{
+    display:grid;
+    grid-template-columns: 60px 1fr 1fr;
+    grid-template-rows: 30px 1fr 1fr;
+    max-width:560px;
+    width:100%;
+    font-family:'Work Sans', sans-serif;
+    font-size:0.85rem;
+  }
+  .matrix .axis-label{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    color:var(--ink-soft);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    font-size:1rem;
+  }
+  .matrix .col-label{grid-row:1;}
+  .matrix .row-label{
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
+  .matrix .cell{
+    border:2px dashed var(--ink-soft);
+    margin:3px;
+    border-radius:8px;
+    padding:12px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    min-height:110px;
+  }
+  .matrix .cell b{font-family:'Permanent Marker', cursive; font-size:0.85rem; font-weight:400;}
+  .matrix .cell.highlight{background:rgba(31,95,168,0.08); border-color:var(--marker-blue);}
+  .matrix .cell.danger{background:rgba(192,57,43,0.06); border-color:var(--marker-red);}
+
+  /* ---------- venn diagram ---------- */
+  .venn-wrap{ display:flex; justify-content:center; margin:30px 0; }
+  .venn-caption{
+    text-align:center;
+    font-family:'Caveat', cursive;
+    font-size:1.15rem;
+    color:var(--ink-soft);
+    margin-top:6px;
+  }
+
+  /* ---------- adoption factors ---------- */
+  .factor-row{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:12px;
+    margin:22px 0;
+  }
+  .factor-card{
+    background:white;
+    border:2px solid var(--ink);
+    border-radius:8px;
+    padding:14px;
+    text-align:center;
+    box-shadow:3px 3px 0 rgba(0,0,0,0.1);
+  }
+  .factor-card .icon{font-size:1.6rem; display:block; margin-bottom:6px;}
+  .factor-card .name{font-family:'Permanent Marker', cursive; font-size:0.85rem; color:var(--marker-blue);}
+
+  /* ---------- pricing survey ---------- */
+  .survey-box{
+    background:white;
+    border:2px solid var(--ink);
+    border-radius:10px;
+    padding:20px 24px;
+    margin:22px 0;
+  }
+  .survey-q{
+    font-family:'JetBrains Mono', monospace;
+    background:var(--ink);
+    color:var(--board);
+    padding:8px 12px;
+    border-radius:6px;
+    margin-bottom:10px;
+    font-size:0.85rem;
+  }
+
+  /* ---------- design loop ---------- */
+  .loop-wrap{ display:flex; justify-content:center; margin:30px 0 10px;}
+
+  .loop-steps{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:10px;
+    margin-top:14px;
+  }
+  .loop-step{
+    background:white;
+    border:2px solid var(--marker-green);
+    border-radius:30px;
+    padding:8px 16px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.8rem;
+    color:var(--marker-green);
+    font-weight:700;
+  }
+  .loop-arrow{ color:var(--ink-soft); font-size:1.1rem; align-self:center;}
+
+  /* recap */
+  .recap{
+    background:var(--ink);
+    color:var(--board);
+    border-radius:12px;
+    padding:26px 28px;
+    margin:44px 8px 20px;
+  }
+  .recap h2{color:var(--sticky-yellow);}
+  .recap h2::after{display:none;}
+  .recap ul{margin:0; padding-left:20px;}
+  .recap li{margin-bottom:10px; font-family:'JetBrains Mono', monospace; font-size:0.85rem; line-height:1.5;}
+  .recap li b{font-family:'Work Sans', sans-serif; color:var(--sticky-yellow);}
+
+  footer{
+    text-align:center;
+    font-family:'Caveat', cursive;
+    font-size:1.15rem;
+    color:var(--ink-soft);
+    padding:20px;
+  }
+
+  .divider{
+    text-align:center;
+    font-family:'Permanent Marker', cursive;
+    color:var(--board-line);
+    letter-spacing:12px;
+    margin:34px 0;
+  }
+</style>
+</head>
+<body>
+<div class="board">
+
+  <div class="hero">
+    <span class="tag-pill">The Visual MBA — Chapter 3</span>
+    <h1 class="title">Entrepreneurial Management</h1>
+    <p class="subtitle">Solving unknown problems with unknown solutions — retold through Priya, who's building a same-day grocery app for a Tier-2 Indian city.</p>
+    <div class="meta-row">
+      <span>Currency: ₹ INR</span>
+      <span>Reading time: ~11 min</span>
+      <span>Concepts: 7</span>
+    </div>
+  </div>
+
+  <!-- ============ INTRO ============ -->
+  <section>
+    <div class="sec-num">Why this chapter matters</div>
+    <h2>Management vs. Entrepreneurship</h2>
+    <p>Regular management is about executing a plan for a problem you already understand, with a solution you already know works. <strong>Entrepreneurial management is different</strong> — you're dealing with an <strong>unknown problem</strong> (the pain isn't even clearly defined yet) and an <strong>unknown solution</strong> (nobody, including you, knows yet what actually fixes it).</p>
+    <p>The way through that fog isn't better planning — it's <strong>identifying real pain through observation</strong>, and finding the right fix through <strong>fast, repeated experimentation</strong>.</p>
+
+    <div class="sticky yellow">
+      <span class="sticky-label">Why "enlightened trial &amp; error" beats "the planning of a lone genius"</span>
+      Careful planning only works when you already understand the problem well enough to design the right answer in your head. In a genuinely new situation, you don't have that understanding yet — no amount of thinking at a desk manufactures it. Small, fast experiments generate real information from the world, which is the only thing that can actually resolve the uncertainty. This is why founders who ship a rough version and adjust usually beat founders who perfect a plan before ever showing it to a customer.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 1: 2x2 MATRIX ============ -->
+  <section>
+    <div class="sec-num">Concept 1</div>
+    <h2>The Problem × Solution Map</h2>
+    <p>Every business challenge sits somewhere on this grid. Knowing which quadrant you're in tells you whether you need a <em>project plan</em> or an <em>experiment</em>.</p>
+
+    <div class="matrix-wrap">
+      <div class="matrix">
+        <div></div>
+        <div class="axis-label col-label">Solution: Known</div>
+        <div class="axis-label col-label">Solution: Unknown</div>
+
+        <div class="axis-label row-label">Problem: Known</div>
+        <div class="cell"><b>Standard Operations</b>Run the tapri, restock the kirana shelf, process payroll. Just execute — this is regular management.</div>
+        <div class="cell highlight"><b>R&amp;D / Improvement</b>You know working professionals want faster grocery delivery — but not yet exactly how to deliver it profitably. Needs focused experimentation.</div>
+
+        <div class="axis-label row-label">Problem: Unknown</div>
+        <div class="cell danger"><b>Solution Looking for a Problem</b>"I built an app — now who needs it?" Risky: you may never find a real customer for it.</div>
+        <div class="cell highlight"><b>True Entrepreneurship</b>Priya's zone. She suspects busy families are struggling with groceries somehow — but neither the exact pain nor the fix is clear yet.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SECTION 2: DFV VENN ============ -->
+  <section>
+    <div class="sec-num">Concept 2</div>
+    <h2>Desirable, Feasible, Viable</h2>
+    <p>A good idea needs all three legs of this stool. Miss even one, and the product is limited before it even launches.</p>
+
+    <div class="venn-wrap">
+      <svg width="340" height="280" viewBox="0 0 340 280">
+        <circle cx="140" cy="110" r="95" fill="#1F5FA8" opacity="0.55"/>
+        <circle cx="200" cy="110" r="95" fill="#C0392B" opacity="0.55"/>
+        <circle cx="170" cy="175" r="95" fill="#237A57" opacity="0.55"/>
+        <text x="90" y="80" font-family="Permanent Marker, cursive" font-size="15" fill="#111">Desirable</text>
+        <text x="215" y="80" font-family="Permanent Marker, cursive" font-size="15" fill="#111">Feasible</text>
+        <text x="140" y="245" font-family="Permanent Marker, cursive" font-size="15" fill="#111">Viable</text>
+        <text x="150" y="140" font-family="Caveat, cursive" font-size="16" fill="#fff" text-anchor="middle">Your idea</text>
+      </svg>
+    </div>
+    <p class="venn-caption">People want it • You can build/deliver it • It makes business sense</p>
+
+    <div class="mistake">
+      <span class="mistake-label">Priya's near-miss</span>
+      Her delivery concept was <strong>desirable</strong> (people genuinely hate the weekly market trip) and <strong>feasible</strong> (delivery riders and UPI payments already exist in her city) — but not yet <strong>viable</strong>: her delivery cost was ₹80/order while customers were only willing to pay a ₹40 delivery fee. Two out of three legs isn't enough — she had to redesign the delivery route density before the third leg held up.
+    </div>
+  </section>
+
+  <div class="divider">✎ ✎ ✎</div>
+
+  <!-- ============ SECTION 3: PAIN + ADOPTION ============ -->
+  <section>
+    <div class="sec-num">Concept 3</div>
+    <h2>Pain — the essential ingredient</h2>
+    <p><strong>Pain</strong> is any problem or unmet need that customers will actually spend time or money to solve. The deeper the pain, the bigger the opportunity.</p>
+
+    <div class="sticky pink">
+      <span class="sticky-label">Look for makeshift fixes</span>
+      Real pain often shows up as people <em>already improvising a solution</em> in the absence of a real product. Priya noticed working mothers in her building juggling three different WhatsApp vegetable-vendor groups, plus a standing weekly call to the sabziwala — a clear sign of real, unmet pain, patched together with duct tape.
+    </div>
+
+    <h3>The Adoption Scale</h3>
+    <p>Getting people to actually adopt your product is a balance of four things. Strength across all four means much higher adoption:</p>
+    <div class="factor-row">
+      <div class="factor-card"><span class="icon">₹</span><span class="name">Price</span></div>
+      <div class="factor-card"><span class="icon">★</span><span class="name">Benefits</span></div>
+      <div class="factor-card"><span class="icon">⚙</span><span class="name">Ease of Use</span></div>
+      <div class="factor-card"><span class="icon">🛒</span><span class="name">Ease of Purchase</span></div>
+    </div>
+    <p>For Priya's app: even if groceries are priced fairly (Price ✓) and genuinely save time (Benefits ✓), if the app itself is confusing to order from, or payment requires signing up for a whole new wallet (Ease of Use / Ease of Purchase ✗), adoption stalls no matter how real the underlying pain is.</p>
+  </section>
+
+  <!-- ============ SECTION 4: SIMPLICITY ============ -->
+  <section>
+    <div class="sec-num">Concept 4</div>
+    <h2>Simplicity is the ultimate sophistication</h2>
+    <p>Most people, when they dig into a real problem, hit a point where it turns out to be far messier and more tangled than it looked from outside. Most stop right there and ship a complicated, patched-together fix. The people who keep pushing past that mess eventually find the one underlying principle driving all the complexity — and from there, a genuinely simple, elegant solution becomes possible.</p>
+    <div class="sticky blue">
+      <span class="sticky-label">Priya's example</span>
+      Her first version of the app had 14 filters for vegetable type, freshness rating, farm origin, and delivery slot — because every early user mentioned wanting "more control." The complicated version satisfied nobody. The simple fix, once she found it: three curated baskets ("Daily Basics," "Weekly Stock-up," "Tonight's Dinner") — same underlying inventory, radically simpler decision for the customer.
+    </div>
+  </section>
+
+  <div class="divider">✎ ✎ ✎</div>
+
+  <!-- ============ SECTION 5: PROFITABILITY MATRIX ============ -->
+  <section>
+    <div class="sec-num">Concept 5</div>
+    <h2>Spend energy on the biggest mountains</h2>
+    <p>Not every real pain point is worth solving. Map your ideas against both <strong>how deep the pain is</strong> and <strong>how profitable solving it actually is</strong> — then go after the ideas sitting in the top-right.</p>
+
+    <div class="matrix-wrap">
+      <div class="matrix">
+        <div></div>
+        <div class="axis-label col-label">Low Profitability</div>
+        <div class="axis-label col-label">High Profitability</div>
+
+        <div class="axis-label row-label">High Pain</div>
+        <div class="cell"><b>Worthy Cause, Weak Business</b>Real pain, but customers won't pay enough to sustain it.</div>
+        <div class="cell highlight"><b>Biggest Mountain — Go here</b>Deep, real pain + customers who'll pay well to fix it. Priya's zone: time-starved dual-income families.</div>
+
+        <div class="axis-label row-label">Low Pain</div>
+        <div class="cell danger"><b>Avoid</b>Low pain, low payoff — easy to get excited about, rarely worth building.</div>
+        <div class="cell"><b>Nice-to-have</b>Profitable, but nobody's desperate for it — expect a long, expensive sales cycle.</div>
+      </div>
+    </div>
+    <p>Once you've picked your mountain, map out exactly which customers and activities the revenue is actually coming from, and remove friction from collecting it (e.g., UPI autopay instead of manual weekly cash collection from each customer).</p>
+  </section>
+
+  <!-- ============ SECTION 6: PRICING ============ -->
+  <section>
+    <div class="sec-num">Concept 6</div>
+    <h2>Pricing — ask, don't guess</h2>
+    <p>Price too low, and you leave money on the table. Price too high, and you lose customers before they even try it. The fastest way to find the right number is simply to ask.</p>
+
+    <div class="survey-box">
+      <div class="survey-q">"How much would you be willing to pay for this?"</div>
+      <div class="survey-q">"How many times a month would you use/pay for it?"</div>
+      <p style="margin-top:14px;">Priya surveyed 50 working professionals in her building complex: average willingness to pay was <strong>₹49 per delivery</strong>, at an average frequency of <strong>12 times a month</strong>. That gave her a real, evidence-based starting price — instead of guessing a number and hoping.</p>
+    </div>
+  </section>
+
+  <div class="divider">✎ ✎ ✎</div>
+
+  <!-- ============ SECTION 7: DESIGN LOOP ============ -->
+  <section>
+    <div class="sec-num">Concept 7</div>
+    <h2>The 5-Step Design Thinking Loop</h2>
+    <p>Stanford d.school's process for turning fuzzy pain into a validated product — fast, and in a loop rather than a straight line.</p>
+
+    <div class="loop-steps">
+      <div class="loop-step">1. EMPATHIZE</div><span class="loop-arrow">→</span>
+      <div class="loop-step">2. DEFINE</div><span class="loop-arrow">→</span>
+      <div class="loop-step">3. IDEATE</div><span class="loop-arrow">→</span>
+      <div class="loop-step">4. PROTOTYPE</div><span class="loop-arrow">→</span>
+      <div class="loop-step">5. TEST</div><span class="loop-arrow">↻</span>
+    </div>
+
+    <h3>Walking Priya through the loop</h3>
+    <p><strong>1. Empathize</strong> — She spent a Sunday morning shadowing a working mother's entire grocery run, from list-making to haggling at the vegetable cart, rather than just asking her about it afterward. Watching the actual behavior surfaces pain points people don't think to mention in an interview.</p>
+    <p><strong>2. Define</strong> — From that observation, a sharp problem statement: "Working parents in dual-income households in Tier-2 cities lose 3–4 hours a week on grocery runs they'd gladly pay to skip, but existing apps only serve metro pin codes."</p>
+    <p><strong>3. Ideate</strong> — As many possible fixes as possible, without judging them yet: a subscription box, a WhatsApp-order-only service, a hyperlocal dark store, a rider-matching app, tie-ups with existing sabziwalas.</p>
+    <p><strong>4. Prototype</strong> — Nothing fancy: a WhatsApp number, a printed price list, and Priya's cousin on a bicycle for deliveries. The prototype only needs to be real enough to test the idea, not real enough to scale.</p>
+    <p><strong>5. Test</strong> — 10 families placed real orders for two weeks. What worked (predictable morning delivery slot), what didn't (no easy way to request substitutions), what was learned (people wanted a "repeat last order" option) — then back to Ideate with real evidence instead of assumptions.</p>
+
+    <div class="mistake">
+      <span class="mistake-label">Common mistake</span>
+      Treating this as a one-way checklist instead of a loop. Founders often stop after one Test cycle, whether it succeeds or fails. The actual power is in looping back through Ideate → Prototype → Test repeatedly, each time with sharper information than the last.
+    </div>
+  </section>
+
+  <!-- ============ RECAP ============ -->
+  <div class="recap">
+    <h2>📌 War-Room Recap</h2>
+    <ul>
+      <li><b>Entrepreneurship =</b> unknown problem + unknown solution, solved by experimentation, not planning</li>
+      <li><b>Problem × Solution Map:</b> know which quadrant you're in before choosing plan vs. experiment</li>
+      <li><b>Desirable × Feasible × Viable:</b> an idea needs all three, not two out of three</li>
+      <li><b>Pain:</b> look for makeshift fixes people already invented — that's evidence of real demand</li>
+      <li><b>Adoption Scale:</b> Price, Benefits, Ease of Use, Ease of Purchase</li>
+      <li><b>Simplicity:</b> push through the mess until you find the one underlying principle</li>
+      <li><b>Biggest Mountains:</b> chase high pain + high profitability, not just high pain</li>
+      <li><b>Pricing:</b> ask willingness-to-pay and frequency directly — don't guess</li>
+      <li><b>Design Loop:</b> Empathize → Define → Ideate → Prototype → Test → loop again</li>
+    </ul>
+  </div>
+
+  <footer>— From duct-tape prototype to daily habit. That's Chapter 3. —</footer>
+</div>
+</body>
+</html>

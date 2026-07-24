@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 2 — Corporate Financial Reporting | Rakesh's Chai Tapri Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Zilla+Slab:ital,wght@0,400;0,500;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F5EEDC;
+    --paper-dark:#EBE1C6;
+    --rule:#C9BFA0;
+    --red:#A6314C;
+    --red-dark:#7E2439;
+    --ink:#2A2118;
+    --ink-soft:#5A5044;
+    --marigold:#D9A02D;
+    --teal:#2F6F62;
+    --stamp:#B23A2E;
+    --paper-shadow: rgba(42,33,24,0.18);
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    font-family:'Zilla Slab', serif;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 20% 10%, #3b2a1d 0%, transparent 45%),
+      radial-gradient(circle at 80% 90%, #2a1d13 0%, transparent 50%),
+      linear-gradient(160deg, #4a3722 0%, #2f2317 100%);
+    background-attachment:fixed;
+    padding: 40px 16px 80px;
+  }
+
+  .book{
+    max-width:880px;
+    margin:0 auto;
+    background:var(--paper);
+    box-shadow: 0 30px 60px var(--paper-shadow), 0 2px 0 rgba(255,255,255,0.4) inset;
+    border-radius:2px;
+    position:relative;
+    overflow:hidden;
+  }
+
+  /* ruled ledger lines */
+  .book::before{
+    content:"";
+    position:absolute;
+    top:0; left:0; right:0; bottom:0;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 37px,
+      var(--rule) 38px
+    );
+    opacity:0.55;
+    pointer-events:none;
+  }
+
+  /* red ledger margin line, bahi-khata style */
+  .book::after{
+    content:"";
+    position:absolute;
+    top:0; bottom:0;
+    left:64px;
+    width:2px;
+    background: var(--red);
+    opacity:0.55;
+    pointer-events:none;
+  }
+
+  @media (max-width:600px){
+    .book::after{left:34px;}
+  }
+
+  .content{
+    position:relative;
+    padding: 56px 48px 56px 96px;
+  }
+  @media (max-width:600px){
+    .content{padding:36px 20px 44px 52px;}
+  }
+
+  /* ---------- Header / Cover ---------- */
+  .cover{
+    text-align:left;
+    padding-bottom:28px;
+    margin-bottom:20px;
+    border-bottom: 3px double var(--ink-soft);
+  }
+
+  .stamp{
+    display:inline-block;
+    border:3px solid var(--stamp);
+    color:var(--stamp);
+    font-family:'Kalam', cursive;
+    font-weight:700;
+    font-size:0.85rem;
+    padding:6px 14px;
+    border-radius:50%/50%;
+    transform:rotate(-7deg);
+    letter-spacing:1px;
+    text-transform:uppercase;
+    opacity:0.85;
+  }
+
+  .eyebrow{
+    font-family:'Kalam', cursive;
+    color:var(--red-dark);
+    font-size:1.05rem;
+    margin:14px 0 4px;
+  }
+
+  h1.title{
+    font-family:'Kalam', cursive;
+    font-size:2.6rem;
+    line-height:1.15;
+    margin:0 0 10px;
+    color:var(--ink);
+  }
+  @media (max-width:600px){
+    h1.title{font-size:1.9rem;}
+  }
+
+  .subtitle{
+    color:var(--ink-soft);
+    font-style:italic;
+    font-size:1.05rem;
+    max-width:60ch;
+  }
+
+  .meta-row{
+    display:flex;
+    gap:18px;
+    flex-wrap:wrap;
+    margin-top:18px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.78rem;
+    color:var(--ink-soft);
+  }
+  .meta-row span{
+    background:var(--paper-dark);
+    border:1px solid var(--rule);
+    padding:3px 9px;
+    border-radius:3px;
+  }
+
+  /* ---------- Section headers ---------- */
+  section{margin: 46px 0;}
+  section:first-of-type{margin-top:0;}
+
+  .sec-tag{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72rem;
+    color:var(--red);
+    letter-spacing:2px;
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+
+  h2{
+    font-family:'Kalam', cursive;
+    font-size:1.7rem;
+    color:var(--red-dark);
+    margin:0 0 14px;
+    border-bottom:2px solid var(--rule);
+    padding-bottom:8px;
+  }
+
+  h3{
+    font-family:'Kalam', cursive;
+    font-size:1.25rem;
+    color:var(--teal);
+    margin: 22px 0 8px;
+  }
+
+  p{
+    line-height:1.75;
+    margin:0 0 14px;
+    font-size:1.02rem;
+  }
+
+  strong{color:var(--ink);}
+
+  .highlight{
+    background: linear-gradient(180deg, transparent 60%, rgba(217,160,45,0.4) 60%);
+  }
+
+  /* ---------- Sticky note callouts ---------- */
+  .note{
+    position:relative;
+    background:#FFF7DE;
+    border:1px solid #E4D28C;
+    box-shadow:2px 3px 6px rgba(0,0,0,0.12);
+    padding:18px 20px;
+    margin:24px 6px 24px 0;
+    transform:rotate(-0.6deg);
+    font-family:'Zilla Slab', serif;
+  }
+  .note::before{
+    content:"";
+    position:absolute;
+    top:-10px; left:24px;
+    width:60px; height:18px;
+    background:rgba(255,255,255,0.55);
+    border:1px solid rgba(0,0,0,0.05);
+    transform:rotate(-3deg);
+  }
+  .note-label{
+    font-family:'Kalam', cursive;
+    color:var(--red-dark);
+    font-weight:700;
+    display:block;
+    margin-bottom:6px;
+    font-size:1rem;
+  }
+
+  .mistake{
+    border-left:4px solid var(--stamp);
+    background:rgba(178,58,46,0.06);
+    padding:14px 18px;
+    margin:20px 0;
+    border-radius:0 4px 4px 0;
+  }
+  .mistake-label{
+    font-family:'Kalam', cursive;
+    color:var(--stamp);
+    font-weight:700;
+    display:block;
+    margin-bottom:4px;
+  }
+
+  /* ---------- Equation chips ---------- */
+  .equation{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:10px;
+    margin:26px 0;
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+  }
+  .chip{
+    padding:14px 20px;
+    border-radius:6px;
+    color:white;
+    font-size:1rem;
+    text-align:center;
+    min-width:110px;
+    box-shadow:0 3px 0 rgba(0,0,0,0.15);
+  }
+  .chip small{
+    display:block;
+    font-family:'Zilla Slab', serif;
+    font-weight:400;
+    font-size:0.7rem;
+    opacity:0.9;
+    margin-top:3px;
+  }
+  .chip.assets{background:var(--teal);}
+  .chip.liabilities{background:var(--red);}
+  .chip.equity{background:var(--marigold); color:var(--ink);}
+  .op{font-size:1.4rem; color:var(--ink-soft);}
+
+  /* ---------- Ledger tables ---------- */
+  .ledger-wrap{
+    overflow-x:auto;
+    margin:20px 0 28px;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.85rem;
+    background:rgba(255,255,255,0.35);
+  }
+  caption{
+    text-align:left;
+    font-family:'Kalam', cursive;
+    color:var(--ink-soft);
+    font-size:0.9rem;
+    margin-bottom:6px;
+    caption-side:top;
+  }
+  th, td{
+    border-bottom:1px solid var(--rule);
+    padding:9px 12px;
+    text-align:right;
+    white-space:nowrap;
+  }
+  th:first-child, td:first-child{text-align:left; white-space:normal;}
+  thead th{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Zilla Slab', serif;
+    font-weight:700;
+    font-size:0.78rem;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+  }
+  tr.total td{
+    font-weight:700;
+    border-top:2px solid var(--ink);
+    border-bottom:3px double var(--ink);
+    color:var(--red-dark);
+  }
+  tr.sub td{color:var(--ink-soft); font-style:italic;}
+  td.pos{color:var(--teal); font-weight:700;}
+  td.neg{color:var(--stamp);}
+
+  /* balance sheet two-column */
+  .bs-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:0;
+    border:2px solid var(--ink);
+    margin:22px 0;
+  }
+  @media (max-width:560px){
+    .bs-grid{grid-template-columns:1fr;}
+  }
+  .bs-col{padding:16px 18px;}
+  .bs-col:first-child{border-right:2px solid var(--ink);}
+  @media (max-width:560px){
+    .bs-col:first-child{border-right:none; border-bottom:2px solid var(--ink);}
+  }
+  .bs-head{
+    font-family:'Kalam', cursive;
+    font-weight:700;
+    color:var(--red-dark);
+    margin-bottom:10px;
+    font-size:1.05rem;
+  }
+  .bs-line{
+    display:flex;
+    justify-content:space-between;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.85rem;
+    padding:5px 0;
+    border-bottom:1px dashed var(--rule);
+  }
+  .bs-line.total{
+    border-top:2px solid var(--ink);
+    border-bottom:none;
+    font-weight:700;
+    margin-top:6px;
+    padding-top:8px;
+  }
+
+  /* ratio cards */
+  .ratio-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
+    gap:14px;
+    margin:22px 0;
+  }
+  .ratio-card{
+    border:1.5px solid var(--ink-soft);
+    border-radius:6px;
+    padding:16px;
+    background:rgba(255,255,255,0.4);
+  }
+  .ratio-name{
+    font-family:'Kalam', cursive;
+    color:var(--teal);
+    font-size:1.05rem;
+    margin-bottom:4px;
+  }
+  .ratio-formula{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.82rem;
+    background:var(--ink);
+    color:var(--paper);
+    display:inline-block;
+    padding:4px 8px;
+    border-radius:3px;
+    margin:6px 0;
+  }
+  .ratio-desc{font-size:0.9rem; color:var(--ink-soft); line-height:1.5;}
+
+  /* dupont tree */
+  .dupont{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    margin:26px 0;
+    font-family:'JetBrains Mono', monospace;
+  }
+  .dupont .factor{
+    background:var(--paper-dark);
+    border:2px solid var(--teal);
+    border-radius:6px;
+    padding:12px 16px;
+    text-align:center;
+    min-width:130px;
+  }
+  .dupont .factor .label{
+    display:block;
+    font-family:'Kalam', cursive;
+    color:var(--red-dark);
+    font-size:0.85rem;
+    margin-top:4px;
+  }
+  .dupont .times{font-size:1.3rem; color:var(--ink-soft);}
+
+  /* stamp box recap */
+  .recap{
+    border:3px solid var(--stamp);
+    border-radius:8px;
+    padding:22px 24px;
+    margin:34px 0 10px;
+    position:relative;
+    background:rgba(178,58,46,0.04);
+    transform:rotate(0.4deg);
+  }
+  .recap h2{border:none; color:var(--stamp); margin-bottom:12px;}
+  .recap ul{margin:0; padding-left:20px;}
+  .recap li{margin-bottom:8px; font-family:'JetBrains Mono', monospace; font-size:0.88rem;}
+  .recap li b{font-family:'Zilla Slab', serif;}
+
+  footer{
+    text-align:center;
+    padding:30px 20px 10px;
+    color:var(--ink-soft);
+    font-family:'Kalam', cursive;
+    font-size:0.95rem;
+  }
+
+  .divider{
+    text-align:center;
+    color:var(--rule);
+    font-size:1.2rem;
+    letter-spacing:10px;
+    margin:36px 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="book">
+  <div class="content">
+
+    <div class="cover">
+      <span class="stamp">Bahi-Khata Notes</span>
+      <div class="eyebrow">The Visual MBA — Chapter 2</div>
+      <h1 class="title">Corporate Financial Reporting</h1>
+      <p class="subtitle">Same accounting logic as the book — retold with Rakesh's chai-samosa tapri, in Rupees instead of Dollars.</p>
+      <div class="meta-row">
+        <span>Currency: ₹ INR</span>
+        <span>Reading time: ~12 min</span>
+        <span>Concepts: 8</span>
+      </div>
+    </div>
+
+    <!-- ============ INTRO ============ -->
+    <section>
+      <div class="sec-tag">Why this chapter matters</div>
+      <h2>Accounting is the language of business</h2>
+      <p>If you can't read a company's numbers, you're guessing about how it's actually doing — no different from trying to run a shop without ever counting the day's cash box. Every business, from a roadside chai tapri to a listed company, is explained by three financial statements:</p>
+      <ul>
+        <li><strong>Balance Sheet</strong> — what the business owns and owes, right now.</li>
+        <li><strong>Income Statement (P&amp;L)</strong> — how much it made or lost over a period.</li>
+        <li><strong>Cash Flow Statement</strong> — where actual cash moved in and out.</li>
+      </ul>
+      <p>This chapter builds your understanding of the first two in detail, using one running example: <strong>Rakesh, who is starting a chai-aur-samosa tapri</strong> near a busy market.</p>
+    </section>
+
+    <div class="divider">• • •</div>
+
+    <!-- ============ SECTION 1: BALANCE SHEET SETUP ============ -->
+    <section>
+      <div class="sec-tag">Concept 1</div>
+      <h2>Setting up shop — the Balance Sheet &amp; Accounting Equation</h2>
+      <p>Rakesh needs money to start. He takes a <strong>₹5,000 loan</strong> from a local bank (that's a <strong>Liability</strong> — money owed to someone else). With that money, he buys a tapri cart, stove and utensils for <strong>₹2,000</strong> (an <strong>Asset</strong>), and keeps the remaining <strong>₹3,000</strong> as cash in hand (also an Asset).</p>
+
+      <h3>The three building blocks</h3>
+      <p><strong>Assets</strong> — everything the business owns that has value (cash, the cart, stock of milk/sugar/samosas). <strong>Liabilities</strong> — everything it owes to outsiders (the bank loan). <strong>Equity</strong> — what's actually Rakesh's, after paying off every liability. Equity is often called "shareholders' money," but for a one-person tapri, it's simply Rakesh's own stake.</p>
+
+      <p>Here's the one rule that never breaks, for any business on earth:</p>
+
+      <div class="equation">
+        <div class="chip assets">Assets<small>What it owns</small></div>
+        <span class="op">=</span>
+        <div class="chip liabilities">Liabilities<small>What it owes</small></div>
+        <span class="op">+</span>
+        <div class="chip equity">Equity<small>What's actually yours</small></div>
+      </div>
+
+      <p>Rakesh's Day 0 balance sheet:</p>
+
+      <div class="bs-grid">
+        <div class="bs-col">
+          <div class="bs-head">Assets</div>
+          <div class="bs-line"><span>Cash in hand</span><span>₹3,000</span></div>
+          <div class="bs-line"><span>Tapri cart &amp; equipment</span><span>₹2,000</span></div>
+          <div class="bs-line total"><span>Total Assets</span><span>₹5,000</span></div>
+        </div>
+        <div class="bs-col">
+          <div class="bs-head">Liabilities + Equity</div>
+          <div class="bs-line"><span>Bank loan (Liability)</span><span>₹5,000</span></div>
+          <div class="bs-line"><span>Rakesh's Equity</span><span>₹0</span></div>
+          <div class="bs-line total"><span>Total L + E</span><span>₹5,000</span></div>
+        </div>
+      </div>
+
+      <div class="note">
+        <span class="note-label">Why it always balances</span>
+        Every rupee the business has came from <em>somewhere</em> — either borrowed (Liability) or contributed/earned (Equity). So the two sides of the equation are really just two different views of the exact same pile of money: one view shows what it turned into (Assets), the other shows who it belongs to (Liabilities + Equity). This is the whole logic behind double-entry bookkeeping — it's not a rule someone invented, it falls out automatically from tracking money honestly.
+      </div>
+    </section>
+
+    <!-- ============ SECTION 2: END OF DAY BALANCE SHEET ============ -->
+    <section>
+      <div class="sec-tag">Concept 2</div>
+      <h2>End of Day 1 — the balance sheet moves</h2>
+      <p>Rakesh has a great first day — he sells <strong>₹9,000</strong> worth of chai and samosas. That profit (once expenses are accounted for) adds to his <strong>Equity</strong>, and the extra cash adds to his <strong>Assets</strong>. The equation still balances — it always will, because Equity is defined as whatever is left over after Liabilities are subtracted from Assets.</p>
+      <div class="mistake">
+        <span class="mistake-label">A balance sheet is a photo, not a video</span>
+        It only tells you the position <em>at one instant</em> — like a photo of Rakesh's cash box at 9 PM. To understand what actually happened <em>during</em> the day (how much he earned, spent, and kept), you need the Income Statement — think of that as the video recording of the whole day's business.
+      </div>
+    </section>
+
+    <div class="divider">• • •</div>
+
+    <!-- ============ SECTION 3: INCOME STATEMENT ============ -->
+    <section>
+      <div class="sec-tag">Concept 3</div>
+      <h2>The Income Statement — where did the profit actually go?</h2>
+      <p>The core formula: <strong>Revenue − Expenses = Net Profit</strong>. But "expenses" isn't one lump number — it happens in layers, and each layer tells you something different about the business.</p>
+
+      <div class="ledger-wrap">
+        <table>
+          <caption>Rakesh's Tapri — Income Statement (Day 1)</caption>
+          <thead>
+            <tr><th>Line item</th><th>Amount</th><th>Margin</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Sales (Chai + Samosa)</td><td>₹9,000</td><td>—</td></tr>
+            <tr class="sub"><td>Less: Cost of Goods Sold <em>(milk, tea leaves, sugar, potatoes, oil)</em></td><td>(₹2,000)</td><td>—</td></tr>
+            <tr class="total"><td>Gross Profit</td><td>₹7,000</td><td class="pos">77%</td></tr>
+            <tr class="sub"><td>Less: Administrative expense <em>(stall rent, misc.)</em></td><td>(₹300)</td><td>—</td></tr>
+            <tr class="total"><td>Operating Income (EBIT)</td><td>₹6,700</td><td class="pos">74%</td></tr>
+            <tr class="sub"><td>Less: Taxes</td><td>(₹200)</td><td>—</td></tr>
+            <tr class="sub"><td>Less: Interest on loan</td><td>(₹100)</td><td>—</td></tr>
+            <tr class="total"><td>Net Profit</td><td>₹6,400</td><td class="pos">71%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Why EBIT gets its own line</h3>
+      <p><strong>EBIT</strong> (Earnings Before Interest &amp; Taxes) shows how well the <em>actual business</em> is doing — making chai and selling it — completely separate from how it's financed (interest on the bank loan) or how much tax law takes away. This matters because interest and tax rates can change without Rakesh doing anything differently at his stall. EBIT is the number that isolates his operating skill from those outside factors.</p>
+
+      <div class="mistake">
+        <span class="mistake-label">Common mistake</span>
+        Treating <strong>Gross Profit</strong> as "take-home" profit. Gross Profit (₹7,000) only accounts for the direct cost of ingredients — rent, taxes, and loan interest haven't been paid yet. The real number Rakesh can put in his pocket is <strong>Net Profit (₹6,400)</strong>, after every layer of expense.
+      </div>
+    </section>
+
+    <!-- ============ SECTION 4: COMMON SIZE ============ -->
+    <section>
+      <div class="sec-tag">Concept 4</div>
+      <h2>Common-Size Statements — comparing apples to apples</h2>
+      <p>Rupee figures alone don't tell you if a business is getting <em>better</em> — a bigger stall naturally has bigger numbers. So you divide every line by Sales, turning rupees into percentages. Now you can compare Rakesh's tapri this year vs last year, or even against a much bigger chai chain — the percentages are what's comparable, not the rupee size.</p>
+
+      <div class="ledger-wrap">
+        <table>
+          <caption>Common-size comparison — This Year vs Last Year (% of that year's sales)</caption>
+          <thead>
+            <tr><th>Line item</th><th>This Year (₹)</th><th>This Year %</th><th>Last Year %</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Sales</td><td>₹9,000</td><td>100%</td><td>67%*</td></tr>
+            <tr class="sub"><td>Cost of Goods Sold</td><td>(₹2,000)</td><td>(22%)</td><td>(33%)</td></tr>
+            <tr class="total"><td>Gross Profit</td><td>₹7,000</td><td class="pos">78%</td><td>33%</td></tr>
+            <tr class="sub"><td>Administrative</td><td>(₹300)</td><td>(3%)</td><td>(2%)</td></tr>
+            <tr class="total"><td>Operating Income (EBIT)</td><td>₹6,700</td><td class="pos">74%</td><td>31%</td></tr>
+            <tr class="sub"><td>Taxes</td><td>(₹200)</td><td>(2%)</td><td>(1%)</td></tr>
+            <tr class="sub"><td>Interest</td><td>(₹100)</td><td>(1%)</td><td>(1%)</td></tr>
+            <tr class="total"><td>Net Profit</td><td>₹6,400</td><td class="pos">71%</td><td>28%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:0.85rem;color:var(--ink-soft);">*As in the original book's figures — the Sales row's "Last Year %" reflects relative sales growth, while every row below it is each year's own line as a percentage of that year's own sales.</p>
+
+      <div class="note">
+        <span class="note-label">Reading this the right way</span>
+        Look at Gross Profit margin: it jumped from 33% last year to 78% this year. That's a huge improvement in how efficiently Rakesh is buying his ingredients relative to what he charges — maybe he found a cheaper wholesale supplier, or raised his chai price slightly. Common-size statements are what let you <em>see</em> a change like that instantly, instead of digging through rupee totals.
+      </div>
+    </section>
+
+    <div class="divider">• • •</div>
+
+    <!-- ============ SECTION 5: PRO FORMA ============ -->
+    <section>
+      <div class="sec-tag">Concept 5</div>
+      <h2>Pro Forma — forecasting next month</h2>
+      <p><strong>Pro forma</strong> simply means "what the future could look like." Say Rakesh expects sales to grow <strong>20%</strong> next month, because he's adding a new corner near the office complex. To forecast the rest of the statement, you hold each expense's <em>percentage of sales</em> constant (from the common-size table above) and apply it to the new, bigger sales number.</p>
+
+      <div class="ledger-wrap">
+        <table>
+          <caption>Pro forma — if sales grow 20%</caption>
+          <thead>
+            <tr><th>Line item</th><th>Current</th><th>Pro Forma (+20% sales)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Sales</td><td>₹9,000</td><td>₹10,800</td></tr>
+            <tr class="sub"><td>COGS (22% of sales)</td><td>(₹2,000)</td><td>(₹2,376)</td></tr>
+            <tr class="total"><td>Gross Profit</td><td>₹7,000</td><td>₹8,424</td></tr>
+            <tr class="sub"><td>Administrative (3% of sales)</td><td>(₹300)</td><td>(₹324)</td></tr>
+            <tr class="total"><td>Operating Income (EBIT)</td><td>₹6,700</td><td>₹8,100</td></tr>
+            <tr class="sub"><td>Taxes (held flat)</td><td>(₹200)</td><td>(₹200)</td></tr>
+            <tr class="sub"><td>Interest (held flat)</td><td>(₹100)</td><td>(₹100)</td></tr>
+            <tr class="total"><td>Net Profit</td><td>₹6,400</td><td>₹7,800</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mistake">
+        <span class="mistake-label">Common mistake</span>
+        Scaling <em>every</em> line by the same growth rate. Only the costs that genuinely move with sales (ingredients, admin overhead tied to volume) should scale up. Taxes and loan interest here are held flat because they don't automatically change just because Rakesh sold more chai — interest depends on the loan amount, and tax depends on rules and profit levels, not directly on the sales growth rate.
+      </div>
+    </section>
+
+    <!-- ============ SECTION 6: RATIOS ============ -->
+    <section>
+      <div class="sec-tag">Concept 6</div>
+      <h2>Financial Ratios — quick health checks</h2>
+      <p>Ratios compress a whole financial statement into one comparable number — useful for tracking Rakesh's tapri over time, or comparing it to another stall, or even a listed company (once you divide by the right things, size stops mattering).</p>
+
+      <div class="ratio-grid">
+        <div class="ratio-card">
+          <div class="ratio-name">Debt-to-Equity</div>
+          <div class="ratio-formula">Total Liabilities ÷ Equity</div>
+          <div class="ratio-desc"><strong>Measures:</strong> leverage — how much of the business is funded by borrowed money vs. Rakesh's own stake. High debt-to-equity = higher risk if sales dip, since loan payments don't wait for a bad month.</div>
+        </div>
+        <div class="ratio-card">
+          <div class="ratio-name">Current Ratio</div>
+          <div class="ratio-formula">Current Assets ÷ Current Liabilities</div>
+          <div class="ratio-desc"><strong>Measures:</strong> liquidity — can Rakesh pay his near-term bills (this week's milk supplier, this month's loan EMI) with what he has on hand? Higher is safer, but too high can mean idle cash.</div>
+        </div>
+        <div class="ratio-card">
+          <div class="ratio-name">Return on Equity (ROE)</div>
+          <div class="ratio-formula">Net Income ÷ Shareholder Equity</div>
+          <div class="ratio-desc"><strong>Measures:</strong> how much profit Rakesh generates for every rupee of his own money invested — the ultimate "is my own capital working hard for me" number.</div>
+        </div>
+        <div class="ratio-card">
+          <div class="ratio-name">Net Profit Margin</div>
+          <div class="ratio-formula">Net Profit ÷ Net Sales</div>
+          <div class="ratio-desc"><strong>Measures:</strong> cost-control efficiency — of every rupee in sales, how much survives all expenses to become real profit.</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider">• • •</div>
+
+    <!-- ============ SECTION 7: DUPONT ============ -->
+    <section>
+      <div class="sec-tag">Concept 7</div>
+      <h2>The DuPont Framework — breaking ROE apart</h2>
+      <p>Two businesses can have the exact same ROE for completely different — and very differently risky — reasons. The DuPont framework splits ROE into three drivers so you can see <em>which one</em> is doing the work:</p>
+
+      <div class="dupont">
+        <div class="factor">ROE<span class="label">Return on Equity</span></div>
+        <span class="times">=</span>
+        <div class="factor">Net Income ÷ Sales<span class="label">Profit Margin</span></div>
+        <span class="times">×</span>
+        <div class="factor">Sales ÷ Assets<span class="label">Asset Turnover</span></div>
+        <span class="times">×</span>
+        <div class="factor">Assets ÷ Equity<span class="label">Financial Leverage</span></div>
+      </div>
+
+      <div class="note">
+        <span class="note-label">Why this matters — a real comparison</span>
+        Rakesh's tapri could reach a healthy ROE mostly through a <strong>high profit margin</strong> (chai is genuinely cheap to make and sells well) with almost no debt. Meanwhile, an NBFC or finance company might hit the <em>same</em> ROE with a wafer-thin profit margin, almost entirely by cranking up <strong>financial leverage</strong> (borrowing heavily to fund large assets). Both show up as "good ROE" on paper — but Rakesh's version is a far safer business than one propped up mostly by debt. DuPont is what lets you tell those two stories apart.
+      </div>
+    </section>
+
+    <!-- ============ SECTION 8: SHARES ============ -->
+    <section>
+      <div class="sec-tag">Concept 8</div>
+      <h2>How shares work — splitting ownership</h2>
+      <p>Suppose Rakesh formally sets up his tapri as a small company with <strong>100 total shares</strong>. He later takes on a business partner (say, to fund a second cart) and gives away <strong>20 shares</strong> — so the partner now owns 20% of the business, and Rakesh owns the remaining 80%.</p>
+
+      <div class="ledger-wrap">
+        <table>
+          <caption>Working out one share's value</caption>
+          <tbody>
+            <tr><td>Net income (Year 1)</td><td>₹6,400</td></tr>
+            <tr><td>Total assets</td><td>₹14,000</td></tr>
+            <tr class="total"><td>Company worth (Net income + Assets)</td><td>₹20,400</td></tr>
+            <tr><td>Total shares</td><td>100</td></tr>
+            <tr class="total"><td>Value per share</td><td>₹204</td></tr>
+            <tr><td>Partner's stake: 20 shares × ₹204</td><td>₹4,080</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>This is the same idea behind any listed company's share price — it's just company value, sliced into equal pieces. The healthier the business's Assets and Net Income, the more each individual share is worth.</p>
+    </section>
+
+    <!-- ============ RECAP ============ -->
+    <div class="recap">
+      <h2>📌 Ledger Recap — formulas to remember</h2>
+      <ul>
+        <li><b>Accounting Equation:</b> Assets = Liabilities + Equity</li>
+        <li><b>Income Statement:</b> Revenue − Expenses = Net Profit</li>
+        <li><b>Gross Profit Margin:</b> Gross Profit ÷ Sales</li>
+        <li><b>EBIT:</b> Operating profit, before interest &amp; taxes</li>
+        <li><b>Common-Size:</b> Every line ÷ Sales, shown as %</li>
+        <li><b>Debt-to-Equity:</b> Total Liabilities ÷ Equity</li>
+        <li><b>Current Ratio:</b> Current Assets ÷ Current Liabilities</li>
+        <li><b>ROE:</b> Net Income ÷ Equity</li>
+        <li><b>DuPont ROE:</b> Profit Margin × Asset Turnover × Leverage</li>
+        <li><b>Share Value:</b> Company Worth ÷ Total Shares</li>
+      </ul>
+    </div>
+
+    <footer>— Chai, samosa, and a balanced ledger. That's Chapter 2. —</footer>
+
+  </div>
+</div>
+
+</body>
+</html>

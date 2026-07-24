@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 4 — Managerial Accounting | Rakesh's Costing Worksheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --grid:#CFE0DD;
+    --paper:#F4FAF8;
+    --ink:#123832;
+    --ink-soft:#4C6A64;
+    --lcd:#1F7A5C;
+    --lcd-bg:#0F2E27;
+    --warn:#B4432D;
+    --accent:#0E6BA8;
+    --receipt:#FDFBF3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'IBM Plex Sans', sans-serif;
+    color:var(--ink);
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+      var(--paper);
+    background-size:22px 22px, 22px 22px, cover;
+    padding:30px 14px 70px;
+  }
+  .sheet{ max-width:900px; margin:0 auto; }
+
+  /* ---------- calculator hero ---------- */
+  .hero{
+    background:var(--lcd-bg);
+    border-radius:14px;
+    padding:34px 38px;
+    box-shadow:0 12px 0 #08251F, 0 20px 30px rgba(0,0,0,0.25);
+    margin-bottom:48px;
+    position:relative;
+  }
+  .hero-tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--lcd);
+    opacity:0.8;
+    margin-bottom:10px;
+  }
+  h1.title{
+    font-family:'Bebas Neue', sans-serif;
+    letter-spacing:1px;
+    font-size:3rem;
+    color:var(--lcd);
+    margin:0 0 12px;
+    text-shadow:0 0 12px rgba(31,122,92,0.5);
+  }
+  @media (max-width:600px){ h1.title{font-size:2.1rem;} }
+  .subtitle{
+    font-family:'IBM Plex Mono', monospace;
+    color:#BFE8DA;
+    font-size:0.95rem;
+    max-width:60ch;
+    line-height:1.6;
+  }
+  .meta-row{
+    margin-top:20px;
+    display:flex; gap:10px; flex-wrap:wrap;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+  }
+  .meta-row span{
+    border:1px solid var(--lcd);
+    color:var(--lcd);
+    padding:3px 10px;
+    border-radius:4px;
+  }
+
+  /* ---------- sections ---------- */
+  section{margin:52px 0;}
+  .sec-num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.75rem;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin-bottom:6px;
+  }
+  h2{
+    font-family:'Bebas Neue', sans-serif;
+    letter-spacing:0.5px;
+    font-size:2rem;
+    color:var(--ink);
+    margin:0 0 16px;
+    border-bottom:3px solid var(--ink);
+    padding-bottom:8px;
+    display:inline-block;
+  }
+  h3{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size:1.05rem;
+    color:var(--accent);
+    margin:22px 0 8px;
+  }
+  p{ line-height:1.75; font-size:1.02rem; margin:0 0 14px; }
+  strong{color:var(--warn);}
+
+  /* ---------- receipt ---------- */
+  .receipt{
+    background:var(--receipt);
+    border:1px solid #DDD5BE;
+    box-shadow:0 6px 16px rgba(0,0,0,0.12);
+    max-width:380px;
+    margin:26px auto;
+    padding:20px 22px 26px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.85rem;
+    position:relative;
+    clip-path: polygon(
+      0% 2%, 3% 0%, 6% 2%, 9% 0%, 12% 2%, 15% 0%, 18% 2%, 21% 0%, 24% 2%, 27% 0%,
+      30% 2%, 33% 0%, 36% 2%, 39% 0%, 42% 2%, 45% 0%, 48% 2%, 51% 0%, 54% 2%, 57% 0%,
+      60% 2%, 63% 0%, 66% 2%, 69% 0%, 72% 2%, 75% 0%, 78% 2%, 81% 0%, 84% 2%, 87% 0%,
+      90% 2%, 93% 0%, 96% 2%, 99% 0%, 100% 2%,
+      100% 98%, 97% 100%, 94% 98%, 91% 100%, 88% 98%, 85% 100%, 82% 98%, 79% 100%,
+      76% 98%, 73% 100%, 70% 98%, 67% 100%, 64% 98%, 61% 100%, 58% 98%, 55% 100%,
+      52% 98%, 49% 100%, 46% 98%, 43% 100%, 40% 98%, 37% 100%, 34% 98%, 31% 100%,
+      28% 98%, 25% 100%, 22% 98%, 19% 100%, 16% 98%, 13% 100%, 10% 98%, 7% 100%,
+      4% 98%, 1% 100%, 0% 98%
+    );
+  }
+  .receipt-title{
+    text-align:center;
+    font-weight:700;
+    letter-spacing:1px;
+    border-bottom:1px dashed var(--ink-soft);
+    padding-bottom:10px;
+    margin-bottom:10px;
+  }
+  .receipt-line{
+    display:flex;
+    justify-content:space-between;
+    padding:3px 0;
+  }
+  .receipt-line.total{
+    border-top:1px dashed var(--ink-soft);
+    margin-top:6px;
+    padding-top:8px;
+    font-weight:700;
+    color:var(--warn);
+  }
+  .receipt-line.sub{color:var(--ink-soft); font-size:0.8rem;}
+
+  /* ---------- formula display ---------- */
+  .formula-box{
+    background:var(--lcd-bg);
+    color:var(--lcd);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:1.05rem;
+    text-align:center;
+    padding:20px;
+    border-radius:10px;
+    margin:24px 0;
+    letter-spacing:0.5px;
+    line-height:1.8;
+  }
+  .formula-box small{ display:block; color:#8FC7B4; font-size:0.72rem; margin-top:6px;}
+
+  /* ---------- note / mistake ---------- */
+  .note{
+    border-left:5px solid var(--accent);
+    background:rgba(14,107,168,0.06);
+    padding:16px 20px;
+    margin:22px 0;
+    border-radius:0 8px 8px 0;
+  }
+  .note-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:700;
+    color:var(--accent);
+    display:block;
+    margin-bottom:6px;
+    font-size:0.85rem;
+    text-transform:uppercase;
+    letter-spacing:1px;
+  }
+  .mistake{
+    border-left:5px solid var(--warn);
+    background:rgba(180,67,45,0.06);
+    padding:16px 20px;
+    margin:22px 0;
+    border-radius:0 8px 8px 0;
+  }
+  .mistake-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:700;
+    color:var(--warn);
+    display:block;
+    margin-bottom:6px;
+    font-size:0.85rem;
+    text-transform:uppercase;
+    letter-spacing:1px;
+  }
+
+  /* ---------- break even chart ---------- */
+  .chart-wrap{
+    background:white;
+    border:2px solid var(--ink);
+    border-radius:10px;
+    padding:20px;
+    margin:26px 0;
+  }
+  .chart-caption{
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.8rem;
+    color:var(--ink-soft);
+    margin-top:8px;
+  }
+
+  /* ---------- cost cards ---------- */
+  .cost-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:16px;
+    margin:24px 0;
+  }
+  .cost-card{
+    background:white;
+    border:2px solid var(--ink);
+    border-radius:10px;
+    padding:18px;
+  }
+  .cost-card.fixed{ border-color:var(--warn); }
+  .cost-card.variable{ border-color:var(--accent); }
+  .cost-card h4{
+    font-family:'IBM Plex Mono', monospace;
+    margin:0 0 8px;
+    font-size:0.95rem;
+  }
+  .cost-card.fixed h4{color:var(--warn);}
+  .cost-card.variable h4{color:var(--accent);}
+  .cost-card p{font-size:0.9rem; margin:0;}
+
+  /* ---------- PCE loop ---------- */
+  .pce-wrap{
+    display:flex;
+    justify-content:center;
+    gap:14px;
+    flex-wrap:wrap;
+    margin:26px 0;
+  }
+  .pce-step{
+    background:var(--lcd-bg);
+    color:var(--lcd);
+    font-family:'IBM Plex Mono', monospace;
+    padding:16px 22px;
+    border-radius:50%;
+    width:130px; height:130px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    font-size:0.85rem;
+    font-weight:600;
+    border:2px solid var(--lcd);
+  }
+  .pce-arrow{ align-self:center; color:var(--ink-soft); font-size:1.4rem;}
+
+  /* ---------- recap ---------- */
+  .recap{
+    background:var(--lcd-bg);
+    color:var(--lcd);
+    border-radius:12px;
+    padding:28px 30px;
+    margin:48px 0 20px;
+  }
+  .recap h2{ color:var(--lcd); border-color:var(--lcd); }
+  .recap ul{ margin:0; padding-left:20px; }
+  .recap li{ margin-bottom:10px; font-family:'IBM Plex Mono', monospace; font-size:0.85rem; line-height:1.5; color:#BFE8DA;}
+  .recap li b{ color:var(--lcd); font-family:'IBM Plex Sans', sans-serif; }
+
+  footer{
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.85rem;
+    color:var(--ink-soft);
+    padding:20px;
+  }
+
+  .divider{
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--ink-soft);
+    letter-spacing:10px;
+    margin:36px 0;
+    opacity:0.5;
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="hero">
+    <div class="hero-tag">The Visual MBA — Chapter 4 // costing_worksheet.exe</div>
+    <h1 class="title">Managerial Accounting</h1>
+    <p class="subtitle">&gt; The internal numbers only Rakesh needs to see — fixed costs, variable costs, break-even, and where his profit is really coming from. All figures in ₹ INR.</p>
+    <div class="meta-row">
+      <span>Currency: ₹ INR</span>
+      <span>Reading time: ~10 min</span>
+      <span>Concepts: 5</span>
+    </div>
+  </div>
+
+  <!-- ============ INTRO ============ -->
+  <section>
+    <div class="sec-num">Why this chapter matters</div>
+    <h2>Internal Numbers vs. External Numbers</h2>
+    <p>Chapter 2's Balance Sheet and P&amp;L were built for <strong>outsiders</strong> — banks, investors, tax authorities. <strong>Managerial accounting is different: it's built for Rakesh himself</strong>, to make better day-to-day decisions. Nobody outside the tapri ever needs to see this worksheet — but Rakesh needs it constantly.</p>
+    <p>The first, most important shift in mindset: stop treating all costs the same. Split every cost into <strong>Fixed</strong> and <strong>Variable</strong> — they behave completely differently, and mixing them together hides the decisions that actually matter.</p>
+  </section>
+
+  <!-- ============ SECTION 1: FIXED VS VARIABLE ============ -->
+  <section>
+    <div class="sec-num">Concept 1</div>
+    <h2>Fixed Costs vs. Variable Costs</h2>
+    <p>A <strong>Fixed Cost</strong> stays the same no matter how much chai Rakesh sells. A <strong>Variable Cost</strong> moves in direct proportion to how much he sells. Confusing the two leads to bad pricing and bad decisions.</p>
+
+    <div class="cost-grid">
+      <div class="cost-card fixed">
+        <h4>FIXED COST</h4>
+        <p><strong>Daily stall rent: ₹100</strong><br>Doesn't change whether Rakesh sells 5 cups or 500 cups today.</p>
+      </div>
+      <div class="cost-card variable">
+        <h4>VARIABLE COST</h4>
+        <p><strong>Milk, tea leaves, sugar: ₹7.50/cup</strong><br>Every extra cup sold adds exactly ₹7.50 more cost. Sell zero cups, pay zero.</p>
+      </div>
+    </div>
+
+    <div class="note">
+      <span class="note-label">Why the split matters</span>
+      If Rakesh treats his rent as "just another cost per cup," he'll misprice chai on slow days and overprice it on busy days, since rent-per-cup keeps changing with volume. Keeping Fixed and Variable separate is what makes the rest of this chapter's math possible.
+    </div>
+  </section>
+
+  <div class="divider">— — —</div>
+
+  <!-- ============ SECTION 2: CVP & CONTRIBUTION MARGIN ============ -->
+  <section>
+    <div class="sec-num">Concept 2</div>
+    <h2>CVP Analysis &amp; Contribution Margin</h2>
+    <p><strong>CVP (Cost-Volume-Profit) analysis</strong> sounds technical, but it's just: take your selling price, subtract your per-unit variable cost, and see what's left. That leftover amount is called the <strong>Contribution Margin</strong> — because it "contributes" toward paying off the fixed cost.</p>
+
+    <div class="formula-box">
+      Revenue (Price) − Variable Cost = Contribution Margin
+      <small>₹10.00 − ₹7.50 = ₹2.50 per cup</small>
+    </div>
+
+    <p>Every cup Rakesh sells generates ₹2.50 that goes toward paying off his ₹100 daily rent. Once enough cups have "contributed" ₹100 total, every cup after that is pure profit.</p>
+  </section>
+
+  <!-- ============ SECTION 3: BREAK-EVEN ============ -->
+  <section>
+    <div class="sec-num">Concept 3</div>
+    <h2>Break-Even Point — the magic question</h2>
+    <p>"How many cups do I need to sell just to cover my rent?" is one of the most useful questions in business, and CVP answers it directly.</p>
+
+    <div class="formula-box">
+      Break-Even Units = Fixed Cost ÷ Contribution Margin per unit
+      <small>₹100 ÷ ₹2.50 = 40 cups</small>
+    </div>
+
+    <div class="chart-wrap">
+      <svg width="100%" height="260" viewBox="0 0 560 260" preserveAspectRatio="xMidYMid meet">
+        <!-- axes -->
+        <line x1="60" y1="20" x2="60" y2="220" stroke="#123832" stroke-width="2"/>
+        <line x1="60" y1="220" x2="530" y2="220" stroke="#123832" stroke-width="2"/>
+        <text x="10" y="20" font-family="IBM Plex Mono" font-size="11" fill="#4C6A64">₹ Amount</text>
+        <text x="470" y="240" font-family="IBM Plex Mono" font-size="11" fill="#4C6A64">Cups sold</text>
+
+        <!-- fixed cost line (flat) -->
+        <line x1="60" y1="195" x2="530" y2="195" stroke="#B4432D" stroke-width="2" stroke-dasharray="6,4"/>
+        <text x="440" y="190" font-family="IBM Plex Mono" font-size="11" fill="#B4432D">Fixed Cost (₹100)</text>
+
+        <!-- total cost line -->
+        <line x1="60" y1="195" x2="530" y2="60" stroke="#B4432D" stroke-width="2.5"/>
+        <text x="380" y="75" font-family="IBM Plex Mono" font-size="11" fill="#B4432D">Total Cost</text>
+
+        <!-- revenue line -->
+        <line x1="60" y1="220" x2="530" y2="30" stroke="#0E6BA8" stroke-width="2.5"/>
+        <text x="440" y="45" font-family="IBM Plex Mono" font-size="11" fill="#0E6BA8">Revenue</text>
+
+        <!-- break even point -->
+        <circle cx="230" cy="140" r="6" fill="#1F7A5C"/>
+        <line x1="230" y1="140" x2="230" y2="220" stroke="#1F7A5C" stroke-width="1.5" stroke-dasharray="3,3"/>
+        <text x="185" y="135" font-family="IBM Plex Mono" font-size="12" font-weight="700" fill="#1F7A5C">Break-even: 40 cups</text>
+      </svg>
+      <div class="chart-caption">Where the Revenue line crosses the Total Cost line = the exact point profit turns positive.</div>
+    </div>
+
+    <div class="receipt">
+      <div class="receipt-title">RAKESH'S TAPRI — DAY SUMMARY</div>
+      <div class="receipt-line"><span>Cups sold</span><span>160</span></div>
+      <div class="receipt-line"><span>Revenue (160 × ₹10)</span><span>₹1,600</span></div>
+      <div class="receipt-line sub"><span>Variable cost (160 × ₹7.50)</span><span>₹1,200</span></div>
+      <div class="receipt-line sub"><span>Contribution margin</span><span>₹400</span></div>
+      <div class="receipt-line sub"><span>Less: fixed cost (rent)</span><span>₹100</span></div>
+      <div class="receipt-line total"><span>NET PROFIT</span><span>₹300</span></div>
+    </div>
+
+    <div class="mistake">
+      <span class="mistake-label">Common mistake</span>
+      Assuming break-even is a one-time calculation. The moment rent changes, or Rakesh's ingredient cost changes (say, milk prices rise), the break-even point shifts too — it needs to be recalculated, not memorized as a fixed number.
+    </div>
+  </section>
+
+  <div class="divider">— — —</div>
+
+  <!-- ============ SECTION 4: ABC ============ -->
+  <section>
+    <div class="sec-num">Concept 4</div>
+    <h2>Activity-Based Costing (ABC)</h2>
+    <p>Once Rakesh adds samosas to the menu, a new problem appears: overhead costs (gas, frying oil, extra prep time) don't split evenly across chai and samosas — but a lazy accounting approach might just divide them 50/50 anyway. <strong>Activity-Based Costing</strong> means tracing overhead to the <em>actual activity</em> that causes it, so you know the real cost — and real profit — of each product.</p>
+
+    <div class="note">
+      <span class="note-label">Rakesh's example</span>
+      Frying samosas uses far more gas and oil than boiling chai, and takes longer per unit. When Rakesh actually traces that overhead to samosas specifically (instead of splitting it evenly with chai), he discovers samosas are less profitable than they looked — which tells him either to raise the samosa price, or streamline the frying process, rather than guessing.
+    </div>
+
+    <div class="mistake">
+      <span class="mistake-label">Common mistake</span>
+      Splitting shared overhead evenly "for simplicity." It feels fair, but it hides which specific product or activity is actually dragging down profitability — which defeats the entire point of tracking costs in the first place.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 5: MANAGEMENT PROCESS ============ -->
+  <section>
+    <div class="sec-num">Concept 5</div>
+    <h2>The Management Process — Plan, Control, Evaluate</h2>
+    <p>All of this costing analysis only pays off inside an ongoing loop, not as a one-time report:</p>
+
+    <div class="pce-wrap">
+      <div class="pce-step">PLAN<br>Set the break-even target &amp; pricing</div>
+      <span class="pce-arrow">→</span>
+      <div class="pce-step">CONTROL<br>Track actual costs day to day</div>
+      <span class="pce-arrow">→</span>
+      <div class="pce-step">EVALUATE<br>Compare actual vs. plan, adjust</div>
+      <span class="pce-arrow">↻</span>
+    </div>
+
+    <p>For Rakesh, this looks like: Plan this month's break-even and pricing → Control by tracking daily ingredient costs against the plan → Evaluate at month-end whether milk price hikes quietly pushed his break-even point higher, then loop back into next month's plan with corrected numbers.</p>
+  </section>
+
+  <!-- ============ RECAP ============ -->
+  <div class="recap">
+    <h2>📌 Worksheet Recap</h2>
+    <ul>
+      <li><b>Managerial vs. corporate accounting:</b> internal decisions vs. external reporting</li>
+      <li><b>Fixed cost:</b> unchanged by volume (e.g. rent) — <b>Variable cost:</b> scales with volume (e.g. ingredients)</li>
+      <li><b>Contribution Margin</b> = Price − Variable Cost per unit</li>
+      <li><b>Break-Even Units</b> = Fixed Cost ÷ Contribution Margin per unit</li>
+      <li><b>Activity-Based Costing:</b> trace overhead to what actually causes it, don't split evenly</li>
+      <li><b>Management Process:</b> Plan → Control → Evaluate → loop</li>
+    </ul>
+  </div>
+
+  <footer>&gt; End of worksheet. Chapter 4 balanced to zero. &lt;</footer>
+</div>
+</body>
+</html>
