@@ -29,41 +29,42 @@
       radial-gradient(circle at 15% 20%, rgba(63,224,208,0.08) 0%, transparent 35%),
       radial-gradient(circle at 85% 70%, rgba(178,75,243,0.10) 0%, transparent 40%),
       linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
-    padding:30px 14px 80px;
+    padding:0 0 80px;
   }
-  .stars{
-    position:fixed; inset:0; pointer-events:none; z-index:0;
-    background-image:
-      radial-gradient(1px 1px at 20px 30px, white, transparent),
-      radial-gradient(1px 1px at 120px 80px, white, transparent),
-      radial-gradient(1.5px 1.5px at 200px 150px, white, transparent),
-      radial-gradient(1px 1px at 300px 50px, white, transparent),
-      radial-gradient(1px 1px at 400px 200px, white, transparent),
-      radial-gradient(1.5px 1.5px at 500px 100px, white, transparent),
-      radial-gradient(1px 1px at 600px 250px, white, transparent),
-      radial-gradient(1px 1px at 700px 60px, white, transparent),
-      radial-gradient(1.5px 1.5px at 800px 180px, white, transparent);
-    background-repeat:repeat;
-    background-size:900px 300px;
-    opacity:0.35;
-  }
-  .ship{ max-width:920px; margin:0 auto; position:relative; z-index:1; }
 
-  /* ---------- hero ---------- */
+  /* Sticky Header */
+  .sticky-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10, 16, 36, 0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 2px solid var(--cyan);
+    padding: 10px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--cyan);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+  }
+  .sticky-nav a {
+    color: var(--cyan);
+    text-decoration: none;
+    font-weight: bold;
+  }
+  .sticky-nav a:hover { text-decoration: underline; }
+
+  .ship{ max-width:920px; margin:24px auto 0; padding:0 14px; position:relative; z-index:1; }
+
+  /* Hero */
   .hero{
     background:var(--panel);
     border:1px solid var(--border);
     border-radius:16px;
     padding:38px 40px;
-    box-shadow:0 0 40px rgba(63,224,208,0.12), inset 0 0 60px rgba(178,75,243,0.05);
+    box-shadow:0 0 40px rgba(63,224,208,0.12);
     margin-bottom:50px;
-    position:relative;
-    overflow:hidden;
-  }
-  .hero::before{
-    content:"";
-    position:absolute; top:0; left:0; right:0; height:3px;
-    background:linear-gradient(90deg, var(--cyan), var(--purple), var(--cyan));
   }
   .hero-tag{
     font-family:'Space Mono', monospace;
@@ -81,609 +82,314 @@
     background-clip:text;
     color:transparent;
   }
-  @media (max-width:600px){ h1.title{font-size:1.7rem;} }
   .subtitle{ color:var(--text-soft); font-size:1.05rem; max-width:65ch; line-height:1.7;}
-
-  .mystery-box{
-    margin-top:22px;
-    border:1px dashed var(--purple);
-    border-radius:10px;
-    padding:16px 20px;
-    background:rgba(178,75,243,0.06);
+  .meta-row{
+    margin-top:18px;
+    display:flex; gap:10px; flex-wrap:wrap;
+    font-family:'Space Mono', monospace;
+    font-size:0.75rem;
   }
-  .mystery-box b{ color:var(--purple); font-family:'Space Mono', monospace; }
-  #lockedVerdict{
-    font-family:'Orbitron', sans-serif;
-    color:var(--text-soft);
-    letter-spacing:2px;
+  .meta-row span{
+    border:1px solid var(--border);
+    color:var(--cyan);
+    padding:3px 10px;
+    border-radius:4px;
   }
 
-  /* ---------- sections ---------- */
-  section{ margin:56px 0; }
+  /* Sections */
+  section{margin:52px 0;}
   .sec-num{
     font-family:'Space Mono', monospace;
-    font-size:0.72rem; letter-spacing:2px; text-transform:uppercase;
-    color:var(--purple); margin-bottom:6px;
+    font-size:0.75rem;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--purple);
+    margin-bottom:6px;
   }
   h2{
     font-family:'Orbitron', sans-serif;
-    font-size:1.55rem;
-    color:var(--text);
+    font-size:1.8rem;
+    color:var(--cyan);
     margin:0 0 16px;
-  }
-  h3{
-    font-family:'Space Mono', monospace;
-    font-size:1rem;
-    color:var(--cyan);
-    margin:22px 0 10px;
-  }
-  p{ line-height:1.8; font-size:1.02rem; margin:0 0 14px; color:var(--text); }
-  strong{ color:var(--cyan); }
-
-  .note{
-    border-left:4px solid var(--cyan);
-    background:rgba(63,224,208,0.06);
-    padding:16px 20px;
-    margin:20px 0;
-    border-radius:0 10px 10px 0;
-  }
-  .note-label{
-    font-family:'Space Mono', monospace;
-    color:var(--cyan);
-    font-weight:700;
-    display:block;
-    margin-bottom:6px;
-    font-size:0.82rem;
-    text-transform:uppercase;
-    letter-spacing:1px;
-  }
-  .mistake{
-    border-left:4px solid var(--amber);
-    background:rgba(255,176,32,0.06);
-    padding:16px 20px;
-    margin:20px 0;
-    border-radius:0 10px 10px 0;
-  }
-  .mistake-label{
-    font-family:'Space Mono', monospace;
-    color:var(--amber);
-    font-weight:700;
-    display:block;
-    margin-bottom:6px;
-    font-size:0.82rem;
-    text-transform:uppercase;
-    letter-spacing:1px;
-  }
-
-  /* ---------- capital chain ---------- */
-  .chain-wrap{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-wrap:wrap;
-    gap:6px;
-    margin:28px 0;
-    padding:24px;
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:14px;
-  }
-  .chain-node{
-    font-family:'Space Mono', monospace;
-    font-size:0.82rem;
-    text-align:center;
-    background:var(--bg2);
-    border:1px solid var(--cyan);
-    color:var(--cyan);
-    padding:12px 14px;
-    border-radius:10px;
-    min-width:100px;
-  }
-  .chain-arrow{
-    color:var(--purple);
-    font-size:1.3rem;
-    position:relative;
-    overflow:hidden;
-  }
-  .chain-loop{
-    width:100%;
-    text-align:center;
-    font-family:'Space Mono', monospace;
-    color:var(--text-soft);
-    font-size:0.78rem;
-    margin-top:14px;
-  }
-
-  /* ---------- panels / dashboard ---------- */
-  .panel{
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:16px;
-    padding:26px 28px;
-    margin:26px 0;
-    box-shadow: 0 0 0 1px rgba(63,224,208,0.03), 0 10px 30px rgba(0,0,0,0.3);
-  }
-  .panel-title{
-    font-family:'Orbitron', sans-serif;
-    font-size:1rem;
-    color:var(--purple);
-    margin-bottom:18px;
-    letter-spacing:1px;
-  }
-
-  .slider-row{ margin:18px 0; }
-  .slider-label{
-    display:flex; justify-content:space-between;
-    font-family:'Space Mono', monospace;
-    font-size:0.85rem;
-    color:var(--text-soft);
-    margin-bottom:6px;
-  }
-  .slider-label b{ color:var(--cyan); font-size:1rem; }
-  input[type=range]{
-    width:100%;
-    -webkit-appearance:none;
-    height:6px;
-    border-radius:4px;
-    background:linear-gradient(90deg, var(--cyan), var(--purple));
-    outline:none;
-  }
-  input[type=range]::-webkit-slider-thumb{
-    -webkit-appearance:none;
-    width:20px; height:20px;
-    border-radius:50%;
-    background:white;
-    border:3px solid var(--purple);
-    cursor:pointer;
-    box-shadow:0 0 8px rgba(178,75,243,0.8);
-  }
-  input[type=range]::-moz-range-thumb{
-    width:20px; height:20px;
-    border-radius:50%;
-    background:white;
-    border:3px solid var(--purple);
-    cursor:pointer;
-  }
-
-  .readout{
-    margin-top:22px;
-    text-align:center;
-    padding:20px;
-    background:var(--bg2);
-    border:1px solid var(--cyan);
-    border-radius:12px;
-  }
-  .readout-label{
-    font-family:'Space Mono', monospace;
-    font-size:0.75rem;
-    color:var(--text-soft);
-    letter-spacing:2px;
-    text-transform:uppercase;
-  }
-  .readout-value{
-    font-family:'Orbitron', sans-serif;
-    font-size:2.4rem;
-    font-weight:700;
-    color:var(--green);
-    margin-top:6px;
-  }
-  @media (max-width:500px){ .readout-value{font-size:1.8rem;} }
-
-  .erosion-bar{
-    margin-top:16px;
-    height:16px;
-    background:var(--bg);
-    border-radius:8px;
-    overflow:hidden;
-    border:1px solid var(--border);
-  }
-  .erosion-fill{
-    height:100%;
-    background:linear-gradient(90deg, var(--purple), var(--cyan));
-    transition:width 0.15s ease;
-  }
-  .erosion-caption{
-    font-family:'Space Mono', monospace;
-    font-size:0.75rem;
-    color:var(--text-soft);
-    margin-top:8px;
-    text-align:center;
-  }
-
-  /* ---------- formula breakdown ---------- */
-  .formula-display{
-    font-family:'Orbitron', sans-serif;
-    font-size:1.3rem;
-    text-align:center;
-    color:var(--cyan);
-    margin:20px 0;
-    letter-spacing:1px;
-  }
-  .formula-parts{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-    gap:12px;
-    margin:20px 0;
-  }
-  .fpart{
-    background:var(--bg2);
-    border:1px solid var(--border);
-    border-radius:10px;
-    padding:14px;
-  }
-  .fpart b{
-    font-family:'Space Mono', monospace;
-    color:var(--purple);
-    display:block;
-    margin-bottom:4px;
-    font-size:1.05rem;
-  }
-  .fpart span{ font-size:0.88rem; color:var(--text-soft); }
-
-  /* ---------- year table ---------- */
-  .yeartable{
-    width:100%;
-    border-collapse:collapse;
-    font-family:'Space Mono', monospace;
-    font-size:0.85rem;
-    margin:18px 0;
-  }
-  .yeartable th, .yeartable td{
-    padding:9px 10px;
-    text-align:right;
     border-bottom:1px solid var(--border);
+    padding-bottom:8px;
   }
-  .yeartable th:first-child, .yeartable td:first-child{ text-align:left; }
-  .yeartable thead th{ color:var(--purple); font-weight:700; }
-  .yeartable tfoot td{ font-weight:700; color:var(--green); border-top:2px solid var(--cyan); }
+  p{ line-height:1.7; margin:0 0 14px; font-size:1rem; }
 
-  /* ---------- reveal button ---------- */
-  .reveal-btn{
-    display:block;
-    margin:26px auto 0;
-    font-family:'Orbitron', sans-serif;
-    font-size:0.95rem;
-    letter-spacing:2px;
-    background:linear-gradient(90deg, var(--purple), var(--cyan));
-    color:#08101F;
-    border:none;
-    padding:14px 34px;
-    border-radius:30px;
-    cursor:pointer;
-    box-shadow:0 0 20px rgba(178,75,243,0.4);
-    transition:transform 0.15s ease;
+  /* Interactive Time Machine Box */
+  .tm-box {
+    background: var(--panel);
+    border: 1px solid var(--cyan);
+    border-radius: 12px;
+    padding: 28px;
+    margin: 36px 0;
+    box-shadow: 0 0 30px rgba(63,224,208,0.15);
   }
-  .reveal-btn:hover{ transform:scale(1.04); }
-
-  .verdict{
-    display:none;
-    margin-top:24px;
-    padding:22px;
-    border-radius:12px;
-    text-align:center;
-    animation: fadeIn 0.5s ease forwards;
-  }
-  .verdict.go{ background:rgba(57,255,136,0.1); border:1px solid var(--green); }
-  .verdict.nogo{ background:rgba(255,92,92,0.1); border:1px solid var(--red); }
-  .verdict-title{
-    font-family:'Orbitron', sans-serif;
-    font-size:1.6rem;
-    margin-bottom:8px;
-  }
-  .verdict.go .verdict-title{ color:var(--green); }
-  @keyframes fadeIn{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
-
-  /* ---------- quiz ---------- */
-  .quiz-options{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:16px;
-    margin:20px 0;
-  }
-  .quiz-card{
-    background:var(--bg2);
-    border:2px solid var(--border);
-    border-radius:12px;
-    padding:20px;
-    text-align:center;
-    cursor:pointer;
-    transition:all 0.2s ease;
-    font-family:'Space Mono', monospace;
-  }
-  .quiz-card:hover{ border-color:var(--cyan); }
-  .quiz-card.correct{ border-color:var(--green); background:rgba(57,255,136,0.08); }
-  .quiz-card.wrong{ border-color:var(--red); background:rgba(255,92,92,0.08); opacity:0.7; }
-  .quiz-explain{
-    display:none;
-    margin-top:16px;
-    padding:16px 18px;
-    background:var(--bg2);
-    border-radius:10px;
-    border:1px solid var(--border);
+  .tm-title {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--cyan);
+    font-size: 1.4rem;
+    margin-top: 0;
   }
 
-  /* ---------- recap ---------- */
-  .recap{
-    background:var(--panel);
-    border:1px solid var(--cyan);
-    border-radius:16px;
-    padding:30px 32px;
-    margin:50px 0 20px;
+  .field-row {
+    margin-bottom: 16px;
   }
-  .recap h2{ color:var(--cyan); }
-  .recap ul{ margin:0; padding-left:20px; }
-  .recap li{ margin-bottom:10px; font-family:'Space Mono', monospace; font-size:0.85rem; line-height:1.6; color:var(--text-soft); }
-  .recap li b{ color:var(--text); font-family:'Inter', sans-serif; }
-
-  footer{
-    text-align:center;
-    font-family:'Space Mono', monospace;
-    font-size:0.85rem;
-    color:var(--text-soft);
-    padding:24px;
+  .field-lbl {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--text-soft);
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .slider-bar {
+    width: 100%;
+    accent-color: var(--cyan);
   }
 
-  .divider{
-    text-align:center;
-    font-family:'Space Mono', monospace;
-    color:var(--border);
-    letter-spacing:10px;
-    margin:36px 0;
+  .npv-status {
+    text-align: center;
+    padding: 16px;
+    border-radius: 8px;
+    font-family: 'Space Mono', monospace;
+    font-weight: bold;
+    margin-top: 20px;
+    font-size: 1.1rem;
+  }
+  .npv-good { background: rgba(57, 255, 136, 0.15); color: var(--green); border: 1px solid var(--green); }
+  .npv-bad { background: rgba(255, 92, 92, 0.15); color: var(--red); border: 1px solid var(--red); }
+
+  /* Quiz */
+  .quiz-box {
+    background: rgba(178, 75, 243, 0.1);
+    border: 1px solid var(--purple);
+    border-radius: 10px;
+    padding: 26px;
+    margin: 40px 0;
+  }
+  .quiz-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+  }
+  .quiz-btn.correct { background: rgba(57, 255, 136, 0.2); border-color: var(--green); color: var(--green); }
+  .quiz-btn.wrong { background: rgba(255, 92, 92, 0.2); border-color: var(--red); color: var(--red); }
+
+  /* Recap */
+  .recap-box {
+    border: 1px solid var(--purple);
+    border-radius: 12px;
+    padding: 26px;
+    background: rgba(178, 75, 243, 0.05);
+    margin: 40px 0;
+  }
+  .recap-box h2 { border: none; color: var(--purple); margin-top: 0; }
+
+  footer {
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--text-soft);
+    margin-top: 40px;
   }
 </style>
 </head>
 <body>
-<div class="stars"></div>
+
+<!-- Sticky Header -->
+<nav class="sticky-nav">
+  <a href="Chapter4-managerial-accounting.html">← Chapter 4</a>
+  <span>Chapter 5: Business Finance</span>
+  <a href="index.html">Master Visual Hub 🗺️</a>
+</nav>
+
 <div class="ship">
 
   <div class="hero">
-    <div class="hero-tag">◆ The Visual MBA — Chapter 5 ◆ Time-Value Systems Online</div>
-    <h1 class="title">Business Finance:<br>The Cash Time Machine</h1>
-    <p class="subtitle">Rakesh has a ₹20,000 decision to make. By the end of this chapter, you'll have the exact tool to make it for him — not with gut feel, but with a formula that lets you travel cash through time.</p>
-
-    <div class="mystery-box">
-      <b>🔒 THE MYSTERY:</b> A supplier offers Rakesh a commercial gas mixer-steamer for <strong>₹20,000</strong>. It should let him serve faster and earn an extra <strong>₹5,000 a year, for 5 years</strong>. Is it actually worth it? <span id="lockedVerdict">Verdict locked — keep reading.</span>
+    <div class="hero-tag">Cash Time Travel • Corporate Finance</div>
+    <h1 class="title">Business Finance</h1>
+    <div class="subtitle">Why ₹100 in your hand today is worth more than ₹100 promised next year — and how to master NPV, WACC, and Valuation!</div>
+    <div class="meta-row">
+      <span>Topic: Corporate Finance</span>
+      <span>Reading time: ~14 min</span>
+      <span>Concepts: 8 Complete</span>
     </div>
   </div>
 
-  <!-- ============ SECTION 1: CAPITAL CHAIN ============ -->
+  <!-- SECTION 1: TIME VALUE OF MONEY -->
   <section>
-    <div class="sec-num">Concept 1</div>
-    <h2>The Capital Chain</h2>
-    <p>Business finance is really about one thing: deploying capital well as it moves through a chain. Get any link wrong, and you don't just hurt one business — you waste labor, resources, and innovation across the whole economy that capital could have gone toward instead.</p>
-
-    <div class="chain-wrap">
-      <div class="chain-node">💰 Capital</div>
-      <div class="chain-arrow">→</div>
-      <div class="chain-node">🛠️ Assets</div>
-      <div class="chain-arrow">→</div>
-      <div class="chain-node">☕ Products</div>
-      <div class="chain-arrow">→</div>
-      <div class="chain-node">🧾 Sales</div>
-      <div class="chain-arrow">→</div>
-      <div class="chain-node">📈 Net Income</div>
-      <div class="chain-loop">↩ reinvested as new Capital — and the chain runs again</div>
-    </div>
-
-    <p>Every major finance decision — <strong>Go/No-Go calls, buying or selling assets, improving operational efficiency</strong> — is really a question of whether it strengthens this chain. Financial ratios (from Chapter 2) are simply the instruments that tell you how efficiently the chain is running.</p>
+    <div class="sec-num">CONCEPT 1</div>
+    <h2>1. The Time Value of Money (TVM)</h2>
+    <p>A rupee today is worth MORE than a rupee tomorrow because of <strong>Inflation</strong> and <strong>Opportunity Cost (Interest)</strong>. If you put ₹100 in a bank fixed deposit earning 10% interest, it becomes ₹110 next year. Therefore, receiving ₹100 next year is really worth only ~₹90.90 today!</p>
   </section>
 
-  <div class="divider">◆ ◆ ◆</div>
-
-  <!-- ============ SECTION 2: TIME VALUE ============ -->
+  <!-- SECTION 2: NET PRESENT VALUE -->
   <section>
-    <div class="sec-num">Concept 2</div>
-    <h2>Why ₹1,000 Today ≠ ₹1,000 in 5 Years</h2>
-    <p>This is the single most important idea in business finance. Money right now can be put to work immediately — invested, used to buy inventory that generates more sales, or simply kept safe. Money promised in the future carries both a missed opportunity <em>and</em> a risk that it may not show up at all. Both of those get bundled into one number: the <strong>discount rate</strong>.</p>
+    <div class="sec-num">CONCEPT 2</div>
+    <h2>2. Net Present Value (NPV) &amp; Investment Appraisal</h2>
+    <p>NPV measures whether a future project will make your company richer or poorer in today's money:</p>
+    <p style="font-family:'Space Mono', monospace; font-weight:bold; background:var(--panel); border:1px solid var(--border); padding:12px; border-radius:6px; color:var(--cyan);">NPV = (Present Value of Future Cash Inflows) − Initial Investment Cost Today</p>
 
-    <div class="panel">
-      <div class="panel-title">⏱ LIVE DEMO — The Shrinking Rupee</div>
-      <p style="margin-bottom:6px;">Drag the sliders. Watch how much a <strong>fixed future ₹1,000</strong> is actually worth <em>today</em>, depending on how far away it is and how risky/uncertain it is.</p>
+    <!-- Interactive Time Machine Calculator -->
+    <div class="tm-box">
+      <div class="tm-title">⏳ Interactive Tool: Sci-Fi Cash Time Machine (NPV Calculator)</div>
+      <p style="font-size:0.9rem; color:var(--text-soft); margin-bottom:18px;">Rakesh is thinking of buying an automatic Tea Dispenser Machine. Let's see if the investment makes financial sense in today's rupees!</p>
 
-      <div class="slider-row">
-        <div class="slider-label"><span>Years away</span><b id="tv-years-label">5 years</b></div>
-        <input type="range" id="tv-years" min="0" max="15" value="5" step="1">
-      </div>
-      <div class="slider-row">
-        <div class="slider-label"><span>Discount rate (risk + opportunity cost)</span><b id="tv-rate-label">4%</b></div>
-        <input type="range" id="tv-rate" min="0" max="20" value="4" step="1">
+      <div class="field-row">
+        <div class="field-lbl"><span>Initial Machine Investment (Cost Today):</span> <span id="valCost">₹10,000</span></div>
+        <input type="range" class="slider-bar" id="slideCost" min="2000" max="30000" step="1000" value="10000" oninput="updateNPV()">
       </div>
 
-      <div class="readout">
-        <div class="readout-label">₹1,000 in the future is worth, today:</div>
-        <div class="readout-value" id="tv-output">₹821</div>
-        <div class="erosion-bar"><div class="erosion-fill" id="tv-bar" style="width:82%"></div></div>
-        <div class="erosion-caption" id="tv-caption">That's 82% of its face value — 18% has "evaporated" to time and risk.</div>
+      <div class="field-row">
+        <div class="field-lbl"><span>Expected Profit Year 1:</span> <span id="valY1">₹4,000</span></div>
+        <input type="range" class="slider-bar" id="slideY1" min="0" max="15000" step="500" value="4000" oninput="updateNPV()">
       </div>
-    </div>
 
-    <div class="note">
-      <span class="note-label">What you should notice</span>
-      Push the years slider up, and the value keeps shrinking — the further out a promise is, the less it's worth today. Push the rate slider up, and it shrinks even faster — because a higher discount rate means either better alternative opportunities elsewhere, or simply less trust that the cash will actually arrive.
-    </div>
-  </section>
-
-  <!-- ============ SECTION 3: PV FORMULA ============ -->
-  <section>
-    <div class="sec-num">Concept 3</div>
-    <h2>Decoding the Present Value Formula</h2>
-    <p>The formula behind that shrinking number looks intimidating written out — but every symbol is something you already understand intuitively:</p>
-
-    <div class="formula-display">PV = CF<sub>t</sub> ÷ (1 + r)<sup>t</sup></div>
-
-    <div class="formula-parts">
-      <div class="fpart"><b>PV</b><span>Present Value — what you're solving for. What it's worth <em>today</em>.</span></div>
-      <div class="fpart"><b>CF<sub>t</sub></b><span>The future Cash Flow — the lump sum you're promised, at a future time.</span></div>
-      <div class="fpart"><b>r</b><span>The discount rate — opportunity cost + risk, as a percentage.</span></div>
-      <div class="fpart"><b>t</b><span>Time — how many years away that cash flow is.</span></div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-title">🎛 LIVE CALCULATOR — Present Value</div>
-      <div class="slider-row">
-        <div class="slider-label"><span>Future Cash Flow (CF)</span><b id="pv-cf-label">₹10,000</b></div>
-        <input type="range" id="pv-cf" min="1000" max="50000" value="10000" step="500">
+      <div class="field-row">
+        <div class="field-lbl"><span>Expected Profit Year 2:</span> <span id="valY2">₹5,000</span></div>
+        <input type="range" class="slider-bar" id="slideY2" min="0" max="15000" step="500" value="5000" oninput="updateNPV()">
       </div>
-      <div class="slider-row">
-        <div class="slider-label"><span>Discount Rate (r)</span><b id="pv-rate-label">4%</b></div>
-        <input type="range" id="pv-rate" min="1" max="20" value="4" step="1">
+
+      <div class="field-row">
+        <div class="field-lbl"><span>Expected Profit Year 3:</span> <span id="valY3">₹5,000</span></div>
+        <input type="range" class="slider-bar" id="slideY3" min="0" max="15000" step="500" value="5000" oninput="updateNPV()">
       </div>
-      <div class="slider-row">
-        <div class="slider-label"><span>Years away (t)</span><b id="pv-years-label">5</b></div>
-        <input type="range" id="pv-years" min="1" max="20" value="5" step="1">
+
+      <div class="field-row">
+        <div class="field-lbl"><span>Discount Rate (Interest %):</span> <span id="valRate">10%</span></div>
+        <input type="range" class="slider-bar" id="slideRate" min="5" max="25" step="1" value="10" oninput="updateNPV()">
       </div>
-      <div class="readout">
-        <div class="readout-label">Present Value</div>
-        <div class="readout-value" id="pv-output">₹8,219</div>
+
+      <div style="display:flex; justify-content:space-around; margin-top:20px; font-family:'Space Mono', monospace;">
+        <div>Present Value of Inflows: <strong id="resPV" style="color:var(--cyan);">₹11,645</strong></div>
+        <div>Net Present Value (NPV): <strong id="resNPV" style="color:var(--green);">+₹1,645</strong></div>
+      </div>
+
+      <div class="npv-status npv-good" id="npvMsg">
+        🚀 GREEN LIGHT! NPV is Positive (+₹1,645). Buy the Tea Dispenser!
       </div>
     </div>
   </section>
 
-  <div class="divider">◆ ◆ ◆</div>
-
-  <!-- ============ SECTION 4: THE DECISION ============ -->
+  <!-- SECTION 3: IRR -->
   <section>
-    <div class="sec-num">Concept 4</div>
-    <h2>Back to Rakesh's ₹20,000 Question</h2>
-    <p>Now you have everything needed to solve the mystery. The machine costs <strong>₹20,000 today</strong>. In exchange, Rakesh expects it to generate an extra <strong>₹5,000 a year, for 5 years</strong>. At a 4% discount rate, here's what each year's cash flow is really worth <em>today</em>:</p>
-
-    <table class="yeartable">
-      <thead><tr><th>Year</th><th>Future Cash Flow</th><th>Present Value</th></tr></thead>
-      <tbody>
-        <tr><td>Year 1</td><td>₹5,000</td><td>₹4,808</td></tr>
-        <tr><td>Year 2</td><td>₹5,000</td><td>₹4,623</td></tr>
-        <tr><td>Year 3</td><td>₹5,000</td><td>₹4,445</td></tr>
-        <tr><td>Year 4</td><td>₹5,000</td><td>₹4,274</td></tr>
-        <tr><td>Year 5</td><td>₹5,000</td><td>₹4,110</td></tr>
-      </tbody>
-      <tfoot>
-        <tr><td colspan="2">Total Present Value</td><td>₹22,259</td></tr>
-      </tfoot>
-    </table>
-
-    <p>Compare that total to the ₹20,000 machine actually costs today. That difference is called the <strong>Net Present Value (NPV)</strong> — the true, time-adjusted profit of the decision.</p>
-
-    <button class="reveal-btn" onclick="revealVerdict()">▶ REVEAL THE VERDICT</button>
-
-    <div class="verdict go" id="verdictBox">
-      <div class="verdict-title">✅ GO — Buy the Machine</div>
-      <p style="margin:0;">Total Present Value of future cash flows: <strong>₹22,259</strong><br>Cost today: <strong>₹20,000</strong><br>Net Present Value: <strong>+₹2,259</strong></p>
-      <p style="margin-top:10px;">Even after adjusting every future rupee for time and risk, the machine still comes out ahead. Rakesh isn't just guessing anymore — he has a number.</p>
-    </div>
-
-    <div class="mistake">
-      <span class="mistake-label">Common mistake</span>
-      Comparing ₹20,000 today directly against ₹25,000 (5 × ₹5,000) in raw future rupees, and concluding it's obviously worth it. That ignores time value entirely — you must discount each future rupee back to today before comparing apples to apples. The real gap (₹2,259) is much thinner than the naive gap (₹5,000) — still worth it here, but not by nearly as much as it first looks.
-    </div>
+    <div class="sec-num">CONCEPT 3</div>
+    <h2>3. Internal Rate of Return (IRR)</h2>
+    <p>IRR is the exact discount rate that makes a project's Net Present Value equal to zero (NPV = 0). If the IRR of a project is higher than your cost of borrowing money, accept the project!</p>
   </section>
 
-  <!-- ============ SECTION 5: QUIZ ============ -->
+  <!-- SECTION 4: COST OF CAPITAL & WACC -->
   <section>
-    <div class="sec-num">Quick Gut-Check</div>
-    <h2>Which Would You Rather Have?</h2>
-    <p>Click the one you think is actually worth more, assuming a 6% discount rate.</p>
-
-    <div class="quiz-options" id="quizOptions">
-      <div class="quiz-card" data-choice="today" onclick="answerQuiz('today')">
-        <div style="font-size:1.3rem; margin-bottom:6px;">💵</div>
-        <strong>₹10,000</strong><br>right now
-      </div>
-      <div class="quiz-card" data-choice="future" onclick="answerQuiz('future')">
-        <div style="font-size:1.3rem; margin-bottom:6px;">⏳</div>
-        <strong>₹12,000</strong><br>in 3 years
-      </div>
-    </div>
-
-    <div class="quiz-explain" id="quizExplain">
-      <p style="margin:0;">At 6%, ₹12,000 in 3 years has a Present Value of <strong>₹10,075</strong> — just barely edging out ₹10,000 today. It's much closer than most people expect! Nudge the discount rate up even slightly higher, and ₹10,000 today would win instead. This is exactly why the discount rate you choose matters so much in real decisions.</p>
-    </div>
+    <div class="sec-num">CONCEPT 4</div>
+    <h2>4. Weighted Average Cost of Capital (WACC)</h2>
+    <p>WACC is the overall average rate of return a business must pay to all its funding sources (debt lenders + equity investors).</p>
   </section>
 
-  <!-- ============ RECAP ============ -->
-  <div class="recap">
-    <h2>📌 Time Machine Recap</h2>
+  <!-- SECTION 5: CAPITAL STRUCTURE -->
+  <section>
+    <div class="sec-num">CONCEPT 5</div>
+    <h2>5. Capital Structure &amp; Financial Leverage</h2>
+    <p>Capital Structure is how a company finances its overall operations and growth using a mix of <strong>Debt (loans)</strong> and <strong>Equity (selling shares)</strong>. Debt is cheaper because interest is tax-deductible, but too much debt increases bankruptcy risk!</p>
+  </section>
+
+  <!-- SECTION 6: WORKING CAPITAL -->
+  <section>
+    <div class="sec-num">CONCEPT 6</div>
+    <h2>6. Working Capital Management &amp; Cash Cycle</h2>
+    <p>Working Capital = Current Assets − Current Liabilities. It measures the short-term operational liquidity needed to keep suppliers paid while waiting for customers to pay.</p>
+  </section>
+
+  <!-- SECTION 7: VALUATION METHODS -->
+  <section>
+    <div class="sec-num">CONCEPT 7</div>
+    <h2>7. Business Valuation Methods</h2>
+    <p>How much is a business worth? Three main methods are used:</p>
     <ul>
-      <li><b>Capital Chain:</b> Capital → Assets → Products → Sales → Net Income → reinvested as Capital</li>
-      <li><b>Time Value of Money:</b> future cash is worth less today, due to opportunity cost + risk</li>
-      <li><b>Present Value formula:</b> PV = CF<sub>t</sub> ÷ (1+r)<sup>t</sup></li>
-      <li><b>Discount rate (r):</b> bundles opportunity cost and risk into one percentage</li>
-      <li><b>Net Present Value (NPV):</b> Total PV of future cash flows − upfront cost. Positive = worth it.</li>
-      <li><b>Common mistake:</b> comparing raw future rupees directly against today's rupees without discounting first</li>
+      <li><strong>DCF (Discounted Cash Flow):</strong> Valuing a business based on the present value of its future cash flows.</li>
+      <li><strong>Comps / Multiples:</strong> Valuing a business relative to similar public companies (e.g. 10x PE ratio).</li>
+      <li><strong>Asset-Based Valuation:</strong> Net value of total physical assets minus liabilities.</li>
+    </ul>
+  </section>
+
+  <!-- SECTION 8: FINANCIAL RISK & HEDGING -->
+  <section>
+    <div class="sec-num">CONCEPT 8</div>
+    <h2>8. Financial Risk &amp; Hedging</h2>
+    <p>Businesses use financial instruments (futures, options, swaps) to hedge against unpredictable fluctuations in interest rates, commodity prices, and foreign exchange currencies.</p>
+  </section>
+
+  <!-- GAMIFIED QUIZ -->
+  <div class="quiz-box">
+    <h3 style="font-family:'Orbitron', sans-serif; color:var(--purple); margin-top:0;">⚡ Time Traveler Finance Challenge</h3>
+    <p>If an investment project has an NPV of <strong>-₹2,000 (Negative NPV)</strong>, what should Rakesh do?</p>
+    <button class="quiz-btn" onclick="checkQuiz(this, true)">A) REJECT the project! It destroys value and loses money in today's terms.</button>
+    <button class="quiz-btn" onclick="checkQuiz(this, false)">B) ACCEPT the project anyway because positive cash comes in later.</button>
+  </div>
+
+  <!-- RECAP -->
+  <div class="recap-box">
+    <h2>📌 Finance Summary</h2>
+    <ul>
+      <li><b>Time Value of Money:</b> ₹1 today > ₹1 tomorrow.</li>
+      <li><b>NPV Rule:</b> Accept projects where NPV > 0.</li>
+      <li><b>WACC:</b> The cost of raising capital from lenders &amp; equity.</li>
+      <li><b>Valuation:</b> DCF discounts future free cash flows to today's present value.</li>
     </ul>
   </div>
 
-  <footer>◆ Time machine powered down. Chapter 5 complete. ◆</footer>
+  <footer>— Chapter 5 Refined: Unlock the power of Business Finance. —</footer>
+
 </div>
 
 <script>
-  function fmtINR(n){
-    return '₹' + Math.round(n).toLocaleString('en-IN');
+  function updateNPV() {
+    const cost = parseInt(document.getElementById('slideCost').value);
+    const y1 = parseInt(document.getElementById('slideY1').value);
+    const y2 = parseInt(document.getElementById('slideY2').value);
+    const y3 = parseInt(document.getElementById('slideY3').value);
+    const rate = parseFloat(document.getElementById('slideRate').value) / 100;
+
+    document.getElementById('valCost').innerText = '₹' + cost.toLocaleString();
+    document.getElementById('valY1').innerText = '₹' + y1.toLocaleString();
+    document.getElementById('valY2').innerText = '₹' + y2.toLocaleString();
+    document.getElementById('valY3').innerText = '₹' + y3.toLocaleString();
+    document.getElementById('valRate').innerText = (rate * 100).toFixed(0) + '%';
+
+    const pv1 = y1 / Math.pow(1 + rate, 1);
+    const pv2 = y2 / Math.pow(1 + rate, 2);
+    const pv3 = y3 / Math.pow(1 + rate, 3);
+
+    const totalPV = pv1 + pv2 + pv3;
+    const npv = totalPV - cost;
+
+    document.getElementById('resPV').innerText = '₹' + Math.round(totalPV).toLocaleString();
+    document.getElementById('resNPV').innerText = (npv >= 0 ? '+' : '') + '₹' + Math.round(npv).toLocaleString();
+
+    const msgEl = document.getElementById('npvMsg');
+    if (npv >= 0) {
+      msgEl.className = 'npv-status npv-good';
+      msgEl.innerText = `🚀 GREEN LIGHT! NPV is Positive (+₹${Math.round(npv).toLocaleString()}). Buy the Tea Dispenser!`;
+    } else {
+      msgEl.className = 'npv-status npv-bad';
+      msgEl.innerText = `❌ RED LIGHT! NPV is Negative (-₹${Math.abs(Math.round(npv)).toLocaleString()}). Reject the project!`;
+    }
   }
 
-  // ---- Demo 1: Shrinking Rupee ----
-  const tvYears = document.getElementById('tv-years');
-  const tvRate = document.getElementById('tv-rate');
-  const tvYearsLabel = document.getElementById('tv-years-label');
-  const tvRateLabel = document.getElementById('tv-rate-label');
-  const tvOutput = document.getElementById('tv-output');
-  const tvBar = document.getElementById('tv-bar');
-  const tvCaption = document.getElementById('tv-caption');
-
-  function updateTV(){
-    const years = parseInt(tvYears.value);
-    const rate = parseInt(tvRate.value) / 100;
-    tvYearsLabel.textContent = years + (years === 1 ? ' year' : ' years');
-    tvRateLabel.textContent = (rate*100) + '%';
-    const pv = 1000 / Math.pow(1+rate, years);
-    const pct = Math.max(0, Math.min(100, (pv/1000)*100));
-    tvOutput.textContent = fmtINR(pv);
-    tvBar.style.width = pct + '%';
-    tvCaption.textContent = "That's " + Math.round(pct) + "% of its face value — " + Math.round(100-pct) + "% has \"evaporated\" to time and risk.";
-  }
-  tvYears.addEventListener('input', updateTV);
-  tvRate.addEventListener('input', updateTV);
-  updateTV();
-
-  // ---- Demo 2: PV calculator ----
-  const pvCF = document.getElementById('pv-cf');
-  const pvRate = document.getElementById('pv-rate');
-  const pvYears = document.getElementById('pv-years');
-  const pvCFLabel = document.getElementById('pv-cf-label');
-  const pvRateLabel = document.getElementById('pv-rate-label');
-  const pvYearsLabel = document.getElementById('pv-years-label');
-  const pvOutput = document.getElementById('pv-output');
-
-  function updatePV(){
-    const cf = parseInt(pvCF.value);
-    const rate = parseInt(pvRate.value) / 100;
-    const years = parseInt(pvYears.value);
-    pvCFLabel.textContent = fmtINR(cf);
-    pvRateLabel.textContent = (rate*100) + '%';
-    pvYearsLabel.textContent = years;
-    const pv = cf / Math.pow(1+rate, years);
-    pvOutput.textContent = fmtINR(pv);
-  }
-  pvCF.addEventListener('input', updatePV);
-  pvRate.addEventListener('input', updatePV);
-  pvYears.addEventListener('input', updatePV);
-  updatePV();
-
-  // ---- Reveal verdict ----
-  function revealVerdict(){
-    document.getElementById('verdictBox').style.display = 'block';
-    document.getElementById('lockedVerdict').textContent = 'Verdict: GO ✅ (see below)';
-    event.target.style.display = 'none';
-  }
-
-  // ---- Quiz ----
-  function answerQuiz(choice){
-    const cards = document.querySelectorAll('.quiz-card');
-    cards.forEach(c => {
-      if(c.dataset.choice === 'future'){ c.classList.add('correct'); }
-      else { c.classList.add('wrong'); }
-      c.onclick = null;
-    });
-    document.getElementById('quizExplain').style.display = 'block';
+  function checkQuiz(btn, isCorrect) {
+    const parent = btn.parentElement;
+    const btns = parent.querySelectorAll('.quiz-btn');
+    btns.forEach(b => b.classList.remove('correct', 'wrong'));
+    if (isCorrect) btn.classList.add('correct');
+    else btn.classList.add('wrong');
   }
 </script>
 </body>

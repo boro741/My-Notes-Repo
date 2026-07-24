@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Visual MBA — Master Learning Hub</title>
+<meta name="description" content="Master essential business, accounting, startup, and finance concepts visually with zero prior knowledge required.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0f19;
+    --surface: #131b2e;
+    --surface-hover: #1a253e;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-accent: rgba(99, 102, 241, 0.3);
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --primary: #6366f1;
+    --primary-glow: rgba(99, 102, 241, 0.25);
+    --accent-gold: #f59e0b;
+    --accent-teal: #10b981;
+    --accent-pink: #ec4899;
+    --accent-cyan: #06b6d4;
+    --radius: 16px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+
+  /* Animated Ambient Glows */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 20% 10%, rgba(99, 102, 241, 0.15) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(236, 72, 153, 0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 50% 50%, rgba(16, 185, 129, 0.08) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 30px 20px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Top Navigation */
+  .top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 24px;
+    background: rgba(19, 27, 46, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    margin-bottom: 40px;
+  }
+
+  .nav-back {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.2s;
+  }
+  .nav-back:hover { color: var(--text); }
+
+  .nav-badge {
+    background: rgba(99, 102, 241, 0.15);
+    color: #a5b4fc;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 100px;
+    border: 1px solid var(--border-accent);
+    letter-spacing: 0.5px;
+  }
+
+  /* Hero Section */
+  .hero {
+    text-align: center;
+    padding: 40px 20px 50px;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: var(--accent-gold);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 50%, #f472b6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 16px;
+  }
+
+  .hero p {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    max-width: 640px;
+    margin: 0 auto 30px;
+  }
+
+  /* Zero to Hero Roadmap Banner */
+  .roadmap-card {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(16, 185, 129, 0.08) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 50px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  }
+
+  .roadmap-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .roadmap-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .roadmap-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  .step-box {
+    background: rgba(19, 27, 46, 0.7);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .step-box:hover {
+    transform: translateY(-3px);
+    border-color: var(--primary);
+  }
+  .step-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 6px;
+  }
+  .step-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+  .step-desc {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+
+  /* Section Title */
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* Chapter Cards Grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    margin-bottom: 60px;
+  }
+
+  .chapter-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .chapter-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--card-accent, var(--primary));
+    opacity: 0.8;
+  }
+
+  .chapter-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--border-accent);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 20px var(--primary-glow);
+    background: var(--surface-hover);
+  }
+
+  .card-top {
+    margin-bottom: 20px;
+  }
+
+  .card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+
+  .chapter-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-muted);
+  }
+
+  .chapter-icon {
+    font-size: 2.2rem;
+  }
+
+  .chapter-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .chapter-sub {
+    font-size: 0.92rem;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  .takeaways-list {
+    list-style: none;
+    margin-bottom: 24px;
+  }
+
+  .takeaways-list li {
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .takeaways-list li::before {
+    content: "✓";
+    color: var(--accent-teal);
+    font-weight: bold;
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .btn-read {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    color: var(--card-accent, var(--primary));
+    transition: gap 0.2s;
+  }
+
+  .chapter-card:hover .btn-read {
+    gap: 10px;
+  }
+
+  /* Interactive Jargon Dictionary & Cheat Sheet */
+  .dictionary-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    margin-bottom: 60px;
+  }
+
+  .search-box {
+    width: 100%;
+    padding: 14px 20px;
+    border-radius: 10px;
+    background: rgba(11, 15, 25, 0.6);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    margin-bottom: 24px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-box:focus {
+    border-color: var(--primary);
+  }
+
+  .dict-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .dict-item {
+    background: rgba(11, 15, 25, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+  }
+  .dict-term {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--accent-gold);
+    margin-bottom: 4px;
+  }
+  .dict-def {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    padding-top: 30px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Themes per card */
+  .card-c2 { --card-accent: var(--accent-gold); }
+  .card-c3 { --card-accent: var(--accent-pink); }
+  .card-c4 { --card-accent: var(--accent-teal); }
+  .card-c5 { --card-accent: var(--accent-cyan); }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Top Navigation -->
+  <nav class="top-nav">
+    <a href="../index.html" class="nav-back">← Back to Main Library</a>
+    <span class="nav-badge">4 Complete Chapters • Interactive</span>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero">
+    <div class="hero-tag">✨ Beginner Friendly • 0 Knowledge Required</div>
+    <h1>The Visual MBA</h1>
+    <p>Understand business, financial statements, startup economics, costing, and finance through real-life stories, interactive calculators, and visual notes.</p>
+  </header>
+
+  <!-- Zero to Hero Roadmap -->
+  <div class="roadmap-card">
+    <div class="roadmap-header">
+      <span style="font-size: 1.5rem;">🗺️</span>
+      <h2>Zero-to-Hero Learning Roadmap</h2>
+    </div>
+    <div class="roadmap-steps">
+      <div class="step-box">
+        <div class="step-num">STEP 1 • CH 2</div>
+        <div class="step-title">Financial Statements</div>
+        <div class="step-desc">Learn how money moves in a business using Rakesh's Chai Tapri.</div>
+      </div>
+      <div class="step-box">
+        <div class="step-num">STEP 2 • CH 3</div>
+        <div class="step-title">Startup Strategy</div>
+        <div class="step-desc">Validate ideas, calculate market size, and master unit economics.</div>
+      </div>
+      <div class="step-box">
+        <div class="step-num">STEP 3 • CH 4</div>
+        <div class="step-title">Costing & Profit</div>
+        <div class="step-desc">Master fixed vs variable costs, contribution margin, and break-even.</div>
+      </div>
+      <div class="step-box">
+        <div class="step-num">STEP 4 • CH 5</div>
+        <div class="step-title">Business Finance</div>
+        <div class="step-desc">Unlock the Cash Time Machine: Time value of money, NPV, and WACC.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chapter Cards -->
+  <h2 class="section-title">📚 Explore Chapters</h2>
+  <div class="grid">
+
+    <!-- Chapter 2 -->
+    <a href="Chapter2-corporate-financial-reporting.html" class="chapter-card card-c2">
+      <div class="card-top">
+        <div class="card-header-row">
+          <span class="chapter-badge">CHAPTER 2</span>
+          <span class="chapter-icon">📜</span>
+        </div>
+        <h3 class="chapter-title">Corporate Financial Reporting</h3>
+        <p class="chapter-sub">Rakesh's Chai Tapri Ledger • Bahi-Khata Style</p>
+        <ul class="takeaways-list">
+          <li>The golden Accounting Equation: Assets = Liabilities + Equity</li>
+          <li>Balance Sheet vs Income Statement vs Cash Flow</li>
+          <li>Accrual vs Cash accounting with interactive simulator</li>
+          <li>Financial Ratios & DuPont Analysis sliders</li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <span>⏱️ ~12 min read</span>
+        <span class="btn-read">Start Reading →</span>
+      </div>
+    </a>
+
+    <!-- Chapter 3 -->
+    <a href="Chapter3-entrepreneurial-management.html" class="chapter-card card-c3">
+      <div class="card-top">
+        <div class="card-header-row">
+          <span class="chapter-badge">CHAPTER 3</span>
+          <span class="chapter-icon">🚀</span>
+        </div>
+        <h3 class="chapter-title">Entrepreneurial Management</h3>
+        <p class="chapter-sub">Priya's Startup War-Room • Sticky Note Board</p>
+        <ul class="takeaways-list">
+          <li>Interactive TAM, SAM, SOM Market Pyramid Builder</li>
+          <li>Lean Startup cycle: Build → Measure → Learn</li>
+          <li>Unit Economics: Interactive CAC vs LTV Simulator</li>
+          <li>Pivot vs. Persevere Decision Helper</li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <span>⏱️ ~10 min read</span>
+        <span class="btn-read">Start Reading →</span>
+      </div>
+    </a>
+
+    <!-- Chapter 4 -->
+    <a href="Chapter4-managerial-accounting.html" class="chapter-card card-c4">
+      <div class="card-top">
+        <div class="card-header-row">
+          <span class="chapter-badge">CHAPTER 4</span>
+          <span class="chapter-icon">🧮</span>
+        </div>
+        <h3 class="chapter-title">Managerial Accounting</h3>
+        <p class="chapter-sub">Rakesh's Costing Worksheet • Retro LCD Style</p>
+        <ul class="takeaways-list">
+          <li>Fixed vs Variable Cost Drag & Drop sorting game</li>
+          <li>Contribution Margin per cup of chai</li>
+          <li>Interactive Break-Even Point calculator & live graph</li>
+          <li>Budgeting & Variance analysis made simple</li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <span>⏱️ ~10 min read</span>
+        <span class="btn-read">Start Reading →</span>
+      </div>
+    </a>
+
+    <!-- Chapter 5 -->
+    <a href="Chapter5-business-finance.html" class="chapter-card card-c5">
+      <div class="card-top">
+        <div class="card-header-row">
+          <span class="chapter-badge">CHAPTER 5</span>
+          <span class="chapter-icon">⏳</span>
+        </div>
+        <h3 class="chapter-title">Business Finance</h3>
+        <p class="chapter-sub">Cash Time Machine • Cyberpunk Sci-Fi Style</p>
+        <ul class="takeaways-list">
+          <li>Time Value of Money (TVM) explained visually</li>
+          <li>Interactive NPV (Net Present Value) Time Simulator</li>
+          <li>Cost of Capital (WACC) Weight Balance Scale</li>
+          <li>Valuation & Capital Structure for beginners</li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <span>⏱️ ~14 min read</span>
+        <span class="btn-read">Start Reading →</span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- Jargon Buster Dictionary -->
+  <div class="dictionary-section">
+    <h2 class="section-title">💡 Beginner's Business Jargon Buster</h2>
+    <input type="text" class="search-box" id="dictSearch" placeholder="🔍 Search any business term (e.g. Asset, CAC, Break-Even, WACC, NPV)..." oninput="filterDict()">
+    
+    <div class="dict-grid" id="dictGrid">
+      <div class="dict-item" data-term="asset balance sheet">
+        <div class="dict-term">Asset</div>
+        <div class="dict-def">Anything valuable the business owns (e.g. cash, tapri cart, inventory of tea leaves).</div>
+      </div>
+      <div class="dict-item" data-term="liability balance sheet">
+        <div class="dict-term">Liability</div>
+        <div class="dict-def">Money the business owes to outsiders (e.g. bank loan, unpaid milk bills).</div>
+      </div>
+      <div class="dict-item" data-term="equity balance sheet">
+        <div class="dict-term">Equity</div>
+        <div class="dict-def">What is left for the owner after paying all liabilities. (Assets - Liabilities = Equity).</div>
+      </div>
+      <div class="dict-item" data-term="cac startup customer acquisition cost">
+        <div class="dict-term">CAC (Customer Acquisition Cost)</div>
+        <div class="dict-def">Total money spent on marketing divided by the number of new customers acquired.</div>
+      </div>
+      <div class="dict-item" data-term="ltv lifetime value">
+        <div class="dict-term">LTV (Lifetime Value)</div>
+        <div class="dict-def">Total profit a single customer generates over their entire relationship with your business.</div>
+      </div>
+      <div class="dict-item" data-term="break-even break even fixed variable cost">
+        <div class="dict-term">Break-Even Point</div>
+        <div class="dict-def">The exact sales volume where Total Revenue = Total Costs (Zero profit, zero loss).</div>
+      </div>
+      <div class="dict-item" data-term="npv net present value time value money">
+        <div class="dict-term">NPV (Net Present Value)</div>
+        <div class="dict-def">The value today of future cash inflows minus current investment costs, considering inflation & interest.</div>
+      </div>
+      <div class="dict-item" data-term="wacc cost of capital interest debt equity">
+        <div class="dict-term">WACC (Weighted Average Cost of Capital)</div>
+        <div class="dict-def">The average interest rate a business pays to raise funds from loans and investors.</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>The Visual MBA — Knowledge Notes Suite • Tailored for Beginners</p>
+  </footer>
+</div>
+
+<script>
+  function filterDict() {
+    const query = document.getElementById('dictSearch').value.toLowerCase();
+    const items = document.querySelectorAll('.dict-item');
+    items.forEach(item => {
+      const text = item.getAttribute('data-term') + ' ' + item.innerText.toLowerCase();
+      item.style.display = text.includes(query) ? 'block' : 'none';
+    });
+  }
+</script>
+</body>
+</html>

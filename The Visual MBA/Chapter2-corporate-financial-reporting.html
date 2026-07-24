@@ -32,12 +32,39 @@
       radial-gradient(circle at 80% 90%, #2a1d13 0%, transparent 50%),
       linear-gradient(160deg, #4a3722 0%, #2f2317 100%);
     background-attachment:fixed;
-    padding: 40px 16px 80px;
+    padding: 0 0 80px;
   }
+
+  /* Sticky Top Nav */
+  .sticky-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(42, 33, 24, 0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 2px solid var(--marigold);
+    padding: 10px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+  }
+  .sticky-nav a {
+    color: var(--marigold);
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .sticky-nav a:hover { text-decoration: underline; }
+  .nav-title { font-family: 'Kalam', cursive; font-size: 1.1rem; color: #fff; }
 
   .book{
     max-width:880px;
-    margin:0 auto;
+    margin: 30px auto 0;
     background:var(--paper);
     box-shadow: 0 30px 60px var(--paper-shadow), 0 2px 0 rgba(255,255,255,0.4) inset;
     border-radius:2px;
@@ -233,6 +260,25 @@
     margin-bottom:4px;
   }
 
+  /* ELI5 Callout Cards */
+  .eli5-card {
+    background: rgba(47, 111, 98, 0.08);
+    border-left: 5px solid var(--teal);
+    border-radius: 4px;
+    padding: 16px 20px;
+    margin: 22px 0;
+  }
+  .eli5-title {
+    font-family: 'Kalam', cursive;
+    font-weight: 700;
+    color: var(--teal);
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   /* ---------- Equation chips ---------- */
   .equation{
     display:flex;
@@ -266,6 +312,44 @@
   .chip.equity{background:var(--marigold); color:var(--ink);}
   .op{font-size:1.4rem; color:var(--ink-soft);}
 
+  /* ---------- Balance Sheet Grid ---------- */
+  .bs-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    margin:22px 0;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.85rem;
+  }
+  @media (max-width:600px){ .bs-grid{grid-template-columns:1fr;} }
+  .bs-col{
+    background:rgba(255,255,255,0.4);
+    border:1px solid var(--rule);
+    border-radius:4px;
+    padding:14px;
+  }
+  .bs-head{
+    font-family:'Kalam', cursive;
+    font-weight:700;
+    font-size:1.1rem;
+    color:var(--red-dark);
+    border-bottom:1.5px solid var(--rule);
+    padding-bottom:6px;
+    margin-bottom:10px;
+  }
+  .bs-line{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:6px;
+  }
+  .bs-line.total{
+    border-top:2px double var(--ink-soft);
+    padding-top:6px;
+    margin-top:10px;
+    font-weight:700;
+    color:var(--ink);
+  }
+
   /* ---------- Ledger tables ---------- */
   .ledger-wrap{
     overflow-x:auto;
@@ -298,58 +382,10 @@
     color:var(--paper);
     font-family:'Zilla Slab', serif;
     font-weight:700;
-    font-size:0.78rem;
-    text-transform:uppercase;
-    letter-spacing:0.5px;
   }
-  tr.total td{
-    font-weight:700;
-    border-top:2px solid var(--ink);
-    border-bottom:3px double var(--ink);
-    color:var(--red-dark);
-  }
-  tr.sub td{color:var(--ink-soft); font-style:italic;}
-  td.pos{color:var(--teal); font-weight:700;}
-  td.neg{color:var(--stamp);}
-
-  /* balance sheet two-column */
-  .bs-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:0;
-    border:2px solid var(--ink);
-    margin:22px 0;
-  }
-  @media (max-width:560px){
-    .bs-grid{grid-template-columns:1fr;}
-  }
-  .bs-col{padding:16px 18px;}
-  .bs-col:first-child{border-right:2px solid var(--ink);}
-  @media (max-width:560px){
-    .bs-col:first-child{border-right:none; border-bottom:2px solid var(--ink);}
-  }
-  .bs-head{
-    font-family:'Kalam', cursive;
-    font-weight:700;
-    color:var(--red-dark);
-    margin-bottom:10px;
-    font-size:1.05rem;
-  }
-  .bs-line{
-    display:flex;
-    justify-content:space-between;
-    font-family:'JetBrains Mono', monospace;
-    font-size:0.85rem;
-    padding:5px 0;
-    border-bottom:1px dashed var(--rule);
-  }
-  .bs-line.total{
-    border-top:2px solid var(--ink);
-    border-bottom:none;
-    font-weight:700;
-    margin-top:6px;
-    padding-top:8px;
-  }
+  tr.sub td{ font-style:italic; color:var(--ink-soft); }
+  tr.total td{ font-weight:700; border-top:1.5px solid var(--ink); border-bottom:3px double var(--ink); }
+  td.pos{ color:var(--teal); font-weight:700; }
 
   /* ratio cards */
   .ratio-grid{
@@ -409,6 +445,112 @@
   }
   .dupont .times{font-size:1.3rem; color:var(--ink-soft);}
 
+  /* Interactive Simulator Box */
+  .interactive-box {
+    background: #FFFDF7;
+    border: 2px solid var(--teal);
+    border-radius: 8px;
+    padding: 24px;
+    margin: 30px 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .interactive-box h3 {
+    margin-top: 0;
+    color: var(--teal);
+    font-family: 'Kalam', cursive;
+    font-size: 1.3rem;
+  }
+
+  .slider-group {
+    margin-bottom: 16px;
+  }
+  .slider-label {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .slider-input {
+    width: 100%;
+    accent-color: var(--teal);
+  }
+
+  .sim-results {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+    background: var(--paper-dark);
+    padding: 16px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .sim-res-card {
+    background: white;
+    padding: 12px;
+    border-radius: 4px;
+    border: 1px solid var(--rule);
+    text-align: center;
+  }
+  .sim-res-val {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--teal);
+    margin-top: 4px;
+  }
+
+  .balance-indicator {
+    text-align: center;
+    margin-top: 14px;
+    padding: 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+  }
+  .balanced { background: #D1E7DD; color: #0F5132; }
+
+  /* Interactive Quiz */
+  .quiz-card {
+    background: rgba(217, 160, 45, 0.12);
+    border: 2px dashed var(--marigold);
+    border-radius: 8px;
+    padding: 24px;
+    margin: 34px 0;
+  }
+  .quiz-title {
+    font-family: 'Kalam', cursive;
+    font-size: 1.3rem;
+    color: var(--red-dark);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .quiz-q {
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .quiz-opt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: white;
+    border: 1px solid var(--rule);
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-family: 'Zilla Slab', serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .quiz-opt:hover { background: var(--paper-dark); }
+  .quiz-opt.correct { background: #D1E7DD; border-color: #0F5132; color: #0F5132; font-weight: bold; }
+  .quiz-opt.wrong { background: #F8D7DA; border-color: #842029; color: #842029; }
+
   /* stamp box recap */
   .recap{
     border:3px solid var(--stamp);
@@ -443,6 +585,13 @@
 </head>
 <body>
 
+<!-- Sticky Header Nav -->
+<nav class="sticky-nav">
+  <a href="index.html">← Master Visual Hub</a>
+  <span class="nav-title">Chapter 2: Financial Reporting</span>
+  <a href="Chapter3-entrepreneurial-management.html">Chapter 3 →</a>
+</nav>
+
 <div class="book">
   <div class="content">
 
@@ -454,7 +603,7 @@
       <div class="meta-row">
         <span>Currency: ₹ INR</span>
         <span>Reading time: ~12 min</span>
-        <span>Concepts: 8</span>
+        <span>Concepts: 8 Complete</span>
       </div>
     </div>
 
@@ -463,11 +612,16 @@
       <div class="sec-tag">Why this chapter matters</div>
       <h2>Accounting is the language of business</h2>
       <p>If you can't read a company's numbers, you're guessing about how it's actually doing — no different from trying to run a shop without ever counting the day's cash box. Every business, from a roadside chai tapri to a listed company, is explained by three financial statements:</p>
-      <ul>
-        <li><strong>Balance Sheet</strong> — what the business owns and owes, right now.</li>
-        <li><strong>Income Statement (P&amp;L)</strong> — how much it made or lost over a period.</li>
-        <li><strong>Cash Flow Statement</strong> — where actual cash moved in and out.</li>
-      </ul>
+
+      <div class="eli5-card">
+        <div class="eli5-title">💡 The 3 Statements Explained Simply</div>
+        <ul>
+          <li><strong>Balance Sheet</strong> — what the business owns and owes, right now.</li>
+          <li><strong>Income Statement (P&amp;L)</strong> — how much it made or lost over a period.</li>
+          <li><strong>Cash Flow Statement</strong> — where actual cash moved in and out.</li>
+        </ul>
+      </div>
+
       <p>This chapter builds your understanding of the first two in detail, using one running example: <strong>Rakesh, who is starting a chai-aur-samosa tapri</strong> near a busy market.</p>
     </section>
 
@@ -506,6 +660,46 @@
           <div class="bs-line"><span>Bank loan (Liability)</span><span>₹5,000</span></div>
           <div class="bs-line"><span>Rakesh's Equity</span><span>₹0</span></div>
           <div class="bs-line total"><span>Total L + E</span><span>₹5,000</span></div>
+        </div>
+      </div>
+
+      <!-- Interactive Tool 1 -->
+      <div class="interactive-box">
+        <h3>🧮 Interactive Tool: Tapri Balance Sheet Simulator</h3>
+        <p style="font-size:0.9rem; color:var(--ink-soft); margin-bottom:16px;">Adjust the sliders to see how taking loans or earning profits keeps Assets = Liabilities + Equity balanced live!</p>
+        
+        <div class="slider-group">
+          <div class="slider-label"><span>Bank Loan Taken (Liability):</span> <span id="valLoan">₹5,000</span></div>
+          <input type="range" class="slider-input" id="slideLoan" min="1000" max="20000" step="1000" value="5000" oninput="updateSim1()">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label"><span>Equipment Bought (Asset):</span> <span id="valEquip">₹2,000</span></div>
+          <input type="range" class="slider-input" id="slideEquip" min="500" max="10000" step="500" value="2000" oninput="updateSim1()">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label"><span>Net Profit Earned (Equity):</span> <span id="valProfit">₹3,000</span></div>
+          <input type="range" class="slider-input" id="slideProfit" min="0" max="15000" step="500" value="3000" oninput="updateSim1()">
+        </div>
+
+        <div class="sim-results">
+          <div class="sim-res-card">
+            <div>Total Assets</div>
+            <div class="sim-res-val" id="resAssets">₹10,000</div>
+          </div>
+          <div class="sim-res-card">
+            <div>Total Liabilities</div>
+            <div class="sim-res-val" style="color:var(--red);" id="resLiab">₹5,000</div>
+          </div>
+          <div class="sim-res-card">
+            <div>Owner's Equity</div>
+            <div class="sim-res-val" style="color:var(--marigold);" id="resEquity">₹3,000</div>
+          </div>
+        </div>
+
+        <div class="balance-indicator balanced" id="balMsg">
+          ✓ Golden Rule Intact: Assets (₹10,000) = Liabilities (₹5,000) + Equity (₹5,000)
         </div>
       </div>
 
@@ -675,6 +869,33 @@
         <div class="factor">Assets ÷ Equity<span class="label">Financial Leverage</span></div>
       </div>
 
+      <!-- Interactive Tool 2 -->
+      <div class="interactive-box">
+        <h3>📊 Interactive Tool: DuPont ROE Playground</h3>
+        
+        <div class="slider-group">
+          <div class="slider-label"><span>Net Profit Margin (% of sales saved):</span> <span id="valMargin">20%</span></div>
+          <input type="range" class="slider-input" id="slideMargin" min="5" max="50" step="1" value="20" oninput="updateDupont()">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label"><span>Asset Turnover (Sales generated per ₹ asset):</span> <span id="valTurn">1.5x</span></div>
+          <input type="range" class="slider-input" id="slideTurn" min="0.5" max="4.0" step="0.1" value="1.5" oninput="updateDupont()">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label"><span>Financial Leverage (Debt Multiplier):</span> <span id="valLev">1.2x</span></div>
+          <input type="range" class="slider-input" id="slideLev" min="1.0" max="3.0" step="0.1" value="1.2" oninput="updateDupont()">
+        </div>
+
+        <div class="sim-results">
+          <div class="sim-res-card">
+            <div>Calculated ROE</div>
+            <div class="sim-res-val" style="font-size:1.6rem;" id="resROE">36.0%</div>
+          </div>
+        </div>
+      </div>
+
       <div class="note">
         <span class="note-label">Why this matters — a real comparison</span>
         Rakesh's tapri could reach a healthy ROE mostly through a <strong>high profit margin</strong> (chai is genuinely cheap to make and sells well) with almost no debt. Meanwhile, an NBFC or finance company might hit the <em>same</em> ROE with a wafer-thin profit margin, almost entirely by cranking up <strong>financial leverage</strong> (borrowing heavily to fund large assets). Both show up as "good ROE" on paper — but Rakesh's version is a far safer business than one propped up mostly by debt. DuPont is what lets you tell those two stories apart.
@@ -703,6 +924,19 @@
       <p>This is the same idea behind any listed company's share price — it's just company value, sliced into equal pieces. The healthier the business's Assets and Net Income, the more each individual share is worth.</p>
     </section>
 
+    <!-- ============ GAMIFIED QUIZ ============ -->
+    <div class="quiz-card">
+      <div class="quiz-title">🎯 Quick Check: Chai Tapri Boss Quiz</div>
+      <div class="quiz-q">1. If Rakesh buys ₹1,000 worth of tea leaves on credit (pays later), what happens to his Balance Sheet?</div>
+      <button class="quiz-opt" onclick="checkQuiz(this, false)">A) Assets increase, Equity decreases</button>
+      <button class="quiz-opt" onclick="checkQuiz(this, true)">B) Assets (Inventory) increase by ₹1,000, Liabilities increase by ₹1,000</button>
+      <button class="quiz-opt" onclick="checkQuiz(this, false)">C) Nothing changes until he sells chai</button>
+
+      <div class="quiz-q" style="margin-top:18px;">2. What is Gross Profit?</div>
+      <button class="quiz-opt" onclick="checkQuiz(this, true)">A) Revenue minus direct ingredient costs (COGS)</button>
+      <button class="quiz-opt" onclick="checkQuiz(this, false)">B) Final cash left after paying rent, tax, and interest</button>
+    </div>
+
     <!-- ============ RECAP ============ -->
     <div class="recap">
       <h2>📌 Ledger Recap — formulas to remember</h2>
@@ -725,5 +959,49 @@
   </div>
 </div>
 
+<script>
+  function updateSim1() {
+    const loan = parseInt(document.getElementById('slideLoan').value);
+    const equip = parseInt(document.getElementById('slideEquip').value);
+    const profit = parseInt(document.getElementById('slideProfit').value);
+
+    document.getElementById('valLoan').innerText = '₹' + loan.toLocaleString();
+    document.getElementById('valEquip').innerText = '₹' + equip.toLocaleString();
+    document.getElementById('valProfit').innerText = '₹' + profit.toLocaleString();
+
+    const assets = loan + profit;
+    const equity = profit;
+
+    document.getElementById('resAssets').innerText = '₹' + assets.toLocaleString();
+    document.getElementById('resLiab').innerText = '₹' + loan.toLocaleString();
+    document.getElementById('resEquity').innerText = '₹' + equity.toLocaleString();
+
+    document.getElementById('balMsg').innerText = `✓ Golden Rule Intact: Assets (₹${assets.toLocaleString()}) = Liabilities (₹${loan.toLocaleString()}) + Equity (₹${equity.toLocaleString()})`;
+  }
+
+  function updateDupont() {
+    const margin = parseFloat(document.getElementById('slideMargin').value);
+    const turn = parseFloat(document.getElementById('slideTurn').value);
+    const lev = parseFloat(document.getElementById('slideLev').value);
+
+    document.getElementById('valMargin').innerText = margin + '%';
+    document.getElementById('valTurn').innerText = turn + 'x';
+    document.getElementById('valLev').innerText = lev + 'x';
+
+    const roe = (margin * turn * lev).toFixed(1);
+    document.getElementById('resROE').innerText = roe + '%';
+  }
+
+  function checkQuiz(btn, isCorrect) {
+    const parent = btn.parentElement;
+    const siblingBtns = parent.querySelectorAll('.quiz-opt');
+    siblingBtns.forEach(b => b.classList.remove('correct', 'wrong'));
+    if (isCorrect) {
+      btn.classList.add('correct');
+    } else {
+      btn.classList.add('wrong');
+    }
+  }
+</script>
 </body>
 </html>
