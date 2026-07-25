@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 28 — Step Functions, AppSync & Amplify — Notes</title>
+<style>
+  :root {
+    --accent: #e8830f;
+    --accent-dark: #c96a08;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --border: #e3e0da;
+    --text: #2b2a28;
+    --text-muted: #6b6a66;
+    --green: #2e7d32;
+    --green-bg: #eef7ee;
+    --red: #c0392b;
+    --red-bg: #fdecea;
+    --amber: #b8790a;
+    --amber-bg: #fff4e2;
+    --purple: #6a4fb3;
+    --purple-bg: #f3f0fb;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  header {
+    padding-bottom: 24px;
+    border-bottom: 3px solid var(--accent);
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 2rem;
+    color: var(--text);
+  }
+
+  header h1 span {
+    color: var(--accent);
+  }
+
+  header p.subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+  }
+
+  nav.toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 32px;
+  }
+
+  nav.toc h2 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  nav.toc ol {
+    margin: 0;
+    padding-left: 22px;
+    columns: 2;
+    column-gap: 24px;
+  }
+
+  nav.toc li {
+    margin-bottom: 6px;
+    break-inside: avoid;
+  }
+
+  nav.toc a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  nav.toc a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 24px;
+    scroll-margin-top: 20px;
+  }
+
+  .card h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 14px;
+    font-size: 1.3rem;
+    color: var(--text);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    color: var(--accent-dark);
+    font-size: 1.05rem;
+    margin: 20px 0 8px;
+  }
+
+  a { color: var(--accent-dark); }
+
+  code {
+    background: #f1eee7;
+    border: 1px solid #e6e2d8;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.92em;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    color: #7a4b00;
+  }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 0.94rem;
+  }
+
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f7f2ea;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) td {
+    background: #fcfbf9;
+  }
+
+  .callout {
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+
+  .callout strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .callout.tip {
+    background: var(--green-bg);
+    border-color: var(--green);
+  }
+  .callout.tip strong.tag { color: var(--green); }
+
+  .callout.warning {
+    background: var(--red-bg);
+    border-color: var(--red);
+  }
+  .callout.warning strong.tag { color: var(--red); }
+
+  .callout.key {
+    background: var(--amber-bg);
+    border-color: var(--amber);
+  }
+  .callout.key strong.tag { color: var(--amber); }
+
+  .analogy {
+    border: 1.5px dashed var(--purple);
+    background: var(--purple-bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+  .analogy strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--purple);
+  }
+
+  .diagram {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fdfcfa;
+    padding: 16px;
+    margin: 16px 0 6px;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  .diagram svg {
+    max-width: 100%;
+  }
+
+  .caption {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 4px 0 16px;
+    font-style: italic;
+  }
+
+  .cheatsheet {
+    border: 2px solid var(--accent);
+  }
+
+  .cheatsheet h2 { color: var(--accent-dark); }
+
+  .back-to-top {
+    display: block;
+    text-align: center;
+    margin-top: 36px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    text-decoration: none;
+  }
+  .back-to-top:hover { text-decoration: underline; }
+
+  .svg-box { fill: #fff; stroke: #c8917a; stroke-width: 1.5; }
+  .svg-box-accent { fill: #fff4e2; stroke: var(--accent); stroke-width: 1.5; }
+  .svg-box-gray { fill: #eeeeee; stroke: #b8b8b8; stroke-width: 1.5; }
+  .svg-text { font-family: -apple-system, sans-serif; font-size: 12px; fill: #2b2a28; }
+  .svg-label { font-family: -apple-system, sans-serif; font-size: 11px; fill: #6b6a66; }
+  .svg-arrow { stroke: #6b6a66; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header id="top">
+  <h1><span>Section 28</span> — Other Serverless: Step Functions & AppSync</h1>
+  <p class="subtitle">My notes on orchestrating workflows with Step Functions, building GraphQL APIs with AppSync, and fast full-stack apps with Amplify.</p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#overview">Step Functions Overview</a></li>
+    <li><a href="#hands-on">Step Functions — Hello World Hands On</a></li>
+    <li><a href="#invoke-lambda">Step Functions — Invoke Lambda Hands On</a></li>
+    <li><a href="#error-handling">Step Functions — Error Handling</a></li>
+    <li><a href="#wait-token">Wait For Task Token</a></li>
+    <li><a href="#activity-tasks">Activity Tasks</a></li>
+    <li><a href="#standard-express">Standard vs Express Workflows</a></li>
+    <li><a href="#appsync-overview">AppSync Overview</a></li>
+    <li><a href="#appsync-hands-on">AppSync Hands On</a></li>
+    <li><a href="#amplify">AWS Amplify</a></li>
+    <li><a href="#amplify-hands-on">AWS Amplify Hands On</a></li>
+    <li><a href="#cheatsheet">Cheat Sheet</a></li>
+  </ol>
+</nav>
+
+<!-- 1. OVERVIEW -->
+<section class="card" id="overview">
+  <h2><span class="badge">1</span> Step Functions Overview</h2>
+
+  <p><strong>Step Functions</strong> let you model a workflow as a <strong>state machine</strong> — one state machine per workflow (order fulfillment, data processing, a web app, anything). You define what happens, what happens next, and what happens based on a condition, all in a JSON document written in the <strong>Amazon States Language (ASL)</strong>. That JSON gives you a visual diagram of the workflow, which you can then execute and watch step-by-step, with a full execution history.</p>
+
+  <p>Each step in the workflow is typically a Lambda function, a DynamoDB write, an ECS task, etc. — Step Functions is simply the thing <strong>orchestrating</strong> all of it.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#6b6a66"/>
+        </marker>
+      </defs>
+      <rect class="svg-box" x="10" y="55" width="90" height="40" rx="6"/><text class="svg-text" x="55" y="79" text-anchor="middle" font-size="9">Start</text>
+      <path class="svg-arrow" d="M100,75 L200,75"/>
+      <rect class="svg-box-accent" x="200" y="55" width="110" height="40" rx="6"/><text class="svg-text" x="255" y="79" text-anchor="middle" font-size="9">Choice: yes?</text>
+      <path class="svg-arrow" d="M255,95 L255,130 L120,130 L120,95"/>
+      <text class="svg-label" x="190" y="145" text-anchor="middle" font-size="8">no</text>
+      <rect class="svg-box-gray" x="70" y="55" width="0" height="0"/>
+      <rect class="svg-box" x="30" y="105" width="90" height="0"/>
+      <path class="svg-arrow" d="M310,75 L400,75"/>
+      <text class="svg-label" x="355" y="65" text-anchor="middle" font-size="8">yes</text>
+      <rect class="svg-box" x="400" y="55" width="110" height="40" rx="6"/><text class="svg-text" x="455" y="79" text-anchor="middle" font-size="9">Wait 3 sec</text>
+      <path class="svg-arrow" d="M510,75 L610,75"/>
+      <rect class="svg-box" x="610" y="55" width="150" height="40" rx="6"/><text class="svg-text" x="685" y="73" text-anchor="middle" font-size="9">Task: "Hello" +</text><text class="svg-text" x="685" y="86" text-anchor="middle" font-size="9">"World"</text>
+      <rect class="svg-box-gray" x="90" y="10" width="70" height="35" rx="6"/><text class="svg-text" x="125" y="32" text-anchor="middle" font-size="9">End</text>
+      <path class="svg-arrow" d="M120,55 L125,45"/>
+      <rect class="svg-box-gray" x="670" y="105" width="80" height="35" rx="6"/><text class="svg-text" x="710" y="127" text-anchor="middle" font-size="9">End</text>
+      <path class="svg-arrow" d="M700,95 L710,105"/>
+    </svg>
+  </div>
+  <p class="caption">A minimal state machine: a Choice branches the flow, and each step is a small, orchestrated unit of work.</p>
+
+  <h3>How a workflow starts</h3>
+  <ul>
+    <li>An SDK/API call</li>
+    <li>API Gateway</li>
+    <li>Amazon EventBridge (CloudWatch Events)</li>
+    <li>Manually, from the console</li>
+  </ul>
+
+  <h3>Task states — the actual work</h3>
+  <p>A <strong>Task</strong> state does one unit of work: invoke a Lambda function, run a Batch job, run an ECS task and wait for it, insert an item into DynamoDB, publish to SNS/SQS, or even start another Step Functions workflow.</p>
+  <p>A task can also be an <strong>Activity</strong> — a worker (EC2, ECS, on-premises server) that polls Step Functions for work to do, rather than being invoked directly. More on this later.</p>
+
+  <h3>Other state types</h3>
+  <table>
+    <tr><th>State</th><th>Purpose</th></tr>
+    <tr><td>Choice</td><td>Tests a condition, branches to a specific state or a default</td></tr>
+    <tr><td>Fail / Succeed</td><td>Stops the execution with a failure or a success</td></tr>
+    <tr><td>Pass</td><td>Passes input straight to output, or injects fixed data — no real work done</td></tr>
+    <tr><td>Wait</td><td>Delays for a set duration, or until a specific date/time</td></tr>
+    <tr><td>Map</td><td>Dynamically iterates a set of steps</td></tr>
+    <tr><td>Parallel</td><td>Begins parallel branches of execution</td></tr>
+  </table>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    You don't need to write ASL by hand for the exam, but do know the <strong>Task</strong> and <strong>Parallel</strong> states — those are the ones most likely to come up.
+  </div>
+</section>
+
+<!-- 2. HANDS ON HELLO WORLD -->
+<section class="card" id="hands-on">
+  <h2><span class="badge">2</span> Step Functions — Hello World Hands On</h2>
+
+  <p>The <strong>Workflow Studio</strong> lets you drag and drop components (Lambda, Choice, Parallel, Map, and ready-made patterns like "process a JSON file in S3") onto a visual canvas. Once you're done, Studio generates the equivalent ASL JSON for you — the visual flow and the JSON are two views of the exact same thing. Configuration also covers the state machine name, whether it's a <strong>Standard</strong> or <strong>Express</strong> workflow, the execution role's permissions, and logging.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="10" y="80" width="110" height="40" rx="6"/><text class="svg-text" x="65" y="99" text-anchor="middle" font-size="8">Set variables</text><text class="svg-text" x="65" y="111" text-anchor="middle" font-size="8">(Pass state)</text>
+      <path class="svg-arrow" d="M120,100 L200,100"/>
+      <rect class="svg-box-accent" x="200" y="80" width="120" height="40" rx="6"/><text class="svg-text" x="260" y="99" text-anchor="middle" font-size="8">Choice:</text><text class="svg-text" x="260" y="111" text-anchor="middle" font-size="8">IsHelloWorldExample?</text>
+      <path class="svg-arrow" d="M320,100 L400,100"/>
+      <text class="svg-label" x="360" y="90" text-anchor="middle" font-size="8">true</text>
+      <rect class="svg-box" x="400" y="80" width="110" height="40" rx="6"/><text class="svg-text" x="455" y="99" text-anchor="middle" font-size="8">Wait X sec</text>
+      <path class="svg-arrow" d="M510,100 L590,100"/>
+      <rect class="svg-box" x="590" y="80" width="170" height="40" rx="6"/><text class="svg-text" x="675" y="93" text-anchor="middle" font-size="8">Execute in Parallel +</text><text class="svg-text" x="675" y="106" text-anchor="middle" font-size="8">increment CheckpointCount</text>
+      <path class="svg-arrow" d="M675,120 L675,150 L455,150 L455,120"/>
+      <text class="svg-label" x="565" y="165" text-anchor="middle" font-size="8">summarize execution → Succeed</text>
+      <path class="svg-arrow" d="M260,80 L150,30"/>
+      <text class="svg-label" x="180" y="45" text-anchor="middle" font-size="8">false</text>
+      <rect class="svg-box-gray" x="60" y="10" width="140" height="35" rx="6"/><text class="svg-text" x="130" y="32" text-anchor="middle" font-size="8">Fail the execution</text>
+    </svg>
+  </div>
+  <p class="caption">The console's Hello World example: initialize variables, branch on a Choice, wait, run parallel steps, increment a checkpoint counter, then summarize and succeed (or fail on the false branch).</p>
+
+  <ul>
+    <li>The initial Pass state sets output values and assigns variables (e.g. <code>IsHelloWorldExample = true</code>, <code>ExecutionWaitTimeInSeconds = 3</code>, <code>CheckpointCount = 0</code>) — it does no real work, just produces an output.</li>
+    <li>The Choice state evaluates <code>IsHelloWorldExample == true</code>: true goes to <strong>Wait for X seconds</strong>, anything else goes to the default <strong>Fail the execution</strong> branch.</li>
+    <li>After waiting, <code>CheckpointCount</code> is incremented and the flow moves into a Parallel state, then repeats a checkpoint increment, then summarizes the execution and succeeds.</li>
+    <li>Each step in the console execution view shows its input, output, any variables, and the reason things happened — plus a full Event History tab.</li>
+  </ul>
+
+  <div class="callout tip">
+    <strong class="tag">Try it</strong>
+    Flip <code>IsHelloWorldExample</code> to <code>false</code> in the code, save, and re-run — the execution now takes the left branch straight into the failed state.
+  </div>
+</section>
+
+<!-- 3. INVOKE LAMBDA HANDS ON -->
+<section class="card" id="invoke-lambda">
+  <h2><span class="badge">3</span> Step Functions — Invoke Lambda Hands On</h2>
+
+  <p>Starting from a blank state machine (or pasting a pre-written ASL JSON), this workflow invokes a Lambda function and branches on its output.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="10" y="45" width="140" height="40" rx="6"/><text class="svg-text" x="80" y="69" text-anchor="middle" font-size="9">Lambda Invoke</text>
+      <path class="svg-arrow" d="M150,65 L260,65"/>
+      <rect class="svg-box-accent" x="260" y="45" width="150" height="40" rx="6"/><text class="svg-text" x="335" y="63" text-anchor="middle" font-size="8">Choice: result contains</text><text class="svg-text" x="335" y="76" text-anchor="middle" font-size="8">"Stephane"?</text>
+      <path class="svg-arrow" d="M410,55 L520,30"/>
+      <text class="svg-label" x="460" y="30" text-anchor="middle" font-size="8">yes</text>
+      <rect class="svg-box" x="520" y="10" width="150" height="40" rx="6"/><text class="svg-text" x="595" y="34" text-anchor="middle" font-size="8">IsTeacher (Pass) →</text><text class="svg-label" x="595" y="46" text-anchor="middle" font-size="7">output: "Woohoo!"</text>
+      <path class="svg-arrow" d="M410,80 L520,105"/>
+      <text class="svg-label" x="460" y="100" text-anchor="middle" font-size="8">no</text>
+      <rect class="svg-box-gray" x="520" y="85" width="170" height="40" rx="6"/><text class="svg-text" x="605" y="105" text-anchor="middle" font-size="8">NotTeacher (Fail) →</text><text class="svg-label" x="605" y="117" text-anchor="middle" font-size="7">"Stephane wasn't found"</text>
+    </svg>
+  </div>
+  <p class="caption">Invoke a Lambda, then branch on whether its output contains the expected name.</p>
+
+  <ul>
+    <li>A simple Node.js Lambda ("HelloFunction") reads a <code>who</code> key from the event and returns <code>Hello, &lt;who&gt;!</code> — tested directly in the console before wiring it up.</li>
+    <li>Its ARN is pasted into the Lambda Invoke state's function name field.</li>
+    <li>Because the state machine invokes Lambda (and optionally X-Ray), Step Functions <strong>automatically creates an execution role</strong> with the permissions it needs.</li>
+    <li>Running with <code>who: "Stephane Maarek"</code> → output contains "Stephane" → <strong>IsTeacher</strong> → <code>Woohoo!</code></li>
+    <li>Running with <code>who: "John Doe"</code> → output doesn't contain "Stephane" → <strong>NotTeacher</strong> → fails with the custom error message.</li>
+  </ul>
+</section>
+
+<!-- 4. ERROR HANDLING -->
+<section class="card" id="error-handling">
+  <h2><span class="badge">4</span> Step Functions — Error Handling</h2>
+
+  <p>Step Functions execute many small tasks that each do very little work — error handling should live in the <strong>state machine itself</strong>, not inside the tasks (e.g. don't try/catch inside a Lambda function). Errors can come from a state machine definition issue (no matching Choice branch), a task failure (a Lambda exception), or a transient failure (e.g. a network partition).</p>
+
+  <div class="callout tip">
+    <strong class="tag">Why it matters</strong>
+    Defining retries and catches in the JSON — instead of in application code — keeps your Lambda functions simple and fast, and lets you change error-handling logic <strong>without redeploying any code</strong>. You also get the full retry/catch history for free in the execution history.
+  </div>
+
+  <h3>Predefined error types</h3>
+  <table>
+    <tr><th>Error</th><th>Meaning</th></tr>
+    <tr><td><code>States.ALL</code></td><td>Matches any error name</td></tr>
+    <tr><td><code>States.Timeout</code></td><td>Task ran longer than its timeout, or no activity heartbeat received</td></tr>
+    <tr><td><code>States.TaskFailed</code></td><td>The task itself failed execution (e.g. an uncaught Lambda exception)</td></tr>
+    <tr><td><code>States.Permissions</code></td><td>Insufficient permissions to execute the task</td></tr>
+  </table>
+
+  <h3>Retry</h3>
+  <p>Evaluated top-to-bottom against fields: <code>ErrorEquals</code> (which error(s) this rule matches), <code>IntervalSeconds</code> (initial wait before retrying), <code>BackoffRate</code> (multiplier applied to the interval each retry — e.g. <code>2</code> for exponential backoff), and <code>MaxAttempts</code> (default 3; <code>0</code> means never retry). Once all attempts for a matching rule are exhausted, control falls through to <strong>Catch</strong>.</p>
+
+  <h3>Catch</h3>
+  <p>Also evaluated top-to-bottom: <code>ErrorEquals</code> plus <code>Next</code> (the fallback state to transition to). A <code>ResultPath</code> (e.g. <code>$.error</code>) controls how the error details get merged into the input before being passed to that next state — so if the input was <code>{"foo":"bar"}</code>, the output becomes <code>{"foo":"bar", "error": {...}}</code>, letting the next state (e.g. send an alert email) inspect what went wrong.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 140" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="10" y="50" width="120" height="40" rx="6"/><text class="svg-text" x="70" y="74" text-anchor="middle" font-size="9">Task (Lambda)</text>
+      <path class="svg-arrow" d="M130,55 C 160,25 200,25 220,45"/>
+      <text class="svg-label" x="175" y="20" text-anchor="middle" font-size="8">fails → retry (backoff)</text>
+      <path class="svg-arrow" d="M220,80 C 200,105 150,105 130,85"/>
+      <text class="svg-label" x="175" y="120" text-anchor="middle" font-size="8">retries exhausted</text>
+      <rect class="svg-box-accent" x="220" y="50" width="130" height="40" rx="6"/><text class="svg-text" x="285" y="74" text-anchor="middle" font-size="9">Catch (by error type)</text>
+      <path class="svg-arrow" d="M350,70 L470,70"/>
+      <rect class="svg-box-gray" x="470" y="50" width="150" height="40" rx="6"/><text class="svg-text" x="545" y="74" text-anchor="middle" font-size="9">Fallback state</text>
+      <path class="svg-arrow" d="M620,70 L720,70"/>
+      <rect class="svg-box" x="720" y="50" width="60" height="40" rx="6"/><text class="svg-text" x="750" y="74" text-anchor="middle" font-size="9">End</text>
+    </svg>
+  </div>
+  <p class="caption">Retry with backoff until attempts are exhausted, then Catch routes by error type to a fallback state — all defined outside the task itself.</p>
+
+  <h3>Hands-on: seeing it run</h3>
+  <ul>
+    <li>A Lambda blueprint throws a <code>CustomError</code>. The state machine's Retry rules give it different backoff/attempt settings per error type (<code>CustomError</code>, <code>States.TaskFailed</code>, <code>States.ALL</code>), and its Catch rules route to <code>CustomErrorFallback</code>, <code>ReservedTypeFallback</code>, or <code>CatchAllFallback</code> respectively.</li>
+    <li>Running it with the original <code>CustomError</code>: quick retries (short interval), then falls into <strong>CustomErrorFallback</strong> once exhausted.</li>
+    <li>Changing the Lambda to throw a different, uncaught error type instead: the retry cadence is much longer (30s, then 60s...), and it falls into a different branch — <strong>ReservedTypeFallback</strong> — entirely.</li>
+  </ul>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Different error types can have completely different retry/backoff/catch behavior, all defined purely in the state machine's JSON — no code changes needed to adjust error handling.
+  </div>
+</section>
+
+<!-- 5. WAIT FOR TASK TOKEN -->
+<section class="card" id="wait-token">
+  <h2><span class="badge">5</span> Wait For Task Token</h2>
+
+  <p>Sometimes a task needs to wait on <strong>something external</strong>: another AWS service finishing its work, a human approval, a third-party integration, or a legacy system. Appending <code>.waitForTaskToken</code> to a task's <code>Resource</code> field tells Step Functions to pause that task until it receives a matching task token back via <strong>SendTaskSuccess</strong> or <strong>SendTaskFailure</strong>.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box-accent" x="10" y="55" width="140" height="40" rx="6"/><text class="svg-text" x="80" y="74" text-anchor="middle" font-size="8">Step Functions</text><text class="svg-label" x="80" y="86" text-anchor="middle" font-size="7">(paused, waiting)</text>
+      <path class="svg-arrow" d="M150,65 L270,65"/>
+      <text class="svg-label" x="210" y="55" text-anchor="middle" font-size="8">1. send msg + task token</text>
+      <rect class="svg-box" x="270" y="45" width="120" height="40" rx="6"/><text class="svg-text" x="330" y="69" text-anchor="middle" font-size="9">SQS queue</text>
+      <path class="svg-arrow" d="M390,65 L510,65"/>
+      <text class="svg-label" x="450" y="55" text-anchor="middle" font-size="8">2. poll & process</text>
+      <rect class="svg-box" x="510" y="45" width="150" height="40" rx="6"/><text class="svg-text" x="585" y="63" text-anchor="middle" font-size="8">Worker</text><text class="svg-label" x="585" y="76" text-anchor="middle" font-size="7">(Lambda/EC2/ECS/3rd-party)</text>
+      <path class="svg-arrow" d="M580,90 C 400,140 150,140 80,95"/>
+      <text class="svg-label" x="330" y="150" text-anchor="middle" font-size="8">3. SendTaskSuccess(output, task token) → resume workflow</text>
+    </svg>
+  </div>
+  <p class="caption">A push-based callback: Step Functions hands off work (with a task token attached) and waits until it gets that same token back.</p>
+
+  <p>This is a <strong>push</strong> pattern — Step Functions pushes an event out (e.g. to SQS), and whatever picks it up must remember to call back with the token when it's done.</p>
+</section>
+
+<!-- 6. ACTIVITY TASKS -->
+<section class="card" id="activity-tasks">
+  <h2><span class="badge">6</span> Activity Tasks</h2>
+
+  <p><strong>Activity workers</strong> (EC2 instances, Lambda functions, mobile devices, anything) regularly <strong>poll</strong> a step function for work using the <code>GetActivityTask</code> API. If there's work, they do it, then respond with <code>SendTaskSuccess</code> or <code>SendTaskFailure</code> — the same API calls used for Wait For Task Token.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 120" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="30" y="40" width="160" height="40" rx="6"/><text class="svg-text" x="110" y="64" text-anchor="middle" font-size="9">Activity worker (EC2)</text>
+      <path class="svg-arrow" d="M190,50 L560,50"/>
+      <text class="svg-label" x="375" y="40" text-anchor="middle" font-size="8">GetActivityTask (poll)</text>
+      <path class="svg-arrow" d="M560,80 L190,80"/>
+      <text class="svg-label" x="375" y="98" text-anchor="middle" font-size="8">SendTaskSuccess / SendTaskFailure (+ task token)</text>
+      <rect class="svg-box-accent" x="560" y="40" width="180" height="40" rx="6"/><text class="svg-text" x="650" y="64" text-anchor="middle" font-size="9">Step Functions</text>
+    </svg>
+  </div>
+  <p class="caption">Activity Tasks are pull-based — the worker reaches out to Step Functions, unlike the push-based callback pattern above.</p>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Activity Tasks = <strong>pull</strong> (worker polls Step Functions directly — simple network setup, just needs outbound connectivity). Wait For Task Token = <strong>push</strong> (Step Functions pushes to something like SQS, which then needs its own consumer to pull and call back).
+  </div>
+
+  <ul>
+    <li><strong>TimeoutSeconds</strong> — how long an in-progress task can run before it's considered failed.</li>
+    <li><strong>HeartbeatSeconds</strong> + the <code>SendHeartbeat</code> API — the worker periodically signals it's still alive. With regular heartbeats, an Activity Task can run for up to <strong>one year</strong>.</li>
+  </ul>
+</section>
+
+<!-- 7. STANDARD VS EXPRESS -->
+<section class="card" id="standard-express">
+  <h2><span class="badge">7</span> Standard vs Express Workflows</h2>
+
+  <table>
+    <tr><th></th><th>Standard (default)</th><th>Express — Async</th><th>Express — Sync</th></tr>
+    <tr><td>Max duration</td><td>Up to 1 year</td><td>Up to 5 minutes</td><td>Up to 5 minutes</td></tr>
+    <tr><td>Execution model</td><td>Exactly-once</td><td>At-least-once</td><td>At-most-once</td></tr>
+    <tr><td>Throughput</td><td>~2,000 executions/sec</td><td>Over 100,000 executions/sec</td><td>Over 100,000 executions/sec</td></tr>
+    <tr><td>Execution history</td><td>90 days in console, or forever via CloudWatch Logs</td><td>CloudWatch Logs only</td><td>CloudWatch Logs only</td></tr>
+    <tr><td>Pricing</td><td>Per state transition</td><td>Per execution, duration, memory</td><td>Per execution, duration, memory</td></tr>
+    <tr><td>Waits for result?</td><td>N/A (long-running)</td><td>No — fire and forget</td><td>Yes — blocks for the result</td></tr>
+    <tr><td>Typical use case</td><td>Non-idempotent actions, e.g. payment processing</td><td>IoT ingestion, streaming data — no immediate response needed</td><td>Orchestrating microservices via API Gateway/Lambda, needs an immediate response</td></tr>
+  </table>
+
+  <div class="callout warning">
+    <strong class="tag">Important</strong>
+    Because Express Async is <strong>at-least-once</strong>, the same action can run twice on retry — your workflow must handle idempotency itself. Express Sync is <strong>at-most-once</strong> — on failure, Step Functions does <strong>not</strong> restart the workflow for you; that's on your application logic.
+  </div>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Remember the three execution guarantees exactly: Standard = exactly-once, Express Async = at-least-once, Express Sync = at-most-once.
+  </div>
+</section>
+
+<!-- 8. APPSYNC OVERVIEW -->
+<section class="card" id="appsync-overview">
+  <h2><span class="badge">8</span> AppSync Overview</h2>
+
+  <p><strong>AWS AppSync</strong> is a managed service for building <strong>GraphQL</strong> APIs. GraphQL lets a client ask for exactly the fields it needs and get back exactly that — nothing more — and can combine data from multiple sources (NoSQL stores, relational databases, HTTP APIs) into a single graph.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="10" y="55" width="130" height="40" rx="6"/><text class="svg-text" x="75" y="79" text-anchor="middle" font-size="9">Web / mobile client</text>
+      <path class="svg-arrow" d="M140,70 L260,70"/>
+      <text class="svg-label" x="200" y="60" text-anchor="middle" font-size="8">GraphQL query</text>
+      <rect class="svg-box-accent" x="260" y="45" width="140" height="60" rx="8"/><text class="svg-text" x="330" y="70" text-anchor="middle" font-weight="600" font-size="10">AppSync</text><text class="svg-label" x="330" y="88" text-anchor="middle" font-size="7">schema + resolvers</text>
+      <path class="svg-arrow" d="M400,60 L510,25"/>
+      <path class="svg-arrow" d="M400,75 L510,75"/>
+      <path class="svg-arrow" d="M400,90 L510,125"/>
+      <rect class="svg-box" x="510" y="8" width="120" height="30" rx="5"/><text class="svg-text" x="570" y="27" text-anchor="middle" font-size="8">DynamoDB</text>
+      <rect class="svg-box" x="510" y="60" width="120" height="30" rx="5"/><text class="svg-text" x="570" y="79" text-anchor="middle" font-size="8">Aurora / OpenSearch</text>
+      <rect class="svg-box" x="510" y="112" width="120" height="30" rx="5"/><text class="svg-text" x="570" y="131" text-anchor="middle" font-size="8">Lambda / HTTP endpoint</text>
+    </svg>
+  </div>
+  <p class="caption">The client asks for exactly the fields it wants; AppSync's resolvers fetch from whichever backend(s) are configured and return matching JSON.</p>
+
+  <p>Beyond GraphQL APIs, AppSync also offers <strong>real-time WebSocket/MQTT integration</strong> for live data feeds, and mobile <strong>offline data access + synchronization</strong> — the modern replacement for the older, now-deprecated Cognito Sync.</p>
+
+  <h3>Security — authorization modes</h3>
+  <table>
+    <tr><th>Mode</th><th>Use for</th></tr>
+    <tr><td><code>API_KEY</code></td><td>Generated keys handed out to users, like the API Gateway</td></tr>
+    <tr><td><code>AWS_IAM</code></td><td>IAM users/roles, including cross-account access</td></tr>
+    <tr><td><code>OPENID_CONNECT</code></td><td>An OIDC provider + JSON Web Tokens</td></tr>
+    <tr><td><code>AMAZON_COGNITO_USER_POOL</code></td><td>An existing Cognito User Pool (can federate to social logins too)</td></tr>
+  </table>
+  <p>Multiple authorization modes can be combined on the same API. Integrated with <strong>CloudWatch Metrics and Logs</strong>. For a custom domain with HTTPS, put <strong>CloudFront</strong> in front of AppSync.</p>
+</section>
+
+<!-- 9. APPSYNC HANDS ON -->
+<section class="card" id="appsync-hands-on">
+  <h2><span class="badge">9</span> AppSync Hands On</h2>
+
+  <ol>
+    <li>Create a GraphQL API, designed from scratch (as opposed to importing from DynamoDB or building a real-time API).</li>
+    <li>Define a type backed by a DynamoDB table — e.g. a <code>Student</code> model with fields <code>id</code> (required), <code>name</code> (string), <code>age</code> (int), <code>certified</code> (boolean) — and choose the table name and primary key.</li>
+    <li>AppSync auto-generates the GraphQL schema <em>and</em> creates the backing DynamoDB table for you.</li>
+  </ol>
+
+  <p>Console sections: <strong>Schema</strong> (the generated GraphQL schema), <strong>Data sources</strong> (the linked DynamoDB table), <strong>Functions</strong>, and <strong>Queries</strong> — where you can run generated mutations/queries directly, e.g. <code>createStudent</code> to add a record and <code>listStudents</code> to fetch them all back. Records created this way show up immediately in the DynamoDB table's item explorer too.</p>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    Caching options include full request caching, per-resolver caching, or none. Settings expose the GraphQL endpoint, API ID, real-time endpoint, authorization mode(s) (including creating new API keys), monitoring, and custom domain configuration.
+  </div>
+
+  <p><strong>Cleanup:</strong> delete the API by typing its name to confirm, then separately delete the DynamoDB table it created (no backup needed).</p>
+</section>
+
+<!-- 10. AMPLIFY -->
+<section class="card" id="amplify">
+  <h2><span class="badge">10</span> AWS Amplify</h2>
+
+  <p><strong>AWS Amplify</strong> is a set of tools for building mobile and web applications fast — think of it as <strong>Elastic Beanstalk for mobile and web apps</strong>. It bundles: <strong>Amplify Studio</strong> (visually build the full stack — front end and back end), the <strong>Amplify CLI</strong> (same thing, via commands like <code>amplify add ...</code>), the <strong>Amplify Libraries</strong> (connect app code to Cognito, S3, and other AWS services), and <strong>Amplify Hosting</strong> (build, deploy, and serve the app quickly).</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 160" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box-accent" x="10" y="60" width="130" height="45" rx="6"/><text class="svg-text" x="75" y="80" text-anchor="middle" font-size="8">Amplify Studio /</text><text class="svg-text" x="75" y="93" text-anchor="middle" font-size="8">CLI / Libraries</text>
+      <path class="svg-arrow" d="M140,70 L250,25"/>
+      <path class="svg-arrow" d="M140,82 L250,82"/>
+      <path class="svg-arrow" d="M140,95 L250,140"/>
+      <rect class="svg-box" x="250" y="8" width="130" height="35" rx="5"/><text class="svg-text" x="315" y="30" text-anchor="middle" font-size="8">add auth → Cognito</text>
+      <rect class="svg-box" x="250" y="65" width="130" height="35" rx="5"/><text class="svg-text" x="315" y="83" text-anchor="middle" font-size="7">add api → AppSync + DynamoDB</text><text class="svg-label" x="315" y="94" text-anchor="middle" font-size="6">(DataStore, offline sync)</text>
+      <rect class="svg-box" x="250" y="122" width="130" height="35" rx="5"/><text class="svg-text" x="315" y="144" text-anchor="middle" font-size="8">add hosting → CI/CD</text>
+      <path class="svg-arrow" d="M380,140 L500,140"/>
+      <rect class="svg-box-gray" x="500" y="122" width="150" height="35" rx="5"/><text class="svg-text" x="575" y="144" text-anchor="middle" font-size="8">CloudFront delivery</text>
+    </svg>
+  </div>
+  <p class="caption">Amplify is a front door over Cognito, AppSync/DynamoDB, S3, and CloudFront — plus ready-made front-end libraries for React, Vue, JS, iOS, Android, and Flutter.</p>
+
+  <h3>Key features</h3>
+  <ul>
+    <li><code>amplify add auth</code> — Cognito-backed sign-up/sign-in/account recovery/MFA/social login, with pre-built UI components and fine-grained authorization.</li>
+    <li><code>amplify add api</code> — DataStore, powered by AppSync (GraphQL) + DynamoDB: work with data locally, get automatic cloud sync, offline and real-time capable, and can be modeled visually in Amplify Studio.</li>
+    <li><code>amplify add hosting</code> — CI/CD (build, test, deploy), pull request previews, custom domains, monitoring, redirects/custom headers, password protection — comparable to Netlify or Vercel, but everything stays inside your own AWS account.</li>
+  </ul>
+
+  <h3>Testing</h3>
+  <p>Two levels: <strong>unit tests</strong> at build time (catch code-level issues), and <strong>end-to-end tests</strong> using the <strong>Cypress</strong> framework, defined as build steps in <code>amplify.yml</code> and run against the deployed app — simulating real clicks and interactions to catch regressions before they reach production.</p>
+</section>
+
+<!-- 11. AMPLIFY HANDS ON -->
+<section class="card" id="amplify-hands-on">
+  <h2><span class="badge">11</span> AWS Amplify Hands On</h2>
+
+  <ol>
+    <li>Create a new app from a starter template (e.g. a React to-do app) — Amplify clones a starter repo to your own GitHub.</li>
+    <li>Connect the GitHub provider, authorize Amplify to read the repo, pick the cloned repo/branch, accept the default build settings, and let Amplify auto-create a service role.</li>
+    <li>Deploying bootstraps the CDK toolkit and deploys several nested <strong>CloudFormation</strong> stacks behind the scenes — visible under CloudFormation while it builds.</li>
+    <li>Once built, the app is reachable at the generated domain.</li>
+  </ol>
+
+  <p>Per-branch UI sections: <strong>Deployments</strong>, <strong>Data Manager</strong> (view/create/edit records backed directly by DynamoDB, plus CSV export), <strong>User management</strong> (Cognito-backed, once an authentication branch is added), <strong>Storage</strong> (S3-backed), <strong>Functions</strong> (Lambda-backed), and a <strong>UI Library</strong> (pre-built components, including Figma-to-React).</p>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    Any code change triggers CI/CD automatically — build and deploy happen without manual intervention.
+  </div>
+
+  <p><strong>Cleanup:</strong> in App settings → General, delete the app (typing "delete" to confirm) to remove all associated resources; optionally also delete the GitHub repository.</p>
+</section>
+
+<!-- CHEAT SHEET -->
+<section class="card cheatsheet" id="cheatsheet">
+  <h2><span class="badge">✓</span> Cheat Sheet</h2>
+
+  <h3>Key facts to remember</h3>
+  <ul>
+    <li>Step Functions = one state machine per workflow, defined in JSON (Amazon States Language), visualized and executed with full history in the console.</li>
+    <li>Know the state types — Task, Choice, Pass, Wait, Fail/Succeed, Map, Parallel — with Task and Parallel most likely on the exam.</li>
+    <li>Error handling belongs in the state machine (Retry/Catch), not in application code — this keeps Lambda simple and lets error logic change without redeployment.</li>
+    <li>Retry: <code>ErrorEquals</code>, <code>IntervalSeconds</code>, <code>BackoffRate</code>, <code>MaxAttempts</code> (default 3), evaluated top-to-bottom; Catch kicks in once retries are exhausted.</li>
+    <li>Catch: <code>ErrorEquals</code>, <code>Next</code>, and <code>ResultPath</code> (e.g. <code>$.error</code>) to merge error details into the next state's input.</li>
+    <li><code>.waitForTaskToken</code> = push-based callback (external worker finishes, then calls SendTaskSuccess/Failure with the token).</li>
+    <li>Activity Tasks = pull-based (worker calls GetActivityTask, then SendTaskSuccess/Failure); TimeoutSeconds + HeartbeatSeconds/SendHeartbeat let a task run up to a year.</li>
+    <li>Standard = exactly-once, up to 1 year, ~2,000 exec/sec, priced per state transition — for non-idempotent work like payments.</li>
+    <li>Express Async = at-least-once, fire-and-forget, must handle idempotency yourself. Express Sync = at-most-once, waits for the result, good for a synchronous API response.</li>
+    <li>AppSync = managed GraphQL, direct resolvers for DynamoDB/Aurora/OpenSearch, Lambda/HTTP for anything else, real-time WebSocket support, 4 auth modes (API key, IAM, OIDC, Cognito User Pools) that can be combined.</li>
+    <li>Amplify = CLI/Studio/Libraries/Hosting bundled to build and host full-stack mobile/web apps, backed by Cognito, AppSync + DynamoDB, and S3, with built-in CI/CD and unit + Cypress end-to-end testing.</li>
+  </ul>
+
+  <h3>Decision guide</h3>
+  <table>
+    <tr><th>Need</th><th>Use</th></tr>
+    <tr><td>Orchestrate a multi-step workflow across services</td><td>Step Functions</td></tr>
+    <tr><td>Non-idempotent, long-running workflow (e.g. payments)</td><td>Step Functions — Standard</td></tr>
+    <tr><td>High-volume, short workflow, no need to wait for a result</td><td>Step Functions — Express Async</td></tr>
+    <tr><td>High-volume, short workflow, need the result immediately</td><td>Step Functions — Express Sync</td></tr>
+    <tr><td>Waiting on a human/3rd-party/external system to finish work</td><td>Wait For Task Token (push) or Activity Task (pull)</td></tr>
+    <tr><td>Flexible, client-driven query API over multiple data sources</td><td>AppSync (GraphQL)</td></tr>
+    <tr><td>Fast, opinionated full-stack app with built-in hosting + CI/CD</td><td>Amplify</td></tr>
+  </table>
+
+  <h3>Mental model</h3>
+  <p>Step Functions turns a scattered set of Lambda calls, DynamoDB writes, and ECS tasks into one visual, auditable state machine — with retries and error handling defined declaratively outside your code, and a choice between exactly-once (Standard) or high-throughput (Express) execution depending on whether you're processing payments or ingesting IoT streams. AppSync answers a different need: a single GraphQL front door over multiple data sources, so clients fetch exactly the shape of data they want. Amplify then wraps the common combination of these — auth, data, and hosting — into one CLI/console experience so you can ship a full-stack app without hand-wiring each AWS service yourself.</p>
+</section>
+
+<a class="back-to-top" href="#top">↑ Back to top</a>
+
+</div>
+</body>
+</html>

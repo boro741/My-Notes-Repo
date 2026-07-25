@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 24 — AWS CI/CD: CodeCommit, CodePipeline, CodeBuild, CodeDeploy — Notes</title>
+<style>
+  :root {
+    --accent: #e8830f;
+    --accent-dark: #c96a08;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --border: #e3e0da;
+    --text: #2b2a28;
+    --text-muted: #6b6a66;
+    --green: #2e7d32;
+    --green-bg: #eef7ee;
+    --red: #c0392b;
+    --red-bg: #fdecea;
+    --amber: #b8790a;
+    --amber-bg: #fff4e2;
+    --purple: #6a4fb3;
+    --purple-bg: #f3f0fb;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  header {
+    padding-bottom: 24px;
+    border-bottom: 3px solid var(--accent);
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 2rem;
+    color: var(--text);
+  }
+
+  header h1 span {
+    color: var(--accent);
+  }
+
+  header p.subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+  }
+
+  nav.toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 32px;
+  }
+
+  nav.toc h2 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  nav.toc ol {
+    margin: 0;
+    padding-left: 22px;
+    columns: 2;
+    column-gap: 24px;
+  }
+
+  nav.toc li {
+    margin-bottom: 6px;
+    break-inside: avoid;
+  }
+
+  nav.toc a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  nav.toc a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 24px;
+    scroll-margin-top: 20px;
+  }
+
+  .card h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 14px;
+    font-size: 1.3rem;
+    color: var(--text);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    color: var(--accent-dark);
+    font-size: 1.05rem;
+    margin: 20px 0 8px;
+  }
+
+  a { color: var(--accent-dark); }
+
+  code {
+    background: #f1eee7;
+    border: 1px solid #e6e2d8;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.92em;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    color: #7a4b00;
+  }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 0.94rem;
+  }
+
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f7f2ea;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) td {
+    background: #fcfbf9;
+  }
+
+  .callout {
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+
+  .callout strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .callout.tip {
+    background: var(--green-bg);
+    border-color: var(--green);
+  }
+  .callout.tip strong.tag { color: var(--green); }
+
+  .callout.warning {
+    background: var(--red-bg);
+    border-color: var(--red);
+  }
+  .callout.warning strong.tag { color: var(--red); }
+
+  .callout.key {
+    background: var(--amber-bg);
+    border-color: var(--amber);
+  }
+  .callout.key strong.tag { color: var(--amber); }
+
+  .analogy {
+    border: 1.5px dashed var(--purple);
+    background: var(--purple-bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+  .analogy strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--purple);
+  }
+
+  .diagram {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fdfcfa;
+    padding: 16px;
+    margin: 16px 0 6px;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  .diagram svg {
+    max-width: 100%;
+  }
+
+  .caption {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 4px 0 16px;
+    font-style: italic;
+  }
+
+  .cheatsheet {
+    border: 2px solid var(--accent);
+  }
+
+  .cheatsheet h2 { color: var(--accent-dark); }
+
+  .back-to-top {
+    display: block;
+    text-align: center;
+    margin-top: 36px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    text-decoration: none;
+  }
+  .back-to-top:hover { text-decoration: underline; }
+
+  .svg-box { fill: #fff; stroke: #c8917a; stroke-width: 1.5; }
+  .svg-box-accent { fill: #fff4e2; stroke: var(--accent); stroke-width: 1.5; }
+  .svg-box-gray { fill: #eeeeee; stroke: #b8b8b8; stroke-width: 1.5; }
+  .svg-text { font-family: -apple-system, sans-serif; font-size: 12px; fill: #2b2a28; }
+  .svg-label { font-family: -apple-system, sans-serif; font-size: 11px; fill: #6b6a66; }
+  .svg-arrow { stroke: #6b6a66; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header id="top">
+  <h1><span>Section 24</span> — AWS CI/CD: CodeCommit, CodePipeline, CodeBuild, CodeDeploy</h1>
+  <p class="subtitle">My notes on automating the path from a git push to a live production deployment.</p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#intro">Introduction to CI/CD in AWS</a></li>
+    <li><a href="#codecommit-overview">CodeCommit Overview</a></li>
+    <li><a href="#codecommit-hands-on">CodeCommit — Hands On</a></li>
+    <li><a href="#codepipeline-overview">CodePipeline Overview</a></li>
+    <li><a href="#codepipeline-hands-on">CodePipeline — Hands On</a></li>
+    <li><a href="#codebuild-overview">CodeBuild Overview</a></li>
+    <li><a href="#codebuild-hands-on">CodeBuild — Hands On</a></li>
+    <li><a href="#codedeploy-overview">CodeDeploy Overview</a></li>
+    <li><a href="#codedeploy-hands-on">CodeDeploy — Hands On</a></li>
+    <li><a href="#codedeploy-ec2-asg">CodeDeploy for EC2 & ASG</a></li>
+    <li><a href="#codeartifact-overview">CodeArtifact Overview</a></li>
+    <li><a href="#codeartifact-hands-on">CodeArtifact — Hands On</a></li>
+    <li><a href="#cheatsheet">Cheat Sheet</a></li>
+  </ol>
+</nav>
+
+<!-- 1. INTRO -->
+<section class="card" id="intro">
+  <h2><span class="badge">1</span> Introduction to CI/CD in AWS</h2>
+
+  <p>Manually deploying things (like we did with Elastic Beanstalk earlier) works, but it's error-prone and doesn't scale. The goal of <strong>CI/CD</strong> is to push code and have it automatically tested, and then automatically deployed — safely, and through stages (dev → test → staging → prod), possibly with manual approval gates before production.</p>
+
+  <h3>Continuous Integration (CI)</h3>
+  <p>Developers push code often into a central repo (GitHub, CodeCommit, Bitbucket). A build/test server immediately checks the code and reports back pass/fail. Benefits: bugs found early, faster delivery, more frequent deploys, happier developers.</p>
+
+  <h3>Continuous Delivery/Deployment (CD)</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 780 100" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#6b6a66"/>
+        </marker>
+      </defs>
+      <rect class="svg-box" x="20" y="30" width="140" height="40" rx="6"/><text class="svg-text" x="90" y="54" text-anchor="middle" font-size="9">Developer push</text>
+      <path class="svg-arrow" d="M160,50 L280,50"/>
+      <rect class="svg-box-accent" x="280" y="30" width="140" height="40" rx="6"/><text class="svg-text" x="350" y="54" text-anchor="middle" font-size="9">Build server (test)</text>
+      <path class="svg-arrow" d="M420,50 L540,50"/>
+      <rect class="svg-box-accent" x="540" y="30" width="140" height="40" rx="6"/><text class="svg-text" x="610" y="54" text-anchor="middle" font-size="9">Deploy server</text>
+      <path class="svg-arrow" d="M680,50 L760,50"/>
+      <text class="svg-label" x="720" y="80" text-anchor="middle" font-size="9">App servers (live)</text>
+    </svg>
+  </div>
+  <p class="caption">Every push that passes testing flows automatically all the way to live application servers — shifting from "one release every 3 months" to multiple releases a day.</p>
+
+  <h3>The AWS CI/CD tech stack</h3>
+  <table>
+    <tr><th>Stage</th><th>AWS service</th><th>Alternatives</th></tr>
+    <tr><td>Code</td><td>CodeCommit</td><td>GitHub, Bitbucket</td></tr>
+    <tr><td>Build/Test</td><td>CodeBuild</td><td>Jenkins, any CI server</td></tr>
+    <tr><td>Deploy</td><td>CodeDeploy (or Beanstalk if you also want infra provisioning)</td><td>Spinnaker, Jenkins CD</td></tr>
+    <tr><td>Orchestration</td><td>CodePipeline</td><td>—</td></tr>
+  </table>
+</section>
+
+<!-- 2. CODECOMMIT OVERVIEW -->
+<section class="card" id="codecommit-overview">
+  <h2><span class="badge">2</span> CodeCommit Overview</h2>
+
+  <p><strong>CodeCommit</strong> is AWS's private, fully managed <strong>Git</strong> repository service.</p>
+
+  <ul>
+    <li>No repo size limit, highly available, fully within your AWS account/VPC (increased security/compliance vs. third-party hosting).</li>
+    <li>Encrypted at rest (KMS) and in transit (HTTPS/SSH); access controlled entirely by <strong>IAM</strong>.</li>
+    <li>Integrates with standard CI tools (Jenkins, CodeBuild, etc.).</li>
+    <li>Cross-account access uses an IAM role + STS <code>AssumeRole</code> rather than sharing credentials/SSH keys directly.</li>
+  </ul>
+
+  <h3>CodeCommit vs GitHub</h3>
+  <table>
+    <tr><th></th><th>CodeCommit</th><th>GitHub</th></tr>
+    <tr><td>Hosting</td><td>Only within AWS</td><td>GitHub's servers, or self-hosted with Enterprise</td></tr>
+    <tr><td>Auth</td><td>IAM users/roles</td><td>GitHub accounts, SSO (Enterprise)</td></tr>
+    <tr><td>UI</td><td>Minimal</td><td>Fully featured</td></tr>
+    <tr><td>Shared features</td><td colspan="2">Pull requests, SSH/HTTPS auth, CI integrations</td></tr>
+  </table>
+</section>
+
+<!-- 3. CODECOMMIT HANDS ON -->
+<section class="card" id="codecommit-hands-on">
+  <h2><span class="badge">3</span> CodeCommit — Hands On</h2>
+
+  <ul>
+    <li>Create a repo, then add files either through the console (one at a time) or by cloning it and using standard <code>git</code> commands.</li>
+    <li>The default/first branch is called <code>master</code>; you can create additional branches for collaboration.</li>
+    <li><strong>Pull requests</strong> merge changes from one branch into another (e.g. a feature branch into <code>master</code>).</li>
+    <li><strong>Notification rules</strong> (comments, approvals, pull request/branch/tag events) can target an SNS topic or Slack (via Chatbot) — good for team alerting.</li>
+    <li><strong>Triggers</strong> react to specific code events (push to a branch, create/delete branch or tag) and can invoke SNS or Lambda.</li>
+  </ul>
+
+  <h3>Connecting via Git</h3>
+  <ol>
+    <li>Install Git (or use CloudShell, which has it pre-installed) and the <code>git-remote-codecommit</code> package.</li>
+    <li><code>git clone</code> using the connection URL from the console (HTTPS, SSH, or HTTPS GRC — SSH only shows if you're using an IAM user, not root).</li>
+    <li>Configure <code>git config user.email</code> / <code>user.name</code>, then the usual <code>git add</code> / <code>git commit</code> / <code>git push</code> workflow.</li>
+  </ol>
+</section>
+
+<!-- 4. CODEPIPELINE OVERVIEW -->
+<section class="card" id="codepipeline-overview">
+  <h2><span class="badge">4</span> CodePipeline Overview</h2>
+
+  <p><strong>CodePipeline</strong> is the visual workflow tool that orchestrates your whole CI/CD process across sources, builds, tests, and deployments.</p>
+
+  <table>
+    <tr><th>Phase</th><th>Options</th></tr>
+    <tr><td>Source</td><td>CodeCommit, ECR, S3, Bitbucket, GitHub</td></tr>
+    <tr><td>Build</td><td>CodeBuild, Jenkins, CloudBees, TeamCity</td></tr>
+    <tr><td>Test</td><td>CodeBuild, Device Farm, or third-party</td></tr>
+    <tr><td>Deploy</td><td>CodeDeploy, Beanstalk, CloudFormation, ECS, S3</td></tr>
+    <tr><td>Invoke</td><td>Lambda, Step Functions</td></tr>
+  </table>
+
+  <p>A pipeline is made of <strong>stages</strong>, each containing sequential and/or parallel <strong>actions</strong> — including a <strong>manual approval</strong> action, e.g. requiring sign-off before deploying to production.</p>
+
+  <h3>How artifacts flow between stages</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="10" width="130" height="30" rx="5"/><text class="svg-text" x="85" y="30" text-anchor="middle" font-size="9">CodeCommit</text>
+      <path class="svg-arrow" d="M150,25 L300,55"/>
+      <rect class="svg-box" x="300" y="60" width="130" height="30" rx="5"/><text class="svg-text" x="365" y="80" text-anchor="middle" font-size="9">CodeBuild</text>
+      <path class="svg-arrow" d="M430,75 L580,55"/>
+      <rect class="svg-box" x="580" y="30" width="130" height="30" rx="5"/><text class="svg-text" x="645" y="50" text-anchor="middle" font-size="9">CodeDeploy</text>
+      <rect class="svg-box-accent" x="260" y="100" width="260" height="40" rx="6"/>
+      <text class="svg-text" x="390" y="125" text-anchor="middle" font-size="10">Amazon S3 (artifact store)</text>
+      <path class="svg-arrow" d="M150,40 L300,110" stroke-dasharray="3,3"/>
+      <path class="svg-arrow" d="M365,90 L390,100" stroke-dasharray="3,3"/>
+      <path class="svg-arrow" d="M480,110 L610,60" stroke-dasharray="3,3"/>
+    </svg>
+  </div>
+  <p class="caption">Each stage's output ("artifacts") is stored in S3, and the next stage picks it up from there — so CodeBuild, for instance, never needs direct access to CodeCommit; CodePipeline hands it the code via S3.</p>
+
+  <p>Troubleshooting: use <strong>CloudWatch Events/EventBridge</strong> for pipeline/stage state changes (e.g. alert on a failed pipeline), check the pipeline's <strong>IAM service role</strong> if an action can't be performed, and <strong>CloudTrail</strong> to audit denied API calls.</p>
+</section>
+
+<!-- 5. CODEPIPELINE HANDS ON -->
+<section class="card" id="codepipeline-hands-on">
+  <h2><span class="badge">5</span> CodePipeline — Hands On</h2>
+
+  <ul>
+    <li>Prerequisite: two Elastic Beanstalk environments (e.g. <code>env</code> for dev, <code>prod</code>) to deploy into.</li>
+    <li>Create a pipeline with source = GitHub (v2, via a connection/app installation), triggered on push to the <code>main</code> branch; deploy target = the dev Beanstalk environment.</li>
+    <li>The pipeline's service role may need extra permissions manually attached (e.g. Beanstalk admin access) if deployment fails on permissions.</li>
+  </ul>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 100" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="30" width="130" height="40" rx="6"/><text class="svg-text" x="85" y="54" text-anchor="middle" font-size="9">Source (GitHub)</text>
+      <path class="svg-arrow" d="M150,50 L260,50"/>
+      <rect class="svg-box-accent" x="260" y="30" width="150" height="40" rx="6"/><text class="svg-text" x="335" y="54" text-anchor="middle" font-size="9">Deploy to Dev (Beanstalk)</text>
+      <path class="svg-arrow" d="M410,50 L500,50"/>
+      <rect class="svg-box-accent" x="500" y="30" width="130" height="40" rx="6"/><text class="svg-text" x="565" y="54" text-anchor="middle" font-size="9">Manual Approval</text>
+      <path class="svg-arrow" d="M630,50 L740,50"/>
+      <rect class="svg-box-accent" x="740" y="30" width="0" height="0" rx="6"/>
+      <text class="svg-label" x="690" y="80" text-anchor="middle" font-size="9">→ Deploy to Prod (Beanstalk)</text>
+    </svg>
+  </div>
+  <p class="caption">Adding a second stage with a manual approval action before the prod deploy means every production release needs a human to click "approve" first — reviewing the dev deployment before it goes further.</p>
+
+  <ul>
+    <li>Editing the pipeline lets you add a <strong>new stage</strong> (e.g. "DeployToProd") containing two sequential action groups: a <strong>Manual Approval</strong> action, then a <strong>Deploy to Beanstalk (prod)</strong> action.</li>
+    <li>Pushing a new commit automatically triggers the whole pipeline — the dev deploy happens immediately, then the pipeline pauses at the manual approval step until someone reviews and approves it, only then deploying to prod.</li>
+  </ul>
+</section>
+
+<!-- 6. CODEBUILD OVERVIEW -->
+<section class="card" id="codebuild-overview">
+  <h2><span class="badge">6</span> CodeBuild Overview</h2>
+
+  <p><strong>CodeBuild</strong> takes source code (CodeCommit, S3, Bitbucket, GitHub) plus a set of build instructions and runs them in a container.</p>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    The build instructions file is named <code>buildspec.yml</code> and must live at the <strong>root</strong> of your repo (best practice — you can also enter commands manually in the console, but the exam focuses on <code>buildspec.yml</code>).
+  </div>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 100" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="30" width="140" height="40" rx="6"/><text class="svg-text" x="90" y="54" text-anchor="middle" font-size="9">Source + buildspec.yml</text>
+      <path class="svg-arrow" d="M160,50 L280,50"/>
+      <rect class="svg-box-accent" x="280" y="30" width="160" height="40" rx="6"/><text class="svg-text" x="360" y="54" text-anchor="middle" font-size="9">Build container (Docker image)</text>
+      <path class="svg-arrow" d="M440,50 L560,50"/>
+      <rect class="svg-box" x="560" y="30" width="200" height="40" rx="6"/><text class="svg-text" x="660" y="54" text-anchor="middle" font-size="9">Logs → CloudWatch/S3, artifacts → S3</text>
+    </svg>
+  </div>
+  <p class="caption">CodeBuild pulls a language-specific (or custom) Docker image, runs every phase defined in buildspec.yml against your source, then ships logs and artifacts out to CloudWatch/S3.</p>
+
+  <h3>buildspec.yml structure</h3>
+  <table>
+    <tr><th>Section</th><th>Purpose</th></tr>
+    <tr><td><code>env</code></td><td>Environment variables — plaintext, or pulled from SSM Parameter Store / Secrets Manager</td></tr>
+    <tr><td><code>phases.install</code></td><td>Install packages/dependencies</td></tr>
+    <tr><td><code>phases.pre_build</code></td><td>Commands before the actual build</td></tr>
+    <tr><td><code>phases.build</code></td><td>The actual build/test commands</td></tr>
+    <tr><td><code>phases.post_build</code></td><td>Finishing touches (e.g. zipping output)</td></tr>
+    <tr><td><code>artifacts</code></td><td>Which files to extract and send to S3</td></tr>
+    <tr><td><code>cache</code></td><td>Which files (usually dependencies) to cache in S3 to speed up future builds</td></tr>
+  </table>
+
+  <p>Pre-built environments exist for Java, Ruby, Python, Go, Node.js, Android, .NET Core, PHP — or extend your own Docker image for anything else. Build Projects can be defined directly in CodeBuild or invoked from CodePipeline.</p>
+</section>
+
+<!-- 7. CODEBUILD HANDS ON -->
+<section class="card" id="codebuild-hands-on">
+  <h2><span class="badge">7</span> CodeBuild — Hands On</h2>
+
+  <ul>
+    <li>Create a build project pointed at a GitHub repo, choose a managed image (e.g. Ubuntu Standard), and reference <code>buildspec.yaml</code> in the source root.</li>
+    <li>Without a <code>buildspec.yaml</code> present, the build fails immediately ("no yaml file exists").</li>
+    <li>Adding a <code>buildspec.yaml</code> with a test command like <code>grep -Fq "Congratulations" index.html</code> turns CodeBuild into a real test gate — the build only succeeds if that text is actually present.</li>
+  </ul>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    A GitHub webhook can trigger CodeBuild directly on every push — but once CodeBuild is wired into a <strong>CodePipeline</strong> stage instead, remove that webhook so CodePipeline (not GitHub) is the one triggering builds.
+  </div>
+
+  <p>Integrated into the pipeline as a "TestCode" stage between Source and Deploy: if the grep test fails (e.g. someone removes "Congratulations" from the page), the pipeline stops there and <strong>never reaches the deploy stage</strong> — demonstrating the whole point of a CI gate.</p>
+</section>
+
+<!-- 8. CODEDEPLOY OVERVIEW -->
+<section class="card" id="codedeploy-overview">
+  <h2><span class="badge">8</span> CodeDeploy Overview</h2>
+
+  <p><strong>CodeDeploy</strong> automates deploying an application version to <strong>EC2/on-premises</strong>, <strong>Lambda</strong>, or <strong>ECS</strong> — and can automatically roll back on failure or a triggered CloudWatch alarm.</p>
+
+  <p>Controlled by an <code>appspec.yml</code> file, and deployment speed is configurable: <code>AllAtOnce</code>, <code>HalfAtATime</code>, <code>OneAtATime</code>, or custom.</p>
+
+  <h3>EC2/on-premises: in-place vs blue/green</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="15" width="340" height="100" rx="8"/>
+      <text class="svg-text" x="190" y="37" text-anchor="middle" font-weight="600" font-size="11">In-place (HalfAtATime)</text>
+      <text class="svg-label" x="190" y="57" text-anchor="middle" font-size="9">Half the instances taken down,</text>
+      <text class="svg-label" x="190" y="75" text-anchor="middle" font-size="9">upgraded to v2, brought back —</text>
+      <text class="svg-label" x="190" y="93" text-anchor="middle" font-size="9">then the other half repeats</text>
+
+      <rect class="svg-box-accent" x="410" y="15" width="350" height="100" rx="8"/>
+      <text class="svg-text" x="585" y="37" text-anchor="middle" font-weight="600" font-size="11">Blue/Green</text>
+      <text class="svg-label" x="585" y="57" text-anchor="middle" font-size="9">New ASG with v2 instances created</text>
+      <text class="svg-label" x="585" y="75" text-anchor="middle" font-size="9">alongside v1; ALB cuts over to v2;</text>
+      <text class="svg-label" x="585" y="93" text-anchor="middle" font-size="9">v1 instances then terminated</text>
+    </svg>
+  </div>
+  <p class="caption">In-place upgrades existing instances in batches (some downtime risk per batch); blue/green stands up an entirely new fleet and only cuts traffic over once it's healthy.</p>
+
+  <ul>
+    <li>Requires the <strong>CodeDeploy agent</strong> installed on each target instance (manually, or automated via Systems Manager), plus an IAM role/instance profile with S3 read access (the application revision is stored in S3).</li>
+  </ul>
+
+  <h3>Lambda: traffic shifting between aliases</h3>
+  <table>
+    <tr><th>Strategy</th><th>Behavior</th></tr>
+    <tr><td>Linear</td><td>Grow traffic by a fixed % every N minutes (e.g. <code>LambdaLinear10PercentEvery3Minutes</code>)</td></tr>
+    <tr><td>Canary</td><td>Hold at a small % for a period, then jump to 100% (e.g. <code>LambdaCanary10Percent5Minutes</code>)</td></tr>
+    <tr><td>AllAtOnce</td><td>Immediate full cutover — fastest, no chance to test first</td></tr>
+  </table>
+  <p>This is fully integrated into the <strong>SAM framework</strong> (covered later in the course).</p>
+
+  <h3>ECS: blue/green only</h3>
+  <p>A new target group runs the new ECS task definition at the same capacity; the ALB shifts traffic from the old (blue) to the new (green) target group using the same Linear/Canary/AllAtOnce strategies.</p>
+</section>
+
+<!-- 9. CODEDEPLOY HANDS ON -->
+<section class="card" id="codedeploy-hands-on">
+  <h2><span class="badge">9</span> CodeDeploy — Hands On</h2>
+
+  <ol>
+    <li>Create two IAM roles: one for the <strong>CodeDeploy service</strong> itself, one for the <strong>EC2 instance</strong> (needs S3 read access to pull the application revision).</li>
+    <li>Create a CodeDeploy <strong>application</strong> (compute platform: EC2/on-premises).</li>
+    <li>Launch an EC2 instance, install the CodeDeploy agent on it (a Ruby-dependent install script), and verify it's running.</li>
+    <li>Tag the instance (e.g. <code>Environment: Development</code>) — CodeDeploy uses these tags to define a <strong>deployment group</strong>.</li>
+    <li>Upload the application bundle (containing <code>appspec.yml</code> + your files) as a zip to S3.</li>
+    <li>Create a deployment pointing at that S3 zip, targeting the tag-matched deployment group.</li>
+  </ol>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    A deployment fails if the EC2 instance is missing its IAM instance profile (needed to pull from S3) — attach it via <strong>Actions → Security → Modify IAM role</strong>, then retry the deployment.
+  </div>
+
+  <p><code>appspec.yml</code> defines: which files go where (e.g. <code>index.html</code> → <code>/var/www/html</code>), and lifecycle hooks like <code>BeforeInstall</code> (install dependencies), <code>ApplicationStart</code> (start the server), and <code>ApplicationStop</code> (stop it before updating). The deployment lifecycle you'll see in the console: <code>ApplicationStop → DownloadBundle → BeforeInstall → Install → AfterInstall → ApplicationStart → ValidateService</code>.</p>
+</section>
+
+<!-- 10. CODEDEPLOY EC2 ASG -->
+<section class="card" id="codedeploy-ec2-asg">
+  <h2><span class="badge">10</span> CodeDeploy for EC2 & ASG</h2>
+
+  <ul>
+    <li><strong>In-place with an ASG</strong>: existing instances get updated in place, and any <strong>new instance the ASG launches later automatically gets the current deployed revision</strong> too — very convenient.</li>
+    <li><strong>Blue/green with an ASG</strong>: a brand-new ASG is created (settings copied from the original), the new version is deployed to it, you choose how long to keep the old ASG around, and the load balancer cuts over from the old target group to the new one.</li>
+  </ul>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    A CodeDeploy <strong>rollback is not "going back in time"</strong> — it's a brand-new deployment of the last known-good revision. Rollbacks can be automatic (on deployment failure or a triggered CloudWatch alarm) or manual, and can be disabled entirely for a given deployment.
+  </div>
+</section>
+
+<!-- 11. CODEARTIFACT OVERVIEW -->
+<section class="card" id="codeartifact-overview">
+  <h2><span class="badge">11</span> CodeArtifact Overview</h2>
+
+  <p><strong>CodeArtifact</strong> is a secure, scalable artifact/dependency management service — integrates with Maven, Gradle, npm, yarn, twine, pip, and NuGet.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="40" width="150" height="45" rx="6"/><text class="svg-text" x="95" y="67" text-anchor="middle" font-size="9">Developers / CodeBuild</text>
+      <path class="svg-arrow" d="M170,62 L300,62"/>
+      <rect class="svg-box-accent" x="300" y="30" width="180" height="65" rx="8"/>
+      <text class="svg-text" x="390" y="52" text-anchor="middle" font-weight="600" font-size="10">CodeArtifact</text>
+      <text class="svg-label" x="390" y="70" text-anchor="middle" font-size="8">domain → repositories</text>
+      <text class="svg-label" x="390" y="85" text-anchor="middle" font-size="8">(caches what it proxies)</text>
+      <path class="svg-arrow" d="M480,62 L610,62"/>
+      <rect class="svg-box" x="610" y="40" width="150" height="45" rx="6"/><text class="svg-text" x="685" y="67" text-anchor="middle" font-size="9">Public repos (npm, PyPI...)</text>
+    </svg>
+  </div>
+  <p class="caption">CodeArtifact proxies requests to public package repositories and caches everything it fetches — so your build stays working even if a public package later disappears.</p>
+
+  <ul>
+    <li>A <strong>domain</strong> is a set of repositories (typically one per company); repositories can have <strong>upstream</strong> repos, including a public one for proxying.</li>
+    <li>Two benefits of proxying: (1) developers/CodeBuild never talk to the public internet directly (network security), (2) fetched packages get <strong>cached</strong>, so they're still available even if removed upstream.</li>
+    <li>You can also <strong>publish your own packages</strong> into CodeArtifact for internal reuse.</li>
+    <li>Package events (created/modified/deleted) go to <strong>EventBridge</strong>, which can trigger Lambda, SNS, SQS, or even <strong>CodePipeline</strong> — e.g. auto-rebuild and redeploy when a dependency updates.</li>
+  </ul>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    In-account access to CodeArtifact uses IAM policies as usual. <strong>Cross-account access requires a resource policy</strong> — and it's all-or-nothing per repo: you can't grant access to only some packages within it.
+  </div>
+</section>
+
+<!-- 12. CODEARTIFACT HANDS ON -->
+<section class="card" id="codeartifact-hands-on">
+  <h2><span class="badge">12</span> CodeArtifact — Hands On</h2>
+
+  <ol>
+    <li>Create a repository with an upstream connection to the public PyPI store, inside a new <strong>domain</strong> (encrypted with a KMS key).</li>
+    <li>Get a CodeArtifact authorization token (valid ~12 hours) and configure <code>pip</code>/<code>pip3</code> to use it.</li>
+    <li><code>pip3 install &lt;package&gt;</code> now pulls through CodeArtifact — the package (and its dependencies) get cached in both the connected repo and the upstream repo.</li>
+    <li>Installing a different version of the same package caches that version too — multiple versions can coexist in the repo.</li>
+  </ol>
+
+  <p>Repository policies (read-only, read+publish, or full access) and domain policies can be applied for fine-grained access control across accounts/principals.</p>
+</section>
+
+<!-- CHEAT SHEET -->
+<section class="card cheatsheet" id="cheatsheet">
+  <h2><span class="badge">✓</span> Cheat Sheet</h2>
+
+  <h3>Key facts to remember</h3>
+  <ul>
+    <li>CI = test code automatically on every push; CD = automatically deploy code that passes tests, often through dev → test → staging → prod with optional manual approval gates.</li>
+    <li>CodeCommit: private, fully managed Git in your AWS account, IAM-controlled, no size limit.</li>
+    <li>CodePipeline orchestrates source → build → test → deploy stages; artifacts move between stages via S3, so services never need direct access to each other.</li>
+    <li>CodeBuild reads <code>buildspec.yml</code> (must be at repo root) with install/pre_build/build/post_build phases; runs in a container (prebuilt language image or your own Docker image).</li>
+    <li>CodeDeploy targets EC2/on-premises, Lambda, or ECS. EC2: in-place (batched updates) or blue/green (new ASG + cutover). Lambda/ECS: traffic-shifting via Linear/Canary/AllAtOnce between aliases or target groups.</li>
+    <li>A CodeDeploy rollback = a fresh deployment of the last known-good revision, not literally reverting time.</li>
+    <li>CodeArtifact proxies + caches public package repos (npm, pip, Maven, NuGet, etc.) inside your own domain/repos; cross-account access needs a resource policy and is all-or-nothing per repo.</li>
+    <li>appspec.yml (CodeDeploy) defines file mappings + lifecycle hooks (BeforeInstall, ApplicationStart, ApplicationStop, etc.); the EC2 instance needs the CodeDeploy agent + an IAM role with S3 read access.</li>
+  </ul>
+
+  <h3>Decision guide</h3>
+  <table>
+    <tr><th>Need</th><th>Use</th></tr>
+    <tr><td>Store source code privately within AWS</td><td>CodeCommit</td></tr>
+    <tr><td>Orchestrate a full source→build→test→deploy workflow</td><td>CodePipeline</td></tr>
+    <tr><td>Build/test code with custom logic per phase</td><td>CodeBuild + buildspec.yml</td></tr>
+    <tr><td>Deploy to EC2/on-prem with rollback safety</td><td>CodeDeploy (in-place or blue/green)</td></tr>
+    <tr><td>Gradually shift traffic between Lambda versions</td><td>CodeDeploy traffic-shifting (Linear/Canary/AllAtOnce)</td></tr>
+    <tr><td>Require a human check before deploying to prod</td><td>CodePipeline manual approval action</td></tr>
+    <tr><td>Manage internal + proxied third-party package dependencies</td><td>CodeArtifact</td></tr>
+  </table>
+
+  <h3>Mental model</h3>
+  <p>These four services map directly onto the four stages of CI/CD: CodeCommit is where code lives, CodeBuild is where it gets tested/compiled according to a checked-in recipe (buildspec.yml), CodeDeploy is where a tested build actually lands on real infrastructure (with in-place or blue/green safety nets and automatic rollback), and CodePipeline is the conductor that wires all of it — plus manual approval gates — into one repeatable, automatic path from "developer pushes code" to "code is safely running in production." CodeArtifact is a supporting player: it makes sure the dependencies all of this relies on are cached, secure, and won't vanish out from under a future build.</p>
+</section>
+
+<a class="back-to-top" href="#top">↑ Back to top</a>
+
+</div>
+</body>
+</html>

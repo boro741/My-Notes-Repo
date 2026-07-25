@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 31 — AWS Other Services — Notes</title>
+<style>
+  :root {
+    --accent: #e8830f;
+    --accent-dark: #c96a08;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --border: #e3e0da;
+    --text: #2b2a28;
+    --text-muted: #6b6a66;
+    --green: #2e7d32;
+    --green-bg: #eef7ee;
+    --red: #c0392b;
+    --red-bg: #fdecea;
+    --amber: #b8790a;
+    --amber-bg: #fff4e2;
+    --purple: #6a4fb3;
+    --purple-bg: #f3f0fb;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  header {
+    padding-bottom: 24px;
+    border-bottom: 3px solid var(--accent);
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 2rem;
+    color: var(--text);
+  }
+
+  header h1 span {
+    color: var(--accent);
+  }
+
+  header p.subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+  }
+
+  nav.toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 32px;
+  }
+
+  nav.toc h2 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  nav.toc ol {
+    margin: 0;
+    padding-left: 22px;
+    columns: 2;
+    column-gap: 24px;
+  }
+
+  nav.toc li {
+    margin-bottom: 6px;
+    break-inside: avoid;
+  }
+
+  nav.toc a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  nav.toc a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 24px;
+    scroll-margin-top: 20px;
+  }
+
+  .card h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 14px;
+    font-size: 1.3rem;
+    color: var(--text);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    color: var(--accent-dark);
+    font-size: 1.05rem;
+    margin: 20px 0 8px;
+  }
+
+  a { color: var(--accent-dark); }
+
+  code {
+    background: #f1eee7;
+    border: 1px solid #e6e2d8;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.92em;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    color: #7a4b00;
+  }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 0.94rem;
+  }
+
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f7f2ea;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) td {
+    background: #fcfbf9;
+  }
+
+  .callout {
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+
+  .callout strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .callout.tip {
+    background: var(--green-bg);
+    border-color: var(--green);
+  }
+  .callout.tip strong.tag { color: var(--green); }
+
+  .callout.warning {
+    background: var(--red-bg);
+    border-color: var(--red);
+  }
+  .callout.warning strong.tag { color: var(--red); }
+
+  .callout.key {
+    background: var(--amber-bg);
+    border-color: var(--amber);
+  }
+  .callout.key strong.tag { color: var(--amber); }
+
+  .analogy {
+    border: 1.5px dashed var(--purple);
+    background: var(--purple-bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+  .analogy strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--purple);
+  }
+
+  .diagram {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fdfcfa;
+    padding: 16px;
+    margin: 16px 0 6px;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  .diagram svg {
+    max-width: 100%;
+  }
+
+  .caption {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 4px 0 16px;
+    font-style: italic;
+  }
+
+  .cheatsheet {
+    border: 2px solid var(--accent);
+  }
+
+  .cheatsheet h2 { color: var(--accent-dark); }
+
+  .back-to-top {
+    display: block;
+    text-align: center;
+    margin-top: 36px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    text-decoration: none;
+  }
+  .back-to-top:hover { text-decoration: underline; }
+
+  .svg-box { fill: #fff; stroke: #c8917a; stroke-width: 1.5; }
+  .svg-box-accent { fill: #fff4e2; stroke: var(--accent); stroke-width: 1.5; }
+  .svg-box-gray { fill: #eeeeee; stroke: #b8b8b8; stroke-width: 1.5; }
+  .svg-text { font-family: -apple-system, sans-serif; font-size: 12px; fill: #2b2a28; }
+  .svg-label { font-family: -apple-system, sans-serif; font-size: 11px; fill: #6b6a66; }
+  .svg-arrow { stroke: #6b6a66; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header id="top">
+  <h1><span>Section 31</span> — AWS Other Services</h1>
+  <p class="subtitle">My notes on the grab-bag of exam-relevant services: SES, OpenSearch, Athena, MSK, ACM, Macie, and AppConfig.</p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#ses">AWS SES</a></li>
+    <li><a href="#opensearch">Amazon OpenSearch Service</a></li>
+    <li><a href="#athena">Amazon Athena</a></li>
+    <li><a href="#msk">Amazon MSK</a></li>
+    <li><a href="#acm">AWS Certificate Manager (ACM)</a></li>
+    <li><a href="#acm-private-ca">ACM Private CA</a></li>
+    <li><a href="#macie">Amazon Macie</a></li>
+    <li><a href="#appconfig">AWS AppConfig</a></li>
+    <li><a href="#cheatsheet">Cheat Sheet</a></li>
+  </ol>
+</nav>
+
+<!-- 1. SES -->
+<section class="card" id="ses">
+  <h2><span class="badge">1</span> AWS SES</h2>
+
+  <p><strong>SES (Simple Email Service)</strong> lets you send email using either an SMTP interface or the AWS SDK, and also <strong>receive</strong> email — with incoming mail integrating into S3, SNS, or Lambda for further processing. Access is controlled through ordinary IAM permissions.</p>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    SES = email. If a question is about sending or receiving email, SES is likely the answer; if it isn't about email at all, it almost certainly isn't SES.
+  </div>
+</section>
+
+<!-- 2. OPENSEARCH -->
+<section class="card" id="opensearch">
+  <h2><span class="badge">2</span> Amazon OpenSearch Service</h2>
+
+  <p><strong>OpenSearch</strong> is the successor to Amazon Elasticsearch (renamed for licensing reasons). Unlike DynamoDB, which you can only query by primary key or an index, OpenSearch lets you <strong>search any field</strong>, including partial matches — so it's commonly used as a search layer <em>alongside</em> another database, not as your primary data store. It also supports analytics queries on the same data, visualized through <strong>OpenSearch Dashboards</strong>.</p>
+
+  <ul>
+    <li>Two provisioning modes: a <strong>managed cluster</strong> (you see and manage the actual instances) or <strong>serverless</strong> (AWS handles scaling and operations entirely).</li>
+    <li>Has its own query language; SQL is only available via a plugin.</li>
+    <li>Ingests data from Kinesis Data Firehose, IoT, CloudWatch Logs, or a custom application.</li>
+    <li>Security via Cognito + IAM integration, with encryption at rest and in flight.</li>
+  </ul>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#6b6a66"/>
+        </marker>
+      </defs>
+      <rect class="svg-box" x="10" y="55" width="130" height="40" rx="6"/><text class="svg-text" x="75" y="79" text-anchor="middle" font-size="8">DynamoDB (source of truth)</text>
+      <path class="svg-arrow" d="M140,75 L250,75"/>
+      <text class="svg-label" x="195" y="65" text-anchor="middle" font-size="7">DynamoDB Streams</text>
+      <rect class="svg-box" x="250" y="55" width="110" height="40" rx="6"/><text class="svg-text" x="305" y="79" text-anchor="middle" font-size="8">Lambda</text>
+      <path class="svg-arrow" d="M360,75 L480,75"/>
+      <rect class="svg-box-accent" x="480" y="55" width="140" height="40" rx="6"/><text class="svg-text" x="550" y="79" text-anchor="middle" font-size="8">OpenSearch (search)</text>
+      <path class="svg-arrow" d="M690,90 C 640,120 300,130 145,95"/>
+      <text class="svg-label" x="400" y="135" text-anchor="middle" font-size="7">app: partial search → item ID → fetch full item from DynamoDB</text>
+      <rect class="svg-box-gray" x="620" y="55" width="130" height="40" rx="6"/><text class="svg-text" x="685" y="79" text-anchor="middle" font-size="8">Application</text>
+    </svg>
+  </div>
+  <p class="caption">A common pattern: DynamoDB stays the source of truth, while OpenSearch (kept in sync via Streams + Lambda) provides fast partial-match search back to the item's ID.</p>
+
+  <h3>Other ingestion patterns</h3>
+  <ul>
+    <li><strong>CloudWatch Logs</strong> → a subscription filter feeding a Lambda function in real time, or feeding <strong>Kinesis Data Firehose</strong> in near real time — either way, landing in OpenSearch.</li>
+    <li><strong>Kinesis Data Streams</strong> → either <strong>Kinesis Data Firehose</strong> (near real time, optional Lambda transform) or a custom Lambda consumer (real time) — both writing into OpenSearch.</li>
+  </ul>
+</section>
+
+<!-- 3. ATHENA -->
+<section class="card" id="athena">
+  <h2><span class="badge">3</span> Amazon Athena</h2>
+
+  <p><strong>Athena</strong> is a serverless query service (built on Presto) for analyzing data that lives directly in S3, using standard SQL — no data movement, no database to provision. Supports CSV, JSON, ORC, Avro, and Parquet. Pricing is a fixed amount per <strong>terabyte of data scanned</strong>. Commonly paired with <strong>Amazon QuickSight</strong> for dashboards (QuickSight → Athena → S3).</p>
+
+  <p><strong>Use cases:</strong> ad hoc queries, business intelligence, analytics/reporting, and analyzing AWS service logs (VPC flow logs, load balancer logs, CloudTrail trails).</p>
+
+  <h3>Performance tips (exam-relevant)</h3>
+  <ul>
+    <li>Use a <strong>columnar format</strong> (Parquet or ORC) — since you pay per TB scanned, only reading the columns you need saves money. Use <strong>Glue</strong> ETL jobs to convert other formats (e.g. CSV) into Parquet/ORC.</li>
+    <li><strong>Compress</strong> your data so there's less to scan.</li>
+    <li><strong>Partition</strong> your data by folder structure — e.g. <code>year=1991/month=01/day=01/</code> — so a query filtering on year/month/day only scans the matching folders instead of the whole dataset.</li>
+    <li>Use <strong>bigger files</strong> (128 MB+) rather than many small ones, to cut down scanning overhead.</li>
+  </ul>
+
+  <h3>Federated Query</h3>
+  <p>Athena can also query <strong>outside</strong> S3 — relational/non-relational databases, custom data sources, on AWS or on-premises — through a <strong>Data Source Connector</strong>: one Lambda function per source.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box-accent" x="10" y="55" width="130" height="40" rx="6"/><text class="svg-text" x="75" y="79" text-anchor="middle" font-size="9">Athena</text>
+      <path class="svg-arrow" d="M140,60 L270,30"/>
+      <path class="svg-arrow" d="M140,75 L270,75"/>
+      <path class="svg-arrow" d="M140,90 L270,120"/>
+      <rect class="svg-box" x="270" y="10" width="180" height="35" rx="6"/><text class="svg-text" x="360" y="32" text-anchor="middle" font-size="8">Data Source Connector (Lambda)</text>
+      <path class="svg-arrow" d="M450,27 L580,27"/>
+      <rect class="svg-box-gray" x="580" y="10" width="190" height="35" rx="6"/><text class="svg-text" x="675" y="32" text-anchor="middle" font-size="7">DynamoDB / Redshift / Aurora / SQL Server</text>
+      <rect class="svg-box" x="270" y="58" width="180" height="35" rx="6"/><text class="svg-text" x="360" y="80" text-anchor="middle" font-size="8">Amazon S3 (native)</text>
+      <rect class="svg-box" x="270" y="105" width="180" height="35" rx="6"/><text class="svg-text" x="360" y="127" text-anchor="middle" font-size="8">Data Source Connector (Lambda)</text>
+      <path class="svg-arrow" d="M450,122 L580,122"/>
+      <rect class="svg-box-gray" x="580" y="105" width="190" height="35" rx="6"/><text class="svg-text" x="675" y="127" text-anchor="middle" font-size="7">On-premises / ElastiCache / HBase-on-EMR</text>
+    </svg>
+  </div>
+  <p class="caption">Federated Query reaches beyond S3 into relational, non-relational, and on-premises sources through per-source Lambda connectors, then combines the results.</p>
+
+  <h3>Hands-on</h3>
+  <p>Set an S3 location for query results, create a database, then a table pointing at an S3 prefix (e.g. access logs), preview the data, and run aggregate SQL — e.g. counting requests grouped by HTTP status and URI, or filtering for <code>403</code>/<code>404</code> responses to spot anomalies like unauthorized access attempts.</p>
+</section>
+
+<!-- 4. MSK -->
+<section class="card" id="msk">
+  <h2><span class="badge">4</span> Amazon MSK</h2>
+
+  <p><strong>Amazon MSK (Managed Streaming for Apache Kafka)</strong> gives you a fully managed <strong>Kafka</strong> cluster — Kafka being an alternative to Kinesis for streaming data. MSK provisions and manages the Kafka broker and Zookeeper nodes across up to 3 AZs in your VPC for high availability, with automatic recovery from common failures; data is stored on EBS for as long as you want (even beyond a year, as long as you pay for the storage). <strong>MSK Serverless</strong> removes capacity planning entirely — AWS scales compute and storage for you.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="10" y="45" width="140" height="40" rx="6"/><text class="svg-text" x="80" y="69" text-anchor="middle" font-size="8">Producers</text>
+      <path class="svg-arrow" d="M150,65 L280,65"/>
+      <rect class="svg-box-accent" x="280" y="30" width="220" height="70" rx="8"/><text class="svg-text" x="390" y="55" text-anchor="middle" font-size="9">Kafka topic</text><text class="svg-label" x="390" y="72" text-anchor="middle" font-size="7">partitions, replicated</text><text class="svg-label" x="390" y="86" text-anchor="middle" font-size="7">across brokers</text>
+      <path class="svg-arrow" d="M500,65 L630,65"/>
+      <rect class="svg-box" x="630" y="45" width="140" height="40" rx="6"/><text class="svg-text" x="700" y="69" text-anchor="middle" font-size="8">Consumers</text>
+    </svg>
+  </div>
+  <p class="caption">Producers write to a Kafka topic (replicated across brokers); consumers pull from it — conceptually similar to Kinesis's shards, but called partitions.</p>
+
+  <table>
+    <tr><th></th><th>Kinesis Data Streams</th><th>Amazon MSK</th></tr>
+    <tr><td>Message size</td><td>1 MB default</td><td>Configurable, e.g. up to 10 MB</td></tr>
+    <tr><td>Scaling unit</td><td>Shards (split to scale up, merge to scale down)</td><td>Partitions (can only add, never remove)</td></tr>
+    <tr><td>In-flight encryption</td><td>Always encrypted</td><td>Plaintext or TLS, your choice</td></tr>
+    <tr><td>At-rest encryption</td><td>Supported</td><td>Supported</td></tr>
+    <tr><td>Retention</td><td>Standard limits apply</td><td>As long as you want, if you pay for EBS</td></tr>
+  </table>
+
+  <p><strong>Consuming from MSK:</strong> Kinesis Data Analytics for Apache Flink, Glue streaming ETL jobs (powered by Spark Streaming), Lambda (with MSK as an event source), or your own Kafka consumer running on EC2, ECS, or EKS.</p>
+</section>
+
+<!-- 5. ACM -->
+<section class="card" id="acm">
+  <h2><span class="badge">5</span> AWS Certificate Manager (ACM)</h2>
+
+  <p><strong>ACM</strong> provisions, manages, and deploys SSL/TLS certificates — used to add in-flight encryption (HTTPS) to your endpoints. Supports both public and private certificates; <strong>public certificates are free</strong>, and ACM handles <strong>automatic renewal</strong>. It integrates directly with load balancers, CloudFront distributions, and API Gateway, which load the certificate and handle TLS termination for you.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 120" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="10" y="45" width="130" height="40" rx="6"/><text class="svg-text" x="75" y="69" text-anchor="middle" font-size="8">ACM (TLS cert)</text>
+      <path class="svg-arrow" d="M140,55 L270,55"/>
+      <text class="svg-label" x="205" y="45" text-anchor="middle" font-size="7">loads cert onto</text>
+      <rect class="svg-box-accent" x="270" y="30" width="150" height="70" rx="8"/><text class="svg-text" x="345" y="55" text-anchor="middle" font-size="9">Load Balancer</text>
+      <path class="svg-arrow" d="M270,80 L140,95"/>
+      <text class="svg-label" x="200" y="110" text-anchor="middle" font-size="7">HTTPS from clients</text>
+      <path class="svg-arrow" d="M420,55 L560,55"/>
+      <text class="svg-label" x="490" y="45" text-anchor="middle" font-size="7">HTTP backend</text>
+      <rect class="svg-box" x="560" y="35" width="180" height="40" rx="6"/><text class="svg-text" x="650" y="59" text-anchor="middle" font-size="8">EC2 / Auto Scaling Group</text>
+    </svg>
+  </div>
+  <p class="caption">ACM loads a TLS certificate onto the load balancer, which then terminates HTTPS from clients while still talking plain HTTP to the backend.</p>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Anytime a question is about provisioning/renewing certificates or enabling HTTPS on an AWS-managed endpoint, think ACM.
+  </div>
+
+  <h3>Hands-on</h3>
+  <p>Request a public certificate for a domain hosted in Route 53, validate it via <strong>DNS validation</strong> (ACM can auto-create the required Route 53 record), then attach the issued certificate to an Elastic Beanstalk environment's load balancer — add an HTTPS:443 listener, pick the ACM certificate and a TLS policy. Finally, create a Route 53 <code>CNAME</code> pointing your custom domain at the environment's URL. No security group changes were needed; the ALB's listener rules in the EC2 console confirm the certificate is loaded from ACM.</p>
+</section>
+
+<!-- 6. ACM PRIVATE CA -->
+<section class="card" id="acm-private-ca">
+  <h2><span class="badge">6</span> ACM Private CA</h2>
+
+  <p>Beyond public certificates, ACM can also issue <strong>private</strong> certificates through an <strong>AWS Private Certificate Authority</strong> — a managed service where you create a root CA (and optionally subordinate CAs beneath it) to issue end-entity X.509 certificates for your own applications.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 110" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box-accent" x="10" y="35" width="130" height="40" rx="6"/><text class="svg-text" x="75" y="59" text-anchor="middle" font-size="8">Root CA</text>
+      <path class="svg-arrow" d="M140,55 L270,55"/>
+      <rect class="svg-box" x="270" y="35" width="150" height="40" rx="6"/><text class="svg-text" x="345" y="59" text-anchor="middle" font-size="8">Subordinate CA</text>
+      <path class="svg-arrow" d="M420,55 L550,55"/>
+      <rect class="svg-box" x="550" y="35" width="220" height="40" rx="6"/><text class="svg-text" x="660" y="55" text-anchor="middle" font-size="8">End-entity certs</text><text class="svg-label" x="660" y="70" text-anchor="middle" font-size="7">internal apps, users, IoT — never public</text>
+    </svg>
+  </div>
+  <p class="caption">A private CA hierarchy issues certificates trusted only within your organization — they cannot be deployed on the public internet.</p>
+
+  <ul>
+    <li>These certificates can still be loaded onto AWS services with ACM integration (load balancers, CloudFront, API Gateway, Kubernetes services), just like public ones.</li>
+    <li><strong>Use cases:</strong> internal TLS communication, cryptographically signing code, authenticating users/computers/API endpoints/IoT devices, or building an enterprise public key infrastructure (PKI).</li>
+  </ul>
+</section>
+
+<!-- 7. MACIE -->
+<section class="card" id="macie">
+  <h2><span class="badge">7</span> Amazon Macie</h2>
+
+  <p><strong>Macie</strong> is a fully managed data security and privacy service that uses machine learning and pattern matching to discover and protect sensitive data in AWS — most notably <strong>PII (personally identifiable information)</strong> sitting in your S3 buckets.</p>
+
+  <ul>
+    <li>Point Macie at the S3 buckets you want scanned — enabling it is essentially one click.</li>
+    <li>Discoveries are surfaced through <strong>EventBridge</strong>, which you can route onward to an SNS topic, a Lambda function, or anywhere else for alerting and automation.</li>
+  </ul>
+</section>
+
+<!-- 8. APPCONFIG -->
+<section class="card" id="appconfig">
+  <h2><span class="badge">8</span> AWS AppConfig</h2>
+
+  <p><strong>AppConfig</strong> lets you configure, validate, and dynamically deploy configuration into your applications — completely independent of a code deployment, and without restarting the app.</p>
+
+  <p>The classic use case is <strong>feature flags</strong>: ship your application with a new feature turned off (<code>false</code> in AppConfig), and later flip it on — the running application picks up the change automatically. The same mechanism works for tuning performance parameters, IP allow/block lists, or any other config an app needs to read at runtime. Works with apps on EC2, Lambda, ECS, and EKS.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 140" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="10" y="50" width="150" height="40" rx="6"/><text class="svg-text" x="85" y="74" text-anchor="middle" font-size="8">Config source</text><text class="svg-label" x="85" y="35" text-anchor="middle" font-size="7">Parameter Store / SSM docs / S3</text>
+      <path class="svg-arrow" d="M160,70 L280,70"/>
+      <rect class="svg-box-accent" x="280" y="50" width="150" height="40" rx="6"/><text class="svg-text" x="355" y="74" text-anchor="middle" font-size="8">AppConfig</text>
+      <path class="svg-arrow" d="M430,60 L560,35"/>
+      <text class="svg-label" x="495" y="30" text-anchor="middle" font-size="7">gradual rollout</text>
+      <rect class="svg-box" x="560" y="15" width="200" height="35" rx="6"/><text class="svg-text" x="660" y="37" text-anchor="middle" font-size="8">EC2 / Lambda / ECS / EKS apps</text>
+      <path class="svg-arrow" d="M660,50 L660,75"/>
+      <rect class="svg-box-gray" x="560" y="75" width="200" height="35" rx="6"/><text class="svg-text" x="660" y="97" text-anchor="middle" font-size="8">CloudWatch alarm</text>
+      <path class="svg-arrow" d="M560,95 L430,90"/>
+      <text class="svg-label" x="495" y="115" text-anchor="middle" font-size="7">triggers automatic rollback</text>
+    </svg>
+  </div>
+  <p class="caption">Configuration can roll out gradually across instances instead of all at once, with a CloudWatch alarm able to trigger an automatic rollback if something looks wrong.</p>
+
+  <p>Before deployment, a configuration can be <strong>validated</strong> using a JSON Schema (checking types/structure) or a Lambda function (for more complex custom validation logic).</p>
+</section>
+
+<!-- CHEAT SHEET -->
+<section class="card cheatsheet" id="cheatsheet">
+  <h2><span class="badge">✓</span> Cheat Sheet</h2>
+
+  <h3>Key facts to remember</h3>
+  <ul>
+    <li>SES sends and receives email (SMTP or SDK), integrating with S3/SNS/Lambda for incoming mail.</li>
+    <li>OpenSearch adds full/partial-field search and analytics on top of another database (commonly DynamoDB via Streams + Lambda); managed cluster or serverless.</li>
+    <li>Athena runs serverless SQL (Presto) directly over S3 data, billed per TB scanned; speed it up with columnar formats (Parquet/ORC), compression, partitioning, and larger files; Federated Query reaches non-S3 sources via per-source Lambda connectors.</li>
+    <li>MSK is managed Apache Kafka — an alternative to Kinesis — with brokers/Zookeeper across up to 3 AZs; MSK Serverless removes all capacity planning.</li>
+    <li>ACM provisions, auto-renews, and deploys public or private TLS certificates, integrating directly with ALB/NLB, CloudFront, and API Gateway.</li>
+    <li>ACM Private CA builds your own root/subordinate CA hierarchy for certificates that are trusted only internally, never on the public internet.</li>
+    <li>Macie uses ML to find PII/sensitive data in S3 and reports findings through EventBridge.</li>
+    <li>AppConfig dynamically deploys and validates application configuration (e.g. feature flags), with gradual rollout and CloudWatch-triggered rollback.</li>
+  </ul>
+
+  <h3>Decision guide</h3>
+  <table>
+    <tr><th>Need</th><th>Use</th></tr>
+    <tr><td>Send or receive transactional email</td><td>SES</td></tr>
+    <tr><td>Add full-text/partial search on top of an existing database</td><td>OpenSearch</td></tr>
+    <tr><td>Ad hoc SQL analytics directly on S3 data, no infrastructure</td><td>Athena</td></tr>
+    <tr><td>Need Kafka specifically (not Kinesis)</td><td>MSK</td></tr>
+    <tr><td>Need HTTPS on a load balancer, CloudFront, or API Gateway</td><td>ACM</td></tr>
+    <tr><td>Need certificates trusted only inside your organization</td><td>ACM Private CA</td></tr>
+    <tr><td>Need to find PII/sensitive data hiding in S3</td><td>Macie</td></tr>
+    <tr><td>Need to toggle features or change config without redeploying</td><td>AppConfig</td></tr>
+  </table>
+
+  <h3>Mental model</h3>
+  <p>This section is a grab-bag of services that each solve one narrow, well-defined problem: SES for email, OpenSearch for search layered on top of another database, Athena for ad hoc SQL directly on your S3 data lake, MSK for teams already committed to Kafka, ACM (and its private CA) for TLS certificate lifecycle management, Macie for finding sensitive data you didn't know was exposed, and AppConfig for changing application behavior without a redeploy. None of them need deep expertise for the exam — just enough to recognize which keyword in a question points to which service.</p>
+</section>
+
+<a class="back-to-top" href="#top">↑ Back to top</a>
+
+</div>
+</body>
+</html>

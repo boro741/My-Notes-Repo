@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 21 — AWS Serverless Lambda — Notes</title>
+<style>
+  :root {
+    --accent: #e8830f;
+    --accent-dark: #c96a08;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --border: #e3e0da;
+    --text: #2b2a28;
+    --text-muted: #6b6a66;
+    --green: #2e7d32;
+    --green-bg: #eef7ee;
+    --red: #c0392b;
+    --red-bg: #fdecea;
+    --amber: #b8790a;
+    --amber-bg: #fff4e2;
+    --purple: #6a4fb3;
+    --purple-bg: #f3f0fb;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  header {
+    padding-bottom: 24px;
+    border-bottom: 3px solid var(--accent);
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 2rem;
+    color: var(--text);
+  }
+
+  header h1 span {
+    color: var(--accent);
+  }
+
+  header p.subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+  }
+
+  nav.toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 32px;
+  }
+
+  nav.toc h2 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  nav.toc ol {
+    margin: 0;
+    padding-left: 22px;
+    columns: 2;
+    column-gap: 24px;
+  }
+
+  nav.toc li {
+    margin-bottom: 6px;
+    break-inside: avoid;
+  }
+
+  nav.toc a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  nav.toc a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 24px;
+    scroll-margin-top: 20px;
+  }
+
+  .card h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 14px;
+    font-size: 1.3rem;
+    color: var(--text);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    color: var(--accent-dark);
+    font-size: 1.05rem;
+    margin: 20px 0 8px;
+  }
+
+  a { color: var(--accent-dark); }
+
+  code {
+    background: #f1eee7;
+    border: 1px solid #e6e2d8;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.92em;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    color: #7a4b00;
+  }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 0.94rem;
+  }
+
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f7f2ea;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) td {
+    background: #fcfbf9;
+  }
+
+  .callout {
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+
+  .callout strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .callout.tip {
+    background: var(--green-bg);
+    border-color: var(--green);
+  }
+  .callout.tip strong.tag { color: var(--green); }
+
+  .callout.warning {
+    background: var(--red-bg);
+    border-color: var(--red);
+  }
+  .callout.warning strong.tag { color: var(--red); }
+
+  .callout.key {
+    background: var(--amber-bg);
+    border-color: var(--amber);
+  }
+  .callout.key strong.tag { color: var(--amber); }
+
+  .analogy {
+    border: 1.5px dashed var(--purple);
+    background: var(--purple-bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+  .analogy strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--purple);
+  }
+
+  .diagram {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fdfcfa;
+    padding: 16px;
+    margin: 16px 0 6px;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  .diagram svg {
+    max-width: 100%;
+  }
+
+  .caption {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 4px 0 16px;
+    font-style: italic;
+  }
+
+  .cheatsheet {
+    border: 2px solid var(--accent);
+  }
+
+  .cheatsheet h2 { color: var(--accent-dark); }
+
+  .back-to-top {
+    display: block;
+    text-align: center;
+    margin-top: 36px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    text-decoration: none;
+  }
+  .back-to-top:hover { text-decoration: underline; }
+
+  .svg-box { fill: #fff; stroke: #c8917a; stroke-width: 1.5; }
+  .svg-box-accent { fill: #fff4e2; stroke: var(--accent); stroke-width: 1.5; }
+  .svg-box-gray { fill: #eeeeee; stroke: #b8b8b8; stroke-width: 1.5; }
+  .svg-text { font-family: -apple-system, sans-serif; font-size: 12px; fill: #2b2a28; }
+  .svg-label { font-family: -apple-system, sans-serif; font-size: 11px; fill: #6b6a66; }
+  .svg-arrow { stroke: #6b6a66; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header id="top">
+  <h1><span>Section 21</span> — AWS Serverless: Lambda</h1>
+  <p class="subtitle">My notes on going all-in on serverless — invocation types, event sources, performance, networking, versioning, and deployment for Lambda.</p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#serverless-intro">Serverless Introduction</a></li>
+    <li><a href="#lambda-overview">Lambda Overview & First Hands On</a></li>
+    <li><a href="#sync">Synchronous Invocations</a></li>
+    <li><a href="#alb">Lambda & Application Load Balancer</a></li>
+    <li><a href="#async">Asynchronous Invocations & DLQ</a></li>
+    <li><a href="#eventbridge">Lambda & EventBridge</a></li>
+    <li><a href="#s3-events">Lambda & S3 Event Notifications</a></li>
+    <li><a href="#event-source-mapping">Event Source Mapping</a></li>
+    <li><a href="#event-context">Event & Context Objects</a></li>
+    <li><a href="#destinations">Lambda Destinations</a></li>
+    <li><a href="#permissions">Permissions: IAM Roles & Resource Policies</a></li>
+    <li><a href="#env-vars">Environment Variables</a></li>
+    <li><a href="#xray">Monitoring & X-Ray Tracing</a></li>
+    <li><a href="#edge">Lambda@Edge & CloudFront Functions</a></li>
+    <li><a href="#vpc">Lambda in a VPC</a></li>
+    <li><a href="#performance">Function Performance</a></li>
+    <li><a href="#layers">Lambda Layers</a></li>
+    <li><a href="#filesystems">File System Mounting (EFS)</a></li>
+    <li><a href="#concurrency">Concurrency & Cold Starts</a></li>
+    <li><a href="#dependencies">External Dependencies</a></li>
+    <li><a href="#cloudformation">Lambda & CloudFormation</a></li>
+    <li><a href="#containers">Lambda Container Images</a></li>
+    <li><a href="#versions">Versions & Aliases</a></li>
+    <li><a href="#codedeploy">Lambda & CodeDeploy</a></li>
+    <li><a href="#function-url">Lambda Function URL</a></li>
+    <li><a href="#limits">Limits & Best Practices</a></li>
+    <li><a href="#cheatsheet">Cheat Sheet</a></li>
+  </ol>
+</nav>
+
+<!-- 1. SERVERLESS INTRO -->
+<section class="card" id="serverless-intro">
+  <h2><span class="badge">1</span> Serverless Introduction</h2>
+
+  <p><strong>Serverless</strong> doesn't mean there are no servers — it means <em>you</em> don't manage or provision them. Originally "serverless" meant Function-as-a-Service (Lambda), but it now covers anything remotely managed: databases, messaging, storage — as long as you never provision a server yourself.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#6b6a66"/>
+        </marker>
+      </defs>
+      <rect class="svg-box" x="20" y="45" width="110" height="40" rx="6"/><text class="svg-text" x="75" y="69" text-anchor="middle" font-size="9">User</text>
+      <path class="svg-arrow" d="M130,65 L220,65"/>
+      <rect class="svg-box-accent" x="220" y="45" width="120" height="40" rx="6"/><text class="svg-text" x="280" y="69" text-anchor="middle" font-size="9">S3 + CloudFront</text>
+      <path class="svg-arrow" d="M340,65 L430,65"/>
+      <rect class="svg-box-accent" x="430" y="45" width="120" height="40" rx="6"/><text class="svg-text" x="490" y="69" text-anchor="middle" font-size="9">API Gateway</text>
+      <path class="svg-arrow" d="M550,65 L640,65"/>
+      <rect class="svg-box-accent" x="640" y="45" width="120" height="40" rx="6"/><text class="svg-text" x="700" y="69" text-anchor="middle" font-size="9">Lambda → DynamoDB</text>
+    </svg>
+  </div>
+  <p class="caption">A typical serverless reference architecture: static content from S3/CloudFront, auth via Cognito, a REST API through API Gateway invoking Lambda, which reads/writes DynamoDB — no servers provisioned anywhere.</p>
+
+  <p>Other serverless AWS building blocks already covered in this course: <strong>SQS</strong>, <strong>SNS</strong>, <strong>Kinesis Data Firehose</strong>, <strong>Aurora Serverless</strong>, <strong>Step Functions</strong>, and <strong>Fargate</strong> (the serverless flavor of ECS).</p>
+</section>
+
+<!-- 2. LAMBDA OVERVIEW -->
+<section class="card" id="lambda-overview">
+  <h2><span class="badge">2</span> Lambda Overview & First Hands On</h2>
+
+  <table>
+    <tr><th></th><th>EC2</th><th>Lambda</th></tr>
+    <tr><td>Servers</td><td>Provisioned by you, run continuously</td><td>None to manage — "virtual functions"</td></tr>
+    <tr><td>Scaling</td><td>Manual/ASG</td><td>Fully automated</td></tr>
+    <tr><td>Billing</td><td>While running (whether used or not)</td><td>Only while the function actually executes</td></tr>
+    <tr><td>Execution time</td><td>Unlimited</td><td>Limited — up to 15 minutes per invocation</td></tr>
+  </table>
+
+  <h3>Pricing</h3>
+  <ul>
+    <li><strong>Free tier</strong>: 1 million requests + 400,000 GB-seconds of compute time per month.</li>
+    <li>Pay per request (first 1M free, then $0.20 per extra 1M) + per duration in 1ms increments.</li>
+    <li>More RAM = fewer free seconds included, but also more CPU — it's usually still very cheap.</li>
+  </ul>
+
+  <h3>Languages & runtimes</h3>
+  <p>Node.js, Python, Java, C# (.NET Core/PowerShell), Ruby natively; Rust/Go and others via a <strong>custom runtime API</strong>; and container images (must implement the Lambda Runtime API).</p>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Even though Lambda supports some level of custom Docker images, running Docker workloads is generally <strong>preferred on ECS/Fargate</strong> over Lambda from an exam perspective.
+  </div>
+
+  <h3>RAM</h3>
+  <p>Up to 10GB of RAM per function — and more RAM also improves CPU and network performance.</p>
+
+  <h3>Classic patterns</h3>
+  <ul>
+    <li><strong>Serverless thumbnail generation</strong>: S3 upload → event notification → Lambda generates a thumbnail → uploads it back to S3 + writes metadata to DynamoDB.</li>
+    <li><strong>Serverless cron</strong>: an EventBridge scheduled rule triggers a Lambda function on a schedule (e.g. hourly) — no EC2 instance sitting idle between runs.</li>
+  </ul>
+
+  <h3>Hands-on basics</h3>
+  <p>Create a function from a blueprint, give it an <strong>execution role</strong> (like an EC2 instance role, but for Lambda), test it with a sample JSON event, and view its logs directly in CloudWatch Logs. The role determines what the function can access — e.g. the basic execution role only allows writing to CloudWatch Logs.</p>
+</section>
+
+<!-- 3. SYNC -->
+<section class="card" id="sync">
+  <h2><span class="badge">3</span> Synchronous Invocations</h2>
+
+  <p>Synchronous means the caller <strong>waits</strong> for the result — and must handle any errors itself (retry, backoff, etc.).</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 100" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="30" width="150" height="40" rx="6"/><text class="svg-text" x="95" y="54" text-anchor="middle" font-size="10">CLI / SDK / ALB / API GW</text>
+      <path class="svg-arrow" d="M170,45 L300,45"/>
+      <text class="svg-label" x="235" y="35" text-anchor="middle" font-size="9">invoke, wait...</text>
+      <rect class="svg-box-accent" x="300" y="30" width="140" height="40" rx="6"/><text class="svg-text" x="370" y="54" text-anchor="middle" font-size="10">Lambda function</text>
+      <path class="svg-arrow" d="M300,65 L170,65"/>
+      <text class="svg-label" x="235" y="80" text-anchor="middle" font-size="9">...result returned</text>
+    </svg>
+  </div>
+  <p class="caption">Synchronous invocation: the caller blocks until Lambda finishes and hands back a result — errors are the caller's responsibility.</p>
+
+  <p>Services that invoke Lambda synchronously: CLI/SDK, <strong>Application Load Balancer</strong>, <strong>API Gateway</strong>, CloudFront (Lambda@Edge), plus (not covered hands-on here) S3 Batch, Cognito, Step Functions, Lex, Alexa, Kinesis Data Firehose.</p>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    Testing a function from the console ("Test" button) or via <code>aws lambda invoke</code> in the CLI is itself a synchronous invocation — you wait right there for the response JSON.
+  </div>
+</section>
+
+<!-- 4. ALB -->
+<section class="card" id="alb">
+  <h2><span class="badge">4</span> Lambda & Application Load Balancer</h2>
+
+  <p>To expose a Lambda function as an HTTP(S) endpoint without API Gateway, register it in an ALB <strong>target group</strong> (target type = Lambda function). The ALB converts the HTTP request into a JSON document for Lambda, and converts Lambda's JSON response back into HTTP.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 100" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="30" width="140" height="40" rx="6"/><text class="svg-text" x="90" y="54" text-anchor="middle" font-size="10">HTTP Request</text>
+      <path class="svg-arrow" d="M160,50 L280,50"/>
+      <rect class="svg-box-accent" x="280" y="30" width="140" height="40" rx="6"/><text class="svg-text" x="350" y="54" text-anchor="middle" font-size="10">ALB</text>
+      <path class="svg-arrow" d="M420,50 L540,50"/>
+      <text class="svg-label" x="480" y="40" text-anchor="middle" font-size="9">converted to JSON</text>
+      <rect class="svg-box" x="540" y="30" width="140" height="40" rx="6"/><text class="svg-text" x="610" y="54" text-anchor="middle" font-size="10">Lambda</text>
+    </svg>
+  </div>
+  <p class="caption">The ALB translates the HTTP method, path, query string, headers, and body into a JSON event; the Lambda response (status code, headers, body) gets converted back into a real HTTP response.</p>
+
+  <ul>
+    <li>The Lambda response must include <code>statusCode</code>, <code>headers</code>, <code>body</code>, and <code>isBase64Encoded</code>.</li>
+    <li>Set the <code>Content-Type</code> header (e.g. <code>text/html</code>) so the browser renders the body instead of downloading it.</li>
+    <li><strong>Multi-value headers</strong>: an ALB target group setting that preserves repeated headers/query string keys as arrays instead of picking just one value.</li>
+  </ul>
+
+  <p>The ALB is authorized to invoke the function via a <strong>resource-based policy</strong> automatically attached to the Lambda function (visible under Configuration → Permissions).</p>
+</section>
+
+<!-- 5. ASYNC -->
+<section class="card" id="async">
+  <h2><span class="badge">5</span> Asynchronous Invocations & DLQ</h2>
+
+  <p>Services like S3, SNS, and EventBridge invoke Lambda <strong>asynchronously</strong> — events land in an internal event queue first.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="45" width="120" height="40" rx="6"/><text class="svg-text" x="80" y="69" text-anchor="middle" font-size="9">S3 / SNS / EventBridge</text>
+      <path class="svg-arrow" d="M140,65 L240,65"/>
+      <rect class="svg-box-accent" x="240" y="45" width="130" height="40" rx="6"/><text class="svg-text" x="305" y="69" text-anchor="middle" font-size="9">Internal Event Queue</text>
+      <path class="svg-arrow" d="M370,65 L470,65"/>
+      <rect class="svg-box" x="470" y="45" width="120" height="40" rx="6"/><text class="svg-text" x="530" y="69" text-anchor="middle" font-size="9">Lambda (3 tries: now, +1m, +2m)</text>
+      <path class="svg-arrow" d="M530,85 L530,105"/>
+      <rect class="svg-box-accent" x="440" y="105" width="180" height="25" rx="5"/><text class="svg-text" x="530" y="122" text-anchor="middle" font-size="9">DLQ (SQS/SNS) if all retries fail</text>
+    </svg>
+  </div>
+  <p class="caption">Asynchronous invocations queue internally and retry automatically (immediately, then after 1 minute, then after 2 more) before optionally landing in a dead-letter queue.</p>
+
+  <div class="callout warning">
+    <strong class="tag">Important</strong>
+    Because of automatic retries, your function <strong>must be idempotent</strong> — processing the same event twice should produce the same result, since duplicate log entries and duplicate processing are expected behavior, not a bug.
+  </div>
+
+  <ul>
+    <li>Asynchronous invocation is used when the service has no other choice, or when you want to fire off many jobs in parallel without waiting on each individually.</li>
+    <li>Asynchronous services: S3 event notifications, SNS, EventBridge/CloudWatch Events (also CodeCommit, CodePipeline, CloudWatch Logs, SES, CloudFormation, Config, IoT — less central to this course).</li>
+    <li>A synchronous <em>test</em> invocation of a function set up for async processing always returns <code>202</code> whether it ultimately succeeds or fails — you can't tell from that response alone; check CloudWatch Logs or the DLQ.</li>
+  </ul>
+
+  <p>Configure a <strong>DLQ</strong> (SQS or SNS) under the function's asynchronous invocation settings, along with the number of retry attempts (0, 1, or 2). The failed message includes the error cause and request ID for debugging.</p>
+</section>
+
+<!-- 6. EVENTBRIDGE -->
+<section class="card" id="eventbridge">
+  <h2><span class="badge">6</span> Lambda & EventBridge</h2>
+
+  <p>Two common patterns: a <strong>serverless cron/rate</strong> schedule (e.g. every hour, or every minute for testing) invoking a Lambda function, or a rule that reacts to a specific event pattern (e.g. a CodePipeline state change).</p>
+
+  <p>Hands-on: create an <strong>EventBridge Schedule</strong> (rate- or cron-based, one-time or recurring) with target = <code>Lambda: Invoke</code>. EventBridge automatically creates an execution role granting itself permission to invoke your function. The event passed to Lambda includes the schedule's source, account, region, and the triggering resource.</p>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    Disable test schedules when you're done — an active 1-minute schedule will keep invoking your function forever.
+  </div>
+</section>
+
+<!-- 7. S3 EVENTS -->
+<section class="card" id="s3-events">
+  <h2><span class="badge">7</span> Lambda & S3 Event Notifications</h2>
+
+  <p>S3 events can go to <strong>SNS</strong> (for fan-out to multiple SQS queues), <strong>SQS</strong> (Lambda polls it), or <strong>directly invoke Lambda</strong> asynchronously.</p>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    S3 event delivery is usually within seconds but can occasionally take longer. If two writes to the same object happen at the exact same instant, you may only get one notification instead of two — enable <strong>bucket versioning</strong> to avoid missing an event.
+  </div>
+
+  <p>Hands-on: an S3 bucket's event notification (all object-create events) targets a Lambda function directly. S3 is granted invoke permission via a <strong>resource-based policy</strong> automatically added to the function. The event payload includes the bucket name, region, object key, size, and ETag — enough for the function to call <code>GetObject</code> and process the file.</p>
+</section>
+
+<!-- 8. EVENT SOURCE MAPPING -->
+<section class="card" id="event-source-mapping">
+  <h2><span class="badge">8</span> Event Source Mapping</h2>
+
+  <p>The third invocation category — for sources where Lambda must actively <strong>poll</strong>: <strong>Kinesis Data Streams</strong>, <strong>SQS</strong>/<strong>SQS FIFO</strong>, and <strong>DynamoDB Streams</strong>. Despite the polling, the actual function invocation is <strong>synchronous</strong>.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 100" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="30" width="150" height="40" rx="6"/><text class="svg-text" x="95" y="54" text-anchor="middle" font-size="9">Kinesis / SQS / DynamoDB Streams</text>
+      <path class="svg-arrow" d="M170,50 L300,50"/>
+      <text class="svg-label" x="235" y="40" text-anchor="middle" font-size="9">poll for batch</text>
+      <rect class="svg-box-accent" x="300" y="30" width="170" height="40" rx="6"/><text class="svg-text" x="385" y="54" text-anchor="middle" font-size="10">Event Source Mapping</text>
+      <path class="svg-arrow" d="M470,50 L590,50"/>
+      <text class="svg-label" x="530" y="40" text-anchor="middle" font-size="9">invoke sync w/ batch</text>
+      <rect class="svg-box" x="590" y="30" width="140" height="40" rx="6"/><text class="svg-text" x="660" y="54" text-anchor="middle" font-size="9">Lambda</text>
+    </svg>
+  </div>
+  <p class="caption">The Event Source Mapping is the piece that actively polls Kinesis/SQS/DynamoDB Streams, then synchronously invokes your Lambda function with a batch of records.</p>
+
+  <h3>Streams (Kinesis, DynamoDB Streams)</h3>
+  <ul>
+    <li>One iterator per shard; items processed <strong>in order at the shard level</strong>. Choose to read new items, from the beginning, or from a timestamp.</li>
+    <li>Items are <strong>not removed</strong> from the stream after processing — other consumers can still read them.</li>
+    <li>Up to <strong>10 parallel batch processors per shard</strong> — in-order processing is then guaranteed at the <em>partition key</em> level, not the whole shard.</li>
+    <li>On error, by default the <strong>entire batch is retried</strong> until it succeeds or expires — this can block the affected shard. Mitigate with: discard old events, limit retries, split the batch on errors, or send failures to a destination.</li>
+  </ul>
+
+  <h3>Queues (SQS, SQS FIFO)</h3>
+  <ul>
+    <li>Polled using <strong>long polling</strong>; batch size 1–10 messages.</li>
+    <li>Recommended: set the queue's visibility timeout to <strong>6× the Lambda function's timeout</strong>.</li>
+    <li>DLQ for SQS-sourced failures is set <strong>on the SQS queue itself</strong>, not on Lambda — Lambda's own DLQ setting only applies to asynchronous invocations, and this is a synchronous one (or use a Lambda destination for failures instead).</li>
+    <li><strong>Standard queue</strong>: no ordering guarantee, Lambda scales as fast as possible (+60 instances/min... actually +16 instances/min, up to 1,000 batches/sec). Occasionally the same message may be received twice even without an error.</li>
+    <li><strong>FIFO queue</strong>: strict order per message group ID; Lambda scales up to the number of active message groups.</li>
+  </ul>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Kinesis/DynamoDB Streams scaling = 1 invocation per shard (or up to 10 parallel batches per shard). SQS Standard scales up fast (adds ~16 instances/min, up to 1,000 batches/sec concurrently). SQS FIFO scales to the number of active message groups.
+  </div>
+</section>
+
+<!-- 9. EVENT CONTEXT -->
+<section class="card" id="event-context">
+  <h2><span class="badge">9</span> Event & Context Objects</h2>
+
+  <table>
+    <tr><th>Object</th><th>Contains</th></tr>
+    <tr><td><code>event</code></td><td>The data the invoking service passed in (JSON → converted to a native object, e.g. a Python dict) — the actual payload to process</td></tr>
+    <tr><td><code>context</code></td><td>Metadata about the invocation/runtime itself — AWS request ID, function name/ARN, memory limit, CloudWatch log group/stream name, etc.</td></tr>
+  </table>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    If the exam asks "where would you find X" — data about the triggering event → <code>event</code>; data about the function's own execution environment → <code>context</code>.
+  </div>
+</section>
+
+<!-- 10. DESTINATIONS -->
+<section class="card" id="destinations">
+  <h2><span class="badge">10</span> Lambda Destinations</h2>
+
+  <p>A newer (Nov 2019) alternative/complement to DLQs — send the <strong>result</strong> (success or failure) of processing somewhere, with richer targets than a DLQ alone.</p>
+
+  <table>
+    <tr><th></th><th>DLQ</th><th>Destinations</th></tr>
+    <tr><td>Covers</td><td>Failures only</td><td>Both success and failure</td></tr>
+    <tr><td>Targets</td><td>SQS, SNS</td><td>SQS, SNS, Lambda, EventBridge</td></tr>
+    <tr><td>Applies to</td><td>Async invocations</td><td>Async invocations (success/failure) and Event Source Mapping (discarded batches)</td></tr>
+  </table>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 110" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box-accent" x="280" y="35" width="180" height="40" rx="6"/><text class="svg-text" x="370" y="59" text-anchor="middle" font-size="10">Lambda (async)</text>
+      <path class="svg-arrow" d="M280,50 L140,30"/>
+      <rect class="svg-box" x="20" y="10" width="120" height="30" rx="5"/><text class="svg-text" x="80" y="30" text-anchor="middle" font-size="9">On Success →</text>
+      <path class="svg-arrow" d="M280,60 L140,90"/>
+      <rect class="svg-box" x="20" y="75" width="120" height="30" rx="5"/><text class="svg-text" x="80" y="95" text-anchor="middle" font-size="9">On Failure →</text>
+      <rect class="svg-box" x="600" y="10" width="160" height="80" rx="6"/>
+      <text class="svg-text" x="680" y="35" text-anchor="middle" font-size="9">SQS</text>
+      <text class="svg-text" x="680" y="55" text-anchor="middle" font-size="9">SNS</text>
+      <text class="svg-text" x="680" y="75" text-anchor="middle" font-size="9">Lambda / EventBridge</text>
+      <path class="svg-arrow" d="M460,55 L600,50"/>
+    </svg>
+  </div>
+  <p class="caption">Destinations let you route the outcome of an async invocation (success or failure) to any of SQS, SNS, another Lambda function, or an EventBridge bus — richer than the DLQ's SQS/SNS-only, failure-only scope.</p>
+
+  <p>Hands-on: configure separate success and failure destinations (e.g. two SQS queues). The success message includes the full request context and response payload; the failure message includes the error cause, invoke count, the record that caused the failure, and a stack trace.</p>
+</section>
+
+<!-- 11. PERMISSIONS -->
+<section class="card" id="permissions">
+  <h2><span class="badge">11</span> Permissions: IAM Roles & Resource Policies</h2>
+
+  <table>
+    <tr><th></th><th>Execution Role</th><th>Resource-Based Policy</th></tr>
+    <tr><td>Direction</td><td>Lambda → other AWS services (Lambda is the caller)</td><td>Other accounts/services → Lambda (Lambda is the callee)</td></tr>
+    <tr><td>Use case</td><td>Reading from an event source (SQS, Kinesis, DynamoDB Streams), or calling S3/DynamoDB/etc. from your code</td><td>S3/SNS/EventBridge invoking your function, or cross-account access</td></tr>
+    <tr><td>Managed policies</td><td><code>AWSLambdaBasicExecutionRole</code> (CloudWatch Logs), <code>...KinesisExecutionRole</code>, <code>...DynamoDBExecutionRole</code>, <code>...SQSQueueExecutionRole</code>, <code>...VPCAccessExecutionRole</code>, <code>AWSXRayDaemonWriteAccess</code></td><td>—</td></tr>
+  </table>
+
+  <div class="callout tip">
+    <strong class="tag">Best practice</strong>
+    Create <strong>one execution role per function</strong>, scoped to only what it needs.
+  </div>
+
+  <p>Hands-on distinction confirmed: a function invoked <em>by</em> S3 or EventBridge has a resource-based policy statement (visible under Configuration → Permissions); a function that <em>polls</em> SQS instead just needs the right permissions in its own execution role — no resource policy involved, since SQS never calls Lambda directly.</p>
+</section>
+
+<!-- 12. ENV VARS -->
+<section class="card" id="env-vars">
+  <h2><span class="badge">12</span> Environment Variables</h2>
+
+  <p>Key-value string pairs that adjust function behavior without code changes. Lambda also injects its own system environment variables alongside yours. Can be encrypted with KMS (the Lambda service key, or your own CMK) for secrets.</p>
+
+  <p>Hands-on: reading <code>os.getenv("ENVIRONMENT_NAME")</code> and changing its value from <code>dev</code> to <code>prod</code> in the console changes the function's output <strong>without touching the code</strong> — demonstrating the whole point of environment variables.</p>
+</section>
+
+<!-- 13. XRAY -->
+<section class="card" id="xray">
+  <h2><span class="badge">13</span> Monitoring & X-Ray Tracing</h2>
+
+  <ul>
+    <li>Lambda execution logs go to <strong>CloudWatch Logs</strong> automatically (given the right IAM permission).</li>
+    <li><strong>CloudWatch Metrics</strong>: invocations, duration, concurrent executions, error count, success rate, throttles, async delivery failures, and (for streams) <strong>iterator age</strong> — how far behind you are in reading a stream.</li>
+    <li><strong>X-Ray</strong>: enable "Active Tracing" in configuration — runs the X-Ray daemon for you. You still need the X-Ray SDK in your code and the <code>AWSXRayDaemonWriteAccess</code> permission. Relevant env vars include <code>AWS_XRAY_DAEMON_ADDRESS</code> (where the daemon is).</li>
+  </ul>
+
+  <p>Hands-on: enabling active tracing + attaching the S3-read permission lets you see, in the X-Ray service map, exactly which calls succeeded (green) and which failed (e.g. a 403 Access Denied on <code>ListBuckets</code>) — with full stack traces per request.</p>
+</section>
+
+<!-- 14. EDGE -->
+<section class="card" id="edge">
+  <h2><span class="badge">14</span> Lambda@Edge & CloudFront Functions</h2>
+
+  <p>Run logic at CloudFront edge locations, close to users, before/after the request reaches your origin.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 100" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="30" width="120" height="40" rx="6"/><text class="svg-text" x="80" y="54" text-anchor="middle" font-size="9">Client</text>
+      <path class="svg-arrow" d="M140,45 L250,45"/>
+      <text class="svg-label" x="195" y="35" text-anchor="middle" font-size="8">viewer request</text>
+      <rect class="svg-box-accent" x="250" y="20" width="140" height="70" rx="6"/><text class="svg-text" x="320" y="58" text-anchor="middle" font-size="10">CloudFront Edge</text>
+      <path class="svg-arrow" d="M390,45 L500,45"/>
+      <text class="svg-label" x="445" y="35" text-anchor="middle" font-size="8">origin request</text>
+      <rect class="svg-box" x="500" y="30" width="120" height="40" rx="6"/><text class="svg-text" x="560" y="54" text-anchor="middle" font-size="9">Origin</text>
+      <path class="svg-arrow" d="M620,65 L390,65" stroke-dasharray="3,3"/>
+      <text class="svg-label" x="500" y="85" text-anchor="middle" font-size="8">origin response → viewer response</text>
+    </svg>
+  </div>
+  <p class="caption">Four possible hook points: viewer request, origin request, origin response, viewer response — CloudFront Functions only touch the viewer hooks; Lambda@Edge can touch all four.</p>
+
+  <table>
+    <tr><th></th><th>CloudFront Functions</th><th>Lambda@Edge</th></tr>
+    <tr><td>Language</td><td>JavaScript only</td><td>Node.js, Python</td></tr>
+    <tr><td>Scale</td><td>Millions of req/sec</td><td>Thousands of req/sec</td></tr>
+    <tr><td>Trigger points</td><td>Viewer request/response only</td><td>Viewer + origin request/response (all four)</td></tr>
+    <tr><td>Max execution time</td><td>&lt;1 millisecond</td><td>5–10 seconds</td></tr>
+    <tr><td>Resources</td><td>None — extremely lightweight</td><td>Adjustable CPU/memory, third-party libraries, network access, file system access</td></tr>
+    <tr><td>Use cases</td><td>Cache key normalization, header manipulation, URL rewrites, JWT validation</td><td>Dynamic web apps, SEO, A/B testing, auth, image transforms, bot mitigation</td></tr>
+    <tr><td>Authoring region</td><td>—</td><td>Authored in us-east-1, replicated globally by CloudFront</td></tr>
+  </table>
+</section>
+
+<!-- 15. VPC -->
+<section class="card" id="vpc">
+  <h2><span class="badge">15</span> Lambda in a VPC</h2>
+
+  <p>By default, Lambda runs in an AWS-owned VPC — it <strong>cannot</strong> reach resources in your own VPC (private RDS, ElastiCache, internal ALB, etc.) unless you explicitly attach it.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 170" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="20" width="140" height="40" rx="6"/><text class="svg-text" x="90" y="44" text-anchor="middle" font-size="9">Lambda (in VPC)</text>
+      <path class="svg-arrow" d="M160,40 L280,40"/>
+      <rect class="svg-box-accent" x="280" y="20" width="140" height="40" rx="6"/><text class="svg-text" x="350" y="44" text-anchor="middle" font-size="9">ENI (private subnet)</text>
+      <path class="svg-arrow" d="M420,40 L540,40"/>
+      <rect class="svg-box" x="540" y="20" width="140" height="40" rx="6"/><text class="svg-text" x="610" y="44" text-anchor="middle" font-size="9">RDS / ElastiCache</text>
+
+      <path class="svg-arrow" d="M280,60 L280,100"/>
+      <rect class="svg-box" x="180" y="105" width="200" height="35" rx="5"/><text class="svg-text" x="280" y="127" text-anchor="middle" font-size="9">NAT Gateway (public subnet)</text>
+      <path class="svg-arrow" d="M380,122 L500,122"/>
+      <rect class="svg-box" x="500" y="105" width="140" height="35" rx="5"/><text class="svg-text" x="570" y="127" text-anchor="middle" font-size="9">Internet Gateway → external API</text>
+
+      <path class="svg-arrow" d="M280,140 L280,155"/>
+      <rect class="svg-box" x="150" y="150" width="260" height="20" rx="4"/><text class="svg-text" x="280" y="164" text-anchor="middle" font-size="8">VPC Endpoint → DynamoDB (private, no NAT needed)</text>
+    </svg>
+  </div>
+  <p class="caption">Attaching Lambda to a VPC gets it an ENI to reach private resources, but that same VPC attachment removes internet access unless you route through a NAT gateway/instance in a public subnet — or use a VPC endpoint for private access to AWS services like DynamoDB.</p>
+
+  <div class="callout warning">
+    <strong class="tag">Important exam point</strong>
+    Unlike EC2, deploying a Lambda function in a <strong>public subnet does NOT give it internet access or a public IP</strong>. To reach the internet, deploy it in a private subnet with a NAT gateway/instance in a public subnet.
+  </div>
+
+  <ul>
+    <li>Requires defining VPC ID, subnets, and a security group; the function needs the <code>AWSLambdaVPCAccessExecutionRole</code> to create the ENI.</li>
+    <li>CloudWatch Logs still work from inside a VPC with no NAT or endpoint needed.</li>
+  </ul>
+</section>
+
+<!-- 16. PERFORMANCE -->
+<section class="card" id="performance">
+  <h2><span class="badge">16</span> Function Performance</h2>
+
+  <table>
+    <tr><th>Setting</th><th>Range</th><th>Notes</th></tr>
+    <tr><td>Memory (RAM)</td><td>128 MB – 10,240 MB</td><td>More RAM = more vCPU (implicit — you can't set vCPU directly). At 1,792 MB you get one full vCPU; beyond that, use multi-threading to benefit.</td></tr>
+    <tr><td>Timeout</td><td>3 sec (default) – 900 sec (15 min)</td><td>Anything needing longer belongs on Fargate/ECS/EC2, not Lambda</td></tr>
+  </table>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Need a faster/more powerful CPU for a Lambda function? The only lever is <strong>increasing memory</strong> — there's no independent CPU setting.
+  </div>
+
+  <h3>Execution context reuse</h3>
+  <p>Lambda keeps a temporary runtime environment ("execution context") alive between invocations when possible. <strong>Initialize database connections, HTTP/SDK clients, etc. outside the handler function</strong> so they're reused across warm invocations instead of reconnecting every single time.</p>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    Code inside the handler runs on <em>every</em> invocation; code outside it only runs once per execution context (shown as "Init Duration" in logs) — put anything slow to set up (DB connections, SDK clients) outside the handler.
+  </div>
+
+  <h3>/tmp storage</h3>
+  <p>Up to 10GB of ephemeral disk space at <code>/tmp</code>, persisted for the life of the execution context (so it can survive across warm invocations) but gone once the instance is destroyed. Useful for large temp files; for true persistence use S3. No built-in encryption for <code>/tmp</code> — you'd need to use KMS to encrypt data yourself before writing it there.</p>
+</section>
+
+<!-- 17. LAYERS -->
+<section class="card" id="layers">
+  <h2><span class="badge">17</span> Lambda Layers</h2>
+
+  <p>Layers let you (1) add custom runtimes (e.g. C++, Rust) and (2) — more commonly — <strong>externalize heavy dependencies</strong> so you don't have to repackage them every time your actual code changes.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 110" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box-accent" x="20" y="10" width="150" height="30" rx="5"/><text class="svg-text" x="95" y="30" text-anchor="middle" font-size="9">App code (~20KB)</text>
+      <rect class="svg-box" x="20" y="50" width="150" height="30" rx="5"/><text class="svg-text" x="95" y="70" text-anchor="middle" font-size="9">Layer: lib A (10MB)</text>
+      <rect class="svg-box" x="20" y="90" width="150" height="15" rx="4"/><text class="svg-text" x="95" y="101" text-anchor="middle" font-size="8">Layer: lib B (30MB)</text>
+
+      <path class="svg-arrow" d="M170,20 L280,50"/>
+      <path class="svg-arrow" d="M170,65 L280,50"/>
+      <path class="svg-arrow" d="M170,97 L280,60"/>
+      <rect class="svg-box-accent" x="280" y="30" width="170" height="40" rx="6"/><text class="svg-text" x="365" y="54" text-anchor="middle" font-size="10">Function A</text>
+
+      <path class="svg-arrow" d="M600,30 L500,50"/>
+      <path class="svg-arrow" d="M600,45 L500,55"/>
+      <rect class="svg-box" x="600" y="15" width="160" height="25" rx="5"/><text class="svg-text" x="680" y="32" text-anchor="middle" font-size="8">Function B (~60KB)</text>
+      <path class="svg-arrow" d="M170,65 L600,32" stroke-dasharray="3,3"/>
+    </svg>
+  </div>
+  <p class="caption">Heavy, slow-changing dependencies live in shared layers; your small, frequently-changing app code references them — multiple functions can reuse the same layers.</p>
+
+  <p>Hands-on: adding an AWS-provided layer (e.g. <code>AWSSDKPandas-Python313</code>) gave a function access to the Pandas library without packaging it yourself.</p>
+</section>
+
+<!-- 18. FILESYSTEMS -->
+<section class="card" id="filesystems">
+  <h2><span class="badge">18</span> File System Mounting (EFS)</h2>
+
+  <p>A VPC-deployed Lambda function can mount an <strong>EFS</strong> file system (via an EFS Access Point) to a local directory at startup.</p>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    Each concurrent Lambda instance opens its own EFS connection — watch out for hitting EFS connection limits or connection burst limits if many instances spin up at once.
+  </div>
+
+  <h3>Storage options compared</h3>
+  <table>
+    <tr><th>Storage</th><th>Max size</th><th>Persistence</th><th>Shared across invocations?</th><th>Speed</th></tr>
+    <tr><td><code>/tmp</code> ephemeral</td><td>10 GB</td><td>Ephemeral — gone when the instance is destroyed</td><td>No — per-instance only</td><td>Fastest</td></tr>
+    <tr><td>Lambda Layers</td><td>250 MB total (5 layers)</td><td>Durable, immutable (archive)</td><td>Yes — shared across all invocations</td><td>Fast (attached storage)</td></tr>
+    <tr><td>Amazon S3</td><td>Unlimited</td><td>Durable, dynamic</td><td>Yes — external</td><td>Fast, but network-based</td></tr>
+    <tr><td>Amazon EFS</td><td>Elastic (grows as needed)</td><td>Durable, dynamic</td><td>Yes — shared network file system</td><td>Fast, network-based</td></tr>
+  </table>
+</section>
+
+<!-- 19. CONCURRENCY -->
+<section class="card" id="concurrency">
+  <h2><span class="badge">19</span> Concurrency & Cold Starts</h2>
+
+  <ul>
+    <li><strong>Reserved concurrency</strong>: a per-function cap on concurrent executions (default account-wide pool is 1,000, shared across all functions).</li>
+    <li>Going over the limit triggers a <strong>throttle</strong>: synchronous invocations get a <code>429</code> error immediately; asynchronous ones retry automatically, then go to the DLQ if still failing.</li>
+  </ul>
+
+  <div class="callout warning">
+    <strong class="tag">Important</strong>
+    Without reserved concurrency set, one function hammering the shared 1,000-execution pool can <strong>throttle every other function</strong> in the account. Set reserved concurrency deliberately on important functions to protect them from noisy neighbors.
+  </div>
+
+  <h3>Cold starts & provisioned concurrency</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 780 100" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="30" width="180" height="40" rx="6"/><text class="svg-text" x="110" y="54" text-anchor="middle" font-size="9">Cold start: load code + init deps</text>
+      <path class="svg-arrow" d="M200,50 L320,50"/>
+      <rect class="svg-box-accent" x="320" y="30" width="150" height="40" rx="6"/><text class="svg-text" x="395" y="54" text-anchor="middle" font-size="9">First request: slow</text>
+      <path class="svg-arrow" d="M470,50 L590,50"/>
+      <rect class="svg-box" x="590" y="30" width="170" height="40" rx="6"/><text class="svg-text" x="675" y="54" text-anchor="middle" font-size="9">Warm requests: fast</text>
+    </svg>
+  </div>
+  <p class="caption">The first request to a new function instance pays the "cold start" cost of loading code and running init logic; provisioned concurrency pre-warms instances so no request ever pays that cost.</p>
+
+  <ul>
+    <li><strong>Provisioned concurrency</strong> pre-allocates warm instances ahead of invocation — no cold start, lower latency. Manage it with Application Auto Scaling (schedule or target tracking).</li>
+    <li>Provisioned concurrency can only be applied to a published <strong>version</strong> or <strong>alias</strong>, not <code>$LATEST</code>.</li>
+    <li>VPC cold starts used to be a major concern but were dramatically improved by AWS in late 2019.</li>
+  </ul>
+</section>
+
+<!-- 20. DEPENDENCIES -->
+<section class="card" id="dependencies">
+  <h2><span class="badge">20</span> External Dependencies</h2>
+
+  <ul>
+    <li>Package dependencies alongside your code and zip them together: <code>node_modules</code> for Node.js (npm), <code>pip</code> target installs for Python, <code>.jar</code> files for Java.</li>
+    <li>Upload the zip directly if under 50MB; otherwise upload to S3 first and reference it from there.</li>
+    <li>Native libraries must be <strong>compiled on Amazon Linux</strong> to work.</li>
+    <li>The AWS SDK comes bundled with every Lambda runtime already — no need to package it yourself if that's all you need.</li>
+  </ul>
+
+  <p>Hands-on: using CloudShell, <code>npm install aws-xray-sdk</code> populates <code>node_modules</code>, zip everything together, then deploy via the CLI (<code>aws lambda create-function</code> with a role ARN). Combined with S3 read permissions and X-Ray tracing enabled, this produced a fully working function whose calls (and their successes/failures) were visible in the X-Ray service map.</p>
+</section>
+
+<!-- 21. CLOUDFORMATION -->
+<section class="card" id="cloudformation">
+  <h2><span class="badge">21</span> Lambda & CloudFormation</h2>
+
+  <table>
+    <tr><th>Method</th><th>Details</th></tr>
+    <tr><td>Inline (<code>Code.ZipFile</code>)</td><td>Code lives directly in the template — simple functions only, no dependencies possible</td></tr>
+    <tr><td>S3 reference (<code>S3Bucket</code>/<code>S3Key</code>/<code>S3ObjectVersion</code>)</td><td>Zip is stored in S3; template points to it — supports full dependency packaging</td></tr>
+  </table>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    If you overwrite the zip in S3 but don't change the <code>S3ObjectVersion</code> referenced in the template, CloudFormation <strong>won't pick up the update</strong>. Enable bucket versioning and bump the object version reference to force an update.
+  </div>
+
+  <h3>Cross-account deployment</h3>
+  <p>To deploy the same Lambda code from Account 1's S3 bucket into Accounts 2 and 3: attach a <strong>bucket policy</strong> on Account 1's bucket allowing those accounts, and give each account's CloudFormation an <strong>execution role</strong> permitting <code>Get</code>/<code>List</code> on that bucket.</p>
+</section>
+
+<!-- 22. CONTAINERS -->
+<section class="card" id="containers">
+  <h2><span class="badge">22</span> Lambda Container Images</h2>
+
+  <p>Deploy Lambda as a container image (up to 10GB) from ECR — good for packing complex/large dependencies. The base image must implement the <strong>Lambda Runtime API</strong>; AWS provides base images for Python, Node.js, Java, .NET, Go, Ruby, or you can build your own.</p>
+
+  <ul>
+    <li>Test locally with the <strong>Lambda Runtime Interface Emulator</strong>.</li>
+    <li>Gives a unified build/publish workflow — the same container tooling works whether the target is ECS or Lambda.</li>
+  </ul>
+
+  <h3>Best practices</h3>
+  <ul>
+    <li>Use AWS-provided base images (Amazon Linux 2, already cached by the Lambda service).</li>
+    <li>Use <strong>multi-stage builds</strong> — build in a large intermediate image, copy only the final artifacts into a small final image.</li>
+    <li>Order layers from stable → frequently changing (put things that rarely change earliest in the build).</li>
+    <li>Use a single ECR repository for functions sharing large layers, so ECR can dedupe them.</li>
+  </ul>
+</section>
+
+<!-- 23. VERSIONS -->
+<section class="card" id="versions">
+  <h2><span class="badge">23</span> Versions & Aliases</h2>
+
+  <table>
+    <tr><th></th><th>Version</th><th>Alias</th></tr>
+    <tr><td>Mutability</td><td>Immutable once published (code + config frozen, gets its own ARN)</td><td>Mutable — a movable pointer to a version</td></tr>
+    <tr><td>Purpose</td><td>Fix a known-good state of your function</td><td>Give end users/triggers a stable name (e.g. <code>dev</code>, <code>test</code>, <code>prod</code>) that can point anywhere</td></tr>
+    <tr><td>Can reference</td><td>—</td><td>Only a <strong>version</strong> — never another alias</td></tr>
+  </table>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="20" width="80" height="30" rx="5"/><text class="svg-text" x="60" y="40" text-anchor="middle" font-size="9">$LATEST</text>
+      <rect class="svg-box" x="20" y="60" width="80" height="30" rx="5"/><text class="svg-text" x="60" y="80" text-anchor="middle" font-size="9">v1</text>
+      <rect class="svg-box" x="20" y="100" width="80" height="30" rx="5"/><text class="svg-text" x="60" y="120" text-anchor="middle" font-size="9">v2</text>
+
+      <path class="svg-arrow" d="M100,35 L280,35"/>
+      <rect class="svg-box-accent" x="280" y="20" width="90" height="30" rx="5"/><text class="svg-text" x="325" y="40" text-anchor="middle" font-size="9">dev</text>
+
+      <path class="svg-arrow" d="M100,115 L280,115"/>
+      <rect class="svg-box-accent" x="280" y="100" width="90" height="30" rx="5"/><text class="svg-text" x="325" y="120" text-anchor="middle" font-size="9">test</text>
+
+      <path class="svg-arrow" d="M100,75 L280,65"/>
+      <path class="svg-arrow" d="M100,115 L280,75" stroke-dasharray="3,3"/>
+      <rect class="svg-box-accent" x="280" y="60" width="90" height="30" rx="5"/><text class="svg-text" x="325" y="80" text-anchor="middle" font-size="9">prod (weighted)</text>
+      <text class="svg-label" x="500" y="70" text-anchor="middle" font-size="9">e.g. 90% v1 / 10% v2 — canary-style rollout</text>
+    </svg>
+  </div>
+  <p class="caption">Aliases point to versions and can even split traffic by weight between two versions (e.g. 90/10) for a canary-style rollout — you shift the weight over time instead of flipping a single pointer.</p>
+
+  <p>Hands-on: <code>dev</code> alias → <code>$LATEST</code>, <code>test</code> → v2, <code>prod</code> → v1; then editing <code>prod</code> to a weighted split (e.g. 50/50 between v1 and v2) causes invocations to alternate between the two versions.</p>
+</section>
+
+<!-- 24. CODEDEPLOY -->
+<section class="card" id="codedeploy">
+  <h2><span class="badge">24</span> Lambda & CodeDeploy</h2>
+
+  <p>CodeDeploy automates traffic shifting between Lambda aliases (built on top of versions/aliases) — practiced later in the SAM framework section.</p>
+
+  <table>
+    <tr><th>Strategy</th><th>Behavior</th></tr>
+    <tr><td>Linear</td><td>Grow traffic by a fixed % every N minutes until 100% (e.g. <code>Linear10PercentEvery3Minutes</code>)</td></tr>
+    <tr><td>Canary</td><td>Hold at X% for a period, then jump to 100% (e.g. <code>Canary10Percent5Minutes</code>)</td></tr>
+    <tr><td>All at once</td><td>Immediate full cutover — fastest, riskiest</td></tr>
+  </table>
+
+  <p>Pre/post-traffic hooks (and CloudWatch alarms) can trigger an automatic <strong>rollback</strong> to the previous version if something looks wrong. Key <code>AppSpec.yml</code> fields: <code>Name</code>, <code>Alias</code>, <code>CurrentVersion</code>, <code>TargetVersion</code>.</p>
+</section>
+
+<!-- 25. FUNCTION URL -->
+<section class="card" id="function-url">
+  <h2><span class="badge">25</span> Lambda Function URL</h2>
+
+  <p>A dedicated, permanent HTTPS endpoint for a function — no API Gateway or ALB needed. Supports IPv4/IPv6, public internet access only (no private option), and CORS configuration.</p>
+
+  <ul>
+    <li>Can be attached to a function alias or <code>$LATEST</code> — <strong>not</strong> to a specific published version.</li>
+    <li><strong>AuthType <code>NONE</code></strong>: public, unauthenticated access — controlled entirely by the function's resource-based policy (which must explicitly allow <code>lambda:InvokeFunctionUrl</code> for principal <code>*</code>).</li>
+    <li><strong>AuthType <code>AWS_IAM</code></strong>: caller must be authenticated via IAM. Same-account access needs either the identity-based or resource-based policy to allow it; <strong>cross-account access needs both</strong>.</li>
+    <li>Use reserved concurrency to throttle a publicly exposed function URL if needed.</li>
+  </ul>
+
+  <p>Hands-on: publish a version, create an alias (e.g. <code>dev</code>), enable Function URL with AuthType <code>NONE</code> — the console auto-attaches the permissive resource policy — and the URL immediately serves the function's HTTP-shaped response.</p>
+</section>
+
+<!-- 26. LIMITS -->
+<section class="card" id="limits">
+  <h2><span class="badge">26</span> Limits & Best Practices</h2>
+
+  <h3>Key limits (per region)</h3>
+  <table>
+    <tr><th>Limit</th><th>Value</th></tr>
+    <tr><td>Memory</td><td>128 MB – 10 GB (1 MB increments)</td></tr>
+    <tr><td>Max execution time</td><td>900 seconds (15 minutes)</td></tr>
+    <tr><td>Environment variables</td><td>4 KB total</td></tr>
+    <tr><td><code>/tmp</code> space</td><td>Up to 10 GB</td></tr>
+    <tr><td>Concurrent executions</td><td>1,000 (increasable via support request)</td></tr>
+    <tr><td>Deployment package</td><td>50 MB zipped, 250 MB unzipped</td></tr>
+  </table>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    "We need 30GB RAM" / "30 minutes of execution" / "a 3GB file to process" → all signal that Lambda is the <strong>wrong</strong> tool — think Fargate/ECS/EC2 instead.
+  </div>
+
+  <h3>Best practices</h3>
+  <ul>
+    <li>Do heavy/slow initialization (DB connections, SDK clients, dependency loading) <strong>outside</strong> the handler.</li>
+    <li>Use environment variables for anything that changes (connection strings, bucket names) — never hardcode; encrypt sensitive values with KMS.</li>
+    <li>Keep deployment packages minimal; use Lambda Layers for shared/reusable dependencies.</li>
+    <li>Never let a Lambda function recursively call itself — runaway cost and cascading failures.</li>
+  </ul>
+</section>
+
+<!-- CHEAT SHEET -->
+<section class="card cheatsheet" id="cheatsheet">
+  <h2><span class="badge">✓</span> Cheat Sheet</h2>
+
+  <h3>Key facts to remember</h3>
+  <ul>
+    <li>Three invocation models: <strong>Synchronous</strong> (caller waits — CLI/SDK, ALB, API Gateway), <strong>Asynchronous</strong> (internal queue + 3 automatic retries, needs idempotency — S3, SNS, EventBridge), <strong>Event Source Mapping</strong> (Lambda polls — Kinesis, SQS, DynamoDB Streams; invocation itself is synchronous).</li>
+    <li>Async invocations support DLQ (SQS/SNS, failures only) or the newer Destinations (SQS/SNS/Lambda/EventBridge, success + failure).</li>
+    <li>Execution role = Lambda calling out; resource-based policy = something else calling Lambda.</li>
+    <li>More RAM = more (implicit) vCPU — the only lever for CPU performance; 1,792MB ≈ 1 full vCPU.</li>
+    <li>Initialize slow things (DB connections, SDK clients) outside the handler to reuse them across warm invocations.</li>
+    <li>Lambda in a public subnet still has <strong>no internet access</strong> — need a private subnet + NAT gateway/instance, or a VPC endpoint for private AWS service access.</li>
+    <li>Layers: externalize shared/heavy dependencies (up to 5 layers, 250MB total); immutable once created.</li>
+    <li>Reserved concurrency caps one function's usage from the shared account pool (default 1,000) to protect other functions; provisioned concurrency pre-warms instances to avoid cold starts.</li>
+    <li>Versions are immutable snapshots; aliases are mutable pointers to versions (never to other aliases) — used for stable endpoints and weighted canary rollouts.</li>
+    <li>Function URLs give a permanent public HTTPS endpoint per function/alias, secured via AuthType NONE (resource policy) or AWS_IAM (identity + resource policy, both needed cross-account).</li>
+    <li>Lambda@Edge (Node.js/Python, all 4 CloudFront hooks, up to 10s) vs CloudFront Functions (JS only, viewer hooks only, &lt;1ms, millions of req/sec).</li>
+    <li>Hard limits: 15 min max execution, 10GB max RAM, 4KB env vars, 10GB /tmp, 50MB/250MB deployment package (zipped/unzipped).</li>
+  </ul>
+
+  <h3>Decision guide</h3>
+  <table>
+    <tr><th>Need</th><th>Use</th></tr>
+    <tr><td>Expose a function as a simple HTTP endpoint, no extra features</td><td>Function URL</td></tr>
+    <tr><td>Expose behind a load balancer you already run</td><td>ALB target group</td></tr>
+    <tr><td>React to S3/SNS/EventBridge events without waiting for a result</td><td>Asynchronous invocation + DLQ or Destinations</td></tr>
+    <tr><td>Process a continuous stream/queue of records</td><td>Event Source Mapping (Kinesis/SQS/DynamoDB Streams)</td></tr>
+    <tr><td>Reach a private RDS/ElastiCache instance</td><td>Deploy Lambda in the VPC (private subnet)</td></tr>
+    <tr><td>Reduce user-facing latency for a critical function</td><td>Provisioned concurrency</td></tr>
+    <tr><td>Share a large dependency across many functions</td><td>Lambda Layers</td></tr>
+    <tr><td>Package very large/complex dependencies (up to 10GB)</td><td>Container image</td></tr>
+    <tr><td>Roll out a new version gradually and safely</td><td>Alias + weighted traffic, or CodeDeploy canary/linear</td></tr>
+    <tr><td>Workload needs &gt;15 min or &gt;10GB RAM or huge files</td><td>Not Lambda — use Fargate/ECS/EC2</td></tr>
+  </table>
+
+  <h3>Mental model</h3>
+  <p>Lambda is code that only exists while it's running: you pay per invocation and per millisecond, and everything else in this section is really about answering how that code gets triggered (sync, async, or polling), how it reaches other things (IAM roles out, resource policies in, VPC networking for private resources), how it stays fast (RAM/CPU, warm execution contexts, layers, provisioned concurrency), and how you evolve it safely over time (versions, aliases, weighted rollouts, CodeDeploy). Once you can answer "who invokes this, how does it get permission, and how is this specific version reached," you understand Lambda end to end.</p>
+</section>
+
+<a class="back-to-top" href="#top">↑ Back to top</a>
+
+</div>
+</body>
+</html>

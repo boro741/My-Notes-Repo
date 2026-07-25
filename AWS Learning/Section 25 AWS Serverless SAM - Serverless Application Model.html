@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 25 — AWS Serverless: SAM — Notes</title>
+<style>
+  :root {
+    --accent: #e8830f;
+    --accent-dark: #c96a08;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --border: #e3e0da;
+    --text: #2b2a28;
+    --text-muted: #6b6a66;
+    --green: #2e7d32;
+    --green-bg: #eef7ee;
+    --red: #c0392b;
+    --red-bg: #fdecea;
+    --amber: #b8790a;
+    --amber-bg: #fff4e2;
+    --purple: #6a4fb3;
+    --purple-bg: #f3f0fb;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  header {
+    padding-bottom: 24px;
+    border-bottom: 3px solid var(--accent);
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 2rem;
+    color: var(--text);
+  }
+
+  header h1 span {
+    color: var(--accent);
+  }
+
+  header p.subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+  }
+
+  nav.toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 32px;
+  }
+
+  nav.toc h2 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  nav.toc ol {
+    margin: 0;
+    padding-left: 22px;
+    columns: 2;
+    column-gap: 24px;
+  }
+
+  nav.toc li {
+    margin-bottom: 6px;
+    break-inside: avoid;
+  }
+
+  nav.toc a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  nav.toc a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 24px;
+    scroll-margin-top: 20px;
+  }
+
+  .card h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 14px;
+    font-size: 1.3rem;
+    color: var(--text);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    color: var(--accent-dark);
+    font-size: 1.05rem;
+    margin: 20px 0 8px;
+  }
+
+  a { color: var(--accent-dark); }
+
+  code {
+    background: #f1eee7;
+    border: 1px solid #e6e2d8;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.92em;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    color: #7a4b00;
+  }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 0.94rem;
+  }
+
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f7f2ea;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) td {
+    background: #fcfbf9;
+  }
+
+  .callout {
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+
+  .callout strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .callout.tip {
+    background: var(--green-bg);
+    border-color: var(--green);
+  }
+  .callout.tip strong.tag { color: var(--green); }
+
+  .callout.warning {
+    background: var(--red-bg);
+    border-color: var(--red);
+  }
+  .callout.warning strong.tag { color: var(--red); }
+
+  .callout.key {
+    background: var(--amber-bg);
+    border-color: var(--amber);
+  }
+  .callout.key strong.tag { color: var(--amber); }
+
+  .analogy {
+    border: 1.5px dashed var(--purple);
+    background: var(--purple-bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+  .analogy strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--purple);
+  }
+
+  .diagram {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fdfcfa;
+    padding: 16px;
+    margin: 16px 0 6px;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  .diagram svg {
+    max-width: 100%;
+  }
+
+  .caption {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 4px 0 16px;
+    font-style: italic;
+  }
+
+  .cheatsheet {
+    border: 2px solid var(--accent);
+  }
+
+  .cheatsheet h2 { color: var(--accent-dark); }
+
+  .back-to-top {
+    display: block;
+    text-align: center;
+    margin-top: 36px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    text-decoration: none;
+  }
+  .back-to-top:hover { text-decoration: underline; }
+
+  .svg-box { fill: #fff; stroke: #c8917a; stroke-width: 1.5; }
+  .svg-box-accent { fill: #fff4e2; stroke: var(--accent); stroke-width: 1.5; }
+  .svg-box-gray { fill: #eeeeee; stroke: #b8b8b8; stroke-width: 1.5; }
+  .svg-text { font-family: -apple-system, sans-serif; font-size: 12px; fill: #2b2a28; }
+  .svg-label { font-family: -apple-system, sans-serif; font-size: 11px; fill: #6b6a66; }
+  .svg-arrow { stroke: #6b6a66; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header id="top">
+  <h1><span>Section 25</span> — AWS Serverless: SAM</h1>
+  <p class="subtitle">My notes on the Serverless Application Model — a shortcut for writing and deploying CloudFormation for serverless apps.</p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#overview">SAM Overview</a></li>
+    <li><a href="#hands-on">SAM — Hands On</a></li>
+    <li><a href="#dynamodb">SAM with DynamoDB — Hands On</a></li>
+    <li><a href="#policy-templates">SAM Policy Templates</a></li>
+    <li><a href="#codedeploy">SAM with CodeDeploy</a></li>
+    <li><a href="#local">SAM Local Capabilities</a></li>
+    <li><a href="#multi-env">SAM Multiple Environments</a></li>
+    <li><a href="#cheatsheet">Cheat Sheet</a></li>
+  </ol>
+</nav>
+
+<!-- 1. OVERVIEW -->
+<section class="card" id="overview">
+  <h2><span class="badge">1</span> SAM Overview</h2>
+
+  <p><strong>SAM (Serverless Application Model)</strong> is a framework for developing and deploying serverless applications — you write a simpler YAML template, and SAM generates the (much more verbose) CloudFormation behind it.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 100" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#6b6a66"/>
+        </marker>
+      </defs>
+      <rect class="svg-box" x="20" y="30" width="160" height="40" rx="6"/><text class="svg-text" x="100" y="54" text-anchor="middle" font-size="9">SAM YAML template</text>
+      <path class="svg-arrow" d="M180,50 L300,50"/>
+      <text class="svg-label" x="240" y="40" text-anchor="middle" font-size="9">Transform</text>
+      <rect class="svg-box-accent" x="300" y="30" width="200" height="40" rx="6"/><text class="svg-text" x="400" y="54" text-anchor="middle" font-size="9">Full CloudFormation template</text>
+      <path class="svg-arrow" d="M500,50 L620,50"/>
+      <rect class="svg-box" x="620" y="30" width="140" height="40" rx="6"/><text class="svg-text" x="690" y="54" text-anchor="middle" font-size="9">Deployed stack</text>
+    </svg>
+  </div>
+  <p class="caption">A short SAM template, tagged with a Transform header, expands into the equivalent (much longer) raw CloudFormation — you write less, get the same result.</p>
+
+  <ul>
+    <li>Supports everything CloudFormation does (outputs, mappings, parameters, resources) <strong>plus</strong> simpler serverless-specific constructs:</li>
+  </ul>
+  <table>
+    <tr><th>SAM construct</th><th>Becomes</th></tr>
+    <tr><td><code>AWS::Serverless::Function</code></td><td>Lambda function</td></tr>
+    <tr><td><code>AWS::Serverless::Api</code></td><td>API Gateway</td></tr>
+    <tr><td><code>AWS::Serverless::SimpleTable</code></td><td>DynamoDB table</td></tr>
+  </table>
+
+  <ul>
+    <li>Behind the scenes SAM can use <strong>CodeDeploy</strong> to deploy Lambda functions, and can run Lambda/API Gateway/DynamoDB <strong>locally</strong> for testing.</li>
+    <li>Deployment: <code>sam deploy</code> (used to be <code>sam package</code> + <code>sam deploy</code> separately — now just one command that packages and deploys).</li>
+  </ul>
+
+  <h3>SAM Accelerate</h3>
+  <p><code>sam sync</code> reduces deployment latency by (optionally) <strong>bypassing CloudFormation</strong> for pure code changes, updating Lambda directly via its service API — much faster than a full stack update.</p>
+  <table>
+    <tr><th>Command</th><th>What it syncs</th></tr>
+    <tr><td><code>sam sync</code></td><td>Code + infrastructure (via CloudFormation)</td></tr>
+    <tr><td><code>sam sync --code</code></td><td>Only code (bypasses CloudFormation, updates in seconds)</td></tr>
+    <tr><td><code>sam sync --watch</code></td><td>Runs in the background, auto-syncs on file changes</td></tr>
+  </table>
+</section>
+
+<!-- 2. HANDS ON -->
+<section class="card" id="hands-on">
+  <h2><span class="badge">2</span> SAM — Hands On</h2>
+
+  <ul>
+    <li><code>sam init</code> scaffolds a new project — choose a quick-start template (e.g. "Hello World"), runtime (e.g. Python), and project name.</li>
+  </ul>
+
+  <h3>Key generated files</h3>
+  <table>
+    <tr><th>File</th><th>Purpose</th></tr>
+    <tr><td><code>hello_world/app.py</code></td><td>Your actual Lambda function code</td></tr>
+    <tr><td><code>requirements.txt</code></td><td>Python dependencies</td></tr>
+    <tr><td><code>samconfig.toml</code></td><td>SAM CLI config (stack name, build params, etc.)</td></tr>
+    <tr><td><code>template.yaml</code></td><td>The SAM template itself — starts with a <code>Transform</code> header, defines <code>Serverless::Function</code> resources with code URI, handler, runtime</td></tr>
+  </table>
+
+  <h3>Workflow</h3>
+  <ol>
+    <li><code>sam build</code> — builds the application locally (pulls dependencies, prepares a <code>.aws-sam/build</code> directory).</li>
+    <li><code>sam deploy --guided</code> — walks you through stack name, region, confirming changes, IAM role creation, and saves your answers to <code>samconfig.toml</code> for next time.</li>
+  </ol>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    The first guided deploy also provisions supporting resources for SAM itself (an S3 bucket for artifacts, an IAM role) before deploying your actual application stack.
+  </div>
+
+  <p>End result: a Lambda function + API Gateway are created automatically — hitting the API's invoke URL (via browser or <code>curl</code>) returns your function's response.</p>
+</section>
+
+<!-- 3. DYNAMODB -->
+<section class="card" id="dynamodb">
+  <h2><span class="badge">3</span> SAM with DynamoDB — Hands On</h2>
+
+  <p>Using the "serverless API" quick-start template generates a fuller example: multiple <code>Serverless::Function</code> resources (e.g. <code>getAllItemsFunction</code>, a "put" function), each with its own runtime, memory, <strong>policy</strong>, and API <strong>event</strong> (GET/POST on a path) — plus an <code>AWS::Serverless::SimpleTable</code> resource (a DynamoDB table, with primary key and provisioned RCU/WCU) that the functions reference.</p>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Defining a DynamoDB CRUD policy on a function, referencing the table by name, is a single short block in SAM — compare that to writing the equivalent IAM policy JSON by hand in raw CloudFormation.
+  </div>
+
+  <p>SAM's <strong>local capabilities</strong> let you test without deploying: sample events live in an <code>events/</code> folder, which you can feed into <code>sam local invoke</code>, or run <code>sam local start-api</code> to get a local HTTP server hosting your whole API (requires Docker).</p>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    If you deploy this example to try it out, clean up afterward with <code>sam delete</code>.
+  </div>
+</section>
+
+<!-- 4. POLICY TEMPLATES -->
+<section class="card" id="policy-templates">
+  <h2><span class="badge">4</span> SAM Policy Templates</h2>
+
+  <p><strong>Policy templates</strong> are pre-built, named permission sets you can attach to a Lambda function in SAM — instead of writing raw IAM policy JSON yourself.</p>
+
+  <table>
+    <tr><th>Template</th><th>Grants</th></tr>
+    <tr><td><code>S3ReadPolicy</code></td><td>Read-only access to objects in S3</td></tr>
+    <tr><td><code>SQSPollerPolicy</code></td><td>Permission to poll an SQS queue</td></tr>
+    <tr><td><code>DynamoDBCrudPolicy</code></td><td>Create, Read, Update, Delete on a DynamoDB table</td></tr>
+  </table>
+
+  <p>You just reference the template name plus the target resource (e.g. a queue name) in your SAM template, and SAM transforms it into the equivalent IAM policy attached to the function's execution role — much less to reason about than hand-writing IAM JSON.</p>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    You don't need to memorize the full list — just recognize the pattern once (name is usually self-explanatory) and know these templates exist as a SAM shortcut for common permissions.
+  </div>
+</section>
+
+<!-- 5. CODEDEPLOY -->
+<section class="card" id="codedeploy">
+  <h2><span class="badge">5</span> SAM with CodeDeploy</h2>
+
+  <p>SAM can use <strong>CodeDeploy</strong> under the hood to update Lambda functions via alias traffic-shifting, with optional pre/post-traffic validation hooks and automated rollback via CloudWatch alarms.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="45" width="120" height="40" rx="6"/><text class="svg-text" x="80" y="69" text-anchor="middle" font-size="9">Alias → v1</text>
+      <path class="svg-arrow" d="M140,60 L260,30"/>
+      <rect class="svg-box-accent" x="260" y="10" width="150" height="30" rx="5"/><text class="svg-text" x="335" y="30" text-anchor="middle" font-size="8">Pre-traffic hook (optional)</text>
+      <path class="svg-arrow" d="M410,25 L540,60"/>
+      <rect class="svg-box-accent" x="540" y="45" width="150" height="40" rx="6"/><text class="svg-text" x="615" y="69" text-anchor="middle" font-size="9">Traffic shift (Canary/Linear)</text>
+      <path class="svg-arrow" d="M615,85 L615,105"/>
+      <rect class="svg-box-accent" x="530" y="105" width="170" height="20" rx="4"/><text class="svg-text" x="615" y="119" text-anchor="middle" font-size="8">Post-traffic hook (optional) → Alias → v2</text>
+    </svg>
+  </div>
+  <p class="caption">SAM/CodeDeploy shifts an alias from v1 to v2 gradually, optionally running validation Lambda functions before and after the shift, with a CloudWatch alarm able to trigger a rollback.</p>
+
+  <h3>Key template settings</h3>
+  <table>
+    <tr><th>Setting</th><th>Purpose</th></tr>
+    <tr><td><code>AutoPublishAlias</code></td><td>Tells SAM to auto-publish a new version + update the named alias whenever new code is deployed</td></tr>
+    <tr><td><code>DeploymentPreference.Type</code></td><td>Canary, Linear, or AllAtOnce (e.g. <code>Canary10Percent10Minutes</code>)</td></tr>
+    <tr><td><code>Alarms</code></td><td>CloudWatch alarms that trigger an automatic rollback if breached</td></tr>
+    <tr><td><code>Hooks</code></td><td>Pre/post-traffic Lambda functions for custom validation</td></tr>
+  </table>
+
+  <p>Hands-on: with <code>Canary10Percent10Minutes</code> configured, redeploying updated code creates v2, shifts 10% of traffic to it via the alias for 10 minutes (visible live in the CodeDeploy console as a blue/green Lambda deployment), then automatically completes the cutover to 100% once that window passes.</p>
+</section>
+
+<!-- 6. LOCAL -->
+<section class="card" id="local">
+  <h2><span class="badge">6</span> SAM Local Capabilities</h2>
+
+  <table>
+    <tr><th>Command</th><th>Purpose</th></tr>
+    <tr><td><code>sam local start-lambda</code></td><td>Runs a local Lambda emulator as an endpoint — useful for automated tests against it</td></tr>
+    <tr><td><code>sam local invoke</code></td><td>Invokes a function once with a given payload, then exits — good for one-off test cases; use <code>--profile</code> if the function calls other AWS services</td></tr>
+    <tr><td><code>sam local start-api</code></td><td>Starts a local HTTP server hosting your whole API — auto-reloads functions as you edit code</td></tr>
+    <tr><td><code>sam local generate-event</code></td><td>Generates a sample event payload for a given source (S3, API Gateway, SNS, Kinesis, DynamoDB, etc.) — pipe it straight into <code>sam local invoke</code></td></tr>
+  </table>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    This lets you iterate entirely on your own machine — writing code, testing against local Lambda/API Gateway emulation — and only deploy to AWS once you're happy.
+  </div>
+</section>
+
+<!-- 7. MULTI-ENV -->
+<section class="card" id="multi-env">
+  <h2><span class="badge">7</span> SAM Multiple Environments</h2>
+
+  <p>Manage separate deploy targets (dev, prod, etc.) using named sections in <code>samconfig.toml</code> — each with its own stack name, S3 bucket, region, capabilities, and parameter overrides.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 110" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="15" width="340" height="80" rx="8"/>
+      <text class="svg-text" x="190" y="37" text-anchor="middle" font-weight="600" font-size="11">[dev.deploy.parameters]</text>
+      <text class="svg-label" x="190" y="57" text-anchor="middle" font-size="9">stack, bucket, region</text>
+      <text class="svg-label" x="190" y="75" text-anchor="middle" font-size="9">environment = development</text>
+
+      <rect class="svg-box-accent" x="410" y="15" width="350" height="80" rx="8"/>
+      <text class="svg-text" x="585" y="37" text-anchor="middle" font-weight="600" font-size="11">[prod.deploy.parameters]</text>
+      <text class="svg-label" x="585" y="57" text-anchor="middle" font-size="9">stack, bucket, region</text>
+      <text class="svg-label" x="585" y="75" text-anchor="middle" font-size="9">environment = production</text>
+    </svg>
+  </div>
+  <p class="caption">Separate named sections in samconfig.toml hold different deployment parameters per environment, selected at deploy time with a single flag.</p>
+
+  <p>Deploy to a specific environment with:</p>
+  <ul>
+    <li><code>sam deploy --config-env dev</code></li>
+    <li><code>sam deploy --config-env prod</code></li>
+  </ul>
+  <p>You can define as many environments as you need — SAM CLI picks the matching section from <code>samconfig.toml</code> automatically.</p>
+</section>
+
+<!-- CHEAT SHEET -->
+<section class="card cheatsheet" id="cheatsheet">
+  <h2><span class="badge">✓</span> Cheat Sheet</h2>
+
+  <h3>Key facts to remember</h3>
+  <ul>
+    <li>SAM = a simplified YAML layer on top of CloudFormation, specifically for serverless apps (Lambda, API Gateway, DynamoDB).</li>
+    <li>Every SAM template needs a <code>Transform</code> header identifying it as a SAM template.</li>
+    <li>Core constructs: <code>Serverless::Function</code> (Lambda), <code>Serverless::Api</code> (API Gateway), <code>Serverless::SimpleTable</code> (DynamoDB).</li>
+    <li>Workflow: <code>sam init</code> → <code>sam build</code> → <code>sam deploy --guided</code> (or plain <code>sam deploy</code> once <code>samconfig.toml</code> exists).</li>
+    <li><code>sam sync</code> (SAM Accelerate) speeds up dev-loop deployments; <code>--code</code> bypasses CloudFormation entirely for pure code changes.</li>
+    <li>Policy templates (<code>S3ReadPolicy</code>, <code>SQSPollerPolicy</code>, <code>DynamoDBCrudPolicy</code>, etc.) simplify granting Lambda functions specific permissions without hand-writing IAM JSON.</li>
+    <li>SAM integrates with CodeDeploy for Lambda alias traffic-shifting (<code>AutoPublishAlias</code> + <code>DeploymentPreference</code>: Canary/Linear/AllAtOnce), with optional pre/post-traffic hooks and CloudWatch alarm-triggered rollback.</li>
+    <li>Local testing: <code>sam local start-lambda</code>, <code>sam local invoke</code>, <code>sam local start-api</code>, <code>sam local generate-event</code> — all runnable without deploying anything.</li>
+    <li>Multiple environments are managed via named sections in <code>samconfig.toml</code>, selected with <code>sam deploy --config-env &lt;name&gt;</code>.</li>
+  </ul>
+
+  <h3>Decision guide</h3>
+  <table>
+    <tr><th>Need</th><th>Use</th></tr>
+    <tr><td>Write less boilerplate than raw CloudFormation for a serverless app</td><td>SAM templates</td></tr>
+    <tr><td>Grant a Lambda function common permissions quickly</td><td>SAM policy templates</td></tr>
+    <tr><td>Roll out a new Lambda version safely with automatic rollback</td><td>SAM + CodeDeploy (Canary/Linear DeploymentPreference)</td></tr>
+    <tr><td>Test Lambda/API Gateway without deploying</td><td>SAM local commands</td></tr>
+    <tr><td>Deploy the same app to dev and prod with different settings</td><td>samconfig.toml + <code>--config-env</code></td></tr>
+    <tr><td>Fast dev-loop iteration on code-only changes</td><td><code>sam sync --code --watch</code></td></tr>
+  </table>
+
+  <h3>Mental model</h3>
+  <p>SAM is CloudFormation with the serverless-specific boilerplate pre-written for you: a handful of simple constructs (function, API, table) expand into the full stack of resources, permissions, and wiring that raw CloudFormation would otherwise require you to spell out by hand. Everything else in this section — policy templates, CodeDeploy integration, local emulation, multi-environment configs — exists to make the developer loop (write code → test locally → deploy safely → repeat for each environment) as short as possible without ever leaving the SAM CLI.</p>
+</section>
+
+<a class="back-to-top" href="#top">↑ Back to top</a>
+
+</div>
+</body>
+</html>

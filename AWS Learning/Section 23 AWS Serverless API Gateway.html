@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 23 — AWS Serverless: API Gateway — Notes</title>
+<style>
+  :root {
+    --accent: #e8830f;
+    --accent-dark: #c96a08;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --border: #e3e0da;
+    --text: #2b2a28;
+    --text-muted: #6b6a66;
+    --green: #2e7d32;
+    --green-bg: #eef7ee;
+    --red: #c0392b;
+    --red-bg: #fdecea;
+    --amber: #b8790a;
+    --amber-bg: #fff4e2;
+    --purple: #6a4fb3;
+    --purple-bg: #f3f0fb;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  header {
+    padding-bottom: 24px;
+    border-bottom: 3px solid var(--accent);
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 2rem;
+    color: var(--text);
+  }
+
+  header h1 span {
+    color: var(--accent);
+  }
+
+  header p.subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+  }
+
+  nav.toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 32px;
+  }
+
+  nav.toc h2 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  nav.toc ol {
+    margin: 0;
+    padding-left: 22px;
+    columns: 2;
+    column-gap: 24px;
+  }
+
+  nav.toc li {
+    margin-bottom: 6px;
+    break-inside: avoid;
+  }
+
+  nav.toc a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  nav.toc a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 24px;
+    scroll-margin-top: 20px;
+  }
+
+  .card h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 14px;
+    font-size: 1.3rem;
+    color: var(--text);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    color: var(--accent-dark);
+    font-size: 1.05rem;
+    margin: 20px 0 8px;
+  }
+
+  a { color: var(--accent-dark); }
+
+  code {
+    background: #f1eee7;
+    border: 1px solid #e6e2d8;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.92em;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    color: #7a4b00;
+  }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 0.94rem;
+  }
+
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f7f2ea;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) td {
+    background: #fcfbf9;
+  }
+
+  .callout {
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+
+  .callout strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .callout.tip {
+    background: var(--green-bg);
+    border-color: var(--green);
+  }
+  .callout.tip strong.tag { color: var(--green); }
+
+  .callout.warning {
+    background: var(--red-bg);
+    border-color: var(--red);
+  }
+  .callout.warning strong.tag { color: var(--red); }
+
+  .callout.key {
+    background: var(--amber-bg);
+    border-color: var(--amber);
+  }
+  .callout.key strong.tag { color: var(--amber); }
+
+  .analogy {
+    border: 1.5px dashed var(--purple);
+    background: var(--purple-bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+  .analogy strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--purple);
+  }
+
+  .diagram {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fdfcfa;
+    padding: 16px;
+    margin: 16px 0 6px;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  .diagram svg {
+    max-width: 100%;
+  }
+
+  .caption {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 4px 0 16px;
+    font-style: italic;
+  }
+
+  .cheatsheet {
+    border: 2px solid var(--accent);
+  }
+
+  .cheatsheet h2 { color: var(--accent-dark); }
+
+  .back-to-top {
+    display: block;
+    text-align: center;
+    margin-top: 36px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    text-decoration: none;
+  }
+  .back-to-top:hover { text-decoration: underline; }
+
+  .svg-box { fill: #fff; stroke: #c8917a; stroke-width: 1.5; }
+  .svg-box-accent { fill: #fff4e2; stroke: var(--accent); stroke-width: 1.5; }
+  .svg-box-gray { fill: #eeeeee; stroke: #b8b8b8; stroke-width: 1.5; }
+  .svg-text { font-family: -apple-system, sans-serif; font-size: 12px; fill: #2b2a28; }
+  .svg-label { font-family: -apple-system, sans-serif; font-size: 11px; fill: #6b6a66; }
+  .svg-arrow { stroke: #6b6a66; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header id="top">
+  <h1><span>Section 23</span> — AWS Serverless: API Gateway</h1>
+  <p class="subtitle">My notes on exposing serverless apps as REST/HTTP/WebSocket APIs — stages, security, caching, and integrations.</p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#overview">API Gateway Overview</a></li>
+    <li><a href="#basics-hands-on">Basics — Hands On</a></li>
+    <li><a href="#stages">Stages & Deployment</a></li>
+    <li><a href="#canary">Canary Deployments</a></li>
+    <li><a href="#integrations">Integration Types & Mapping Templates</a></li>
+    <li><a href="#openapi">OpenAPI</a></li>
+    <li><a href="#caching">Caching</a></li>
+    <li><a href="#usage-plans">Usage Plans & API Keys</a></li>
+    <li><a href="#monitoring">Monitoring, Logging & Tracing</a></li>
+    <li><a href="#cors">CORS</a></li>
+    <li><a href="#auth">Authentication & Authorization</a></li>
+    <li><a href="#rest-vs-http">REST API vs HTTP API</a></li>
+    <li><a href="#websocket">WebSocket API</a></li>
+    <li><a href="#architecture">Microservices Architecture</a></li>
+    <li><a href="#cheatsheet">Cheat Sheet</a></li>
+  </ol>
+</nav>
+
+<!-- 1. OVERVIEW -->
+<section class="card" id="overview">
+  <h2><span class="badge">1</span> API Gateway Overview</h2>
+
+  <p><strong>API Gateway</strong> is AWS's serverless way to build public, manageable REST APIs — instead of exposing Lambda directly (needs IAM permissions) or fronting it with an ALB (just gives you an HTTP endpoint, nothing more).</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#6b6a66"/>
+        </marker>
+      </defs>
+      <rect class="svg-box" x="20" y="45" width="130" height="40" rx="6"/><text class="svg-text" x="85" y="69" text-anchor="middle" font-size="10">Client</text>
+      <path class="svg-arrow" d="M150,65 L280,65"/>
+      <rect class="svg-box-accent" x="280" y="20" width="150" height="90" rx="8"/>
+      <text class="svg-text" x="355" y="45" text-anchor="middle" font-weight="600" font-size="11">API Gateway</text>
+      <text class="svg-label" x="355" y="65" text-anchor="middle" font-size="8">auth, throttling, caching,</text>
+      <text class="svg-label" x="355" y="80" text-anchor="middle" font-size="8">versioning, usage plans</text>
+      <path class="svg-arrow" d="M430,45 L560,25"/>
+      <rect class="svg-box" x="560" y="10" width="180" height="30" rx="5"/><text class="svg-text" x="650" y="30" text-anchor="middle" font-size="9">Lambda function</text>
+      <path class="svg-arrow" d="M430,65 L560,65"/>
+      <rect class="svg-box" x="560" y="50" width="180" height="30" rx="5"/><text class="svg-text" x="650" y="70" text-anchor="middle" font-size="9">HTTP endpoint (on-prem/ALB)</text>
+      <path class="svg-arrow" d="M430,85 L560,105"/>
+      <rect class="svg-box" x="560" y="90" width="180" height="30" rx="5"/><text class="svg-text" x="650" y="110" text-anchor="middle" font-size="9">AWS service (SQS, Step Functions...)</text>
+    </svg>
+  </div>
+  <p class="caption">API Gateway sits between clients and any of three backend types — Lambda, HTTP endpoints, or direct AWS service integrations — adding a full feature set on top.</p>
+
+  <h3>Features</h3>
+  <ul>
+    <li>Fully serverless, no infrastructure to manage; supports WebSocket for real-time streaming.</li>
+    <li>API versioning, multiple environments (dev/test/prod), authentication/authorization, API keys, request throttling.</li>
+    <li>Import/export via Swagger/OpenAPI 3.0; request/response transformation & validation; SDK generation; response caching.</li>
+  </ul>
+
+  <h3>Why front an AWS service directly?</h3>
+  <p>E.g. clients send HTTP requests straight into API Gateway, which forwards them into <strong>Kinesis Data Streams</strong> — no AWS credentials ever given to the client, and no servers to manage on either side.</p>
+
+  <h3>Endpoint types</h3>
+  <table>
+    <tr><th>Type</th><th>Description</th></tr>
+    <tr><td>Edge-Optimized (default)</td><td>Single-region API, but requests are routed through CloudFront edge locations globally for lower latency</td></tr>
+    <tr><td>Regional</td><td>No edge routing — for clients mostly within the same region; can pair with your own CloudFront distribution for more control</td></tr>
+    <tr><td>Private</td><td>Only accessible from within your VPC via an interface VPC endpoint; access controlled by a resource policy</td></tr>
+  </table>
+
+  <h3>Security building blocks</h3>
+  <ul>
+    <li><strong>IAM roles</strong> — for internal apps (e.g. EC2) already in your AWS account.</li>
+    <li><strong>Amazon Cognito</strong> — for external users (mobile/web apps).</li>
+    <li><strong>Custom (Lambda) authorizer</strong> — your own logic.</li>
+    <li>HTTPS via a custom domain requires an <strong>ACM certificate</strong> (must be in us-east-1 for Edge-Optimized; same region as the stage for Regional) and a Route 53 CNAME/alias record.</li>
+  </ul>
+</section>
+
+<!-- 2. BASICS HANDS ON -->
+<section class="card" id="basics-hands-on">
+  <h2><span class="badge">2</span> Basics — Hands On</h2>
+
+  <ul>
+    <li>Create a REST API (Regional, for simplicity), then a <strong>resource</strong> and a <strong>method</strong> (e.g. GET) on it, integrated with a Lambda function using <strong>Lambda proxy integration</strong>.</li>
+    <li>Lambda's own timeout can be up to 15 minutes, but <strong>API Gateway always caps at 29 seconds</strong> regardless.</li>
+    <li>Creating the method automatically adds a resource-based policy on the Lambda function, granting the specific API Gateway route permission to invoke it.</li>
+    <li>You can <strong>Test</strong> a method directly in the console (with execution logs shown) before ever deploying it publicly.</li>
+    <li>The full event (path, method, headers, query strings) gets passed to Lambda as JSON — visible by printing/logging the <code>event</code> object.</li>
+  </ul>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    Nothing is publicly reachable until you <strong>Deploy API</strong> to a stage (e.g. <code>dev</code>) — that deployment produces the actual invoke URL clients use.
+  </div>
+</section>
+
+<!-- 3. STAGES -->
+<section class="card" id="stages">
+  <h2><span class="badge">3</span> Stages & Deployment</h2>
+
+  <div class="callout warning">
+    <strong class="tag">Common mistake</strong>
+    Changes to an API are <strong>not live</strong> until you explicitly deploy them to a stage. Forgetting this step is a classic source of "why isn't my change showing up" confusion.
+  </div>
+
+  <ul>
+    <li>You can have as many stages as you want, named however you like (e.g. <code>dev</code>/<code>test</code>/<code>prod</code>, or <code>v1</code>/<code>v2</code>) — each with its own config and full deployment history (for rollback).</li>
+  </ul>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 110" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box-accent" x="20" y="10" width="200" height="35" rx="5"/><text class="svg-text" x="120" y="32" text-anchor="middle" font-size="9">Stage: v1 → Lambda v1</text>
+      <rect class="svg-box-accent" x="20" y="60" width="200" height="35" rx="5"/><text class="svg-text" x="120" y="82" text-anchor="middle" font-size="9">Stage: v2 → Lambda v2</text>
+      <text class="svg-label" x="450" y="30" text-anchor="middle" font-size="9">v1 clients keep working unaffected</text>
+      <text class="svg-label" x="450" y="80" text-anchor="middle" font-size="9">v2 clients migrate at their own pace</text>
+    </svg>
+  </div>
+  <p class="caption">Separate stages let a breaking backend change ship as a new version (v2) while existing v1 clients keep working, until they're migrated and v1 is retired.</p>
+
+  <h3>Stage variables</h3>
+  <p>Like environment variables, but for API Gateway stages — change config (e.g. which Lambda alias to invoke) <strong>without redeploying</strong>. Accessed in mapping templates as <code>$stageVariables.variableName</code>, and passed into the Lambda <code>context</code> object.</p>
+
+  <div class="callout tip">
+    <strong class="tag">Common pattern</strong>
+    A stage variable holding a <strong>Lambda alias name</strong> (e.g. <code>dev</code>/<code>test</code>/<code>prod</code>) lets each stage automatically invoke the right Lambda version/alias — including a <strong>weighted alias</strong> (e.g. 95% v1 / 5% v2) — without ever touching the API Gateway config itself.
+  </div>
+
+  <p>Hands-on: three Lambda versions (v1, v2, latest) mapped to three aliases (<code>PROD</code>→v1, <code>TEST</code>→v2, <code>DEV</code>→latest); the integration ARN references <code>${stageVariables.LambdaAlias}</code>, and each deployed stage sets that variable to the matching alias name — so <code>/prod</code>, <code>/test</code>, and <code>/dev</code> each hit a different Lambda version automatically.</p>
+
+  <h3>Stage configuration options</h3>
+  <p>Cache settings, throttling (rate/burst), client certificates, CloudWatch logging/tracing (log level: errors only, info, or full request/response — careful, this can expose sensitive data), detailed metrics, stage variables, deployment/documentation history, canary settings, and tags.</p>
+</section>
+
+<!-- 4. CANARY -->
+<section class="card" id="canary">
+  <h2><span class="badge">4</span> Canary Deployments</h2>
+
+  <p>Test a small % of production traffic against a new version before fully committing — API Gateway's equivalent of Lambda's weighted aliases, applied at the stage level.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 110" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="35" width="140" height="40" rx="6"/><text class="svg-text" x="90" y="59" text-anchor="middle" font-size="9">Client traffic</text>
+      <path class="svg-arrow" d="M160,50 L300,25"/>
+      <text class="svg-label" x="230" y="20" text-anchor="middle" font-size="9">95%</text>
+      <rect class="svg-box-accent" x="300" y="10" width="200" height="30" rx="5"/><text class="svg-text" x="400" y="30" text-anchor="middle" font-size="9">Prod stage (known-good v1)</text>
+      <path class="svg-arrow" d="M160,60 L300,85"/>
+      <text class="svg-label" x="230" y="95" text-anchor="middle" font-size="9">5%</text>
+      <rect class="svg-box-accent" x="300" y="70" width="200" height="30" rx="5"/><text class="svg-text" x="400" y="90" text-anchor="middle" font-size="9">Canary (testing v2)</text>
+    </svg>
+  </div>
+  <p class="caption">A canary splits stage traffic by percentage between the current deployment and the new one — with separate metrics/logs — and can be promoted to 100% once you're confident.</p>
+
+  <ul>
+    <li>Metrics and logs are kept <strong>separate</strong> for the canary vs. the main stage, for cleaner monitoring.</li>
+    <li>You can override stage variables specifically for the canary.</li>
+    <li>Once satisfied, <strong>promote</strong> the canary — it becomes the new 100% deployment for that stage.</li>
+  </ul>
+
+  <p>This is functionally equivalent to a blue/green deployment for Lambda + API Gateway.</p>
+</section>
+
+<!-- 5. INTEGRATIONS -->
+<section class="card" id="integrations">
+  <h2><span class="badge">5</span> Integration Types & Mapping Templates</h2>
+
+  <table>
+    <tr><th>Integration type</th><th>Behavior</th></tr>
+    <tr><td>Mock</td><td>Returns a response without ever calling the backend — for testing/dev only</td></tr>
+    <tr><td>Lambda / HTTP (non-proxy)</td><td>You configure separate integration request/response — supports <strong>mapping templates</strong> to transform data both ways</td></tr>
+    <tr><td>Lambda Proxy</td><td>Full request passed as-is to Lambda; Lambda is fully responsible for both request parsing and response shape — <strong>no mapping templates possible</strong></td></tr>
+    <tr><td>HTTP Proxy</td><td>Same idea as Lambda proxy but for an HTTP backend — no mapping templates, though you can inject extra headers (e.g. a hidden API key) between gateway and backend</td></tr>
+    <tr><td>AWS Service</td><td>Direct integration with an AWS service (SQS, Step Functions, etc.), also supports mapping templates</td></tr>
+  </table>
+
+  <h3>Mapping templates</h3>
+  <p>Written in <strong>VTL (Velocity Template Language)</strong> — only usable with non-proxy integrations. Let you rename/reshape query strings, headers, and body content on the way in or out.</p>
+
+  <ul>
+    <li>Classic use case: bridging a <strong>SOAP (XML) backend</strong> behind a JSON-speaking REST API — extract data from the request, build the SOAP XML message, call the backend, then transform the XML response back to JSON.</li>
+    <li>Another use case: renaming query string parameters into different JSON keys before they reach Lambda.</li>
+    <li>Requires setting <code>Content-Type</code> to <code>application/json</code> or <code>application/xml</code>.</li>
+  </ul>
+
+  <p>Hands-on: an integration <strong>response</strong> mapping template took the Lambda's raw JSON output (<code>{"example": "hello world"}</code>) and reshaped it into a differently-named key (<code>{"my key": "my value", "renamed key": "hello world"}</code>) using <code>$input.json('$.example')</code>.</p>
+</section>
+
+<!-- 6. OPENAPI -->
+<section class="card" id="openapi">
+  <h2><span class="badge">6</span> OpenAPI</h2>
+
+  <p>API Gateway has tight <strong>OpenAPI 3.0</strong> (or Swagger) integration — define methods, integration requests/responses, and AWS-specific extensions entirely as code (YAML/JSON), then import it to build the whole API at once.</p>
+
+  <ul>
+    <li>You can also <strong>export</strong> an existing API as an OpenAPI spec — useful for generating client SDKs (Android, JavaScript, iOS, Java, Ruby, etc.).</li>
+    <li>OpenAPI specs also drive <strong>request validation</strong>: check required parameters/headers, or validate the body against a JSON Schema — invalid requests get an immediate <code>400</code> without ever reaching the backend.</li>
+  </ul>
+
+  <p>Configured via <code>x-amazon-apigateway-request-validator</code> in the spec — can validate params-only, body-only, or both, and can be scoped to all methods or specific ones.</p>
+
+  <p>Hands-on: importing AWS's example "Pet Store" OpenAPI definition instantly builds out the full API structure; exporting an existing API (from a stage, choosing Swagger/OpenAPI 3, JSON/YAML) produces a portable spec file and can auto-generate an SDK.</p>
+</section>
+
+<!-- 7. CACHING -->
+<section class="card" id="caching">
+  <h2><span class="badge">7</span> Caching</h2>
+
+  <table>
+    <tr><th>Setting</th><th>Value</th></tr>
+    <tr><td>Default TTL</td><td>300 seconds (5 min); range 0 (no caching) – 3,600 seconds (1 hour)</td></tr>
+    <tr><td>Scope</td><td>Defined per stage; can be overridden per method</td></tr>
+    <tr><td>Size</td><td>0.5 GB – 237 GB</td></tr>
+    <tr><td>Encryption</td><td>Optional</td></tr>
+  </table>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    The cache is <strong>expensive</strong> — generally worth it only in production/pre-production, not dev/test where request volume is low anyway.
+  </div>
+
+  <h3>Cache invalidation</h3>
+  <ul>
+    <li>Invalidate the whole cache instantly from the console.</li>
+    <li>Clients can invalidate it themselves by sending the <code>Cache-Control: max-age=0</code> header — but this <strong>requires IAM authorization</strong> for the <code>InvalidateCache</code> permission, or else <strong>any client</strong> could wipe your cache at will.</li>
+  </ul>
+
+  <p>Hands-on: enabling the cache on a stage makes repeated identical requests return from cache instead of re-invoking Lambda — noticeably faster, and you can override TTL/invalidation rules per individual method.</p>
+</section>
+
+<!-- 8. USAGE PLANS -->
+<section class="card" id="usage-plans">
+  <h2><span class="badge">8</span> Usage Plans & API Keys</h2>
+
+  <p>Used to monetize/meter an API for external customers.</p>
+
+  <ul>
+    <li><strong>Usage plan</strong>: defines who can access which stages/methods, how fast (throttling), and how much (quota — e.g. 10,000 requests/month).</li>
+    <li><strong>API key</strong>: a string distributed to a customer, sent in the <code>x-api-key</code> header, used to identify and meter their usage against a plan.</li>
+  </ul>
+
+  <h3>Setup order (important!)</h3>
+  <ol>
+    <li>Create the API(s), configure which methods require an API key, and deploy to stages.</li>
+    <li>Generate/import API keys to give to your developers/customers.</li>
+    <li>Create a usage plan with the desired throttle/quota limits.</li>
+    <li><strong>Associate</strong> the API stages and API keys with the usage plan — miss this step and nothing actually gets enforced.</li>
+  </ol>
+
+  <p>Throttling limits apply at the <strong>API key level</strong>; quota limits are the overall request cap for that key.</p>
+</section>
+
+<!-- 9. MONITORING -->
+<section class="card" id="monitoring">
+  <h2><span class="badge">9</span> Monitoring, Logging & Tracing</h2>
+
+  <ul>
+    <li><strong>CloudWatch Logs</strong> integration (per stage, log level ERROR/INFO/DEBUG) captures request/response bodies — be mindful of sensitive data exposure.</li>
+    <li><strong>X-Ray</strong> tracing gives full request tracing when enabled on both API Gateway and Lambda.</li>
+  </ul>
+
+  <h3>Key CloudWatch metrics</h3>
+  <table>
+    <tr><th>Metric</th><th>Meaning</th></tr>
+    <tr><td><code>CacheHitCount</code> / <code>CacheMissCount</code></td><td>How effective the API cache is</td></tr>
+    <tr><td><code>Count</code></td><td>Number of API requests in a period</td></tr>
+    <tr><td><code>IntegrationLatency</code></td><td>Time spent waiting on the backend to respond</td></tr>
+    <tr><td><code>Latency</code></td><td>Total time from request in to response out — includes IntegrationLatency plus auth checks, cache lookups, mapping templates, etc.</td></tr>
+    <tr><td><code>4XXError</code></td><td>Client-side errors</td></tr>
+    <tr><td><code>5XXError</code></td><td>Server-side (backend) errors</td></tr>
+  </table>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    <code>Latency</code> is always ≥ <code>IntegrationLatency</code>. Both are capped by the hard <strong>29-second</strong> API Gateway timeout — exceed it and you get a <code>504</code>.
+  </div>
+
+  <h3>Throttling & errors</h3>
+  <ul>
+    <li>Default account-wide soft limit: <strong>10,000 requests/second</strong> across all APIs (can be raised) — one overloaded API can throttle the others unless you set per-stage/per-method/per-usage-plan limits.</li>
+    <li>Throttled requests return <code>429 Too Many Requests</code> — retriable with exponential backoff.</li>
+    <li><code>4xx</code> = client errors (400 Bad Request, 403 Access Denied/WAF block, 429 throttled); <code>5xx</code> = server errors (502 bad Lambda proxy response, 503 backend unavailable, 504 integration timeout after 29s).</li>
+  </ul>
+</section>
+
+<!-- 10. CORS -->
+<section class="card" id="cors">
+  <h2><span class="badge">10</span> CORS</h2>
+
+  <p>Enable CORS whenever your API needs to accept calls from a browser on a <strong>different domain</strong> — same browser security concept covered for S3/CloudFront.</p>
+
+  <ul>
+    <li>API Gateway responds to an <strong>OPTIONS</strong> preflight request with the CORS headers: <code>Access-Control-Allow-Methods</code>, <code>Access-Control-Allow-Headers</code>, <code>Access-Control-Allow-Origin</code> — all configurable from the console.</li>
+  </ul>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Just remember: enable CORS on the API Gateway resource whenever the calling web page's origin differs from the API's origin.
+  </div>
+</section>
+
+<!-- 11. AUTH -->
+<section class="card" id="auth">
+  <h2><span class="badge">11</span> Authentication & Authorization</h2>
+
+  <table>
+    <tr><th>Method</th><th>Best for</th><th>How it works</th></tr>
+    <tr><td>IAM permissions</td><td>Internal callers already in your AWS account (EC2, Lambda, IAM users)</td><td>Caller signs the request with SigV4; API Gateway checks the IAM policy. Combine with a <strong>resource policy</strong> for cross-account access, IP allow/deny lists, or VPC-only access.</td></tr>
+    <tr><td>Cognito User Pools</td><td>External web/mobile users, no custom code needed</td><td>Client authenticates with Cognito, gets a token, passes it to API Gateway, which validates it directly against the User Pool</td></tr>
+    <tr><td>Lambda Authorizer (custom)</td><td>Third-party identity systems (e.g. Auth0) or fully custom logic</td><td>Client passes a bearer token (JWT/OAuth); a Lambda function validates it and returns an IAM policy, which gets cached</td></tr>
+  </table>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="10" width="160" height="35" rx="5"/><text class="svg-text" x="100" y="32" text-anchor="middle" font-size="9">Client (IAM creds)</text>
+      <path class="svg-arrow" d="M180,27 L320,27"/>
+      <text class="svg-label" x="480" y="20" text-anchor="middle" font-size="8">SigV4 signed → IAM policy check</text>
+
+      <rect class="svg-box" x="20" y="58" width="160" height="35" rx="5"/><text class="svg-text" x="100" y="80" text-anchor="middle" font-size="9">Client (app user)</text>
+      <path class="svg-arrow" d="M180,75 L320,75"/>
+      <text class="svg-label" x="480" y="68" text-anchor="middle" font-size="8">Cognito token → validated against User Pool</text>
+
+      <rect class="svg-box" x="20" y="106" width="160" height="35" rx="5"/><text class="svg-text" x="100" y="128" text-anchor="middle" font-size="9">Client (3rd-party auth)</text>
+      <path class="svg-arrow" d="M180,123 L320,123"/>
+      <text class="svg-label" x="480" y="116" text-anchor="middle" font-size="8">Bearer token → Lambda authorizer validates → returns IAM policy (cached)</text>
+
+      <rect class="svg-box-accent" x="320" y="10" width="130" height="131" rx="6"/><text class="svg-text" x="385" y="80" text-anchor="middle" font-size="10">API Gateway</text>
+    </svg>
+  </div>
+  <p class="caption">Three authorization paths into the same API Gateway: raw IAM signing, Cognito-issued tokens, or a Lambda authorizer validating a third-party token and returning a cacheable IAM policy.</p>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Lambda Authorizer is the most flexible but the <strong>most work</strong> — you write both the token validation and the authorization logic yourself, and you still pay for the Lambda invocation even with caching. Cognito is preferred when you don't need a custom identity system, since no custom authentication code is required.
+  </div>
+</section>
+
+<!-- 12. REST VS HTTP -->
+<section class="card" id="rest-vs-http">
+  <h2><span class="badge">12</span> REST API vs HTTP API</h2>
+
+  <table>
+    <tr><th></th><th>HTTP API</th><th>REST API</th></tr>
+    <tr><td>Cost</td><td>Lower — cost-effective alternative</td><td>Higher, full-featured</td></tr>
+    <tr><td>Integration types</td><td>Lambda proxy, HTTP proxy, private integration only — all proxy, no mapping templates</td><td>Full range including non-proxy with mapping templates</td></tr>
+    <tr><td>Auth</td><td>OIDC and OAuth 2.0 native support</td><td>IAM, Cognito, Lambda authorizers — no native OIDC/OAuth 2.0</td></tr>
+    <tr><td>CORS</td><td>Built-in support</td><td>Manually configured</td></tr>
+    <tr><td>Usage plans / API keys</td><td>Not supported</td><td>Supported</td></tr>
+    <tr><td>Resource policies</td><td>Not supported</td><td>Supported</td></tr>
+  </table>
+
+  <p>HTTP APIs are newer, simpler, and cheaper — but with fewer features than REST APIs (no data mapping, no usage plans, no resource policies).</p>
+</section>
+
+<!-- 13. WEBSOCKET -->
+<section class="card" id="websocket">
+  <h2><span class="badge">13</span> WebSocket API</h2>
+
+  <p><strong>WebSocket</strong> = two-way, persistent, interactive communication between client and server — the server can push data without the client asking first. Used for chat apps, collaboration tools, multiplayer games, trading platforms.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 170" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="20" width="130" height="35" rx="5"/><text class="svg-text" x="85" y="42" text-anchor="middle" font-size="9">Client</text>
+      <path class="svg-arrow" d="M150,37 L300,37"/>
+      <text class="svg-label" x="225" y="27" text-anchor="middle" font-size="8">wss:// connect</text>
+      <rect class="svg-box-accent" x="300" y="10" width="180" height="55" rx="6"/>
+      <text class="svg-text" x="390" y="32" text-anchor="middle" font-size="10">API Gateway (WebSocket)</text>
+      <text class="svg-label" x="390" y="50" text-anchor="middle" font-size="8">persistent connection</text>
+      <path class="svg-arrow" d="M480,37 L600,37"/>
+      <rect class="svg-box" x="600" y="20" width="160" height="35" rx="5"/><text class="svg-text" x="680" y="42" text-anchor="middle" font-size="9">$connect → Lambda</text>
+
+      <path class="svg-arrow" d="M150,90 L300,90"/>
+      <text class="svg-label" x="225" y="80" text-anchor="middle" font-size="8">send frame (JSON)</text>
+      <path class="svg-arrow" d="M480,90 L600,90"/>
+      <rect class="svg-box" x="600" y="72" width="160" height="35" rx="5"/><text class="svg-text" x="680" y="94" text-anchor="middle" font-size="9">route → Lambda</text>
+
+      <path class="svg-arrow" d="M600,140 L150,140" stroke-dasharray="3,3"/>
+      <text class="svg-label" x="390" y="130" text-anchor="middle" font-size="8">POST to .../@connections/{connectionId} → pushes data back to client</text>
+    </svg>
+  </div>
+  <p class="caption">A persistent connection ID is established once and reused for every message; the server can push data back at any time via a signed POST to the connection's callback URL.</p>
+
+  <ul>
+    <li>On connect, a <code>$connect</code> Lambda fires (e.g. persist the connection ID + user info in DynamoDB); on disconnect, <code>$disconnect</code> fires; regular messages ("frames") route to other backends based on a <strong>route selection expression</strong> (e.g. <code>$request.body.action</code>) matched against a route key table.</li>
+    <li>To push data <em>to</em> the client without them asking: <strong>POST</strong> (SigV4-signed) to <code>.../@connections/{connectionId}</code>. <strong>GET</strong> checks connection status; <strong>DELETE</strong> disconnects the client.</li>
+    <li>Unmatched routes fall back to the <strong>default route</strong>.</li>
+  </ul>
+</section>
+
+<!-- 14. ARCHITECTURE -->
+<section class="card" id="architecture">
+  <h2><span class="badge">14</span> Microservices Architecture</h2>
+
+  <p>API Gateway can act as a <strong>single unified entry point</strong> across many backend microservices, hiding their complexity from clients.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box-accent" x="300" y="45" width="180" height="40" rx="6"/><text class="svg-text" x="390" y="69" text-anchor="middle" font-size="10">API Gateway</text>
+      <path class="svg-arrow" d="M300,60 L150,25"/>
+      <rect class="svg-box" x="20" y="10" width="130" height="30" rx="5"/><text class="svg-text" x="85" y="30" text-anchor="middle" font-size="9">/service1 → ALB → ECS</text>
+      <path class="svg-arrow" d="M300,70 L150,70"/>
+      <rect class="svg-box" x="20" y="55" width="130" height="30" rx="5"/><text class="svg-text" x="85" y="75" text-anchor="middle" font-size="9">/docs → S3</text>
+      <path class="svg-arrow" d="M300,80 L150,115"/>
+      <rect class="svg-box" x="20" y="100" width="130" height="30" rx="5"/><text class="svg-text" x="85" y="120" text-anchor="middle" font-size="9">/service2 → ALB → ASG</text>
+      <path class="svg-arrow" d="M480,65 L650,65"/>
+      <rect class="svg-box" x="650" y="45" width="110" height="40" rx="5"/><text class="svg-text" x="705" y="65" text-anchor="middle" font-size="9">Route 53 custom domain</text>
+    </svg>
+  </div>
+  <p class="caption">One API Gateway routes different paths to entirely different backends (ECS, S3, EC2 ASGs), fronted by a custom Route 53 domain and SSL cert — clients see one clean URL regardless of backend complexity.</p>
+
+  <p>You can register custom domains via Route 53 (even per-customer subdomains like <code>customer1.example.com</code>), attach the right SSL certificates, and apply forwarding/transformation rules — all centralized at the API Gateway layer.</p>
+</section>
+
+<!-- CHEAT SHEET -->
+<section class="card cheatsheet" id="cheatsheet">
+  <h2><span class="badge">✓</span> Cheat Sheet</h2>
+
+  <h3>Key facts to remember</h3>
+  <ul>
+    <li>API Gateway integrates with Lambda, any HTTP backend, or AWS services directly — always via a serverless proxy, adding auth, caching, throttling, and versioning on top.</li>
+    <li>Endpoint types: Edge-Optimized (global, via CloudFront), Regional (single region), Private (VPC-only via resource policy).</li>
+    <li>Changes are invisible until deployed to a <strong>stage</strong>; stage variables let one API config point at different backends (e.g. Lambda aliases) per stage without redeploying.</li>
+    <li>Canary deployments split a stage's traffic by percentage between current and new versions, with separate metrics, before a full promotion.</li>
+    <li>Proxy integrations (Lambda proxy, HTTP proxy) pass requests/responses through untouched — no mapping templates possible; non-proxy integrations support VTL mapping templates to reshape data both ways.</li>
+    <li>OpenAPI specs can build/import/export APIs and drive request validation (missing params/headers, bad JSON schema → 400 before hitting the backend).</li>
+    <li>Caching is per-stage (overridable per-method), 0–3,600s TTL, 0.5–237GB — invalidation via console or a <code>Cache-Control: max-age=0</code> header (needs IAM authorization or anyone can wipe it).</li>
+    <li>Usage plans + API keys meter/throttle/quota external customers — must associate keys and stages with the plan or nothing is enforced.</li>
+    <li>Hard 29-second timeout on every API Gateway request, regardless of Lambda's own timeout — exceeding it is a 504.</li>
+    <li>Default account throttle: 10,000 req/sec across all APIs (soft limit) — one overloaded API can throttle others unless scoped with stage/method/usage-plan limits.</li>
+    <li>Auth options: IAM (+resource policy for cross-account/IP/VPC rules), Cognito User Pools (no custom code), Lambda Authorizer (most flexible, most work, still costs an invocation even when cached).</li>
+    <li>HTTP APIs are cheaper/simpler (proxy-only, native OIDC/OAuth2, built-in CORS) but lack usage plans, API keys, resource policies, and mapping templates that REST APIs have.</li>
+    <li>WebSocket APIs keep a persistent connection ID; routing is based on a JSON field in the incoming message (route selection expression); server-to-client push uses a signed POST to <code>@connections/{connectionId}</code>.</li>
+  </ul>
+
+  <h3>Decision guide</h3>
+  <table>
+    <tr><th>Need</th><th>Use</th></tr>
+    <tr><td>Cheapest, simplest proxy API with OAuth2/OIDC</td><td>HTTP API</td></tr>
+    <tr><td>Full feature set: usage plans, mapping templates, resource policies</td><td>REST API</td></tr>
+    <tr><td>Real-time two-way communication</td><td>WebSocket API</td></tr>
+    <tr><td>Internal AWS-account callers</td><td>IAM authorization</td></tr>
+    <tr><td>External app users, no custom auth code</td><td>Cognito User Pool authorizer</td></tr>
+    <tr><td>Third-party identity provider / fully custom logic</td><td>Lambda authorizer</td></tr>
+    <tr><td>Test a risky backend change safely</td><td>Canary deployment</td></tr>
+    <tr><td>Reduce backend load for repeat identical requests</td><td>Stage/method caching</td></tr>
+    <tr><td>Monetize/meter external customer access</td><td>Usage plans + API keys</td></tr>
+    <tr><td>Bridge XML/SOAP backend behind a JSON API</td><td>Non-proxy integration + mapping templates</td></tr>
+  </table>
+
+  <h3>Mental model</h3>
+  <p>API Gateway is the front door that turns a Lambda function, an HTTP service, or a raw AWS API into a manageable, secure, versioned product: stages and canaries let you evolve the backend safely; mapping templates and OpenAPI validation let you shape and guard the data crossing the boundary; caching, usage plans, and throttling protect both your backend and your business model; and IAM/Cognito/Lambda authorizers decide who's allowed through the door in the first place. Once you can name which of these levers solves a given problem, the API Gateway exam surface is mostly memorization of specifics (timeouts, metric names, setup order) layered on that same mental frame.</p>
+</section>
+
+<a class="back-to-top" href="#top">↑ Back to top</a>
+
+</div>
+</body>
+</html>

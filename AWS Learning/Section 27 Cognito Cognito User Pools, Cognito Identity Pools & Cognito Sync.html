@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 27 — Amazon Cognito — Notes</title>
+<style>
+  :root {
+    --accent: #e8830f;
+    --accent-dark: #c96a08;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --border: #e3e0da;
+    --text: #2b2a28;
+    --text-muted: #6b6a66;
+    --green: #2e7d32;
+    --green-bg: #eef7ee;
+    --red: #c0392b;
+    --red-bg: #fdecea;
+    --amber: #b8790a;
+    --amber-bg: #fff4e2;
+    --purple: #6a4fb3;
+    --purple-bg: #f3f0fb;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  header {
+    padding-bottom: 24px;
+    border-bottom: 3px solid var(--accent);
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 2rem;
+    color: var(--text);
+  }
+
+  header h1 span {
+    color: var(--accent);
+  }
+
+  header p.subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+  }
+
+  nav.toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 32px;
+  }
+
+  nav.toc h2 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  nav.toc ol {
+    margin: 0;
+    padding-left: 22px;
+    columns: 2;
+    column-gap: 24px;
+  }
+
+  nav.toc li {
+    margin-bottom: 6px;
+    break-inside: avoid;
+  }
+
+  nav.toc a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  nav.toc a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 24px;
+    scroll-margin-top: 20px;
+  }
+
+  .card h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 14px;
+    font-size: 1.3rem;
+    color: var(--text);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    color: var(--accent-dark);
+    font-size: 1.05rem;
+    margin: 20px 0 8px;
+  }
+
+  a { color: var(--accent-dark); }
+
+  code {
+    background: #f1eee7;
+    border: 1px solid #e6e2d8;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.92em;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    color: #7a4b00;
+  }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 0.94rem;
+  }
+
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f7f2ea;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) td {
+    background: #fcfbf9;
+  }
+
+  .callout {
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+
+  .callout strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .callout.tip {
+    background: var(--green-bg);
+    border-color: var(--green);
+  }
+  .callout.tip strong.tag { color: var(--green); }
+
+  .callout.warning {
+    background: var(--red-bg);
+    border-color: var(--red);
+  }
+  .callout.warning strong.tag { color: var(--red); }
+
+  .callout.key {
+    background: var(--amber-bg);
+    border-color: var(--amber);
+  }
+  .callout.key strong.tag { color: var(--amber); }
+
+  .analogy {
+    border: 1.5px dashed var(--purple);
+    background: var(--purple-bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+  .analogy strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--purple);
+  }
+
+  .diagram {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fdfcfa;
+    padding: 16px;
+    margin: 16px 0 6px;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  .diagram svg {
+    max-width: 100%;
+  }
+
+  .caption {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 4px 0 16px;
+    font-style: italic;
+  }
+
+  .cheatsheet {
+    border: 2px solid var(--accent);
+  }
+
+  .cheatsheet h2 { color: var(--accent-dark); }
+
+  .back-to-top {
+    display: block;
+    text-align: center;
+    margin-top: 36px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    text-decoration: none;
+  }
+  .back-to-top:hover { text-decoration: underline; }
+
+  .svg-box { fill: #fff; stroke: #c8917a; stroke-width: 1.5; }
+  .svg-box-accent { fill: #fff4e2; stroke: var(--accent); stroke-width: 1.5; }
+  .svg-box-gray { fill: #eeeeee; stroke: #b8b8b8; stroke-width: 1.5; }
+  .svg-text { font-family: -apple-system, sans-serif; font-size: 12px; fill: #2b2a28; }
+  .svg-label { font-family: -apple-system, sans-serif; font-size: 11px; fill: #6b6a66; }
+  .svg-arrow { stroke: #6b6a66; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header id="top">
+  <h1><span>Section 27</span> — Amazon Cognito</h1>
+  <p class="subtitle">My notes on identity for web/mobile app users — User Pools for authentication, Identity Pools for AWS authorization.</p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#overview">Cognito Overview</a></li>
+    <li><a href="#user-pools">Cognito User Pools</a></li>
+    <li><a href="#user-pools-hands-on">User Pools — Hands On</a></li>
+    <li><a href="#user-pools-others">User Pools — Other Features</a></li>
+    <li><a href="#alb-auth">ALB User Authentication</a></li>
+    <li><a href="#identity-pools">Cognito Identity Pools</a></li>
+    <li><a href="#identity-pools-hands-on">Identity Pools — Hands On</a></li>
+    <li><a href="#comparison">User Pools vs Identity Pools</a></li>
+    <li><a href="#cheatsheet">Cheat Sheet</a></li>
+  </ol>
+</nav>
+
+<!-- 1. OVERVIEW -->
+<section class="card" id="overview">
+  <h2><span class="badge">1</span> Cognito Overview</h2>
+
+  <p><strong>Cognito</strong> gives an identity to users <strong>outside</strong> your AWS account, so they can interact with your web/mobile applications. IAM is for people/systems inside your AWS account; Cognito is for the (potentially huge number of) end users of your app.</p>
+
+  <table>
+    <tr><th>Service</th><th>Purpose</th></tr>
+    <tr><td>Cognito User Pools (CUP)</td><td>Sign-in/sign-up for app users — integrates natively with API Gateway and ALB</td></tr>
+    <tr><td>Cognito Identity Pools (Federated Identities)</td><td>Issues temporary AWS credentials to app users so they can access AWS resources directly</td></tr>
+  </table>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Look for keywords like "hundreds/thousands of app users," "mobile users," or "authenticate with SAML/social login" — that's Cognito, not IAM.
+  </div>
+</section>
+
+<!-- 2. USER POOLS -->
+<section class="card" id="user-pools">
+  <h2><span class="badge">2</span> Cognito User Pools</h2>
+
+  <p>A <strong>serverless user database</strong> for your web/mobile app — handles sign-up, sign-in, password reset, email/phone verification, MFA, and social/SAML login ("Federated Identities" at the login level).</p>
+
+  <ul>
+    <li>Can block sign-in if a user's credentials were found compromised elsewhere on the web.</li>
+    <li>On successful login, returns a <strong>JWT (JSON Web Token)</strong>.</li>
+  </ul>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#6b6a66"/>
+        </marker>
+      </defs>
+      <rect class="svg-box" x="20" y="45" width="150" height="40" rx="6"/><text class="svg-text" x="95" y="69" text-anchor="middle" font-size="9">Web/mobile app</text>
+      <path class="svg-arrow" d="M170,60 L300,60"/>
+      <text class="svg-label" x="235" y="50" text-anchor="middle" font-size="9">login</text>
+      <rect class="svg-box-accent" x="300" y="20" width="180" height="90" rx="8"/>
+      <text class="svg-text" x="390" y="45" text-anchor="middle" font-weight="600" font-size="11">Cognito User Pool</text>
+      <text class="svg-label" x="390" y="65" text-anchor="middle" font-size="8">internal user DB</text>
+      <text class="svg-label" x="390" y="80" text-anchor="middle" font-size="8">+ Google/Facebook/SAML</text>
+      <text class="svg-label" x="390" y="95" text-anchor="middle" font-size="8">federation</text>
+      <path class="svg-arrow" d="M300,80 L170,100"/>
+      <text class="svg-label" x="235" y="115" text-anchor="middle" font-size="9">JWT returned</text>
+    </svg>
+  </div>
+  <p class="caption">Users log in directly against the user pool (or via a federated social/SAML/OIDC provider) and get back a JWT to use with the rest of the app.</p>
+
+  <h3>AWS integrations</h3>
+  <ul>
+    <li><strong>API Gateway</strong> — user authenticates with CUP, gets a JWT, passes it to API Gateway, which validates it before allowing the backend call.</li>
+    <li><strong>Application Load Balancer</strong> — ALB listener rules can authenticate against CUP directly before forwarding to the target group (EC2/Lambda/ECS).</li>
+  </ul>
+</section>
+
+<!-- 3. USER POOLS HANDS ON -->
+<section class="card" id="user-pools-hands-on">
+  <h2><span class="badge">3</span> User Pools — Hands On</h2>
+
+  <ul>
+    <li>Create a user pool: choose app type (traditional web app, SPA, mobile, machine-to-machine), sign-in option (email/phone/username), required attributes, and a post-signup redirect URL.</li>
+    <li>Console sections: <strong>Users</strong> (manually add/view), <strong>Groups</strong>, <strong>Authentication methods</strong> (email/SMS verification, password policy, passkeys), <strong>Sign-in experience</strong> (MFA required/optional), <strong>Sign-up</strong> (verification, custom attributes), <strong>Federated identity providers</strong> (Google/Facebook/Amazon/Apple/SAML/OIDC), <strong>Extensions</strong> (Lambda triggers), <strong>Security</strong> (WAF, threat protection, log streaming), <strong>Branding</strong> (custom domain, Managed Login styling).</li>
+  </ul>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    Cognito's own email sending is capped at 50/day — meant for testing only. Use <strong>Amazon SES</strong> for production email verification.
+  </div>
+
+  <p>The <strong>Managed Login</strong> (formerly "Hosted UI") gives you a ready-made, customizable sign-in page — no need to build your own auth screens. Testing it: sign up with an email → Cognito sends a verification code → entering it flips the user from <em>unconfirmed/unverified</em> to <em>confirmed/verified</em> in the Users list, then redirects to your configured callback URL.</p>
+</section>
+
+<!-- 4. USER POOLS OTHERS -->
+<section class="card" id="user-pools-others">
+  <h2><span class="badge">4</span> User Pools — Other Features</h2>
+
+  <h3>Lambda triggers</h3>
+  <table>
+    <tr><th>Trigger point</th><th>Use case</th></tr>
+    <tr><td>Pre-authentication / Post-authentication</td><td>Accept/deny a sign-in, log events for custom analytics</td></tr>
+    <tr><td>Pre-token generation</td><td>Augment or suppress claims in the issued token</td></tr>
+    <tr><td>Pre sign-up / Post confirmation / Migrate user</td><td>Custom welcome message, event logging, migrating users from a legacy system</td></tr>
+    <tr><td>Custom message</td><td>Customize the text of verification/notification messages</td></tr>
+  </table>
+
+  <h3>Custom domains</h3>
+  <div class="callout warning">
+    <strong class="tag">Important exam point</strong>
+    A custom domain for the Hosted UI/Managed Login requires an <strong>ACM certificate in us-east-1</strong> — regardless of which region your user pool actually lives in.
+  </div>
+
+  <h3>Adaptive authentication</h3>
+  <p>Each sign-in gets a <strong>risk score</strong> (low/medium/high) based on factors like device, location, and IP address. A normal login proceeds as usual; a suspicious one can be blocked or prompted for MFA — all visible in CloudWatch Logs (sign-in attempts, risk scores, failed challenges).</p>
+
+  <h3>JWT structure</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 780 90" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="25" width="220" height="40" rx="6"/><text class="svg-text" x="130" y="49" text-anchor="middle" font-size="9">Header</text>
+      <rect class="svg-box-accent" x="280" y="25" width="220" height="40" rx="6"/><text class="svg-text" x="390" y="49" text-anchor="middle" font-size="9">Payload (user info, claims)</text>
+      <rect class="svg-box" x="540" y="25" width="220" height="40" rx="6"/><text class="svg-text" x="650" y="49" text-anchor="middle" font-size="9">Signature</text>
+    </svg>
+  </div>
+  <p class="caption">A JWT is three Base64-encoded parts; the payload holds user info (e.g. the "sub" UUID = the user's ID in the Cognito database), but you must verify the signature before trusting anything in it.</p>
+
+  <p>Use the <code>sub</code> (UUID) from the payload to look up additional stored attributes (email, name, phone, custom attributes) back in the Cognito user pool database.</p>
+</section>
+
+<!-- 5. ALB AUTH -->
+<section class="card" id="alb-auth">
+  <h2><span class="badge">5</span> ALB User Authentication</h2>
+
+  <p>An ALB can authenticate users itself — offloading that responsibility from your application entirely.</p>
+
+  <table>
+    <tr><th>Method</th><th>Use for</th></tr>
+    <tr><td><code>authenticate-cognito</code></td><td>Cognito User Pools — social logins (Amazon/Facebook/Google) or corporate (SAML/LDAP/Microsoft AD) via CUP federation</td></tr>
+    <tr><td><code>authenticate-oidc</code></td><td>Any OIDC-compliant identity provider directly, without Cognito</td></tr>
+  </table>
+
+  <ul>
+    <li>Requires an <strong>HTTPS listener</strong>.</li>
+    <li>For unauthenticated requests, choose: prompt to authenticate (default), <strong>deny</strong>, or <strong>allow</strong> (useful for a login page itself, which must be reachable before authentication).</li>
+  </ul>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="45" width="120" height="40" rx="6"/><text class="svg-text" x="80" y="69" text-anchor="middle" font-size="9">User</text>
+      <path class="svg-arrow" d="M140,65 L260,65"/>
+      <rect class="svg-box-accent" x="260" y="45" width="150" height="40" rx="6"/><text class="svg-text" x="335" y="69" text-anchor="middle" font-size="9">ALB (authenticate-cognito)</text>
+      <path class="svg-arrow" d="M410,65 L540,65"/>
+      <rect class="svg-box" x="540" y="45" width="220" height="40" rx="6"/><text class="svg-text" x="650" y="69" text-anchor="middle" font-size="9">Target group (ECS/EC2/Lambda) + user info</text>
+    </svg>
+  </div>
+  <p class="caption">With Cognito integration, the ALB authenticates the user and forwards the request to the backend enriched with the authenticated user's info — your app doesn't need to implement auth itself.</p>
+
+  <p>The OIDC path is more involved: ALB redirects to the IdP's authorization endpoint → gets an auth code → exchanges it at the token endpoint for ID/access tokens → calls the user info endpoint for claims → forwards the original request + claims to the backend.</p>
+</section>
+
+<!-- 6. IDENTITY POOLS -->
+<section class="card" id="identity-pools">
+  <h2><span class="badge">6</span> Cognito Identity Pools</h2>
+
+  <p><strong>Identity Pools</strong> (aka Federated Identities) give app users <strong>temporary AWS credentials</strong> so they can call AWS services directly (S3, DynamoDB, etc.) — without creating an IAM user per app user (doesn't scale, doesn't make sense for untrusted external users).</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="45" width="140" height="40" rx="6"/><text class="svg-text" x="90" y="69" text-anchor="middle" font-size="9">Web/mobile app</text>
+      <path class="svg-arrow" d="M160,60 L280,40"/>
+      <text class="svg-label" x="220" y="35" text-anchor="middle" font-size="8">1. login (Google/SAML/CUP...)</text>
+      <rect class="svg-box" x="280" y="15" width="160" height="35" rx="5"/><text class="svg-text" x="360" y="37" text-anchor="middle" font-size="9">Identity Provider</text>
+      <path class="svg-arrow" d="M160,75 L280,90"/>
+      <text class="svg-label" x="220" y="105" text-anchor="middle" font-size="8">2. exchange token</text>
+      <rect class="svg-box-accent" x="280" y="70" width="160" height="40" rx="6"/><text class="svg-text" x="360" y="94" text-anchor="middle" font-size="9">Cognito Identity Pool</text>
+      <path class="svg-arrow" d="M440,90 L560,90"/>
+      <text class="svg-label" x="500" y="80" text-anchor="middle" font-size="8">3. STS</text>
+      <rect class="svg-box" x="560" y="70" width="160" height="40" rx="6"/><text class="svg-text" x="640" y="94" text-anchor="middle" font-size="9">Temporary AWS credentials</text>
+    </svg>
+  </div>
+  <p class="caption">The app logs in with any supported provider, exchanges that token with the identity pool, which calls STS to mint scoped temporary AWS credentials for the app to use directly.</p>
+
+  <ul>
+    <li>Supported login sources: Cognito User Pools, social providers (Amazon/Facebook/Google/Apple), OIDC, SAML, or a custom developer-authenticated backend.</li>
+    <li>Also supports fully <strong>unauthenticated guest access</strong> via a guest IAM role/policy.</li>
+    <li>API call behind the scenes: STS's <code>AssumeRoleWithWebIdentity</code> — the IAM role must trust Cognito Identity Pools.</li>
+  </ul>
+
+  <h3>Fine-grained access with policy variables</h3>
+  <p>Scope a role's IAM policy to the individual user via a policy variable — e.g. restrict S3 access to only objects under a prefix matching the user's ID, or restrict DynamoDB access to only rows where the partition key equals the user's ID (row-level security).</p>
+</section>
+
+<!-- 7. IDENTITY POOLS HANDS ON -->
+<section class="card" id="identity-pools-hands-on">
+  <h2><span class="badge">7</span> Identity Pools — Hands On</h2>
+
+  <ol>
+    <li>Create an identity pool, enabling authenticated access (choose a source — e.g. an existing Cognito User Pool) and/or guest access.</li>
+    <li>Create an <strong>authenticated role</strong> and an <strong>unauthenticated (guest) role</strong> — these define what each type of user can actually do in AWS.</li>
+    <li>Specify the CUP's pool ID + app client ID if using it as the login source; choose whether all authenticated users share one role, or use rules/attribute mapping to assign different roles per user.</li>
+  </ol>
+
+  <p>The actual app-side flow (SDK auth → exchange for credentials) happens in application code. In the console, the important piece is going to <strong>IAM → Roles</strong> and editing the two auto-created Cognito roles to attach the exact permissions (inline or managed policies) your authenticated/guest users should have.</p>
+</section>
+
+<!-- 8. COMPARISON -->
+<section class="card" id="comparison">
+  <h2><span class="badge">8</span> User Pools vs Identity Pools</h2>
+
+  <table>
+    <tr><th></th><th>Cognito User Pools</th><th>Cognito Identity Pools</th></tr>
+    <tr><td>Solves</td><td><strong>Authentication</strong> — who is this user?</td><td><strong>Authorization</strong> — what can this user do in AWS?</td></tr>
+    <tr><td>Output</td><td>A JWT after login</td><td>Temporary AWS credentials (via STS)</td></tr>
+    <tr><td>Backed by</td><td>An internal user database (+ federated social/SAML/OIDC logins)</td><td>Any login source, including CUP itself</td></tr>
+    <tr><td>Use alone when</td><td>You just need a user database for your app</td><td>Rarely alone — usually paired with a login source</td></tr>
+  </table>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="45" width="130" height="40" rx="6"/><text class="svg-text" x="85" y="69" text-anchor="middle" font-size="9">App user</text>
+      <path class="svg-arrow" d="M150,60 L270,60"/>
+      <text class="svg-label" x="210" y="50" text-anchor="middle" font-size="8">login → JWT</text>
+      <rect class="svg-box-accent" x="270" y="45" width="150" height="40" rx="6"/><text class="svg-text" x="345" y="69" text-anchor="middle" font-size="9">Cognito User Pool</text>
+      <path class="svg-arrow" d="M420,60 L540,60"/>
+      <text class="svg-label" x="480" y="50" text-anchor="middle" font-size="8">exchange token</text>
+      <rect class="svg-box-accent" x="540" y="45" width="150" height="40" rx="6"/><text class="svg-text" x="615" y="69" text-anchor="middle" font-size="9">Cognito Identity Pool</text>
+      <path class="svg-arrow" d="M615,85 L615,105"/>
+      <text class="svg-label" x="615" y="120" text-anchor="middle" font-size="8">→ STS → AWS credentials → direct AWS API calls</text>
+    </svg>
+  </div>
+  <p class="caption">The classic combo: User Pool handles "who are you," Identity Pool converts that verified identity into scoped, temporary AWS access.</p>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    A mobile app that just needs a user database → Cognito User Pools. A mobile app whose users need to call DynamoDB/S3 directly → Cognito Identity Pools (typically fed by a User Pool for the login step).
+  </div>
+</section>
+
+<!-- CHEAT SHEET -->
+<section class="card cheatsheet" id="cheatsheet">
+  <h2><span class="badge">✓</span> Cheat Sheet</h2>
+
+  <h3>Key facts to remember</h3>
+  <ul>
+    <li>Cognito = identity for users outside your AWS account (app/mobile users), not to be confused with IAM (which is for principals inside your account).</li>
+    <li>User Pools = authentication (login database + JWT); Identity Pools = authorization (temporary AWS credentials via STS).</li>
+    <li>User Pools support social login (Google/Facebook/Amazon/Apple), SAML, and OIDC federation, plus MFA, adaptive (risk-based) authentication, and Lambda triggers at nearly every stage of the auth/signup flow.</li>
+    <li>Custom domains for the Hosted UI/Managed Login always need an ACM cert in <strong>us-east-1</strong>, regardless of the pool's actual region.</li>
+    <li>ALB can authenticate users directly via <code>authenticate-cognito</code> (CUP-backed) or <code>authenticate-oidc</code> (any OIDC IdP) — offloading auth from your app entirely.</li>
+    <li>Identity Pools issue credentials via STS's <code>AssumeRoleWithWebIdentity</code>; IAM policies can use policy variables (e.g. the user ID) for per-user, row/prefix-level access control in S3/DynamoDB.</li>
+    <li>Identity Pools support guest (unauthenticated) access with their own dedicated IAM role.</li>
+    <li>The classic combo: User Pool authenticates → its token is exchanged with an Identity Pool → Identity Pool calls STS → app gets scoped, temporary AWS credentials.</li>
+  </ul>
+
+  <h3>Decision guide</h3>
+  <table>
+    <tr><th>Need</th><th>Use</th></tr>
+    <tr><td>Just need a login database for your app</td><td>Cognito User Pools</td></tr>
+    <tr><td>App users need to call AWS services directly (S3, DynamoDB)</td><td>Cognito Identity Pools</td></tr>
+    <tr><td>Both: users log in AND need scoped AWS access</td><td>User Pool + Identity Pool together</td></tr>
+    <tr><td>Offload auth from your API Gateway backend</td><td>API Gateway + Cognito authorizer</td></tr>
+    <tr><td>Offload auth from your ALB-fronted app</td><td>ALB <code>authenticate-cognito</code> / <code>authenticate-oidc</code></td></tr>
+    <tr><td>Allow anonymous/guest AWS access</td><td>Identity Pool guest role</td></tr>
+  </table>
+
+  <h3>Mental model</h3>
+  <p>Cognito answers two separate questions for people outside your AWS account: "who are you" (User Pools — a managed login database with JWTs, MFA, and social/SAML federation) and "what can you touch in AWS" (Identity Pools — exchanging a verified identity for scoped, temporary AWS credentials via STS). They're bundled under one product name but solve genuinely different problems, and the standard pattern chains them together: authenticate with a User Pool, then trade that token for real AWS access through an Identity Pool — with IAM policy variables keeping each user confined to only their own data.</p>
+</section>
+
+<a class="back-to-top" href="#top">↑ Back to top</a>
+
+</div>
+</body>
+</html>

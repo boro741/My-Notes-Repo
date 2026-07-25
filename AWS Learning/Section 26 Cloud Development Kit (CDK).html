@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 26 — Cloud Development Kit (CDK) — Notes</title>
+<style>
+  :root {
+    --accent: #e8830f;
+    --accent-dark: #c96a08;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --border: #e3e0da;
+    --text: #2b2a28;
+    --text-muted: #6b6a66;
+    --green: #2e7d32;
+    --green-bg: #eef7ee;
+    --red: #c0392b;
+    --red-bg: #fdecea;
+    --amber: #b8790a;
+    --amber-bg: #fff4e2;
+    --purple: #6a4fb3;
+    --purple-bg: #f3f0fb;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  header {
+    padding-bottom: 24px;
+    border-bottom: 3px solid var(--accent);
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 2rem;
+    color: var(--text);
+  }
+
+  header h1 span {
+    color: var(--accent);
+  }
+
+  header p.subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+  }
+
+  nav.toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 32px;
+  }
+
+  nav.toc h2 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  nav.toc ol {
+    margin: 0;
+    padding-left: 22px;
+    columns: 2;
+    column-gap: 24px;
+  }
+
+  nav.toc li {
+    margin-bottom: 6px;
+    break-inside: avoid;
+  }
+
+  nav.toc a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  nav.toc a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 24px;
+    scroll-margin-top: 20px;
+  }
+
+  .card h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 14px;
+    font-size: 1.3rem;
+    color: var(--text);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    color: var(--accent-dark);
+    font-size: 1.05rem;
+    margin: 20px 0 8px;
+  }
+
+  a { color: var(--accent-dark); }
+
+  code {
+    background: #f1eee7;
+    border: 1px solid #e6e2d8;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.92em;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    color: #7a4b00;
+  }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 0.94rem;
+  }
+
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f7f2ea;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) td {
+    background: #fcfbf9;
+  }
+
+  .callout {
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+
+  .callout strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .callout.tip {
+    background: var(--green-bg);
+    border-color: var(--green);
+  }
+  .callout.tip strong.tag { color: var(--green); }
+
+  .callout.warning {
+    background: var(--red-bg);
+    border-color: var(--red);
+  }
+  .callout.warning strong.tag { color: var(--red); }
+
+  .callout.key {
+    background: var(--amber-bg);
+    border-color: var(--amber);
+  }
+  .callout.key strong.tag { color: var(--amber); }
+
+  .analogy {
+    border: 1.5px dashed var(--purple);
+    background: var(--purple-bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+  .analogy strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--purple);
+  }
+
+  .diagram {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fdfcfa;
+    padding: 16px;
+    margin: 16px 0 6px;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  .diagram svg {
+    max-width: 100%;
+  }
+
+  .caption {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 4px 0 16px;
+    font-style: italic;
+  }
+
+  .cheatsheet {
+    border: 2px solid var(--accent);
+  }
+
+  .cheatsheet h2 { color: var(--accent-dark); }
+
+  .back-to-top {
+    display: block;
+    text-align: center;
+    margin-top: 36px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    text-decoration: none;
+  }
+  .back-to-top:hover { text-decoration: underline; }
+
+  .svg-box { fill: #fff; stroke: #c8917a; stroke-width: 1.5; }
+  .svg-box-accent { fill: #fff4e2; stroke: var(--accent); stroke-width: 1.5; }
+  .svg-box-gray { fill: #eeeeee; stroke: #b8b8b8; stroke-width: 1.5; }
+  .svg-text { font-family: -apple-system, sans-serif; font-size: 12px; fill: #2b2a28; }
+  .svg-label { font-family: -apple-system, sans-serif; font-size: 11px; fill: #6b6a66; }
+  .svg-arrow { stroke: #6b6a66; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header id="top">
+  <h1><span>Section 26</span> — Cloud Development Kit (CDK)</h1>
+  <p class="subtitle">My notes on defining AWS infrastructure with real programming languages instead of YAML.</p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#overview">CDK Overview</a></li>
+    <li><a href="#hands-on">CDK — Hands On</a></li>
+    <li><a href="#constructs">CDK Constructs</a></li>
+    <li><a href="#commands">CDK Commands & Bootstrapping</a></li>
+    <li><a href="#testing">CDK Unit Testing</a></li>
+    <li><a href="#cheatsheet">Cheat Sheet</a></li>
+  </ol>
+</nav>
+
+<!-- 1. OVERVIEW -->
+<section class="card" id="overview">
+  <h2><span class="badge">1</span> CDK Overview</h2>
+
+  <p><strong>AWS CDK (Cloud Development Kit)</strong> lets you define cloud infrastructure using a real programming language — JavaScript/TypeScript, Python, Java, or .NET — instead of YAML/JSON.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 100" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#6b6a66"/>
+        </marker>
+      </defs>
+      <rect class="svg-box" x="20" y="30" width="170" height="40" rx="6"/><text class="svg-text" x="105" y="54" text-anchor="middle" font-size="9">CDK code (TS/Python/Java/.NET)</text>
+      <path class="svg-arrow" d="M190,50 L310,50"/>
+      <text class="svg-label" x="250" y="40" text-anchor="middle" font-size="9">cdk synth</text>
+      <rect class="svg-box-accent" x="310" y="30" width="180" height="40" rx="6"/><text class="svg-text" x="400" y="54" text-anchor="middle" font-size="9">CloudFormation template</text>
+      <path class="svg-arrow" d="M490,50 L610,50"/>
+      <text class="svg-label" x="550" y="40" text-anchor="middle" font-size="9">cdk deploy</text>
+      <rect class="svg-box" x="610" y="30" width="150" height="40" rx="6"/><text class="svg-text" x="685" y="54" text-anchor="middle" font-size="9">Deployed stack</text>
+    </svg>
+  </div>
+  <p class="caption">CDK code compiles down to a CloudFormation template, which is what actually gets deployed — CDK is really a code-first way of authoring CloudFormation.</p>
+
+  <ul>
+    <li>You define <strong>constructs</strong> (high-level components) — e.g. a VPC, an ECS cluster, an ALB-fronted Fargate service — as real code with real objects and parameters.</li>
+    <li>Because it's real code, it's <strong>type-safe</strong>: if it doesn't compile, the template can't even be generated — catching mistakes far earlier than a YAML typo would in raw CloudFormation.</li>
+    <li>Lets you deploy infrastructure and application runtime code together — great for Lambda functions and Docker containers on ECS/EKS.</li>
+  </ul>
+
+  <h3>CDK vs SAM</h3>
+  <table>
+    <tr><th></th><th>SAM</th><th>CDK</th></tr>
+    <tr><td>Focus</td><td>Serverless (Lambda, API Gateway, DynamoDB)</td><td>Every AWS service — a superset of CloudFormation</td></tr>
+    <tr><td>Language</td><td>Declarative YAML/JSON</td><td>A real programming language (TypeScript, Python, Java, .NET)</td></tr>
+    <tr><td>Backend</td><td>Generates CloudFormation</td><td>Generates CloudFormation</td></tr>
+  </table>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    The two frameworks can work together: run <code>cdk synth</code> to get a CloudFormation template from your CDK app, then use <code>sam local invoke</code> against that generated template to test a Lambda function locally.
+  </div>
+
+  <p>Example app built in this section: an S3 bucket that triggers a Lambda function on upload, which calls <strong>Amazon Rekognition</strong> to analyze the image and saves the results to <strong>DynamoDB</strong> — all defined in one CDK script.</p>
+</section>
+
+<!-- 2. HANDS ON -->
+<section class="card" id="hands-on">
+  <h2><span class="badge">2</span> CDK — Hands On</h2>
+
+  <ol>
+    <li>Install the CDK library (<code>npm install aws-cdk-lib</code>), then <code>cdk init app --language javascript</code> to scaffold a new app.</li>
+    <li>The main logic lives in <code>lib/&lt;app&gt;-stack.js</code> — imports CDK constructs (S3, IAM, Lambda, DynamoDB), then defines resources as plain code: an S3 bucket (with a removal policy), an IAM role (with <code>addToPolicy</code>), a DynamoDB table, and a Lambda function wired to both via environment variables and an S3 event source.</li>
+    <li>Convenience methods like <code>bucket.grantReadWrite(function)</code> replace hand-writing the equivalent IAM policy JSON.</li>
+    <li>The actual Lambda code (e.g. <code>index.py</code>) lives separately and is referenced by the construct.</li>
+  </ol>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    Run <code>cdk bootstrap</code> once per account/region <strong>before</strong> your first deploy in a new environment — it provisions a support stack (S3 bucket, IAM roles) that CDK needs to function.
+  </div>
+
+  <ol start="5">
+    <li><code>cdk synth</code> — generates and previews the full CloudFormation template (S3 bucket, notifications, Lambda function, IAM role, etc.).</li>
+    <li><code>cdk deploy</code> — actually deploys that template as a real CloudFormation stack.</li>
+  </ol>
+
+  <p>Testing it: uploading an image to the S3 bucket triggers the Lambda function, which calls Rekognition and writes detected labels (e.g. "penguin," "bird," "person") into the DynamoDB table — visible immediately by exploring the table's items.</p>
+
+  <div class="callout tip">
+    <strong class="tag">Cleanup</strong>
+    Empty the S3 bucket first (CDK-managed buckets with a "destroy" removal policy still need to be empty), then run <code>cdk destroy</code> to tear down the whole stack.
+  </div>
+</section>
+
+<!-- 3. CONSTRUCTS -->
+<section class="card" id="constructs">
+  <h2><span class="badge">3</span> CDK Constructs</h2>
+
+  <p>A <strong>construct</strong> encapsulates everything CDK needs to produce part of the final CloudFormation stack — anywhere from a single resource to a whole group of related ones. They come from the <strong>Construct Library</strong> (built into CDK, covering every AWS resource) or the <strong>Construct Hub</strong> (AWS + third-party + open-source community constructs).</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="15" width="230" height="115" rx="8"/>
+      <text class="svg-text" x="135" y="37" text-anchor="middle" font-weight="600" font-size="11">Layer 1 — CFN Resources</text>
+      <text class="svg-label" x="135" y="57" text-anchor="middle" font-size="9">e.g. new s3.CfnBucket(...)</text>
+      <text class="svg-label" x="135" y="75" text-anchor="middle" font-size="9">Mirrors raw CloudFormation</text>
+      <text class="svg-label" x="135" y="93" text-anchor="middle" font-size="9">1:1 — must set every</text>
+      <text class="svg-label" x="135" y="111" text-anchor="middle" font-size="9">required property yourself</text>
+
+      <rect class="svg-box-accent" x="270" y="15" width="230" height="115" rx="8"/>
+      <text class="svg-text" x="385" y="37" text-anchor="middle" font-weight="600" font-size="11">Layer 2 — AWS Constructs</text>
+      <text class="svg-label" x="385" y="57" text-anchor="middle" font-size="9">e.g. new s3.Bucket(...)</text>
+      <text class="svg-label" x="385" y="75" text-anchor="middle" font-size="9">Sensible defaults +</text>
+      <text class="svg-label" x="385" y="93" text-anchor="middle" font-size="9">convenience methods</text>
+      <text class="svg-label" x="385" y="111" text-anchor="middle" font-size="9">(e.g. addLifecycleRule)</text>
+
+      <rect class="svg-box-accent" x="520" y="15" width="240" height="115" rx="8"/>
+      <text class="svg-text" x="640" y="37" text-anchor="middle" font-weight="600" font-size="11">Layer 3 — Patterns</text>
+      <text class="svg-label" x="640" y="57" text-anchor="middle" font-size="9">e.g. ALB + Fargate Service,</text>
+      <text class="svg-label" x="640" y="75" text-anchor="middle" font-size="9">Lambda REST API</text>
+      <text class="svg-label" x="640" y="93" text-anchor="middle" font-size="9">Multiple resources wired</text>
+      <text class="svg-label" x="640" y="111" text-anchor="middle" font-size="9">together correctly for you</text>
+    </svg>
+  </div>
+  <p class="caption">Each layer trades away manual control for convenience — L1 mirrors CloudFormation exactly, L2 adds sane defaults and helper methods, L3 hands you entire pre-wired architectures (like an ALB correctly connected to a Fargate service).</p>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Layer 1 constructs are recognizable by their <code>Cfn</code> prefix (e.g. <code>CfnBucket</code>) — useful if migrating an existing CloudFormation template into CDK resource-by-resource.
+  </div>
+</section>
+
+<!-- 4. COMMANDS -->
+<section class="card" id="commands">
+  <h2><span class="badge">4</span> CDK Commands & Bootstrapping</h2>
+
+  <table>
+    <tr><th>Command</th><th>Purpose</th></tr>
+    <tr><td><code>cdk init</code></td><td>Initialize a new app from a template (choose language: Python, JavaScript, etc.)</td></tr>
+    <tr><td><code>cdk synth</code></td><td>Synthesize and print the generated CloudFormation template</td></tr>
+    <tr><td><code>cdk bootstrap</code></td><td>Provision the resources CDK itself needs, once per account+region</td></tr>
+    <tr><td><code>cdk deploy</code></td><td>Deploy the stack</td></tr>
+    <tr><td><code>cdk diff</code></td><td>Compare your local CDK code against what's actually deployed</td></tr>
+    <tr><td><code>cdk destroy</code></td><td>Tear down the stack</td></tr>
+  </table>
+
+  <h3>Bootstrapping</h3>
+  <p>An <strong>environment</strong> in CDK = an account + region combination. Before deploying to a <em>new</em> environment, you must run:</p>
+  <p><code>cdk bootstrap aws://ACCOUNT_ID/REGION</code></p>
+  <p>This creates a <code>CDKToolkit</code> CloudFormation stack containing an S3 bucket and IAM role(s) that CDK deployments depend on.</p>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    Skipping bootstrap in a new environment causes a deploy failure like "policy contains a statement with one or more invalid principal" — because the required IAM role from the bootstrap stack doesn't exist yet.
+  </div>
+</section>
+
+<!-- 5. TESTING -->
+<section class="card" id="testing">
+  <h2><span class="badge">5</span> CDK Unit Testing</h2>
+
+  <p>Because CDK infrastructure is just code, you can test it like any other code — using the <strong>CDK assertions module</strong> alongside familiar test frameworks (Jest for JavaScript, Pytest for Python).</p>
+
+  <table>
+    <tr><th>Test type</th><th>What it checks</th></tr>
+    <tr><td>Fine-grained assertion</td><td>Specific resources have specific properties (e.g. "this Lambda has runtime nodejs14.x," "this SNS topic has exactly one subscription")</td></tr>
+    <tr><td>Snapshot test</td><td>The generated CloudFormation template matches a previously stored baseline template</td></tr>
+  </table>
+
+  <table>
+    <tr><th>Method</th><th>Use when</th></tr>
+    <tr><td><code>Template.fromStack(myStack)</code></td><td>Testing a stack defined within your own CDK app</td></tr>
+    <tr><td><code>Template.fromString(myString)</code></td><td>Testing an external CloudFormation template not defined in CDK</td></tr>
+  </table>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Remember these two entry points by name — <code>fromStack</code> vs <code>fromString</code> — as this is a recurring exam detail.
+  </div>
+</section>
+
+<!-- CHEAT SHEET -->
+<section class="card cheatsheet" id="cheatsheet">
+  <h2><span class="badge">✓</span> Cheat Sheet</h2>
+
+  <h3>Key facts to remember</h3>
+  <ul>
+    <li>CDK = define infrastructure in a real language (TypeScript, Python, Java, .NET); it compiles down to CloudFormation via <code>cdk synth</code>.</li>
+    <li>SAM = serverless-focused, declarative YAML; CDK = general-purpose, code-first, superset of CloudFormation. Both ultimately generate CloudFormation, and can be used together (<code>cdk synth</code> + <code>sam local invoke</code>).</li>
+    <li>Three construct layers: L1 (<code>CfnX</code>, 1:1 with CloudFormation), L2 (sane defaults + helper methods), L3 (whole pre-wired architecture patterns).</li>
+    <li>Core commands: <code>cdk init</code> → <code>cdk bootstrap</code> (once per account/region) → <code>cdk synth</code> → <code>cdk deploy</code>; also <code>cdk diff</code> and <code>cdk destroy</code>.</li>
+    <li>Bootstrapping creates a <code>CDKToolkit</code> stack (S3 bucket + IAM roles) required before any deploy in a new account/region combo.</li>
+    <li>Unit testing uses the CDK assertions module with Jest/Pytest; test entry points are <code>Template.fromStack()</code> (in-app) and <code>Template.fromString()</code> (external template); tests are either fine-grained assertions or snapshot comparisons.</li>
+  </ul>
+
+  <h3>Decision guide</h3>
+  <table>
+    <tr><th>Need</th><th>Use</th></tr>
+    <tr><td>Building a serverless app (Lambda/API Gateway/DynamoDB) quickly</td><td>SAM</td></tr>
+    <tr><td>Building anything else, or want type-safe infra-as-code</td><td>CDK</td></tr>
+    <tr><td>Migrate an existing CloudFormation template piece by piece</td><td>CDK Layer 1 (<code>CfnX</code>) constructs</td></tr>
+    <tr><td>Get sensible defaults without losing control</td><td>CDK Layer 2 constructs</td></tr>
+    <tr><td>Stand up a whole common architecture (ALB + Fargate, REST API) fast</td><td>CDK Layer 3 patterns</td></tr>
+    <tr><td>Verify your infrastructure code before deploying</td><td>CDK assertions (fine-grained or snapshot tests)</td></tr>
+  </table>
+
+  <h3>Mental model</h3>
+  <p>CDK is CloudFormation with the "declarative YAML" straightjacket removed: you get real variables, loops, functions, and type-checking, and the framework compiles all of it down into the same CloudFormation templates you'd otherwise write by hand. The three construct layers are really a dial between control and convenience — go as low-level (L1) or high-level (L3) as the task demands — and because it's all just code, you can test it, version it, and reason about it exactly like the rest of your application.</p>
+</section>
+
+<a class="back-to-top" href="#top">↑ Back to top</a>
+
+</div>
+</body>
+</html>
