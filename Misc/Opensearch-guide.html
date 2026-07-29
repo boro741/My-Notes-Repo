@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenSearch — Understood From First Principles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #10141c;
+    --bg-panel: #161c27;
+    --bg-card: #1d2530;
+    --border: #2a3341;
+    --border-soft: #232b37;
+    --text-primary: #e7ecf2;
+    --text-muted: #8d9bb0;
+    --text-dim: #5d6b80;
+    --teal: #5fc9c1;
+    --teal-dim: #3a7f79;
+    --amber: #e8a853;
+    --amber-dim: #8a6430;
+    --red: #e2725b;
+    --red-dim: #7a3d31;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--teal); }
+
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0 28px 100px;
+  }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    padding: 90px 0 60px;
+    border-bottom: 1px solid var(--border-soft);
+    position: relative;
+  }
+  .hero .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 18px;
+  }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: 46px;
+    line-height: 1.15;
+    margin: 0 0 22px;
+    font-weight: 600;
+    max-width: 780px;
+  }
+  .hero h1 em {
+    font-style: normal;
+    color: var(--teal);
+  }
+  .hero p.lede {
+    font-size: 18px;
+    color: var(--text-muted);
+    max-width: 640px;
+    margin: 0;
+  }
+
+  /* ---------- TOC ---------- */
+  .toc {
+    margin: 50px 0 0;
+    padding: 22px 26px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .toc .toc-title {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .toc ol {
+    margin: 0;
+    padding-left: 20px;
+    columns: 2;
+    column-gap: 30px;
+  }
+  .toc li { margin-bottom: 8px; font-size: 14.5px; break-inside: avoid; }
+  .toc a { color: var(--text-primary); text-decoration: none; }
+  .toc a:hover { color: var(--teal); }
+
+  /* ---------- SECTIONS ---------- */
+  section {
+    padding: 64px 0 8px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  section:last-of-type { border-bottom: none; }
+
+  .sec-label {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--teal);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  h2 {
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 600;
+    margin: 0 0 18px;
+  }
+  h3 {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 600;
+    margin: 34px 0 12px;
+    color: var(--text-primary);
+  }
+  p { color: var(--text-muted); margin: 0 0 16px; font-size: 15.5px; }
+  strong { color: var(--text-primary); font-weight: 600; }
+
+  code, .inline-code {
+    font-family: var(--font-mono);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13.5px;
+    color: var(--amber);
+  }
+
+  .callout {
+    display: flex;
+    gap: 14px;
+    padding: 18px 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    font-size: 14.5px;
+  }
+  .callout.why { background: rgba(95,201,193,0.07); border: 1px solid var(--teal-dim); }
+  .callout.mistake { background: rgba(226,114,91,0.07); border: 1px solid var(--red-dim); }
+  .callout .tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    height: fit-content;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .callout.why .tag { background: var(--teal-dim); color: #0c1614; }
+  .callout.mistake .tag { background: var(--red-dim); color: #1a0d0a; }
+  .callout p { margin: 0; color: var(--text-primary); }
+
+  .diagram {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px;
+    margin: 24px 0;
+  }
+  .diagram .cap {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 14px;
+    text-align: center;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 14px;
+  }
+  th, td {
+    text-align: left;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-soft);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+  td { color: var(--text-muted); }
+  td strong { color: var(--text-primary); }
+  tr:last-child td { border-bottom: none; }
+  .col-highlight { color: var(--teal); font-weight: 600; }
+
+  .summary-card {
+    background: var(--bg-card);
+    border: 1px solid var(--teal-dim);
+    border-radius: 10px;
+    padding: 26px 28px;
+    margin-top: 20px;
+  }
+  .summary-card ul { margin: 0; padding-left: 20px; }
+  .summary-card li { margin-bottom: 10px; color: var(--text-primary); font-size: 14.5px; }
+  .summary-card li::marker { color: var(--teal); }
+
+  footer {
+    padding: 40px 0 0;
+    text-align: center;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 32px; }
+    .toc ol { columns: 1; }
+    .wrap { padding: 0 18px 80px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="eyebrow">AWS · Search &amp; Observability</div>
+    <h1>OpenSearch is a <em>card catalog</em>, not a filing cabinet.</h1>
+    <p class="lede">A filing cabinet finds a folder because you know its label (a key). A card catalog finds every book that mentions a word — without ever knowing the book's title upfront. OpenSearch is the second kind of system, built for a world where your logs are the "books" and you rarely know their "title" in advance.</p>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#core-idea">1. The core idea — why search needs a different structure</a></li>
+      <li><a href="#what-is-it">2. What OpenSearch actually is</a></li>
+      <li><a href="#architecture">3. Anatomy of a cluster</a></li>
+      <li><a href="#your-example">4. Your Datadog example, traced end to end</a></li>
+      <li><a href="#query-power">5. Why "no primary key" actually works</a></li>
+      <li><a href="#vs-athena">6. OpenSearch vs. Athena vs. a normal database</a></li>
+      <li><a href="#mistakes">7. Common mistakes</a></li>
+      <li><a href="#summary">8. Summary — quick recall</a></li>
+    </ol>
+  </div>
+
+  <!-- 1. CORE IDEA -->
+  <section id="core-idea">
+    <div class="sec-label">01 / First Principles</div>
+    <h2>Why does search need a different structure at all?</h2>
+    <p>Think about a library before computers existed. If you want the book titled <span class="inline-code">"Moby Dick"</span>, you walk straight to the shelf — you know the title, so you go directly to it. That's a <strong>forward lookup</strong>: title → book. This is exactly how a normal database uses a primary key.</p>
+    <p>But what if your question is <strong>"which books mention the word whale?"</strong> You don't know which books to check — you'd have to open every single one and read it. That's unbearably slow. So libraries built a second system: the <strong>card catalog</strong> — a separate index where each card is a <em>word</em>, and behind it is the list of every book containing that word.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 820 260" xmlns="http://www.w3.org/2000/svg" width="100%">
+        <!-- Forward index side -->
+        <text x="150" y="28" text-anchor="middle" font-family="IBM Plex Mono" font-size="13" fill="#e8a853" font-weight="600">FORWARD INDEX (a database)</text>
+        <rect x="30" y="45" width="240" height="34" rx="5" fill="#1d2530" stroke="#2a3341"/>
+        <text x="150" y="67" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="#e7ecf2">doc_101 → "the whale swam far"</text>
+        <rect x="30" y="86" width="240" height="34" rx="5" fill="#1d2530" stroke="#2a3341"/>
+        <text x="150" y="108" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="#e7ecf2">doc_102 → "error 500 on login"</text>
+        <rect x="30" y="127" width="240" height="34" rx="5" fill="#1d2530" stroke="#2a3341"/>
+        <text x="150" y="149" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="#e7ecf2">doc_103 → "the crew saw whale"</text>
+        <text x="150" y="200" text-anchor="middle" font-family="Inter" font-size="12.5" fill="#8d9bb0">Fast only if you already know the ID.</text>
+        <text x="150" y="220" text-anchor="middle" font-family="Inter" font-size="12.5" fill="#8d9bb0">To find "whale" you'd scan every row.</text>
+
+        <!-- divider -->
+        <line x1="410" y1="20" x2="410" y2="240" stroke="#2a3341" stroke-width="1.5" stroke-dasharray="4 5"/>
+
+        <!-- Inverted index side -->
+        <text x="655" y="28" text-anchor="middle" font-family="IBM Plex Mono" font-size="13" fill="#5fc9c1" font-weight="600">INVERTED INDEX (OpenSearch)</text>
+        <rect x="470" y="45" width="360" height="34" rx="5" fill="#1d2530" stroke="#3a7f79"/>
+        <text x="490" y="67" font-family="IBM Plex Mono" font-size="12" fill="#5fc9c1">"whale"</text>
+        <text x="580" y="67" font-family="IBM Plex Mono" font-size="12" fill="#e7ecf2">→ [doc_101, doc_103]</text>
+
+        <rect x="470" y="86" width="360" height="34" rx="5" fill="#1d2530" stroke="#3a7f79"/>
+        <text x="490" y="108" font-family="IBM Plex Mono" font-size="12" fill="#5fc9c1">"error"</text>
+        <text x="580" y="108" font-family="IBM Plex Mono" font-size="12" fill="#e7ecf2">→ [doc_102]</text>
+
+        <rect x="470" y="127" width="360" height="34" rx="5" fill="#1d2530" stroke="#3a7f79"/>
+        <text x="490" y="149" font-family="IBM Plex Mono" font-size="12" fill="#5fc9c1">"login"</text>
+        <text x="580" y="149" font-family="IBM Plex Mono" font-size="12" fill="#e7ecf2">→ [doc_102]</text>
+
+        <text x="650" y="200" text-anchor="middle" font-family="Inter" font-size="12.5" fill="#8d9bb0">Finding "whale" is an instant lookup —</text>
+        <text x="650" y="220" text-anchor="middle" font-family="Inter" font-size="12.5" fill="#8d9bb0">the word itself is the key.</text>
+      </svg>
+      <div class="cap">Forward index (row → content) vs. inverted index (word → rows)</div>
+    </div>
+
+    <div class="callout why">
+      <div class="tag">Why</div>
+      <p>This is the actual reason you can search logs "by any means" — not because there's no schema, but because <strong>every word, in every field, becomes its own lookup key</strong>. OpenSearch builds one of these inverted indexes automatically, per field, for every document you feed it.</p>
+    </div>
+  </section>
+
+  <!-- 2. WHAT IS IT -->
+  <section id="what-is-it">
+    <div class="sec-label">02 / Definition</div>
+    <h2>What OpenSearch actually is</h2>
+    <p><strong>OpenSearch</strong> is a distributed search and analytics engine. It's an open-source fork of Elasticsearch (AWS forked it in 2021 after a licensing dispute), and both are built on top of a Java library called <strong>Apache Lucene</strong>, which does the actual inverted-index work under the hood.</p>
+    <p>You send it <strong>documents</strong> — JSON objects, like one log line or one order record — and it stores them while automatically indexing every field. You then query it using a JSON-based language called the <strong>Query DSL</strong>, or a Lucene-style query string.</p>
+
+    <h3>It still has a schema — just an automatic one</h3>
+    <p>This is the correction to your original framing: OpenSearch calls its schema a <strong>mapping</strong> (field name → data type: text, keyword, number, date...). If you don't define one, OpenSearch guesses it from the first document it sees — that's called <span class="inline-code">dynamic mapping</span>. So it's not "no schema," it's "schema inferred on write, instead of designed in advance."</p>
+  </section>
+
+  <!-- 3. ARCHITECTURE -->
+  <section id="architecture">
+    <div class="sec-label">03 / Internals</div>
+    <h2>Anatomy of a cluster</h2>
+    <p>OpenSearch never runs as a single machine in production — it runs as a <strong>cluster</strong>: a group of servers (nodes) that share the work.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 820 300" xmlns="http://www.w3.org/2000/svg" width="100%">
+        <text x="410" y="24" text-anchor="middle" font-family="IBM Plex Mono" font-size="13" fill="#e8a853" font-weight="600">CLUSTER: "logs-cluster"</text>
+        <rect x="20" y="40" width="780" height="240" rx="10" fill="none" stroke="#2a3341" stroke-dasharray="5 5"/>
+
+        <!-- master node -->
+        <rect x="345" y="58" width="130" height="46" rx="6" fill="#1d2530" stroke="#e8a853"/>
+        <text x="410" y="78" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e8a853">MASTER NODE</text>
+        <text x="410" y="93" text-anchor="middle" font-family="Inter" font-size="10" fill="#8d9bb0">cluster state, traffic cop</text>
+
+        <!-- data nodes -->
+        <rect x="60" y="140" width="200" height="120" rx="6" fill="#1d2530" stroke="#5fc9c1"/>
+        <text x="160" y="160" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5fc9c1">DATA NODE 1</text>
+        <rect x="75" y="172" width="80" height="26" rx="4" fill="#171c27" stroke="#2a3341"/>
+        <text x="115" y="189" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#e7ecf2">shard P0</text>
+        <rect x="165" y="172" width="80" height="26" rx="4" fill="#171c27" stroke="#2a3341"/>
+        <text x="205" y="189" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#e7ecf2">shard R1</text>
+        <rect x="75" y="206" width="170" height="26" rx="4" fill="#171c27" stroke="#2a3341"/>
+        <text x="160" y="223" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#8d9bb0">index: logs-2026.07.29</text>
+
+        <rect x="310" y="140" width="200" height="120" rx="6" fill="#1d2530" stroke="#5fc9c1"/>
+        <text x="410" y="160" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5fc9c1">DATA NODE 2</text>
+        <rect x="325" y="172" width="80" height="26" rx="4" fill="#171c27" stroke="#2a3341"/>
+        <text x="365" y="189" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#e7ecf2">shard P1</text>
+        <rect x="415" y="172" width="80" height="26" rx="4" fill="#171c27" stroke="#2a3341"/>
+        <text x="455" y="189" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#e7ecf2">shard R0</text>
+        <rect x="325" y="206" width="170" height="26" rx="4" fill="#171c27" stroke="#2a3341"/>
+        <text x="410" y="223" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#8d9bb0">index: logs-2026.07.29</text>
+
+        <rect x="560" y="140" width="200" height="120" rx="6" fill="#1d2530" stroke="#5fc9c1"/>
+        <text x="660" y="160" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5fc9c1">DATA NODE 3</text>
+        <rect x="575" y="172" width="170" height="26" rx="4" fill="#171c27" stroke="#2a3341"/>
+        <text x="660" y="189" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#e7ecf2">shard P2</text>
+        <rect x="575" y="206" width="170" height="26" rx="4" fill="#171c27" stroke="#2a3341"/>
+        <text x="660" y="223" text-anchor="middle" font-family="Inter" font-size="10" fill="#8d9bb0">(replica lives elsewhere)</text>
+
+        <line x1="410" y1="104" x2="410" y2="140" stroke="#2a3341" stroke-width="1.5"/>
+        <line x1="410" y1="104" x2="160" y2="140" stroke="#2a3341" stroke-width="1.5"/>
+        <line x1="410" y1="104" x2="660" y2="140" stroke="#2a3341" stroke-width="1.5"/>
+      </svg>
+      <div class="cap">Cluster → Nodes → Shards. Each index is split into shards (P = primary, R = replica) spread across nodes for scale and redundancy.</div>
+    </div>
+
+    <table>
+      <tr><th>Term</th><th>What it means</th></tr>
+      <tr><td><strong>Cluster</strong></td><td>The whole group of servers working together, identified by one cluster name.</td></tr>
+      <tr><td><strong>Node</strong></td><td>One server in the cluster. Roles include master (coordinates) and data (stores + searches).</td></tr>
+      <tr><td><strong>Index</strong></td><td>A logical collection of documents — comparable to a "table," e.g. <span class="inline-code">logs-2026.07.29</span>.</td></tr>
+      <tr><td><strong>Shard</strong></td><td>A physical, independent slice of an index. Splitting into shards is what lets a single index scale past one machine.</td></tr>
+      <tr><td><strong>Replica</strong></td><td>A copy of a shard on another node, for fault tolerance and read throughput.</td></tr>
+      <tr><td><strong>Document</strong></td><td>One JSON record — e.g. one log line, indexed field by field.</td></tr>
+    </table>
+  </section>
+
+  <!-- 4. YOUR EXAMPLE -->
+  <section id="your-example">
+    <div class="sec-label">04 / Applied</div>
+    <h2>Your Datadog example, traced end to end</h2>
+    <p>You already had the right mental model here. This is what actually happens, step by step, when your application logs something:</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 820 170" xmlns="http://www.w3.org/2000/svg" width="100%">
+        <!-- boxes -->
+        <rect x="10" y="55" width="150" height="60" rx="7" fill="#1d2530" stroke="#2a3341"/>
+        <text x="85" y="80" text-anchor="middle" font-family="IBM Plex Mono" font-size="11.5" fill="#e7ecf2">Your App</text>
+        <text x="85" y="98" text-anchor="middle" font-family="Inter" font-size="10" fill="#8d9bb0">writes log lines</text>
+
+        <rect x="200" y="55" width="150" height="60" rx="7" fill="#1d2530" stroke="#e8a853"/>
+        <text x="275" y="80" text-anchor="middle" font-family="IBM Plex Mono" font-size="11.5" fill="#e8a853">Log Shipper</text>
+        <text x="275" y="98" text-anchor="middle" font-family="Inter" font-size="10" fill="#8d9bb0">Fluent Bit / Data Prepper</text>
+
+        <rect x="390" y="55" width="170" height="60" rx="7" fill="#1d2530" stroke="#5fc9c1"/>
+        <text x="475" y="76" text-anchor="middle" font-family="IBM Plex Mono" font-size="11.5" fill="#5fc9c1">OpenSearch</text>
+        <text x="475" y="93" text-anchor="middle" font-family="Inter" font-size="10" fill="#8d9bb0">indexes each field into</text>
+        <text x="475" y="106" text-anchor="middle" font-family="Inter" font-size="10" fill="#8d9bb0">its own inverted index</text>
+
+        <rect x="600" y="55" width="210" height="60" rx="7" fill="#1d2530" stroke="#2a3341"/>
+        <text x="705" y="80" text-anchor="middle" font-family="IBM Plex Mono" font-size="11.5" fill="#e7ecf2">OpenSearch Dashboards</text>
+        <text x="705" y="98" text-anchor="middle" font-family="Inter" font-size="10" fill="#8d9bb0">(Datadog's search UI = this)</text>
+
+        <!-- arrows -->
+        <line x1="160" y1="85" x2="198" y2="85" stroke="#5d6b80" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="350" y1="85" x2="388" y2="85" stroke="#5d6b80" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="560" y1="85" x2="598" y2="85" stroke="#5d6b80" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#5d6b80"/>
+          </marker>
+        </defs>
+        <text x="410" y="150" text-anchor="middle" font-family="Inter" font-size="12" fill="#8d9bb0">You never search by a primary key — you search by service, status_code, or free text, all indexed independently.</text>
+      </svg>
+      <div class="cap">Every log line becomes a JSON document; every field in it becomes searchable the moment it's ingested.</div>
+    </div>
+
+    <p>So when you filter by <span class="inline-code">service:"checkout-api"</span> and <span class="inline-code">status_code:500</span> in the same query, OpenSearch isn't scanning rows — it intersects the results of two independent inverted-index lookups (one for <span class="inline-code">service</span>, one for <span class="inline-code">status_code</span>) almost instantly.</p>
+  </section>
+
+  <!-- 5. QUERY POWER -->
+  <section id="query-power">
+    <div class="sec-label">05 / Mechanism</div>
+    <h2>Why "no primary key needed" actually works</h2>
+    <p>In a relational database, a query without an index on the filtered column means a <strong>full table scan</strong> — reading every row to check if it matches. That's why RDBMS design revolves so heavily around picking the right keys and indexes in advance.</p>
+    <p>OpenSearch flips the default: because it builds an inverted index for <em>every</em> field automatically (unless you turn it off), every field behaves like it's indexed. That's the entire trick — you're not getting free-form search because there's no structure; you're getting it because <strong>everything is pre-indexed for you</strong>, at ingestion time, at the cost of extra storage and slightly slower writes.</p>
+
+    <div class="callout why">
+      <div class="tag">Trade-off</div>
+      <p>This is a classic engineering trade-off: OpenSearch pays the indexing cost <strong>once, on write</strong>, so that <strong>every future read</strong> is fast — the opposite bet of a system that indexes nothing and pays the cost on every read instead.</p>
+    </div>
+  </section>
+
+  <!-- 6. VS ATHENA -->
+  <section id="vs-athena">
+    <div class="sec-label">06 / Comparison</div>
+    <h2>OpenSearch vs. Athena vs. a normal database</h2>
+    <p>This is exactly the confusion you mentioned — and it clears up once you see what each one is actually optimized for.</p>
+
+    <table>
+      <tr>
+        <th>Trait</th>
+        <th class="col-highlight">OpenSearch</th>
+        <th>Athena</th>
+        <th>RDBMS (e.g. RDS)</th>
+      </tr>
+      <tr>
+        <td><strong>What it is</strong></td>
+        <td>A running cluster that continuously indexes data</td>
+        <td>A serverless SQL query engine over files already in S3</td>
+        <td>A transactional database with rows and defined tables</td>
+      </tr>
+      <tr>
+        <td><strong>When data is indexed</strong></td>
+        <td>Immediately, as each document is ingested</td>
+        <td>Never — reads raw files each query (schema-on-read)</td>
+        <td>On write, if you defined an index on that column</td>
+      </tr>
+      <tr>
+        <td><strong>Best for</strong></td>
+        <td>Real-time log search, dashboards, alerting</td>
+        <td>Occasional, large ad-hoc analytics over historical data</td>
+        <td>Consistent transactional records (orders, users, payments)</td>
+      </tr>
+      <tr>
+        <td><strong>Cost model</strong></td>
+        <td>Pay for the cluster continuously, running or not</td>
+        <td>Pay per query, per data scanned — nothing when idle</td>
+        <td>Pay for the instance continuously</td>
+      </tr>
+      <tr>
+        <td><strong>Query language</strong></td>
+        <td>Query DSL (JSON) or Lucene syntax</td>
+        <td>Standard SQL</td>
+        <td>SQL</td>
+      </tr>
+      <tr>
+        <td><strong>Joins across tables</strong></td>
+        <td>Weak — data is usually denormalized instead</td>
+        <td>Strong — full SQL joins</td>
+        <td>Strong — this is its core strength</td>
+      </tr>
+    </table>
+
+    <p>So the practical rule of thumb: if the data must be searched <strong>right now</strong>, near-real-time, on live logs → <strong>OpenSearch</strong>. If you're running a one-off analytical question over months of archived data sitting in S3 → <strong>Athena</strong>. If you need reliable transactional records with relationships between them → a <strong>relational database</strong>.</p>
+  </section>
+
+  <!-- 7. MISTAKES -->
+  <section id="mistakes">
+    <div class="sec-label">07 / Pitfalls</div>
+    <h2>Common mistakes</h2>
+
+    <div class="callout mistake">
+      <div class="tag">Mistake</div>
+      <p><strong>Treating it as a system of record.</strong> OpenSearch doesn't give you ACID transactions the way a relational database does. Don't store your only copy of critical business data here — it's built for search and analytics, not for being the source of truth.</p>
+    </div>
+    <div class="callout mistake">
+      <div class="tag">Mistake</div>
+      <p><strong>Letting log indices grow forever.</strong> Since a new index is often created per day (like <span class="inline-code">logs-2026.07.29</span>), without an Index State Management (ISM) policy to roll over and delete old indices, storage and cluster load grow unbounded.</p>
+    </div>
+    <div class="callout mistake">
+      <div class="tag">Mistake</div>
+      <p><strong>Over-sharding.</strong> Creating far more shards than the cluster needs adds coordination overhead per query and wastes memory — a very common beginner default is too many shards "just in case."</p>
+    </div>
+    <div class="callout mistake">
+      <div class="tag">Mistake</div>
+      <p><strong>Expecting relational joins to perform well.</strong> The right pattern in OpenSearch is to denormalize — embed the related data directly into the document — rather than modeling normalized tables like in SQL.</p>
+    </div>
+  </section>
+
+  <!-- 8. SUMMARY -->
+  <section id="summary">
+    <div class="sec-label">08 / Recall</div>
+    <h2>Summary — what to remember</h2>
+    <div class="summary-card">
+      <ul>
+        <li>OpenSearch is a distributed search &amp; analytics engine built on Apache Lucene, forked from Elasticsearch by AWS.</li>
+        <li>Its core trick is the <strong>inverted index</strong>: word → list of documents, instead of document → its content. That's why you can search on any field without a primary key.</li>
+        <li>It still has a schema (a <strong>mapping</strong>) — it's just inferred automatically on write, not designed upfront.</li>
+        <li>A cluster is made of nodes; each index is split into shards (+ replicas) spread across those nodes for scale and redundancy.</li>
+        <li>Your Datadog mental model was correct: app → log shipper → OpenSearch (indexes every field) → dashboard for search.</li>
+        <li>OpenSearch ≠ Athena: OpenSearch is a live, continuously-indexing cluster for real-time search; Athena is a pay-per-query engine over files at rest in S3, better for occasional large analytics.</li>
+        <li>Don't use it as your primary transactional database, watch index growth with ISM policies, and avoid over-sharding.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>Built for active study &amp; interview prep — AWS learning path</footer>
+</div>
+</body>
+</html>
