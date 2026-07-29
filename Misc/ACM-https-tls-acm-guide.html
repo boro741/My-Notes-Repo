@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTTPS, TLS &amp; ACM — Understood From First Principles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #10141c;
+    --bg-panel: #161c27;
+    --bg-card: #1d2530;
+    --border: #2a3341;
+    --border-soft: #232b37;
+    --text-primary: #e7ecf2;
+    --text-muted: #8d9bb0;
+    --text-dim: #5d6b80;
+    --teal: #5fc9c1;
+    --teal-dim: #3a7f79;
+    --amber: #e8a853;
+    --amber-dim: #8a6430;
+    --red: #e2725b;
+    --red-dim: #7a3d31;
+    --purple: #b39ddb;
+    --purple-dim: #6a5a8c;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text-primary);
+    font-family: var(--font-body); line-height: 1.65; -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--teal); }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 0 28px 100px; }
+
+  .hero { padding: 90px 0 60px; border-bottom: 1px solid var(--border-soft); }
+  .hero .eyebrow {
+    font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--amber); margin-bottom: 18px;
+  }
+  .hero h1 { font-family: var(--font-display); font-size: 42px; line-height: 1.18; margin: 0 0 22px; font-weight: 600; max-width: 800px; }
+  .hero h1 em { font-style: normal; color: var(--teal); }
+  .hero p.lede { font-size: 18px; color: var(--text-muted); max-width: 660px; margin: 0; }
+
+  .toc { margin: 50px 0 0; padding: 22px 26px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 10px; }
+  .toc .toc-title { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 14px; }
+  .toc ol { margin: 0; padding-left: 20px; columns: 2; column-gap: 30px; }
+  .toc li { margin-bottom: 8px; font-size: 14.5px; break-inside: avoid; }
+  .toc a { color: var(--text-primary); text-decoration: none; }
+  .toc a:hover { color: var(--teal); }
+
+  section { padding: 64px 0 8px; border-bottom: 1px solid var(--border-soft); }
+  section:last-of-type { border-bottom: none; }
+  .sec-label { font-family: var(--font-mono); font-size: 12.5px; color: var(--teal); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+  h2 { font-family: var(--font-display); font-size: 28px; font-weight: 600; margin: 0 0 18px; }
+  h3 { font-family: var(--font-display); font-size: 19px; font-weight: 600; margin: 34px 0 12px; color: var(--text-primary); }
+  p { color: var(--text-muted); margin: 0 0 16px; font-size: 15.5px; }
+  strong { color: var(--text-primary); font-weight: 600; }
+
+  code, .inline-code {
+    font-family: var(--font-mono); background: var(--bg-card); border: 1px solid var(--border);
+    padding: 2px 6px; border-radius: 4px; font-size: 13.5px; color: var(--amber);
+  }
+
+  .callout { display: flex; gap: 14px; padding: 18px 20px; border-radius: 8px; margin: 20px 0; font-size: 14.5px; }
+  .callout.why { background: rgba(95,201,193,0.07); border: 1px solid var(--teal-dim); }
+  .callout.mistake { background: rgba(226,114,91,0.07); border: 1px solid var(--red-dim); }
+  .callout.fix { background: rgba(179,157,219,0.07); border: 1px solid var(--purple-dim); }
+  .callout.plain { background: rgba(232,168,83,0.07); border: 1px solid var(--amber-dim); }
+  .callout .tag {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    flex-shrink: 0; height: fit-content; padding: 3px 8px; border-radius: 4px; font-weight: 600;
+  }
+  .callout.why .tag { background: var(--teal-dim); color: #0c1614; }
+  .callout.mistake .tag { background: var(--red-dim); color: #1a0d0a; }
+  .callout.fix .tag { background: var(--purple-dim); color: #17111f; }
+  .callout.plain .tag { background: var(--amber-dim); color: #1f1608; }
+  .callout p { margin: 0; color: var(--text-primary); }
+
+  .diagram { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 10px; padding: 22px; margin: 24px 0; overflow: hidden; }
+  .diagram .cap { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); margin-top: 14px; text-align: center; }
+  .diagram .cap.live::before { content: "● "; color: var(--teal); animation: blink 1.6s ease-in-out infinite; }
+
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+  th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  th { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); font-weight: 500; }
+  td { color: var(--text-muted); }
+  td strong { color: var(--text-primary); }
+  tr:last-child td { border-bottom: none; }
+  .col-highlight { color: var(--teal); font-weight: 600; }
+
+  .summary-card { background: var(--bg-card); border: 1px solid var(--teal-dim); border-radius: 10px; padding: 26px 28px; margin-top: 20px; }
+  .summary-card ul { margin: 0; padding-left: 20px; }
+  .summary-card li { margin-bottom: 10px; color: var(--text-primary); font-size: 14.5px; }
+  .summary-card li::marker { color: var(--teal); }
+
+  footer { padding: 40px 0 0; text-align: center; color: var(--text-dim); font-family: var(--font-mono); font-size: 12px; }
+
+  /* ---------- ANIMATIONS ---------- */
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+  /* Postcard travels, eye reads it, loops */
+  @keyframes travelPlain {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(460px); }
+  }
+  .postcard-http { animation: travelPlain 4s linear infinite; }
+
+  @keyframes eyeReading {
+    0%, 100% { opacity: 0; }
+    35%, 65% { opacity: 1; }
+  }
+  .eavesdropper-eye { animation: eyeReading 4s linear infinite; }
+
+  /* Envelope travels, eye tries and fails */
+  @keyframes travelSealed {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(460px); }
+  }
+  .envelope-https { animation: travelSealed 4s linear infinite; }
+
+  @keyframes eyeBlocked {
+    0%, 100% { opacity: 0; }
+    35%, 65% { opacity: 1; }
+  }
+  .blocked-eye { animation: eyeBlocked 4s linear infinite; }
+  @keyframes xFlash {
+    0%, 30% { opacity: 0; transform: scale(0.5); }
+    40%, 60% { opacity: 1; transform: scale(1); }
+    70%, 100% { opacity: 0; transform: scale(0.5); }
+  }
+  .blocked-x { animation: xFlash 4s linear infinite; }
+
+  /* Handshake sequential highlight */
+  @keyframes stepGlow {
+    0%, 100% { opacity: 0.35; }
+    10%, 20% { opacity: 1; }
+  }
+  .hs-step-1 { animation: stepGlow 6s linear infinite; animation-delay: 0s; }
+  .hs-step-2 { animation: stepGlow 6s linear infinite; animation-delay: 1.2s; }
+  .hs-step-3 { animation: stepGlow 6s linear infinite; animation-delay: 2.4s; }
+  .hs-step-4 { animation: stepGlow 6s linear infinite; animation-delay: 3.6s; }
+  .hs-step-5 { animation: stepGlow 6s linear infinite; animation-delay: 4.8s; }
+
+  @keyframes arrowPulse {
+    0%, 100% { stroke-opacity: 0.2; }
+    50% { stroke-opacity: 1; }
+  }
+  .hs-arrow-1 { animation: arrowPulse 6s linear infinite; animation-delay: 0s; }
+  .hs-arrow-2 { animation: arrowPulse 6s linear infinite; animation-delay: 1.2s; }
+  .hs-arrow-3 { animation: arrowPulse 6s linear infinite; animation-delay: 2.4s; }
+  .hs-arrow-4 { animation: arrowPulse 6s linear infinite; animation-delay: 3.6s; }
+  .hs-arrow-5 { animation: arrowPulse 6s linear infinite; animation-delay: 4.8s; }
+
+  /* padlock closing */
+  @keyframes shackleClose {
+    0%, 15% { transform: translateY(-4px) rotate(-6deg); }
+    35%, 100% { transform: translateY(0) rotate(0deg); }
+  }
+  .padlock-shackle { animation: shackleClose 3s ease-in-out infinite; transform-origin: 50px 40px; }
+
+  /* trust chain cascade */
+  @keyframes chainGlow {
+    0%, 100% { opacity: 0.3; }
+    15%, 30% { opacity: 1; }
+  }
+  .chain-root { animation: chainGlow 5s linear infinite; animation-delay: 0s; }
+  .chain-mid  { animation: chainGlow 5s linear infinite; animation-delay: 1s; }
+  .chain-leaf { animation: chainGlow 5s linear infinite; animation-delay: 2s; }
+  .chain-check { animation: chainGlow 5s linear infinite; animation-delay: 3s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .postcard-http, .eavesdropper-eye, .envelope-https, .blocked-eye, .blocked-x,
+    .hs-step-1, .hs-step-2, .hs-step-3, .hs-step-4, .hs-step-5,
+    .hs-arrow-1, .hs-arrow-2, .hs-arrow-3, .hs-arrow-4, .hs-arrow-5,
+    .padlock-shackle, .chain-root, .chain-mid, .chain-leaf, .chain-check,
+    .diagram .cap.live::before {
+      animation: none !important; opacity: 1 !important;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 28px; }
+    .toc ol { columns: 1; }
+    .wrap { padding: 0 18px 80px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="eyebrow">Networking · Security</div>
+    <h1>HTTPS isn't a lock on the <em>door</em>. It's a sealed envelope for the <em>letter</em>.</h1>
+    <p class="lede">It doesn't decide who's allowed to knock. It decides whether the postal worker carrying your letter down the street can read what's inside. Once that distinction is clear, the confusion about DevTools, certificates, and "why encrypt if I can still see the data" all resolves at once.</p>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#core-idea">1. The core idea — postcard vs. sealed envelope</a></li>
+      <li><a href="#devtools">2. Solving your DevTools confusion directly</a></li>
+      <li><a href="#not-access-control">3. It's not about "who can access" the site</a></li>
+      <li><a href="#handshake">4. How the envelope gets sealed — the TLS handshake</a></li>
+      <li><a href="#certificates">5. Certificates — proving the server is who it claims</a></li>
+      <li><a href="#not-protect">6. What HTTPS does <em>not</em> protect against</a></li>
+      <li><a href="#acm">7. Where ACM and ACM Private CA fit in</a></li>
+      <li><a href="#mistakes">8. Common mistakes</a></li>
+      <li><a href="#summary">9. Summary — quick recall</a></li>
+    </ol>
+  </div>
+
+  <!-- 1. CORE IDEA -->
+  <section id="core-idea">
+    <div class="sec-label">01 / First Principles</div>
+    <h2>The core idea: postcard vs. sealed envelope</h2>
+
+    <div class="callout plain">
+      <div class="tag">Plain English</div>
+      <p>A postcard (HTTP) can be read by anyone who handles it on its way to the mailbox — the mail truck driver, a nosy neighbor, anyone. A sealed envelope (HTTPS) travels the exact same route, through the exact same hands, but nobody along the way can read what's written inside — only the person who opens it at the final address can.</p>
+    </div>
+
+    <p>HTTP sends data as <strong>plain text</strong> over the network. Anyone positioned anywhere between your device and the server — your home router, your ISP, a public WiFi hotspot, a compromised network device — can read every byte, because nothing is scrambled. HTTPS is just HTTP with a layer added underneath called <strong>TLS</strong> (Transport Layer Security), which encrypts the data before it leaves your device, so it looks like meaningless noise to anyone intercepting it along the way.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 820 260" xmlns="http://www.w3.org/2000/svg" width="100%">
+        <text x="410" y="24" text-anchor="middle" font-family="IBM Plex Mono" font-size="12.5" fill="#e8a853" font-weight="600">Same network path, two very different outcomes</text>
+
+        <!-- HTTP row -->
+        <text x="20" y="55" font-family="IBM Plex Mono" font-size="11" fill="#e2725b">HTTP</text>
+        <rect x="20" y="65" width="60" height="40" rx="6" fill="#1d2530" stroke="#2a3341"/>
+        <text x="50" y="90" text-anchor="middle" font-family="Inter" font-size="10" fill="#8d9bb0">You</text>
+        <rect x="700" y="65" width="80" height="40" rx="6" fill="#1d2530" stroke="#2a3341"/>
+        <text x="740" y="90" text-anchor="middle" font-family="Inter" font-size="10" fill="#8d9bb0">Server</text>
+        <line x1="80" y1="85" x2="700" y2="85" stroke="#232b37" stroke-width="2"/>
+        <rect x="0" y="70" width="90" height="30" rx="4" fill="#1d2530" stroke="#e2725b" class="postcard-http"/>
+        <text x="45" y="90" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" fill="#e2725b" class="postcard-http">"pwd: 123"</text>
+        <text x="420" y="65" text-anchor="middle" font-family="Inter" font-size="16" class="eavesdropper-eye">👁️ readable</text>
+
+        <!-- HTTPS row -->
+        <text x="20" y="150" font-family="IBM Plex Mono" font-size="11" fill="#5fc9c1">HTTPS</text>
+        <rect x="20" y="160" width="60" height="40" rx="6" fill="#1d2530" stroke="#2a3341"/>
+        <text x="50" y="185" text-anchor="middle" font-family="Inter" font-size="10" fill="#8d9bb0">You</text>
+        <rect x="700" y="160" width="80" height="40" rx="6" fill="#1d2530" stroke="#2a3341"/>
+        <text x="740" y="185" text-anchor="middle" font-family="Inter" font-size="10" fill="#8d9bb0">Server</text>
+        <line x1="80" y1="180" x2="700" y2="180" stroke="#232b37" stroke-width="2"/>
+        <rect x="0" y="165" width="90" height="30" rx="4" fill="#1d2530" stroke="#5fc9c1" class="envelope-https"/>
+        <text x="45" y="185" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" fill="#5fc9c1" class="envelope-https">✉ x8f2%q</text>
+        <text x="420" y="160" text-anchor="middle" font-family="Inter" font-size="16" class="blocked-eye">👁️</text>
+        <text x="420" y="160" text-anchor="middle" font-family="Inter" font-size="20" fill="#e2725b" class="blocked-x">✕</text>
+
+        <text x="410" y="235" text-anchor="middle" font-family="Inter" font-size="12" fill="#8d9bb0">Same path, same possible eavesdropper — but scrambled data can't be read even if it's intercepted.</text>
+      </svg>
+      <div class="cap live">Watch both packets travel the same wire — only the HTTP one is legible to whoever's watching in the middle.</div>
+    </div>
+  </section>
+
+  <!-- 2. DEVTOOLS -->
+  <section id="devtools">
+    <div class="sec-label">02 / Your Question, Directly</div>
+    <h2>Solving your DevTools confusion directly</h2>
+
+    <div class="callout plain">
+      <div class="tag">Plain English</div>
+      <p>You opening DevTools is like you opening your own mail at your own kitchen table. Of course you can read it — it was addressed to you, and you're the one who unsealed the envelope. HTTPS never promised to hide your mail from <em>you</em>. It only promised to hide it from the mail carrier, the sorting facility, and anyone else who touched it in between.</p>
+    </div>
+
+    <p>Your browser is one of the two legitimate endpoints of the connection — the other is the server. TLS encrypts the data <strong>only for the trip in between</strong>. The moment your browser receives the encrypted response, it decrypts it (using the session key it negotiated during the handshake — see the next section) before it ever renders the page or populates the Network tab. DevTools shows you the <strong>decrypted, already-opened</strong> version, because it's inspecting your browser's own internal state — not the wire.</p>
+
+    <div class="callout fix">
+      <div class="tag">Correction</div>
+      <p>So seeing plaintext in DevTools isn't a contradiction of "HTTPS encrypts data" — it's exactly what should happen. If you instead ran a packet capture tool (like Wireshark) on the network <em>between</em> your machine and the server, that's where you'd see only unreadable, encrypted bytes.</p>
+    </div>
+  </section>
+
+  <!-- 3. NOT ACCESS CONTROL -->
+  <section id="not-access-control">
+    <div class="sec-label">03 / Common Misconception</div>
+    <h2>It's not about "who can access" the site</h2>
+    <div class="callout plain">
+      <div class="tag">Plain English</div>
+      <p>HTTPS doesn't check ID at the door. Anyone — Chrome, Firefox, a curl command, a bot, a script written by a stranger — can open a connection to an HTTPS website exactly as easily as an HTTP one. The lock isn't on the door; it's wrapped around the letter that travels afterward.</p>
+    </div>
+    <p>What HTTPS actually guarantees, once a connection is made, is three things:</p>
+    <table>
+      <tr><th>Guarantee</th><th>Plain English</th></tr>
+      <tr><td><strong>Confidentiality</strong></td><td>Nobody in the middle of the network can read the data.</td></tr>
+      <tr><td><strong>Integrity</strong></td><td>Nobody in the middle can quietly alter the data without it being detected.</td></tr>
+      <tr><td><strong>Authentication</strong></td><td>You have reasonable proof the server really is who its certificate claims it is — not an impostor.</td></tr>
+    </table>
+  </section>
+
+  <!-- 4. HANDSHAKE -->
+  <section id="handshake">
+    <div class="sec-label">04 / Mechanism</div>
+    <h2>How the envelope gets sealed — the TLS handshake</h2>
+    <div class="callout plain">
+      <div class="tag">Plain English</div>
+      <p>Before your browser and the server can start whispering in a shared secret code, they have a short public conversation to agree on <em>what</em> that secret code will be — without ever saying the code out loud. That agreement process is the handshake.</p>
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 820 300" xmlns="http://www.w3.org/2000/svg" width="100%">
+        <rect x="20" y="15" width="120" height="40" rx="6" fill="#1d2530" stroke="#2a3341"/>
+        <text x="80" y="40" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e7ecf2">Browser</text>
+        <rect x="680" y="15" width="120" height="40" rx="6" fill="#1d2530" stroke="#2a3341"/>
+        <text x="740" y="40" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e7ecf2">Server</text>
+        <line x1="80" y1="55" x2="80" y2="270" stroke="#232b37" stroke-width="1.5"/>
+        <line x1="740" y1="55" x2="740" y2="270" stroke="#232b37" stroke-width="1.5"/>
+
+        <line x1="80" y1="80" x2="740" y2="80" stroke="#5fc9c1" stroke-width="2" marker-end="url(#a1)" class="hs-arrow-1"/>
+        <text x="410" y="72" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="#5fc9c1" class="hs-step-1">1. "ClientHello" — I support these encryption methods</text>
+
+        <line x1="740" y1="115" x2="80" y2="115" stroke="#e8a853" stroke-width="2" marker-end="url(#a2)" class="hs-arrow-2"/>
+        <text x="410" y="107" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="#e8a853" class="hs-step-2">2. "ServerHello" + certificate — here's my identity &amp; public key</text>
+
+        <text x="410" y="145" text-anchor="middle" font-family="Inter" font-size="10.5" fill="#8d9bb0" class="hs-step-3">3. Browser checks the certificate against trusted CAs (see next section)</text>
+
+        <line x1="80" y1="175" x2="740" y2="175" stroke="#b39ddb" stroke-width="2" marker-end="url(#a3)" class="hs-arrow-4"/>
+        <text x="410" y="167" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="#b39ddb" class="hs-step-4">4. Browser encrypts a shared secret using the server's public key, sends it</text>
+
+        <text x="410" y="210" text-anchor="middle" font-family="Inter" font-size="10.5" fill="#8d9bb0" class="hs-step-5">5. Both sides derive the same fast "session key" from that shared secret</text>
+
+        <line x1="80" y1="240" x2="740" y2="240" stroke="#5fc9c1" stroke-width="2" stroke-dasharray="5 4" class="hs-arrow-5"/>
+        <line x1="740" y1="240" x2="80" y2="240" stroke="#5fc9c1" stroke-width="2" stroke-dasharray="5 4" class="hs-arrow-5"/>
+        <text x="410" y="232" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="#5fc9c1" class="hs-step-5">6. All further data flows encrypted with that session key</text>
+
+        <text x="410" y="270" text-anchor="middle" font-family="Inter" font-size="11" fill="#5d6b80">This entire exchange takes milliseconds and happens before a single byte of your actual request is sent.</text>
+
+        <defs>
+          <marker id="a1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5fc9c1"/></marker>
+          <marker id="a2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8a853"/></marker>
+          <marker id="a3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b39ddb"/></marker>
+        </defs>
+      </svg>
+      <div class="cap live">Steps light up in sequence — this whole exchange happens once, then a fast shared "session key" handles everything after.</div>
+    </div>
+
+    <div class="callout why">
+      <div class="tag">Why two kinds of encryption?</div>
+      <p>The public-key math used in step 4 (asymmetric encryption) is secure but slow. So it's only used briefly, to safely agree on a much faster <strong>symmetric</strong> secret key — which both sides then use for the rest of the conversation. This hybrid approach is why HTTPS doesn't meaningfully slow pages down.</p>
+    </div>
+  </section>
+
+  <!-- 5. CERTIFICATES -->
+  <section id="certificates">
+    <div class="sec-label">05 / Trust</div>
+    <h2>Certificates — proving the server is who it claims</h2>
+    <div class="callout plain">
+      <div class="tag">Plain English</div>
+      <p>Encryption alone stops eavesdropping, but it doesn't stop impersonation — a scammer could still set up a fake "yourbank.com" and encrypt the connection to it perfectly well. A certificate is like a notarized ID card: a trusted third party (a Certificate Authority) has checked that this server really does control the domain it claims to.</p>
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" width="100%" style="margin: 0 auto; display:block; max-width: 300px;">
+        <circle cx="200" cy="75" r="60" fill="none" stroke="#232b37" stroke-width="1"/>
+        <rect x="165" y="60" width="70" height="55" rx="8" fill="#1d2530" stroke="#5fc9c1" stroke-width="2.5"/>
+        <path d="M 180 60 Q 180 30 200 30 Q 220 30 220 60" fill="none" stroke="#5fc9c1" stroke-width="6" stroke-linecap="round" class="padlock-shackle"/>
+        <circle cx="200" cy="85" r="6" fill="#5fc9c1"/>
+        <rect x="197" y="88" width="6" height="14" fill="#5fc9c1"/>
+      </svg>
+      <div class="cap live">The shackle "closes" once the certificate is validated — that's your browser's padlock icon.</div>
+    </div>
+
+    <h3>The trust chain</h3>
+    <p>Browsers don't trust every CA blindly — they ship with a small, curated list of <strong>Root CAs</strong> they trust completely. A server's certificate is usually signed by an <strong>Intermediate CA</strong>, which is in turn signed by that trusted Root — forming a chain your browser walks and verifies.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 700 170" xmlns="http://www.w3.org/2000/svg" width="100%">
+        <rect x="20" y="55" width="180" height="50" rx="7" fill="#1d2530" stroke="#5fc9c1" class="chain-root"/>
+        <text x="110" y="76" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5fc9c1" class="chain-root">Root CA</text>
+        <text x="110" y="92" text-anchor="middle" font-family="Inter" font-size="9.5" fill="#8d9bb0">pre-trusted by your browser</text>
+
+        <line x1="200" y1="80" x2="255" y2="80" stroke="#5d6b80" stroke-width="1.5" marker-end="url(#a4)"/>
+        <text x="228" y="70" text-anchor="middle" font-family="Inter" font-size="9" fill="#5d6b80">signs</text>
+
+        <rect x="260" y="55" width="180" height="50" rx="7" fill="#1d2530" stroke="#e8a853" class="chain-mid"/>
+        <text x="350" y="76" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e8a853" class="chain-mid">Intermediate CA</text>
+        <text x="350" y="92" text-anchor="middle" font-family="Inter" font-size="9.5" fill="#8d9bb0">vouched for by Root</text>
+
+        <line x1="440" y1="80" x2="495" y2="80" stroke="#5d6b80" stroke-width="1.5" marker-end="url(#a4)"/>
+        <text x="468" y="70" text-anchor="middle" font-family="Inter" font-size="9" fill="#5d6b80">signs</text>
+
+        <rect x="500" y="55" width="180" height="50" rx="7" fill="#1d2530" stroke="#b39ddb" class="chain-leaf"/>
+        <text x="590" y="76" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#b39ddb" class="chain-leaf">yoursite.com</text>
+        <text x="590" y="92" text-anchor="middle" font-family="Inter" font-size="9.5" fill="#8d9bb0">the server's actual cert</text>
+
+        <text x="350" y="140" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="#5fc9c1" class="chain-check">✓ Chain verified — browser shows the padlock</text>
+
+        <defs><marker id="a4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5d6b80"/></marker></defs>
+      </svg>
+      <div class="cap live">Each link glows in turn as the browser walks the chain, ending in a checkmark once trust is established.</div>
+    </div>
+  </section>
+
+  <!-- 6. WHAT IT DOESN'T DO -->
+  <section id="not-protect">
+    <div class="sec-label">06 / Boundaries</div>
+    <h2>What HTTPS does <em>not</em> protect against</h2>
+    <div class="callout mistake">
+      <div class="tag">Not covered</div>
+      <p><strong>Malware or spyware on your own device.</strong> If something on your machine can read your screen or your browser's memory, encryption in transit doesn't help — the data is already decrypted there, same as in DevTools.</p>
+    </div>
+    <div class="callout mistake">
+      <div class="tag">Not covered</div>
+      <p><strong>A malicious or compromised server.</strong> HTTPS proves you're talking to the server the certificate names — it says nothing about whether that server is trustworthy, stores your data safely, or has good intentions.</p>
+    </div>
+    <div class="callout mistake">
+      <div class="tag">Not covered</div>
+      <p><strong>Phishing look-alike domains.</strong> <span class="inline-code">yourbnak.com</span> can get a perfectly valid certificate too — the padlock only confirms you're talking to whoever owns that exact domain, not that the domain is the "real" business you meant to visit.</p>
+    </div>
+  </section>
+
+  <!-- 7. ACM -->
+  <section id="acm">
+    <div class="sec-label">07 / Applied to AWS</div>
+    <h2>Where ACM and ACM Private CA fit in</h2>
+    <div class="callout plain">
+      <div class="tag">Plain English</div>
+      <p>ACM is a vending machine for certificates that every browser in the world already trusts — used for anything the public internet talks to. ACM Private CA lets you become your own tiny trusted authority, for cases where only <em>your own systems</em> — not the whole internet — need to trust the certificate.</p>
+    </div>
+
+    <p>Your original understanding was close, with one refinement: ACM Private CA isn't specifically about "inside a VPC" — it's about issuing certificates <strong>you</strong> control trust for, wherever your own systems are (inside one VPC, across several VPCs, on-premises servers, IoT devices) — as opposed to certificates the public internet's browsers need to trust.</p>
+
+    <table>
+      <tr><th>Trait</th><th class="col-highlight">ACM (Public)</th><th>ACM Private CA</th></tr>
+      <tr><td><strong>Who trusts the certificate</strong></td><td>Any public browser or client, out of the box</td><td>Only systems you've configured to trust your private CA</td></tr>
+      <tr><td><strong>Typical use</strong></td><td>Public-facing endpoints — an ALB, CloudFront, API Gateway</td><td>Internal service-to-service traffic, mutual TLS, internal APIs, IoT device identity</td></tr>
+      <tr><td><strong>Issued by</strong></td><td>A publicly trusted CA (Amazon Trust Services)</td><td>Your own private CA hierarchy, created and managed in your account</td></tr>
+      <tr><td><strong>Cost model</strong></td><td>Free for certificates used with integrated AWS services</td><td>Pay for the private CA plus each certificate issued</td></tr>
+      <tr><td><strong>Scope</strong></td><td>Must prove you own the public domain</td><td>You define your own naming and trust rules entirely</td></tr>
+    </table>
+
+    <div class="callout why">
+      <div class="tag">Why it exists</div>
+      <p>Getting a publicly trusted CA to issue certificates for purely internal hostnames (like <span class="inline-code">payments.internal</span>) isn't possible or sensible — public CAs only vouch for domains you can prove public ownership of. ACM Private CA solves the "I still want encrypted, certificate-based trust, but only among my own services" problem.</p>
+    </div>
+  </section>
+
+  <!-- 8. MISTAKES -->
+  <section id="mistakes">
+    <div class="sec-label">08 / Pitfalls</div>
+    <h2>Common mistakes</h2>
+    <div class="callout mistake">
+      <div class="tag">Mistake</div>
+      <p><strong>Assuming HTTPS means "the site is safe."</strong> It only means the connection is encrypted and the domain identity is verified — not that the site's owner or content is trustworthy.</p>
+    </div>
+    <div class="callout mistake">
+      <div class="tag">Mistake</div>
+      <p><strong>Forgetting certificate expiry and renewal.</strong> Certificates have a validity window; ACM automates renewal for integrated services, but it's a common outage cause when certificates are managed manually elsewhere.</p>
+    </div>
+    <div class="callout mistake">
+      <div class="tag">Mistake</div>
+      <p><strong>Using a public CA certificate for purely internal hostnames</strong> (or vice versa) — mismatching which trust model actually fits the audience that needs to trust the certificate.</p>
+    </div>
+  </section>
+
+  <!-- 9. SUMMARY -->
+  <section id="summary">
+    <div class="sec-label">09 / Recall</div>
+    <h2>Summary — what to remember</h2>
+    <div class="summary-card">
+      <ul>
+        <li>HTTPS = HTTP + TLS. It encrypts data <strong>in transit</strong>, between your browser and the server — it does not gate who can connect.</li>
+        <li>DevTools shows you decrypted data because your browser is a legitimate endpoint that has already opened the "envelope" — that's not a contradiction of encryption, it's the expected behavior.</li>
+        <li>The TLS handshake uses slow-but-secure asymmetric encryption briefly, just to safely agree on a fast symmetric session key used for the rest of the conversation.</li>
+        <li>Certificates prove server identity through a chain of trust rooted in a small set of CAs your browser trusts by default.</li>
+        <li>HTTPS doesn't protect against malware on your device, a dishonest server, or convincing look-alike domains — it only secures the transit and confirms domain identity.</li>
+        <li>ACM issues publicly trusted certificates for anything the internet talks to; ACM Private CA lets you run your own trust authority for systems only you need to trust — not strictly "inside a VPC," but wherever your own infrastructure lives.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>Built for active study &amp; interview prep — AWS learning path</footer>
+</div>
+</body>
+</html>
