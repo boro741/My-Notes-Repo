@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Athena Federated Query — Study Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d1117;
+    --panel:#151b23;
+    --panel-2:#1c232d;
+    --line:#2a3441;
+    --text:#dfe6ee;
+    --muted:#8b98a8;
+    --orange:#ff9900;
+    --orange-dim:#a8690a;
+    --teal:#5eead4;
+    --red:#f87171;
+    --yellow:#facc15;
+    --mono:'IBM Plex Mono', monospace;
+    --sans:'IBM Plex Sans', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.6;
+  }
+  a{color:var(--orange); text-decoration:none;}
+  a:hover{text-decoration:underline;}
+
+  .layout{
+    display:grid;
+    grid-template-columns:250px minmax(0,860px);
+    justify-content:center;
+    gap:48px;
+    max-width:1180px;
+    margin:0 auto;
+    padding:48px 24px 120px;
+  }
+  @media (max-width:880px){
+    .layout{grid-template-columns:1fr; padding:24px 18px 80px;}
+    nav.toc{position:static; margin-bottom:32px;}
+  }
+
+  nav.toc{
+    position:sticky;
+    top:32px;
+    align-self:start;
+    font-family:var(--mono);
+    font-size:13px;
+  }
+  nav.toc .eyebrow{
+    color:var(--orange);
+    letter-spacing:.12em;
+    font-size:11px;
+    margin-bottom:14px;
+    display:block;
+  }
+  nav.toc ol{
+    list-style:none;
+    margin:0; padding:0;
+    border-left:2px solid var(--line);
+  }
+  nav.toc li{margin:0;}
+  nav.toc a{
+    display:block;
+    color:var(--muted);
+    padding:7px 0 7px 16px;
+    border-left:2px solid transparent;
+    margin-left:-2px;
+    transition:color .15s, border-color .15s;
+  }
+  nav.toc a:hover{color:var(--text); text-decoration:none;}
+  nav.toc a.active{color:var(--orange); border-left-color:var(--orange);}
+
+  header.hero{
+    margin-bottom:56px;
+  }
+  header.hero .kicker{
+    font-family:var(--mono);
+    color:var(--orange);
+    font-size:13px;
+    letter-spacing:.1em;
+    margin-bottom:12px;
+  }
+  header.hero h1{
+    font-family:var(--mono);
+    font-size:clamp(28px,4vw,42px);
+    line-height:1.15;
+    margin:0 0 16px;
+    color:#fff;
+  }
+  header.hero p.sub{
+    color:var(--muted);
+    font-size:16px;
+    max-width:60ch;
+    margin:0;
+  }
+
+  section{margin-bottom:60px; scroll-margin-top:32px;}
+  section h2{
+    font-family:var(--mono);
+    font-size:22px;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin:0 0 20px;
+  }
+  section h2 .tag{
+    font-size:11px;
+    color:var(--orange-dim);
+    border:1px solid var(--orange-dim);
+    padding:2px 8px;
+    border-radius:3px;
+    font-family:var(--mono);
+  }
+  section h3{
+    font-size:16px;
+    color:var(--teal);
+    font-family:var(--mono);
+    margin:28px 0 10px;
+  }
+  p{color:var(--text); font-size:15.5px;}
+
+  .callout{
+    border-left:3px solid var(--yellow);
+    background:var(--panel);
+    padding:14px 18px;
+    border-radius:0 6px 6px 0;
+    margin:18px 0;
+    font-size:14.5px;
+  }
+  .callout.fix::before{content:"CORRECTION"; display:block; font-family:var(--mono); font-size:11px; color:var(--yellow); letter-spacing:.08em; margin-bottom:6px;}
+  .callout.mistake{border-left-color:var(--red);}
+  .callout.mistake::before{content:"COMMON MISTAKE"; display:block; font-family:var(--mono); font-size:11px; color:var(--red); letter-spacing:.08em; margin-bottom:6px;}
+
+  /* Architecture diagram */
+  .diagram{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:28px;
+    margin:20px 0;
+  }
+  .diagram svg{width:100%; height:auto; display:block;}
+  .diagram-caption{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--muted);
+    margin-top:14px;
+    text-align:center;
+  }
+
+  .flow-line{
+    stroke:var(--orange);
+    stroke-width:2;
+    fill:none;
+    stroke-dasharray:6 6;
+    animation:dash 1.2s linear infinite;
+  }
+  @keyframes dash{ to{ stroke-dashoffset:-24; } }
+  .flow-line.native{stroke:var(--teal);}
+  .node{
+    fill:var(--panel-2);
+    stroke:var(--line);
+    stroke-width:1.5;
+    rx:8;
+  }
+  .node-label{
+    font-family:var(--mono);
+    font-size:12px;
+    fill:var(--text);
+  }
+  .node-sub{
+    font-family:var(--mono);
+    font-size:10px;
+    fill:var(--muted);
+  }
+
+  /* Table */
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:14px;
+    margin:18px 0;
+    background:var(--panel);
+    border-radius:8px;
+    overflow:hidden;
+  }
+  th,td{
+    padding:12px 16px;
+    text-align:left;
+    border-bottom:1px solid var(--line);
+  }
+  th{
+    font-family:var(--mono);
+    color:var(--orange);
+    font-size:12px;
+    letter-spacing:.05em;
+    background:var(--panel-2);
+  }
+  tr:last-child td{border-bottom:none;}
+  td.yes{color:var(--teal);}
+  td.no{color:var(--muted);}
+
+  /* code block */
+  .code{
+    background:#0a0e14;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:20px 22px;
+    font-family:var(--mono);
+    font-size:13.5px;
+    overflow-x:auto;
+    margin:16px 0;
+    position:relative;
+  }
+  .code .filename{
+    position:absolute; top:-11px; left:16px;
+    background:var(--orange);
+    color:#0a0e14;
+    font-size:10.5px;
+    padding:2px 8px;
+    border-radius:4px;
+    font-weight:600;
+  }
+  .kw{color:#ff9900;}
+  .str{color:#7ee787;}
+  .com{color:#6b7787; font-style:italic;}
+  .fn{color:#79c0ff;}
+  .num{color:#f0883e;}
+
+  .steps{counter-reset:step;}
+  .steps > div{
+    display:flex;
+    gap:16px;
+    margin-bottom:18px;
+  }
+  .steps > div::before{
+    counter-increment:step;
+    content:counter(step);
+    font-family:var(--mono);
+    background:var(--orange);
+    color:#0a0e14;
+    width:26px; height:26px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:700;
+    flex-shrink:0;
+  }
+  .steps p{margin:0;}
+
+  .summary-box{
+    background:linear-gradient(135deg, var(--panel-2), var(--panel));
+    border:1px solid var(--orange-dim);
+    border-radius:10px;
+    padding:24px 26px;
+  }
+  .summary-box h3{margin-top:0; color:var(--orange);}
+
+  ::selection{background:var(--orange); color:#0a0e14;}
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <nav class="toc">
+    <span class="eyebrow">CONTENTS</span>
+    <ol>
+      <li><a href="#recap">01 · Recap correction</a></li>
+      <li><a href="#why">02 · Why it exists</a></li>
+      <li><a href="#internals">03 · How it works</a></li>
+      <li><a href="#example">04 · Worked SQL example</a></li>
+      <li><a href="#comparison">05 · Basic vs Federated</a></li>
+      <li><a href="#mistakes">06 · Common mistakes</a></li>
+      <li><a href="#summary">07 · Summary</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <div class="kicker">AWS · ATHENA · SQL FEDERATION</div>
+      <h1>Athena Federated Query</h1>
+      <p class="sub">How Athena reaches beyond S3 to query DynamoDB, RDS, and other live data sources — architecture, internals, and a worked example.</p>
+    </header>
+
+    <section id="recap">
+      <h2>Recap <span class="tag">from your notes</span></h2>
+      <p>Your understanding of core Athena — table = metadata pointer to S3 data, Glue Crawler auto-generates that metadata, results land in a separate S3 bucket — is correct. Two pricing details needed a fix:</p>
+      <div class="callout fix">
+        There is <strong>no free tier</strong>. Athena charges $5 per TB scanned from the very first query, with a 10&nbsp;MB minimum charge per query.
+      </div>
+      <div class="callout fix">
+        You're billed for <strong>data scanned</strong>, not data returned. A query that reads 2&nbsp;TB but returns 3 rows still costs for the full 2&nbsp;TB scanned — which is exactly why partitioning and columnar formats (Parquet/ORC) matter.
+      </div>
+    </section>
+
+    <section id="why">
+      <h2>Why Federated Query exists</h2>
+      <p>Athena's engine only natively understands one map: the <strong>Glue Data Catalog</strong>, which tells it where tables live in S3 and what columns they have. That's a hard boundary — plain Athena cannot see into DynamoDB, RDS, or anything outside S3.</p>
+      <p>Real systems don't keep all their data in one place. Customer profiles might sit in DynamoDB, orders in RDS, logs in S3. Federated Query removes the need to export everything into S3 first — it lets one SQL query reach live into other stores.</p>
+    </section>
+
+    <section id="internals">
+      <h2>How it works internally</h2>
+      <p>The bridge is a <strong>Data Source Connector</strong> — a Lambda function that translates between Athena's SQL engine and the external source's native API.</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 760 340" xmlns="http://www.w3.org/2000/svg">
+          <!-- Athena node -->
+          <rect class="node" x="290" y="10" width="180" height="56" rx="8"/>
+          <text class="node-label" x="380" y="34" text-anchor="middle">Athena (Presto)</text>
+          <text class="node-sub" x="380" y="50" text-anchor="middle">query planner</text>
+
+          <!-- native path -->
+          <path class="flow-line native" d="M340,66 C300,110 240,110 200,150"/>
+          <rect class="node" x="110" y="150" width="180" height="56" rx="8"/>
+          <text class="node-label" x="200" y="174" text-anchor="middle">Glue Catalog</text>
+          <text class="node-sub" x="200" y="190" text-anchor="middle">table metadata</text>
+
+          <path class="flow-line native" d="M200,206 L200,250"/>
+          <rect class="node" x="110" y="250" width="180" height="56" rx="8"/>
+          <text class="node-label" x="200" y="274" text-anchor="middle">S3 Bucket</text>
+          <text class="node-sub" x="200" y="290" text-anchor="middle">orders.parquet</text>
+
+          <!-- federated path 1 -->
+          <path class="flow-line" d="M400,66 C420,110 470,110 490,150"/>
+          <rect class="node" x="400" y="150" width="180" height="56" rx="8"/>
+          <text class="node-label" x="490" y="174" text-anchor="middle">Lambda Connector</text>
+          <text class="node-sub" x="490" y="190" text-anchor="middle">DynamoDB SDK</text>
+
+          <path class="flow-line" d="M490,206 L490,250"/>
+          <rect class="node" x="400" y="250" width="180" height="56" rx="8"/>
+          <text class="node-label" x="490" y="274" text-anchor="middle">DynamoDB</text>
+          <text class="node-sub" x="490" y="290" text-anchor="middle">customers table</text>
+
+          <!-- federated path 2 -->
+          <path class="flow-line" d="M420,66 C500,110 600,110 630,150"/>
+          <rect class="node" x="580" y="150" width="160" height="56" rx="8"/>
+          <text class="node-label" x="660" y="174" text-anchor="middle">Lambda Connector</text>
+          <text class="node-sub" x="660" y="190" text-anchor="middle">JDBC driver</text>
+
+          <path class="flow-line" d="M660,206 L660,250"/>
+          <rect class="node" x="580" y="250" width="160" height="56" rx="8"/>
+          <text class="node-label" x="660" y="274" text-anchor="middle">RDS MySQL</text>
+          <text class="node-sub" x="660" y="290" text-anchor="middle">product catalog</text>
+        </svg>
+        <div class="diagram-caption">teal = native S3 path via Glue Catalog · orange = federated path via Lambda connectors</div>
+      </div>
+
+      <div class="steps">
+        <div><p><strong>Register the source.</strong> You tell Athena about a new catalog (e.g. <code>dynamo</code>) and point it at a specific connector Lambda, deployed from AWS's Serverless Application Repository.</p></div>
+        <div><p><strong>Query planning.</strong> Athena's planner pushes down whatever it can — filters, column selection — to the connector, so the source does as much filtering as possible before sending data back.</p></div>
+        <div><p><strong>Translation.</strong> The connector converts the pushed-down request into the source's native call: a DynamoDB <code>Query</code>/<code>Scan</code>, or a JDBC <code>SELECT</code> against RDS.</p></div>
+        <div><p><strong>Data returned as Arrow batches.</strong> The connector hands rows back to Presto in Apache Arrow format, a shared in-memory structure, so Presto can join rows from DynamoDB with rows from S3 as if they were one table.</p></div>
+      </div>
+    </section>
+
+    <section id="example">
+      <h2>Worked example</h2>
+      <p>Say <code>orders</code> lives in S3 (via Glue Catalog) and <code>customers</code> lives in DynamoDB, registered as catalog <code>dynamo_customers</code>. One query can join both:</p>
+
+      <div class="code">
+        <span class="filename">athena-sql</span>
+<span class="com">-- s3_orders  → native Glue-catalogued S3 table
+-- dynamo_customers.customers → DynamoDB via Lambda connector</span>
+
+<span class="kw">SELECT</span>
+    c.customer_id,
+    c.name,
+    <span class="fn">COUNT</span>(o.order_id)   <span class="kw">AS</span> total_orders,
+    <span class="fn">SUM</span>(o.order_total)   <span class="kw">AS</span> lifetime_value
+<span class="kw">FROM</span> s3_orders_db.orders o
+<span class="kw">JOIN</span> dynamo_customers.customers c
+    <span class="kw">ON</span> o.customer_id = c.customer_id
+<span class="kw">WHERE</span> o.order_date &gt;= <span class="str">DATE</span> <span class="str">'2026-01-01'</span>
+<span class="kw">GROUP BY</span> c.customer_id, c.name
+<span class="kw">ORDER BY</span> lifetime_value <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> <span class="num">20</span>;
+      </div>
+
+      <p>Notice the syntax looks like an ordinary SQL join — that's the point of federation. What's invisible here is that <code>orders</code> is being scanned from Parquet files in S3 (billed at $5/TB scanned), while <code>customers</code> rows are being fetched live from DynamoDB through a running Lambda function (billed separately, for Lambda invocation + duration).</p>
+    </section>
+
+    <section id="comparison">
+      <h2>Basic Athena vs Federated Query</h2>
+      <table>
+        <tr><th>Aspect</th><th>Basic Athena</th><th>Federated Query</th></tr>
+        <tr><td>Data source</td><td>S3 only</td><td>S3 + DynamoDB, RDS, DocumentDB, Redshift, CloudWatch Logs, HBase, Redis, more</td></tr>
+        <tr><td>Metadata source</td><td>Glue Data Catalog</td><td>Glue Catalog (S3) + connector-reported schema (external sources)</td></tr>
+        <tr><td>Setup</td><td>Crawler or manual DDL</td><td>Deploy a Lambda connector per source, then register it</td></tr>
+        <tr><td>Extra cost</td><td class="no">None beyond scan cost</td><td class="yes">Lambda invocation + duration, on top of scan cost</td></tr>
+        <tr><td>Networking</td><td class="no">Not applicable</td><td class="yes">Connector Lambda needs VPC access if source is inside a VPC (e.g. RDS)</td></tr>
+        <tr><td>Performance ceiling</td><td>Parallelized S3 reads, scales well</td><td>Bound by Lambda memory/timeout limits — slower on very large source tables</td></tr>
+      </table>
+    </section>
+
+    <section id="mistakes">
+      <h2>Common mistakes</h2>
+      <div class="callout mistake">Assuming federation is free beyond the usual Athena scan charge — the connector Lambda's invocation and duration are billed separately, and can dominate cost on large DynamoDB scans.</div>
+      <div class="callout mistake">Assuming "federated" means "any database, zero setup." Each source type needs its own connector deployed; there's no universal "point at any SQL server" option.</div>
+      <div class="callout mistake">Forgetting VPC networking for RDS-backed connectors — the connector Lambda needs the right subnets and security groups to reach a database inside a VPC. This is a very common real-world timeout cause.</div>
+      <div class="callout mistake">Expecting S3-level performance from a federated source. Lambda's memory/timeout limits make large-table scans through a connector noticeably slower than Athena's native, parallel S3 reads.</div>
+    </section>
+
+    <section id="summary">
+      <h2>Summary</h2>
+      <div class="summary-box">
+        <h3>In one sentence</h3>
+        <p>Federated Query lets Athena run one SQL statement across S3 and non-S3 sources by routing the non-S3 parts through Lambda-based connectors that translate SQL into each source's native API and return results as Apache Arrow batches — at the cost of extra Lambda charges, per-source connector setup, and VPC networking for sources like RDS.</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  const links = document.querySelectorAll('nav.toc a');
+  const sections = [...links].map(l => document.querySelector(l.getAttribute('href')));
+
+  function onScroll(){
+    let idx = 0;
+    const y = window.scrollY + 100;
+    sections.forEach((s, i) => { if (s && s.offsetTop <= y) idx = i; });
+    links.forEach(l => l.classList.remove('active'));
+    if (links[idx]) links[idx].classList.add('active');
+  }
+  document.addEventListener('scroll', onScroll);
+  onScroll();
+
+  links.forEach(l => {
+    l.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(l.getAttribute('href'));
+      if (target) target.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  });
+</script>
+
+</body>
+</html>
