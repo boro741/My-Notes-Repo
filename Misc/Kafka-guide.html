@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kafka — Understood From First Principles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #10141c;
+    --bg-panel: #161c27;
+    --bg-card: #1d2530;
+    --border: #2a3341;
+    --border-soft: #232b37;
+    --text-primary: #e7ecf2;
+    --text-muted: #8d9bb0;
+    --text-dim: #5d6b80;
+    --teal: #5fc9c1;
+    --teal-dim: #3a7f79;
+    --amber: #e8a853;
+    --amber-dim: #8a6430;
+    --red: #e2725b;
+    --red-dim: #7a3d31;
+    --purple: #b39ddb;
+    --purple-dim: #6a5a8c;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text-primary);
+    font-family: var(--font-body); line-height: 1.65; -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--teal); }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 0 28px 100px; }
+
+  .hero { padding: 90px 0 60px; border-bottom: 1px solid var(--border-soft); }
+  .hero .eyebrow {
+    font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--amber); margin-bottom: 18px;
+  }
+  .hero h1 { font-family: var(--font-display); font-size: 44px; line-height: 1.16; margin: 0 0 22px; font-weight: 600; max-width: 800px; }
+  .hero h1 em { font-style: normal; color: var(--teal); }
+  .hero p.lede { font-size: 18px; color: var(--text-muted); max-width: 660px; margin: 0; }
+
+  .toc { margin: 50px 0 0; padding: 22px 26px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 10px; }
+  .toc .toc-title { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 14px; }
+  .toc ol { margin: 0; padding-left: 20px; columns: 2; column-gap: 30px; }
+  .toc li { margin-bottom: 8px; font-size: 14.5px; break-inside: avoid; }
+  .toc a { color: var(--text-primary); text-decoration: none; }
+  .toc a:hover { color: var(--teal); }
+
+  section { padding: 64px 0 8px; border-bottom: 1px solid var(--border-soft); }
+  section:last-of-type { border-bottom: none; }
+  .sec-label { font-family: var(--font-mono); font-size: 12.5px; color: var(--teal); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+  h2 { font-family: var(--font-display); font-size: 29px; font-weight: 600; margin: 0 0 18px; }
+  h3 { font-family: var(--font-display); font-size: 19px; font-weight: 600; margin: 34px 0 12px; color: var(--text-primary); }
+  p { color: var(--text-muted); margin: 0 0 16px; font-size: 15.5px; }
+  strong { color: var(--text-primary); font-weight: 600; }
+
+  code, .inline-code {
+    font-family: var(--font-mono); background: var(--bg-card); border: 1px solid var(--border);
+    padding: 2px 6px; border-radius: 4px; font-size: 13.5px; color: var(--amber);
+  }
+
+  .callout { display: flex; gap: 14px; padding: 18px 20px; border-radius: 8px; margin: 20px 0; font-size: 14.5px; }
+  .callout.why { background: rgba(95,201,193,0.07); border: 1px solid var(--teal-dim); }
+  .callout.mistake { background: rgba(226,114,91,0.07); border: 1px solid var(--red-dim); }
+  .callout.fix { background: rgba(179,157,219,0.07); border: 1px solid var(--purple-dim); }
+  .callout.plain { background: rgba(232,168,83,0.07); border: 1px solid var(--amber-dim); }
+  .callout .tag {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    flex-shrink: 0; height: fit-content; padding: 3px 8px; border-radius: 4px; font-weight: 600;
+  }
+  .callout.why .tag { background: var(--teal-dim); color: #0c1614; }
+  .callout.mistake .tag { background: var(--red-dim); color: #1a0d0a; }
+  .callout.fix .tag { background: var(--purple-dim); color: #17111f; }
+  .callout.plain .tag { background: var(--amber-dim); color: #1f1608; }
+  .callout p { margin: 0; color: var(--text-primary); }
+
+  .diagram { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 10px; padding: 22px; margin: 24px 0; overflow: hidden; }
+  .diagram .cap { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); margin-top: 14px; text-align: center; }
+  .diagram .cap.live::before { content: "● "; color: var(--teal); animation: blink 1.6s ease-in-out infinite; }
+
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+  th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  th { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); font-weight: 500; }
+  td { color: var(--text-muted); }
+  td strong { color: var(--text-primary); }
+  tr:last-child td { border-bottom: none; }
+  .col-highlight { color: var(--teal); font-weight: 600; }
+
+  .summary-card { background: var(--bg-card); border: 1px solid var(--teal-dim); border-radius: 10px; padding: 26px 28px; margin-top: 20px; }
+  .summary-card ul { margin: 0; padding-left: 20px; }
+  .summary-card li { margin-bottom: 10px; color: var(--text-primary); font-size: 14.5px; }
+  .summary-card li::marker { color: var(--teal); }
+
+  footer { padding: 40px 0 0; text-align: center; color: var(--text-dim); font-family: var(--font-mono); font-size: 12px; }
+
+  /* ---------- ANIMATIONS ---------- */
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+  @keyframes packetMove {
+    0%   { transform: translateX(0); opacity: 0; }
+    8%   { opacity: 1; }
+    45%  { transform: translateX(280px); opacity: 1; }
+    52%  { opacity: 1; }
+    92%  { transform: translateX(560px); opacity: 1; }
+    100% { transform: translateX(560px); opacity: 0; }
+  }
+  .packet-dot { animation: packetMove 3.2s cubic-bezier(.45,.05,.55,.95) infinite; }
+
+  @keyframes fadeVanish {
+    0%   { opacity: 0; transform: scale(0.85); }
+    12%  { opacity: 1; transform: scale(1); }
+    55%  { opacity: 1; transform: scale(1); }
+    70%  { opacity: 0.5; }
+    82%  { opacity: 0; transform: scale(0.7); }
+    100% { opacity: 0; }
+  }
+  .queue-msg-1 { animation: fadeVanish 3s ease-in-out infinite; }
+  .queue-msg-2 { animation: fadeVanish 3s ease-in-out infinite; animation-delay: 1s; }
+  .queue-msg-3 { animation: fadeVanish 3s ease-in-out infinite; animation-delay: 2s; }
+
+  @keyframes growIn {
+    0% { opacity: 0; transform: translateY(6px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .log-block-new { animation: growIn 0.6s ease-out forwards; animation-delay: var(--d, 0s); opacity: 0; }
+
+  @keyframes pointerCreep {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(400px); }
+  }
+  .offset-pointer { animation: pointerCreep 8s linear infinite alternate; }
+
+  @keyframes pulseRing {
+    0%   { stroke-opacity: 0.9; r: 5; }
+    70%  { stroke-opacity: 0;   r: 16; }
+    100% { stroke-opacity: 0;   r: 16; }
+  }
+  .pulse-ring { animation: pulseRing 2s ease-out infinite; }
+
+  @keyframes swapColor {
+    0%, 40% { fill: #5fc9c1; }
+    50%, 90% { fill: #b39ddb; }
+    100% { fill: #5fc9c1; }
+  }
+  .rebalance-p2 { animation: swapColor 4s ease-in-out infinite; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .packet-dot, .queue-msg-1, .queue-msg-2, .queue-msg-3, .log-block-new,
+    .offset-pointer, .pulse-ring, .rebalance-p2, .diagram .cap.live::before {
+      animation: none !important;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 30px; }
+    .toc ol { columns: 1; }
+    .wrap { padding: 0 18px 80px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="eyebrow">Distributed Systems · Event Streaming</div>
+    <h1>Kafka isn't a mailbox. It's a <em>tape recorder</em> nobody erases.</h1>
+    <p class="lede">SQS and RabbitMQ hand you a message, and once you've read it, it's gone — like a letter you throw away after opening. Kafka records everything to a tape that keeps running, and lets you (and everyone else) rewind to any point and listen again. That single difference explains almost everything else about it.</p>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#core-idea">1. The core idea — log vs. queue</a></li>
+      <li><a href="#why-kafka">2. Why Kafka exists when SQS/SNS already did</a></li>
+      <li><a href="#architecture">3. Anatomy of Kafka — brokers, topics, partitions</a></li>
+      <li><a href="#flow">4. Watching one message travel, end to end</a></li>
+      <li><a href="#consumer-groups">5. Consumer groups &amp; offsets — replay explained</a></li>
+      <li><a href="#rebalance">6. What happens when a consumer joins or leaves</a></li>
+      <li><a href="#vs-sqs-sns">7. Kafka vs. SQS vs. SNS, side by side</a></li>
+      <li><a href="#vs-rabbitmq">8. Kafka vs. RabbitMQ</a></li>
+      <li><a href="#mistakes">9. Common mistakes</a></li>
+      <li><a href="#summary">10. Summary — quick recall</a></li>
+    </ol>
+  </div>
+
+  <!-- 1. CORE IDEA -->
+  <section id="core-idea">
+    <div class="sec-label">01 / First Principles</div>
+    <h2>The core idea: a log, not a queue</h2>
+
+    <div class="callout plain">
+      <div class="tag">Plain English</div>
+      <p>A queue is like a to-do list on paper — once a task is done, you cross it off and it's gone. A log is like a diary — you only ever add new pages at the end, and old pages never get torn out. Kafka is the diary. SQS and RabbitMQ are the to-do list.</p>
+    </div>
+
+    <p>A <strong>queue</strong> (SQS, RabbitMQ) is built around one promise: deliver each message to a consumer, then remove it. A <strong>log</strong> (Kafka) is built around a different promise: append every message to the end of an ordered, permanent file, and never touch it again during read. Consumers don't remove anything — they just remember <em>which line number they last read</em>. That line number is called an <strong>offset</strong>.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 820 250" xmlns="http://www.w3.org/2000/svg" width="100%">
+        <text x="150" y="26" text-anchor="middle" font-family="IBM Plex Mono" font-size="13" fill="#e8a853" font-weight="600">QUEUE (SQS / RabbitMQ)</text>
+
+        <rect x="30" y="45" width="240" height="34" rx="5" fill="#1d2530" stroke="#2a3341" class="queue-msg-1"/>
+        <text x="150" y="67" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="#e7ecf2" class="queue-msg-1">msg_1: "order created"</text>
+        <rect x="30" y="86" width="240" height="34" rx="5" fill="#1d2530" stroke="#2a3341" class="queue-msg-2"/>
+        <text x="150" y="108" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="#e7ecf2" class="queue-msg-2">msg_2: "order created"</text>
+        <rect x="30" y="127" width="240" height="34" rx="5" fill="#1d2530" stroke="#2a3341" class="queue-msg-3"/>
+        <text x="150" y="149" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="#e7ecf2" class="queue-msg-3">msg_3: "order created"</text>
+
+        <text x="150" y="200" text-anchor="middle" font-family="Inter" font-size="12.5" fill="#8d9bb0">Watch: each message appears,</text>
+        <text x="150" y="220" text-anchor="middle" font-family="Inter" font-size="12.5" fill="#8d9bb0">gets read, then vanishes for good.</text>
+
+        <line x1="410" y1="20" x2="410" y2="240" stroke="#2a3341" stroke-width="1.5" stroke-dasharray="4 5"/>
+
+        <text x="655" y="26" text-anchor="middle" font-family="IBM Plex Mono" font-size="13" fill="#5fc9c1" font-weight="600">LOG (Kafka partition)</text>
+        <rect x="470" y="45" width="90" height="34" rx="5" fill="#1d2530" stroke="#3a7f79"/>
+        <text x="515" y="67" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5fc9c1">offset 0</text>
+        <rect x="565" y="45" width="90" height="34" rx="5" fill="#1d2530" stroke="#3a7f79"/>
+        <text x="610" y="67" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5fc9c1">offset 1</text>
+        <rect x="660" y="45" width="90" height="34" rx="5" fill="#1d2530" stroke="#3a7f79"/>
+        <text x="705" y="67" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5fc9c1">offset 2</text>
+        <rect x="470" y="86" width="280" height="26" rx="4" fill="#171c27" stroke="#2a3341"/>
+        <text x="610" y="103" text-anchor="middle" font-family="Inter" font-size="10.5" fill="#8d9bb0">all 3 stay on disk — nothing vanishes</text>
+
+        <text x="565" y="140" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="#e8a853">▲ Consumer A: offset 1</text>
+        <text x="700" y="165" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="#b39ddb">▲ Consumer B: offset 2</text>
+        <text x="655" y="205" text-anchor="middle" font-family="Inter" font-size="12.5" fill="#8d9bb0">Each consumer just tracks its own</text>
+        <text x="655" y="223" text-anchor="middle" font-family="Inter" font-size="12.5" fill="#8d9bb0">position — independent, replayable.</text>
+      </svg>
+      <div class="cap live">Left side loops to show messages disappearing after each read. Right side never loses a block.</div>
+    </div>
+
+    <div class="callout why">
+      <div class="tag">Why</div>
+      <p>Because the log is never mutated by reads, <strong>any number of independent consumers can read the same topic at completely different speeds</strong>, and any of them can rewind to an earlier offset and reprocess history. A queue fundamentally cannot offer that, because the data is gone after one read.</p>
+    </div>
+  </section>
+
+  <!-- 2. WHY KAFKA EXISTS -->
+  <section id="why-kafka">
+    <div class="sec-label">02 / Motivation</div>
+    <h2>Why Kafka exists when SQS/SNS already did</h2>
+
+    <div class="callout plain">
+      <div class="tag">Plain English</div>
+      <p>Imagine one radio station (Kafka) versus mailing individual letters to each listener (SQS/SNS). Mailing letters works fine for a few listeners. But once you have thousands of listeners, all wanting to tune in whenever they want and rewind to yesterday's broadcast, you need a station that just keeps broadcasting on a loop — not a mailroom stuffing envelopes.</p>
+    </div>
+
+    <p>Kafka was built at LinkedIn around 2011 to solve a problem simple messaging queues weren't designed for: collecting <strong>huge, continuous streams of activity data</strong> (page views, clicks, metrics) from hundreds of services, at very high throughput, and letting <strong>many different teams</strong> independently consume and reprocess that same stream for different purposes — analytics, search indexing, monitoring, recommendations — without stepping on each other.</p>
+    <p>SQS and SNS solve a narrower, equally important problem: <strong>decoupling two services reliably</strong>, with simple delivery guarantees. They were never designed to be replayed, to guarantee strict per-key ordering, or to sustain millions of events per second at low latency the way Kafka's partitioned log does.</p>
+
+    <table>
+      <tr><th>Need</th><th>Simple messaging (SQS/SNS)</th><th>Kafka</th></tr>
+      <tr><td>Decouple two services, deliver once</td><td class="col-highlight">✓ Perfect fit</td><td>Overkill</td></tr>
+      <tr><td>Fan out one event to many independent consumers, each replaying history</td><td>Painful — needs one queue per consumer, no replay</td><td class="col-highlight">✓ Built in</td></tr>
+      <tr><td>Millions of ordered events per second</td><td>Not designed for this scale</td><td class="col-highlight">✓ Core design goal</td></tr>
+      <tr><td>Reprocess last week's data with new logic</td><td>Impossible once consumed</td><td class="col-highlight">✓ Just rewind the offset</td></tr>
+    </table>
+  </section>
+
+  <!-- 3. ARCHITECTURE -->
+  <section id="architecture">
+    <div class="sec-label">03 / Internals</div>
+    <h2>Anatomy of Kafka</h2>
+
+    <div class="callout plain">
+      <div class="tag">Plain English</div>
+      <p>A <strong>broker</strong> is just a computer holding part of the data. A <strong>topic</strong> is the name of a stream (like "order-events"). A <strong>partition</strong> is one lane of that stream — topics get split into lanes so the work can be spread across many computers instead of piling onto one.</p>
+    </div>
+
+    <p>A <strong>Kafka cluster</strong> is made of <strong>brokers</strong> — servers that store data and serve reads/writes. Producers write to a <strong>topic</strong>, which is really just a name for a set of <strong>partitions</strong> — and each partition is one append-only log, spread across brokers for scale.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 820 260" xmlns="http://www.w3.org/2000/svg" width="100%">
+        <rect x="10" y="30" width="130" height="50" rx="7" fill="#1d2530" stroke="#2a3341"/>
+        <text x="75" y="60" text-anchor="middle" font-family="IBM Plex Mono" font-size="11.5" fill="#e7ecf2">Producer</text>
+
+        <line x1="140" y1="55" x2="185" y2="55" stroke="#5d6b80" stroke-width="1.5" marker-end="url(#arrow2)"/>
+
+        <text x="410" y="24" text-anchor="middle" font-family="IBM Plex Mono" font-size="13" fill="#e8a853" font-weight="600">TOPIC: "order-events" (3 partitions, across brokers)</text>
+        <rect x="190" y="40" width="630" height="150" rx="10" fill="none" stroke="#2a3341" stroke-dasharray="5 5"/>
+
+        <rect x="215" y="60" width="170" height="46" rx="6" fill="#1d2530" stroke="#5fc9c1"/>
+        <text x="300" y="78" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="#5fc9c1">Broker 1</text>
+        <text x="300" y="95" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#8d9bb0">partition 0</text>
+
+        <rect x="410" y="60" width="170" height="46" rx="6" fill="#1d2530" stroke="#5fc9c1"/>
+        <text x="495" y="78" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="#5fc9c1">Broker 2</text>
+        <text x="495" y="95" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#8d9bb0">partition 1</text>
+
+        <rect x="605" y="60" width="170" height="46" rx="6" fill="#1d2530" stroke="#5fc9c1"/>
+        <text x="690" y="78" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="#5fc9c1">Broker 3</text>
+        <text x="690" y="95" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#8d9bb0">partition 2</text>
+
+        <text x="500" y="135" text-anchor="middle" font-family="Inter" font-size="11" fill="#8d9bb0">Producer picks a partition per message — often by a key</text>
+        <text x="500" y="152" text-anchor="middle" font-family="Inter" font-size="11" fill="#8d9bb0">(e.g. order_id) so all events for that key stay in order.</text>
+        <text x="500" y="175" text-anchor="middle" font-family="Inter" font-size="10.5" fill="#5d6b80">Order is only guaranteed within a single partition — not across the whole topic.</text>
+
+        <rect x="220" y="205" width="580" height="46" rx="7" fill="#1d2530" stroke="#2a3341"/>
+        <text x="510" y="232" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e7ecf2">Consumer Groups read from all 3 partitions independently (see next section)</text>
+
+        <defs>
+          <marker id="arrow2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#5d6b80"/>
+          </marker>
+        </defs>
+      </svg>
+      <div class="cap">One topic, split into partitions, spread across brokers. This is what lets Kafka scale write throughput horizontally.</div>
+    </div>
+
+    <table>
+      <tr><th>Term</th><th>Plain English</th></tr>
+      <tr><td><strong>Broker</strong></td><td>One computer in the cluster, holding a slice of the data.</td></tr>
+      <tr><td><strong>Topic</strong></td><td>The name of a stream of events, like a folder label — e.g. "order-events".</td></tr>
+      <tr><td><strong>Partition</strong></td><td>One lane within that stream, kept in order, stored on one broker (plus copies).</td></tr>
+      <tr><td><strong>Producer</strong></td><td>Whoever is writing new events into the stream.</td></tr>
+      <tr><td><strong>Consumer</strong></td><td>Whoever is reading events, at their own pace, from wherever their bookmark is.</td></tr>
+      <tr><td><strong>Offset</strong></td><td>A consumer's bookmark — "I've read up to here."</td></tr>
+    </table>
+  </section>
+
+  <!-- 4. MESSAGE FLOW ANIMATION -->
+  <section id="flow">
+    <div class="sec-label">04 / Watch It Happen</div>
+    <h2>Watching one message travel, end to end</h2>
+    <div class="callout plain">
+      <div class="tag">Plain English</div>
+      <p>Follow the little dot below. It's one event — say, "order #4821 was placed" — moving from the app that created it, into Kafka's storage, and out to whoever is reading it. Notice it doesn't disappear when it reaches the consumer — it just keeps sitting in storage.</p>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 780 140" xmlns="http://www.w3.org/2000/svg" width="100%">
+        <rect x="10" y="45" width="140" height="50" rx="7" fill="#1d2530" stroke="#2a3341"/>
+        <text x="80" y="75" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e7ecf2">Producer App</text>
+
+        <rect x="300" y="45" width="180" height="50" rx="7" fill="#1d2530" stroke="#3a7f79"/>
+        <text x="390" y="70" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5fc9c1">Partition (disk)</text>
+        <text x="390" y="86" text-anchor="middle" font-family="Inter" font-size="9.5" fill="#8d9bb0">event stored, offset assigned</text>
+
+        <rect x="610" y="45" width="160" height="50" rx="7" fill="#1d2530" stroke="#2a3341"/>
+        <text x="690" y="70" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e7ecf2">Consumer</text>
+        <text x="690" y="86" text-anchor="middle" font-family="Inter" font-size="9.5" fill="#8d9bb0">reads, moves its offset</text>
+
+        <line x1="150" y1="70" x2="770" y2="70" stroke="#232b37" stroke-width="2"/>
+
+        <circle cx="150" cy="70" r="7" fill="#e8a853" class="packet-dot"/>
+      </svg>
+      <div class="cap live">The dot loops continuously — in real Kafka, thousands of these happen per second, and the event stays on disk after the consumer reads it.</div>
+    </div>
+  </section>
+
+  <!-- 5. CONSUMER GROUPS -->
+  <section id="consumer-groups">
+    <div class="sec-label">05 / Mechanism</div>
+    <h2>Consumer groups &amp; offsets — replay explained</h2>
+
+    <div class="callout plain">
+      <div class="tag">Plain English</div>
+      <p>Think of the partition as a shelf of numbered boxes that never get thrown away. Two different teams can each have their own sticky note on the shelf saying "I'm up to box 5" or "I'm up to box 2" — and neither team's note affects the other's. One team can even move their sticky note backward to re-read old boxes.</p>
+    </div>
+
+    <p>A <strong>consumer group</strong> is just a named set of consumers that split the partitions of a topic between them, so the group as a whole reads every partition exactly once. Different groups reading the <strong>same topic</strong> are completely independent of each other — each group has its own offset per partition.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 820 210" xmlns="http://www.w3.org/2000/svg" width="100%">
+        <text x="410" y="24" text-anchor="middle" font-family="IBM Plex Mono" font-size="12.5" fill="#e8a853" font-weight="600">TOPIC "order-events" — one partition shown, 7 messages written so far</text>
+
+        <rect x="60" y="45" width="700" height="40" fill="#1d2530" stroke="#2a3341"/>
+        <line x1="160" y1="45" x2="160" y2="85" stroke="#2a3341"/>
+        <line x1="260" y1="45" x2="260" y2="85" stroke="#2a3341"/>
+        <line x1="360" y1="45" x2="360" y2="85" stroke="#2a3341"/>
+        <line x1="460" y1="45" x2="460" y2="85" stroke="#2a3341"/>
+        <line x1="560" y1="45" x2="560" y2="85" stroke="#2a3341"/>
+        <line x1="660" y1="45" x2="660" y2="85" stroke="#2a3341"/>
+        <text x="110" y="70" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e7ecf2">0</text>
+        <text x="210" y="70" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e7ecf2">1</text>
+        <text x="310" y="70" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e7ecf2">2</text>
+        <text x="410" y="70" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e7ecf2">3</text>
+        <text x="510" y="70" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e7ecf2">4</text>
+        <text x="610" y="70" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e7ecf2">5</text>
+        <text x="710" y="70" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e7ecf2">6</text>
+
+        <text x="610" y="115" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5fc9c1">▲</text>
+        <text x="610" y="132" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="#5fc9c1">Group "billing" @ 5</text>
+
+        <text x="310" y="115" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#b39ddb">▲</text>
+        <text x="310" y="132" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="#b39ddb">Group "analytics" @ 2 (replaying)</text>
+
+        <text x="410" y="175" text-anchor="middle" font-family="Inter" font-size="12" fill="#8d9bb0">Same topic, two consumer groups, two completely independent positions.</text>
+        <text x="410" y="195" text-anchor="middle" font-family="Inter" font-size="12" fill="#8d9bb0">"analytics" can reset its offset back to 2 any time and reprocess — "billing" is unaffected.</text>
+      </svg>
+      <div class="cap">This is the capability a queue cannot offer: two consumers of the same stream, at different points in time, both valid.</div>
+    </div>
+
+    <h3>The log keeps growing while consumers slowly catch up</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 820 160" xmlns="http://www.w3.org/2000/svg" width="100%">
+        <text x="410" y="22" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="#e8a853" font-weight="600">New events keep appending on the right — the pointer creeps behind</text>
+
+        <rect x="40" y="45" width="60" height="34" rx="4" fill="#1d2530" stroke="#3a7f79"/>
+        <rect x="105" y="45" width="60" height="34" rx="4" fill="#1d2530" stroke="#3a7f79"/>
+        <rect x="170" y="45" width="60" height="34" rx="4" fill="#1d2530" stroke="#3a7f79"/>
+        <rect x="235" y="45" width="60" height="34" rx="4" fill="#1d2530" stroke="#3a7f79"/>
+        <rect x="300" y="45" width="60" height="34" rx="4" fill="#1d2530" stroke="#3a7f79"/>
+        <rect x="365" y="45" width="60" height="34" rx="4" fill="#1d2530" stroke="#3a7f79" class="log-block-new" style="--d:0.2s"/>
+        <rect x="430" y="45" width="60" height="34" rx="4" fill="#1d2530" stroke="#3a7f79" class="log-block-new" style="--d:1.4s"/>
+        <rect x="495" y="45" width="60" height="34" rx="4" fill="#1d2530" stroke="#3a7f79" class="log-block-new" style="--d:2.6s"/>
+        <rect x="560" y="45" width="60" height="34" rx="4" fill="#1d2530" stroke="#3a7f79" class="log-block-new" style="--d:3.8s"/>
+        <rect x="625" y="45" width="60" height="34" rx="4" fill="#1d2530" stroke="#3a7f79" class="log-block-new" style="--d:5.0s"/>
+        <rect x="690" y="45" width="60" height="34" rx="4" fill="#1d2530" stroke="#3a7f79" class="log-block-new" style="--d:6.2s"/>
+
+        <g class="offset-pointer">
+          <text x="70" y="112" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e8a853">▲ consumer</text>
+        </g>
+        <text x="410" y="145" text-anchor="middle" font-family="Inter" font-size="12" fill="#8d9bb0">New blocks keep appearing at the end. Nothing already written ever gets removed.</text>
+      </svg>
+      <div class="cap live">Watch new blocks fade in on the right while the consumer's pointer drifts forward beneath them.</div>
+    </div>
+  </section>
+
+  <!-- 6. REBALANCE -->
+  <section id="rebalance">
+    <div class="sec-label">06 / Mechanism</div>
+    <h2>What happens when a consumer joins or leaves</h2>
+    <div class="callout plain">
+      <div class="tag">Plain English</div>
+      <p>If three people are splitting a stack of letters to sort, and a fourth person shows up to help, the stack gets re-split so everyone has a fair share. Kafka does the same thing automatically — it's called a <strong>rebalance</strong>.</p>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 820 180" xmlns="http://www.w3.org/2000/svg" width="100%">
+        <text x="410" y="22" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="#e8a853" font-weight="600">Watch partition 1's color: it hands off between two consumers</text>
+
+        <rect x="60" y="50" width="200" height="46" rx="6" fill="#1d2530" stroke="#5fc9c1"/>
+        <text x="160" y="78" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#5fc9c1">partition 0 → Consumer 1</text>
+
+        <rect x="310" y="50" width="200" height="46" rx="6" fill="#1d2530" stroke="#5fc9c1"/>
+        <text x="410" y="72" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e7ecf2">partition 1 →</text>
+        <text x="410" y="88" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" class="rebalance-p2">Consumer 1</text>
+
+        <rect x="560" y="50" width="200" height="46" rx="6" fill="#1d2530" stroke="#b39ddb"/>
+        <text x="660" y="78" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#b39ddb">partition 2 → Consumer 2</text>
+
+        <text x="410" y="130" text-anchor="middle" font-family="Inter" font-size="12" fill="#8d9bb0">When "Consumer 2" (purple) joins the group, Kafka reassigns partition 1</text>
+        <text x="410" y="150" text-anchor="middle" font-family="Inter" font-size="12" fill="#8d9bb0">to it — automatically, without any messages being lost.</text>
+      </svg>
+      <div class="cap live">The label under partition 1 alternates teal ↔ purple to show ownership shifting during a rebalance.</div>
+    </div>
+    <p>This is also why offsets are stored durably (in an internal Kafka topic) rather than in a consumer's memory — after a rebalance, the new owner of a partition needs to know exactly where the previous owner left off.</p>
+  </section>
+
+  <!-- 7. VS SQS SNS -->
+  <section id="vs-sqs-sns">
+    <div class="sec-label">07 / Comparison</div>
+    <h2>Kafka vs. SQS vs. SNS, side by side</h2>
+    <table>
+      <tr><th>Trait</th><th class="col-highlight">Kafka</th><th>SQS</th><th>SNS</th></tr>
+      <tr><td><strong>Model</strong></td><td>Distributed partitioned log</td><td>Point-to-point queue</td><td>Pub/sub fan-out (push)</td></tr>
+      <tr><td><strong>After a message is read</strong></td><td>Stays in the log until retention expires</td><td>Deleted once acknowledged</td><td>Not stored — delivered then forgotten</td></tr>
+      <tr><td><strong>Replay past messages?</strong></td><td class="col-highlight">Yes — reset the offset</td><td>No</td><td>No</td></tr>
+      <tr><td><strong>Multiple independent consumers of the same stream?</strong></td><td class="col-highlight">Yes, natively (consumer groups)</td><td>Only one logical consumer per queue</td><td>Yes, but by pushing to separate subscriber queues</td></tr>
+      <tr><td><strong>Ordering</strong></td><td>Guaranteed per partition</td><td>Guaranteed only in FIFO queues</td><td>Not guaranteed</td></tr>
+      <tr><td><strong>Typical use</strong></td><td>Event streaming, activity logs, stream processing</td><td>Decoupling a producer and one worker</td><td>Broadcasting one event to many systems</td></tr>
+    </table>
+    <p>The pattern you were picturing — "SNS notifies, SQS holds the queue" — is real and common in AWS (SNS fans out to several SQS queues, one per subscriber). But that's still queue-based underneath: each subscriber's SQS queue deletes messages once read. Kafka replaces <em>both</em> roles with one mechanism — the partitioned log — because replay and independent consumption are built into reading itself, not bolted on with extra queues.</p>
+  </section>
+
+  <!-- 8. VS RABBITMQ -->
+  <section id="vs-rabbitmq">
+    <div class="sec-label">08 / Comparison</div>
+    <h2>Kafka vs. RabbitMQ</h2>
+    <p>This is the pairing worth being precise about, because RabbitMQ is often assumed to be "Kafka's cousin" — but it's actually much closer to SQS/SNS in behavior.</p>
+    <table>
+      <tr><th>Trait</th><th class="col-highlight">Kafka</th><th>RabbitMQ</th></tr>
+      <tr><td><strong>Core abstraction</strong></td><td>Append-only log, consumer pulls</td><td>Traditional message broker, pushes to consumers</td></tr>
+      <tr><td><strong>After consumption</strong></td><td>Message stays until retention expires</td><td>Message is removed once acknowledged</td></tr>
+      <tr><td><strong>Routing logic</strong></td><td>Simple — by topic and partition key</td><td class="col-highlight">Rich — exchanges support direct, topic, fanout, header-based routing</td></tr>
+      <tr><td><strong>Throughput</strong></td><td class="col-highlight">Very high — designed for millions of events/sec</td><td>Lower — optimized for flexible routing, not raw throughput</td></tr>
+      <tr><td><strong>Replay</strong></td><td class="col-highlight">Yes</td><td>No</td></tr>
+      <tr><td><strong>Best fit</strong></td><td>Streaming pipelines, event sourcing, log aggregation</td><td>Complex task routing, work queues, RPC-style messaging</td></tr>
+    </table>
+    <div class="callout why">
+      <div class="tag">Why</div>
+      <p>RabbitMQ and SQS both delete on consumption — that single trait groups them together as "queues," no matter how different their routing features look on the surface. Kafka's retention-and-replay model is what actually separates it from both.</p>
+    </div>
+  </section>
+
+  <!-- 9. MISTAKES -->
+  <section id="mistakes">
+    <div class="sec-label">09 / Pitfalls</div>
+    <h2>Common mistakes</h2>
+    <div class="callout mistake">
+      <div class="tag">Mistake</div>
+      <p><strong>Treating Kafka as a simple task queue.</strong> If you just need "do this job once, then discard it," Kafka is heavier machinery than you need — SQS is usually the better, simpler fit.</p>
+    </div>
+    <div class="callout mistake">
+      <div class="tag">Mistake</div>
+      <p><strong>Assuming ordering across an entire topic.</strong> Kafka only guarantees order <em>within a single partition</em>. If you need strict ordering for a given entity (e.g. one order's events), you must key messages so they always land on the same partition.</p>
+    </div>
+    <div class="callout mistake">
+      <div class="tag">Mistake</div>
+      <p><strong>Too many or too few partitions.</strong> Partitions are your unit of parallelism — too few limits throughput and consumer scaling; too many adds overhead and can hurt latency.</p>
+    </div>
+    <div class="callout mistake">
+      <div class="tag">Mistake</div>
+      <p><strong>Forgetting consumer lag.</strong> If a consumer group falls behind and retention expires before it catches up, it silently loses data it never got to read. Lag needs to be monitored, not assumed away.</p>
+    </div>
+  </section>
+
+  <!-- 10. SUMMARY -->
+  <section id="summary">
+    <div class="sec-label">10 / Recall</div>
+    <h2>Summary — what to remember</h2>
+    <div class="summary-card">
+      <ul>
+        <li>Kafka is a <strong>distributed log</strong>, not a queue: reading a message never removes it — consumers just move their own offset (bookmark).</li>
+        <li>That single design choice is what enables <strong>replay</strong> and <strong>independent consumer groups</strong> reading the same topic at different speeds — something SQS, SNS, and RabbitMQ can't do, because all three delete on consumption.</li>
+        <li>A <strong>topic</strong> is split into <strong>partitions</strong>, spread across <strong>brokers</strong> in a cluster, for parallel writes and reads. Order is only guaranteed within one partition.</li>
+        <li>When consumers join or leave a group, Kafka <strong>rebalances</strong> partitions between them automatically, using durably-stored offsets so no progress is lost.</li>
+        <li>Kafka exists because SQS/SNS were built for simple, reliable point-to-point or fan-out delivery — not for massive-scale, replayable, ordered event streams with many independent long-term readers.</li>
+        <li>RabbitMQ is architecturally closer to SQS/SNS (delete-on-consume, push-based) than to Kafka — despite the natural instinct to lump Kafka and RabbitMQ together as "message brokers."</li>
+        <li>Watch partition count, key-based ordering, and consumer lag — these are where most real-world Kafka mistakes happen.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>Built for active study &amp; interview prep — AWS learning path</footer>
+</div>
+</body>
+</html>
