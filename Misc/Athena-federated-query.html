@@ -42,11 +42,138 @@
     margin:0 auto;
     padding:48px 24px 120px;
   }
-  @media (max-width:880px){
-    .layout{grid-template-columns:1fr; padding:24px 18px 80px;}
-    nav.toc{position:static; margin-bottom:32px;}
+  .mobile-header{
+    display:none;
   }
 
+  @media (max-width:880px){
+    .layout{grid-template-columns:1fr; padding:24px 18px 80px;}
+    
+    .mobile-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      position:sticky;
+      top:0;
+      z-index:100;
+      background:rgba(13, 17, 23, 0.92);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--line);
+      padding:12px 18px;
+      margin:-24px -18px 24px -18px;
+    }
+
+    .mobile-header .title{
+      font-family:var(--mono);
+      font-size:13px;
+      font-weight:600;
+      color:var(--text);
+    }
+
+    .toc-toggle{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background:var(--panel);
+      border:1px solid var(--line);
+      color:var(--orange);
+      padding:6px 14px;
+      border-radius:20px;
+      font-family:var(--mono);
+      font-size:12px;
+      cursor:pointer;
+    }
+    .toc-toggle:active{
+      background:var(--panel-2);
+    }
+
+    .toc-backdrop{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.6);
+      backdrop-filter:blur(4px);
+      z-index:150;
+      opacity:0;
+      transition:opacity .25s ease;
+    }
+    .toc-backdrop.open{
+      display:block;
+      opacity:1;
+    }
+
+    nav.toc{
+      display:none;
+      position:fixed;
+      bottom:0;
+      left:0;
+      right:0;
+      top:auto;
+      z-index:160;
+      background:var(--panel);
+      border-top:1px solid var(--line);
+      border-radius:16px 16px 0 0;
+      padding:20px 20px 32px;
+      max-height:75vh;
+      overflow-y:auto;
+      box-shadow:0 -10px 30px rgba(0,0,0,0.7);
+    }
+
+    nav.toc.open{
+      display:block;
+      animation:slideUp .25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    nav.toc .toc-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:16px;
+      padding-bottom:10px;
+      border-bottom:1px solid var(--line);
+    }
+
+    nav.toc .eyebrow{
+      margin-bottom:0;
+    }
+
+    .toc-close{
+      display:block;
+      background:none;
+      border:none;
+      color:var(--muted);
+      font-size:18px;
+      cursor:pointer;
+      padding:4px 8px;
+      line-height:1;
+    }
+
+    nav.toc ol{
+      border-left:none;
+    }
+    nav.toc a{
+      padding:10px 14px;
+      border-left:none;
+      margin-left:0;
+      border-radius:6px;
+      background:var(--panel-2);
+      margin-bottom:6px;
+    }
+    nav.toc a.active{
+      background:var(--orange-dim);
+      color:#fff;
+      border-left-color:transparent;
+    }
+  }
+
+  .toc-close{
+    display:none;
+  }
   nav.toc{
     position:sticky;
     top:32px;
@@ -269,9 +396,21 @@
 </head>
 <body>
 
+<div class="mobile-header">
+  <span class="title">Athena Federated Query</span>
+  <button class="toc-toggle" id="tocToggle" aria-label="Toggle Table of Contents">
+    <span>☰</span> Contents
+  </button>
+</div>
+
+<div class="toc-backdrop" id="tocBackdrop"></div>
+
 <div class="layout">
-  <nav class="toc">
-    <span class="eyebrow">CONTENTS</span>
+  <nav class="toc" id="tocNav">
+    <div class="toc-header">
+      <span class="eyebrow">CONTENTS</span>
+      <button class="toc-close" id="tocClose" aria-label="Close Table of Contents">✕</button>
+    </div>
     <ol>
       <li><a href="#recap">01 · Recap correction</a></li>
       <li><a href="#why">02 · Why it exists</a></li>
@@ -423,13 +562,35 @@
 <script>
   const links = document.querySelectorAll('nav.toc a');
   const sections = [...links].map(l => document.querySelector(l.getAttribute('href')));
+  const tocNav = document.getElementById('tocNav');
+  const tocToggle = document.getElementById('tocToggle');
+  const tocClose = document.getElementById('tocClose');
+  const tocBackdrop = document.getElementById('tocBackdrop');
+
+  function openToc() {
+    tocNav.classList.add('open');
+    tocBackdrop.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeToc() {
+    tocNav.classList.remove('open');
+    tocBackdrop.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  if (tocToggle) tocToggle.addEventListener('click', openToc);
+  if (tocClose) tocClose.addEventListener('click', closeToc);
+  if (tocBackdrop) tocBackdrop.addEventListener('click', closeToc);
 
   function onScroll(){
     let idx = 0;
     const y = window.scrollY + 100;
     sections.forEach((s, i) => { if (s && s.offsetTop <= y) idx = i; });
     links.forEach(l => l.classList.remove('active'));
-    if (links[idx]) links[idx].classList.add('active');
+    if (links[idx]) {
+      links[idx].classList.add('active');
+    }
   }
   document.addEventListener('scroll', onScroll);
   onScroll();
@@ -437,6 +598,7 @@
   links.forEach(l => {
     l.addEventListener('click', e => {
       e.preventDefault();
+      closeToc();
       const target = document.querySelector(l.getAttribute('href'));
       if (target) target.scrollIntoView({behavior:'smooth', block:'start'});
     });
