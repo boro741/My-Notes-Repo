@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>How Distribution Can 10x Your Luck, Career &amp; Income</title>
+<style>
+
+  :root {
+    color-scheme: light;
+    --page:        #f9f9f7;
+    --surface:     #fcfcfb;
+    --ink:         #0b0b0b;
+    --ink-soft:    #52514e;
+    --muted:       #898781;
+    --hairline:    #e1e0d9;
+    --border:      rgba(11,11,11,0.10);
+    --accent:      #2a78d6;
+    --accent-ink:  #184f95;
+    --accent-soft: #eaf2fc;
+    --gold:        #eda100;
+    --gold-soft:   #fbf1dc;
+    --good:        #0ca30c;
+    --warn:        #fab219;
+    --bad:         #ec835a;
+
+    --s-blue:    #2a78d6;
+    --s-orange:  #eb6834;
+    --s-aqua:    #1baf7a;
+    --s-yellow:  #eda100;
+    --s-magenta: #e87ba4;
+
+    --shadow: 0 1px 2px rgba(11,11,11,0.04), 0 8px 24px rgba(11,11,11,0.06);
+    --serif: ui-serif, Charter, "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  html[data-theme="dark"] {
+    color-scheme: dark;
+    --page:        #0d0d0d;
+    --surface:     #1a1a19;
+    --ink:         #ffffff;
+    --ink-soft:    #c3c2b7;
+    --muted:       #898781;
+    --hairline:    #2c2c2a;
+    --border:      rgba(255,255,255,0.10);
+    --accent:      #3987e5;
+    --accent-ink:  #bcd6f7;
+    --accent-soft: rgba(57,135,229,0.14);
+    --gold:        #c98500;
+    --gold-soft:   rgba(201,133,0,0.16);
+    --good:        #0ca30c;
+    --warn:        #fab219;
+    --bad:         #ec835a;
+
+    --s-blue:    #3987e5;
+    --s-orange:  #d95926;
+    --s-aqua:    #199e70;
+    --s-yellow:  #c98500;
+    --s-magenta: #d55181;
+
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page:        #0d0d0d;
+      --surface:     #1a1a19;
+      --ink:         #ffffff;
+      --ink-soft:    #c3c2b7;
+      --muted:       #898781;
+      --hairline:    #2c2c2a;
+      --border:      rgba(255,255,255,0.10);
+      --accent:      #3987e5;
+      --accent-ink:  #bcd6f7;
+      --accent-soft: rgba(57,135,229,0.14);
+      --gold:        #c98500;
+      --gold-soft:   rgba(201,133,0,0.16);
+      --s-blue:    #3987e5;
+      --s-orange:  #d95926;
+      --s-aqua:    #199e70;
+      --s-yellow:  #c98500;
+      --s-magenta: #d55181;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+    }
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    transition: background 0.25s ease, color 0.25s ease;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  ::selection { background: var(--gold-soft); color: var(--ink); }
+
+  /* ---------- chrome: progress bar, theme toggle, top button ---------- */
+
+  #progress-bar {
+    position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    z-index: 1000; transition: width 0.1s ease-out;
+  }
+
+  .theme-toggle, .float-top {
+    position: fixed; z-index: 999;
+    width: 44px; height: 44px; border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface); color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: var(--shadow);
+    font-size: 1.05rem;
+    transition: transform 0.15s ease, background 0.25s ease;
+  }
+  .theme-toggle { top: calc(16px + env(safe-area-inset-top)); right: calc(16px + env(safe-area-inset-right)); }
+  .float-top {
+    bottom: calc(22px + env(safe-area-inset-bottom)); right: calc(16px + env(safe-area-inset-right));
+    background: var(--ink); color: var(--page); border: none;
+    opacity: 0; transform: translateY(10px); pointer-events: none;
+  }
+  .float-top.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .theme-toggle:active, .float-top:active { transform: scale(0.92); }
+
+  /* ---------- layout ---------- */
+
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+  .wrap-wide { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+  header.hero {
+    padding: calc(88px + env(safe-area-inset-top)) 0 56px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kicker {
+    font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700; margin: 0 0 18px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .kicker::before { content: ""; width: 22px; height: 2px; background: var(--accent); display: inline-block; border-radius: 2px; }
+
+  h1.title {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(2.1rem, 7vw, 3.6rem);
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    margin: 0 0 20px;
+  }
+  h1.title em { font-style: italic; color: var(--accent); }
+
+  .dek {
+    font-size: clamp(1.05rem, 2.6vw, 1.3rem);
+    color: var(--ink-soft);
+    max-width: 60ch;
+    margin: 0 0 28px;
+    font-weight: 400;
+  }
+
+  .byline {
+    display: flex; align-items: center; gap: 14px;
+    font-size: 0.88rem; color: var(--muted);
+    padding-top: 22px; border-top: 1px solid var(--hairline);
+  }
+  .byline .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--gold));
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-family: var(--serif); font-weight: 700; font-size: 1rem;
+  }
+
+  .hero-quote {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(1.15rem, 3vw, 1.5rem); line-height: 1.5;
+    color: var(--ink);
+    margin: 40px 0 0; padding: 26px 0 0 24px;
+    border-left: 3px solid var(--gold);
+  }
+
+  /* ---------- table of contents ---------- */
+
+  nav.toc {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 18px; padding: 26px 26px 22px; margin: 8px 0 64px;
+    box-shadow: var(--shadow);
+  }
+  nav.toc h2 {
+    font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 14px; font-weight: 700;
+  }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; }
+  nav.toc li {
+    counter-increment: toc; margin-bottom: 4px;
+  }
+  nav.toc a {
+    display: flex; align-items: baseline; gap: 12px;
+    color: var(--ink-soft); text-decoration: none;
+    font-size: 0.96rem; padding: 7px 4px; border-radius: 8px;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+  nav.toc a::before {
+    content: counter(toc, decimal-leading-zero);
+    font-family: var(--serif); font-size: 0.82rem; color: var(--muted); flex-shrink: 0;
+  }
+  nav.toc a:hover, nav.toc a.active { color: var(--accent); background: var(--accent-soft); }
+  nav.toc a.active::before { color: var(--accent); }
+
+  /* ---------- article sections ---------- */
+
+  section.chapter { padding: 44px 0 8px; scroll-margin-top: 24px; }
+  section.chapter + section.chapter { border-top: 1px solid var(--hairline); }
+
+  .chapter-num {
+    font-family: var(--serif); font-style: italic; color: var(--gold);
+    font-size: 1rem; margin: 0 0 10px; font-weight: 600;
+  }
+
+  h2.h {
+    font-family: var(--serif); font-weight: 600;
+    font-size: clamp(1.5rem, 4.4vw, 2.1rem);
+    line-height: 1.18; letter-spacing: -0.01em;
+    margin: 0 0 20px;
+  }
+  h3.h3 {
+    font-family: var(--serif); font-weight: 600;
+    font-size: clamp(1.15rem, 3vw, 1.4rem);
+    margin: 30px 0 12px;
+  }
+
+  p.body-text { font-size: 1.06rem; color: var(--ink); margin: 0 0 18px; }
+  p.body-text.soft { color: var(--ink-soft); }
+  .lede { font-size: 1.18rem; }
+
+  mark.hl {
+    background: var(--gold-soft); color: var(--ink);
+    padding: 0.05em 0.15em; border-radius: 4px; font-weight: 600;
+  }
+
+  blockquote.pull {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(1.2rem, 3.4vw, 1.6rem); line-height: 1.45;
+    color: var(--ink); margin: 34px 0; padding: 0 0 0 24px;
+    border-left: 3px solid var(--accent);
+  }
+  blockquote.pull cite {
+    display: block; font-style: normal; font-family: var(--sans);
+    font-size: 0.82rem; color: var(--muted); margin-top: 10px; letter-spacing: 0.02em;
+  }
+
+  .callout {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 16px; padding: 22px 24px; margin: 28px 0;
+    box-shadow: var(--shadow);
+  }
+  .callout h4 {
+    margin: 0 0 8px; font-size: 0.98rem; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .callout p { margin: 0; color: var(--ink-soft); font-size: 0.98rem; }
+
+  /* ---------- reveal-on-scroll ---------- */
+
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s cubic-bezier(.2,.7,.3,1), transform 0.7s cubic-bezier(.2,.7,.3,1); }
+  .reveal.is-visible { opacity: 1; transform: translateY(0); }
+  .reveal-stagger.is-visible > * { }
+
+  /* ================= DIAGRAM: lightning rod ================= */
+
+  .diagram { margin: 30px 0 8px; }
+  .diagram-card {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 20px; padding: 28px 20px 20px; box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .diagram-label {
+    font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); font-weight: 700; margin-bottom: 4px;
+  }
+  .diagram-caption { font-size: 0.92rem; color: var(--ink-soft); margin-top: 10px; }
+
+  .rod-svg { width: 100%; max-width: 320px; height: auto; }
+  .rod-bolt {
+    stroke-dasharray: 140; stroke-dashoffset: 140;
+    animation: bolt-strike 4s ease-in-out infinite;
+  }
+  .rod-flash {
+    opacity: 0; transform-origin: 160px 46px;
+    animation: flash 4s ease-in-out infinite;
+  }
+  .rod-glow { opacity: 0; animation: glow-pulse 4s ease-in-out infinite; }
+
+  @keyframes bolt-strike {
+    0%, 46% { stroke-dashoffset: 140; opacity: 0; }
+    48% { opacity: 1; }
+    58%, 100% { stroke-dashoffset: 0; opacity: 1; }
+    62% { opacity: 0.15; }
+    64% { opacity: 1; }
+    70%, 100% { opacity: 0; }
+  }
+  @keyframes flash {
+    0%, 55% { opacity: 0; transform: scale(0.6); }
+    58% { opacity: 1; transform: scale(1.3); }
+    68% { opacity: 0; transform: scale(1.6); }
+    100% { opacity: 0; }
+  }
+  @keyframes glow-pulse {
+    0%, 55% { opacity: 0; }
+    60% { opacity: 0.9; }
+    100% { opacity: 0; }
+  }
+
+  /* ================= DIAGRAM: luck counter ================= */
+
+  .luck-widget { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 0; }
+  .luck-ring-wrap { position: relative; width: 168px; height: 168px; }
+  .luck-ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .luck-ring-bg { fill: none; stroke: var(--hairline); stroke-width: 10; }
+  .luck-ring-fg {
+    fill: none; stroke: url(#luckGrad); stroke-width: 10; stroke-linecap: round;
+    stroke-dasharray: 440; stroke-dashoffset: 440;
+    transition: stroke-dashoffset 1.8s cubic-bezier(.2,.8,.2,1);
+  }
+  .is-visible .luck-ring-fg { stroke-dashoffset: 22; }
+  .luck-number {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-weight: 700; font-size: 2.5rem; color: var(--ink);
+  }
+  .luck-labels { display: flex; gap: 26px; margin-top: 6px; font-size: 0.85rem; color: var(--muted); }
+  .luck-labels b { color: var(--ink); }
+
+  /* ================= DIAGRAM: funnel ================= */
+
+  .funnel-wrap { position: relative; height: 260px; max-width: 380px; margin: 0 auto; }
+  .funnel-shape {
+    position: absolute; inset: 0;
+    clip-path: polygon(6% 0%, 94% 0%, 62% 100%, 38% 100%);
+    background: linear-gradient(180deg, var(--accent-soft), var(--gold-soft));
+    border: 1px solid var(--hairline);
+  }
+  .funnel-rule {
+    position: absolute; left: 0; right: 0; border-top: 1px dashed var(--hairline);
+    display: flex; justify-content: flex-end; padding-right: 6px;
+  }
+  .funnel-rule span { font-size: 0.68rem; color: var(--muted); transform: translateY(-9px); background: var(--surface); padding: 0 6px; border-radius: 4px; }
+  .funnel-dot {
+    position: absolute; width: 9px; height: 9px; border-radius: 50%;
+    background: var(--accent); top: -14px;
+    animation: fall 3.2s linear infinite;
+  }
+  .funnel-dot.gold { background: var(--gold); }
+  @keyframes fall {
+    0% { transform: translateY(0) scale(1); opacity: 0; }
+    8% { opacity: 1; }
+    92% { opacity: 1; }
+    100% { transform: translateY(270px) scale(0.4); opacity: 0; }
+  }
+  .funnel-tag {
+    position: absolute; font-size: 0.74rem; color: var(--ink-soft); font-weight: 600;
+  }
+
+  /* ================= DIAGRAM: trust ladder ================= */
+
+  .ladder { display: flex; flex-direction: column-reverse; gap: 10px; margin: 30px 0; }
+  .rung {
+    display: flex; align-items: center; gap: 16px;
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 14px; padding: 14px 18px;
+    opacity: 0.35; transform: translateX(-10px);
+    transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.5s ease, background 0.5s ease;
+  }
+  .ladder.is-visible .rung { opacity: 1; transform: translateX(0); }
+  .ladder.is-visible .rung:nth-child(1) { transition-delay: 0.5s; }
+  .ladder.is-visible .rung:nth-child(2) { transition-delay: 0.4s; }
+  .ladder.is-visible .rung:nth-child(3) { transition-delay: 0.3s; }
+  .ladder.is-visible .rung:nth-child(4) { transition-delay: 0.2s; }
+  .ladder.is-visible .rung:nth-child(5) { transition-delay: 0.1s; }
+  .ladder.is-visible .rung:nth-child(5) { border-color: var(--gold); background: var(--gold-soft); }
+  .rung-step {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    background: var(--accent-soft); color: var(--accent-ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-weight: 700; font-size: 0.9rem;
+  }
+  .ladder.is-visible .rung:nth-child(5) .rung-step { background: var(--gold); color: #fff; }
+  .rung-body b { display: block; font-size: 0.98rem; }
+  .rung-body span { font-size: 0.85rem; color: var(--muted); }
+
+  /* ================= 4-7-11 stat cards ================= */
+
+  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 30px 0; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px;
+    padding: 22px 14px; text-align: center; box-shadow: var(--shadow);
+  }
+  .stat-icon { margin: 0 auto 10px; width: 34px; height: 34px; color: var(--accent); }
+  .stat-num {
+    font-family: var(--serif); font-weight: 700; color: var(--ink);
+    font-size: clamp(1.8rem, 6vw, 2.4rem); line-height: 1; margin-bottom: 6px;
+  }
+  .stat-word { font-size: 0.8rem; color: var(--muted); font-weight: 600; letter-spacing: 0.02em; }
+
+  /* ================= bar chart: touches by deal size ================= */
+
+  .chart-card {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 18px; padding: 26px 22px 20px; margin: 30px 0; box-shadow: var(--shadow);
+  }
+  .chart-title { font-size: 0.82rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 22px; }
+  .bar-row { margin-bottom: 18px; }
+  .bar-row:last-child { margin-bottom: 4px; }
+  .bar-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; gap: 10px; }
+  .bar-label .name { font-size: 0.92rem; font-weight: 600; color: var(--ink); }
+  .bar-label .val { font-size: 0.86rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .bar-track { position: relative; height: 12px; background: var(--hairline); border-radius: 6px; overflow: visible; }
+  .bar-fill {
+    position: absolute; left: 0; top: 0; height: 100%; border-radius: 6px; width: 0%;
+    transition: width 1.4s cubic-bezier(.16,.9,.2,1);
+  }
+  .is-visible .bar-fill { width: var(--w); }
+  .bar-row.has-avg { margin-bottom: 34px; }
+  .avg-line {
+    position: absolute; top: -8px; bottom: -8px; width: 2px; background: var(--ink-soft);
+    left: 29%; opacity: 0.6;
+  }
+  .avg-line span {
+    position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+    font-size: 0.66rem; color: var(--muted); white-space: nowrap;
+  }
+
+  /* ================= watch-time gauge ================= */
+
+  .gauge-track { position: relative; height: 40px; border-radius: 10px; background: var(--hairline); overflow: hidden; margin: 10px 0 6px; display: flex; }
+  .gauge-zone { height: 100%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.72rem; font-weight: 700; transform: scaleX(0); transform-origin: left; transition: transform 1.1s cubic-bezier(.2,.8,.2,1); }
+  .is-visible .gauge-zone { transform: scaleX(1); }
+  .gauge-zone:nth-child(1) { width: 30%; background: #86b6ef; transition-delay: 0s; }
+  .gauge-zone:nth-child(2) { width: 35%; background: #3987e5; transition-delay: 0.15s; }
+  .gauge-zone:nth-child(3) { width: 35%; background: #184f95; transition-delay: 0.3s; }
+  html[data-theme="dark"] .gauge-zone:nth-child(1) { background: #5598e7; }
+  .gauge-legend { display: flex; justify-content: space-between; font-size: 0.74rem; color: var(--muted); }
+
+  /* ================= engagement tier tiles ================= */
+
+  .tile-row { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 22px 0; }
+  @media (min-width: 560px) { .tile-row { grid-template-columns: repeat(3, 1fr); } }
+  .tile {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface); border: 1px solid var(--hairline); border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .tile-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .tile b { display: block; font-size: 0.94rem; }
+  .tile span { font-size: 0.8rem; color: var(--muted); }
+
+  .mini-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 24px 0; }
+  .mini-stat { background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px; padding: 20px; box-shadow: var(--shadow); }
+  .mini-stat .num { font-family: var(--serif); font-size: clamp(1.6rem, 5vw, 2rem); font-weight: 700; color: var(--accent); }
+  .mini-stat .lbl { font-size: 0.82rem; color: var(--ink-soft); margin-top: 4px; }
+
+  /* ================= case study card ================= */
+
+  .case-card {
+    background: linear-gradient(160deg, var(--surface), var(--accent-soft));
+    border: 1px solid var(--hairline); border-radius: 20px; padding: 28px 24px;
+    margin: 30px 0; box-shadow: var(--shadow);
+  }
+  .case-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--accent); background: var(--surface); padding: 5px 10px; border-radius: 20px;
+    border: 1px solid var(--border); margin-bottom: 14px;
+  }
+  .case-stats { display: flex; gap: 26px; margin-top: 18px; flex-wrap: wrap; }
+  .case-stats div b { display: block; font-family: var(--serif); font-size: 1.5rem; }
+  .case-stats div span { font-size: 0.78rem; color: var(--muted); }
+
+  /* ================= closing ================= */
+
+  .closer {
+    text-align: center; padding: 70px 0 90px;
+  }
+  .closer h2 {
+    font-family: var(--serif); font-weight: 600; font-style: italic;
+    font-size: clamp(1.8rem, 6vw, 2.6rem); line-height: 1.2; margin: 0 0 18px;
+  }
+  .closer p { color: var(--ink-soft); font-size: 1.05rem; max-width: 46ch; margin: 0 auto; }
+  .signoff { margin-top: 34px; font-family: var(--serif); font-style: italic; color: var(--muted); }
+
+  footer.site-footer {
+    border-top: 1px solid var(--hairline); padding: 28px 0 calc(40px + env(safe-area-inset-bottom));
+    text-align: center; font-size: 0.82rem; color: var(--muted);
+  }
+
+  /* ================= responsive ================= */
+
+  @media (max-width: 480px) {
+    .stat-row { gap: 10px; }
+    .stat-card { padding: 16px 8px; }
+    .case-stats { gap: 18px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal, .rung, .luck-ring-fg, .bar-fill, .gauge-zone { transition: none !important; }
+    .rod-bolt, .rod-flash, .rod-glow, .funnel-dot { animation: none !important; }
+    html { scroll-behavior: auto; }
+  }
+
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">◐</button>
+<button class="float-top" id="floatTop" aria-label="Back to top">↑</button>
+
+<div class="wrap">
+
+  <header class="hero">
+    <p class="kicker">Distribution &amp; Content Strategy · Talk Notes</p>
+    <h1 class="title">How Distribution Can <em>10x</em> Your Luck, Career &amp; Income</h1>
+    <p class="dek">A field guide to the most under-rated skill in business — built from a decade of running channels that do a billion views a month, and turning nobodies into somebodies.</p>
+    <div class="byline">
+      <div class="avatar">AV</div>
+      <span>AOS Masterclass</span>
+      <span class="dot"></span>
+      <span>~14 min read</span>
+      <span class="dot"></span>
+      <span>9 chapters</span>
+    </div>
+    <blockquote class="hero-quote">
+      "All the success you have ever had in life is luck. But the trick I've learned is — you can engineer luck."
+    </blockquote>
+  </header>
+
+  <nav class="toc reveal">
+    <h2>In this piece</h2>
+    <ol>
+      <li><a href="#ch1">The luck machine</a></li>
+      <li><a href="#ch2">Content vs. distribution</a></li>
+      <li><a href="#ch3">The trust ladder &amp; the Nike question</a></li>
+      <li><a href="#ch4">The 4-7-11 rule</a></li>
+      <li><a href="#ch5">How many touches, by deal size</a></li>
+      <li><a href="#ch6">Reading the signals</a></li>
+      <li><a href="#ch7">Founder-led content wins</a></li>
+      <li><a href="#ch8">Why most marketers never do this</a></li>
+      <li><a href="#ch9">Play the long game</a></li>
+    </ol>
+  </nav>
+
+  <!-- ===================== CHAPTER 1 ===================== -->
+  <section class="chapter reveal" id="ch1">
+    <p class="chapter-num">Chapter One</p>
+    <h2 class="h">The luck machine</h2>
+    <p class="body-text lede">Every outcome you've ever had — good or bad — is downstream of luck. You didn't choose the language you grew up speaking, the school that shaped you, or the accident you never had. <mark class="hl">All success is luck.</mark> The only thing that separates people isn't whether luck is involved — it's whether they've learned to engineer it.</p>
+    <p class="body-text soft">Think of it as a stat in a game. Yesterday your "luck stat" was a 5. A reel went viral, a thousand strangers now know your name, and your luck stat quietly ticks up to a 7. Do that enough times — increase your surface area, let more people know you exist — and your luck stat compounds into the hundreds. That's the entire mechanism behind ten years of unlikely opportunity.</p>
+
+    <div class="diagram reveal">
+      <div class="diagram-card">
+        <div class="diagram-label">The Luck Stat</div>
+        <div class="luck-widget">
+          <div class="luck-ring-wrap">
+            <svg viewBox="0 0 160 160">
+              <defs>
+                <linearGradient id="luckGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="var(--accent)"/>
+                  <stop offset="100%" stop-color="var(--gold)"/>
+                </linearGradient>
+              </defs>
+              <circle class="luck-ring-bg" cx="80" cy="80" r="70"/>
+              <circle class="luck-ring-fg" cx="80" cy="80" r="70"/>
+            </svg>
+            <div class="luck-number">100+</div>
+          </div>
+          <div class="luck-labels">
+            <span>Ten years ago: <b>5</b></span>
+            <span>Today: <b>100+</b></span>
+          </div>
+        </div>
+        <p class="diagram-caption">Same person. Same instincts. The only variable that moved is surface area — how many people know you exist.</p>
+      </div>
+    </div>
+
+    <div class="diagram reveal">
+      <div class="diagram-card">
+        <div class="diagram-label">The Lightning Catcher</div>
+        <svg class="rod-svg" viewBox="0 0 320 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="glowGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="var(--gold)" stop-opacity="0.9"/>
+              <stop offset="100%" stop-color="var(--gold)" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <circle class="rod-glow" cx="160" cy="46" r="46" fill="url(#glowGrad)"/>
+          <path d="M110 250 L110 120 L140 90 L180 90 L210 120 L210 250 Z" stroke="var(--ink-soft)" stroke-width="2" fill="var(--surface)"/>
+          <line x1="100" y1="250" x2="220" y2="250" stroke="var(--ink-soft)" stroke-width="2"/>
+          <line x1="160" y1="90" x2="160" y2="46" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="160" cy="46" r="4" fill="var(--gold)"/>
+          <path class="rod-bolt" d="M158 8 L146 40 L162 40 L150 74" stroke="var(--gold)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <polygon class="rod-flash" points="160,46 172,40 175,52 187,50 168,66 165,54 152,58" fill="var(--gold)"/>
+          <rect x="126" y="130" width="18" height="18" stroke="var(--hairline)" stroke-width="1.5" fill="none"/>
+          <rect x="176" y="130" width="18" height="18" stroke="var(--hairline)" stroke-width="1.5" fill="none"/>
+          <rect x="126" y="160" width="18" height="18" stroke="var(--hairline)" stroke-width="1.5" fill="none"/>
+          <rect x="176" y="160" width="18" height="18" stroke="var(--hairline)" stroke-width="1.5" fill="none"/>
+          <rect x="126" y="190" width="18" height="18" stroke="var(--hairline)" stroke-width="1.5" fill="none"/>
+          <rect x="176" y="190" width="18" height="18" stroke="var(--hairline)" stroke-width="1.5" fill="none"/>
+        </svg>
+        <p class="diagram-caption">Skyscrapers wear a spire to catch lightning before it hits anything else. Content is the same idea — you build the spire, and stand ready for the strike. You can't schedule the bolt. You can only make sure that when it comes, it hits you.</p>
+      </div>
+    </div>
+
+    <p class="body-text soft">Here's the part people miss: content isn't the transaction. It's the antenna. It doesn't sell a t-shirt today — it makes it far more likely that <em>something</em> good finds you eventually: a fundraiser gets funded, a job appears, an embassy emails you out of nowhere. You don't get to pick which lightning strikes. You just have to be standing there with a rod.</p>
+
+    <div class="callout reveal">
+      <h4>📩 The email that actually happened</h4>
+      <p>On May 19th, the U.S. Embassy reached out cold — no pitch, no funnel, just years of visible surface area. That's not a marketing case study. That's a lightning strike. You don't build content for that specific email. You build it so <em>some</em> email like that becomes inevitable.</p>
+    </div>
+  </section>
+
+  <!-- ===================== CHAPTER 2 ===================== -->
+  <section class="chapter reveal" id="ch2">
+    <p class="chapter-num">Chapter Two</p>
+    <h2 class="h">Content vs. distribution</h2>
+    <p class="body-text lede">These two words get used interchangeably, and that's the first mistake. <mark class="hl">Content is a unit of value</mark> — utility (I taught you something) or entertainment (I made your scroll worth it). <mark class="hl">Distribution is what content becomes</mark> once enough of that value compounds into a relationship.</p>
+    <p class="body-text soft">Most people who see a piece of content reject it outright. A few watch it once and move on. But a small slice sticks around long enough to watch a second piece, then a tenth, then a hundredth — and at some point they quietly decide: <em>I should follow this person.</em> That decision is distribution. It's not the view count. It's the trust that accumulates in the space between views.</p>
+
+    <div class="diagram reveal">
+      <div class="diagram-card">
+        <div class="diagram-label">Content → Distribution</div>
+        <div class="funnel-wrap">
+          <div class="funnel-shape"></div>
+          <div class="funnel-rule" style="top:0%"><span>every viewer</span></div>
+          <div class="funnel-rule" style="top:45%"><span>repeat viewers</span></div>
+          <div class="funnel-rule" style="top:88%"><span>followers</span></div>
+          <div class="funnel-dot" style="left:14%; animation-delay:0s"></div>
+          <div class="funnel-dot" style="left:26%; animation-delay:0.5s"></div>
+          <div class="funnel-dot gold" style="left:38%; animation-delay:1s"></div>
+          <div class="funnel-dot" style="left:50%; animation-delay:1.5s"></div>
+          <div class="funnel-dot" style="left:62%; animation-delay:2s"></div>
+          <div class="funnel-dot gold" style="left:74%; animation-delay:2.5s"></div>
+          <div class="funnel-dot" style="left:86%; animation-delay:0.8s"></div>
+        </div>
+        <p class="diagram-caption">Every video is a filter, not a funnel you control. Most people fall through. The ones who don't are your distribution — an audience that now makes small life decisions with you as a quiet input.</p>
+      </div>
+    </div>
+
+    <p class="body-text soft">That's also why it's not just about views. Someone who's watched a single video has almost no trust in you. Someone who's watched hundreds — who's seen the behind-the-scenes, the outtakes, the version of you that isn't polished — has something closer to a real relationship. The world runs on <em>mimesis</em>: we unconsciously imitate the people we watch closely, which is exactly why distribution quietly shapes behavior, taste, and decisions, not just awareness.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 3 ===================== -->
+  <section class="chapter reveal" id="ch3">
+    <p class="chapter-num">Chapter Three</p>
+    <h2 class="h">The trust ladder &amp; the Nike question</h2>
+    <p class="body-text lede">Ask a room how much they trust Nike, on a scale of one to ten. You'll get sevens, eights, nines — never a ten. Nobody can say exactly which ad, which sneaker, which moment converted them. They just kept <em>seeing</em> Nike, again and again, until trust quietly crossed a threshold.</p>
+    <p class="body-text soft">Here's the uncomfortable question: why do we assume hiring, partnerships, or deals work any differently? An employer who's "just kept seeing you around" on LinkedIn or Twitter is running the exact same trust calculation as a shopper deciding between two pairs of sneakers. You don't need to be looking for a job today. You need to be known enough that in three years, when you are, the decision already feels made.</p>
+
+    <div class="diagram reveal">
+      <div class="diagram-card" style="text-align:left;">
+        <div class="diagram-label" style="text-align:center; margin-bottom:14px;">The Trust Ladder</div>
+        <div class="ladder">
+          <div class="rung">
+            <div class="rung-step">1</div>
+            <div class="rung-body"><b>Stranger</b><span>Has never seen you. Zero surface area.</span></div>
+          </div>
+          <div class="rung">
+            <div class="rung-step">2</div>
+            <div class="rung-body"><b>First watch</b><span>One video. Curiosity, not trust.</span></div>
+          </div>
+          <div class="rung">
+            <div class="rung-step">3</div>
+            <div class="rung-body"><b>Regular viewer</b><span>Recognizes you. Starts forming an opinion.</span></div>
+          </div>
+          <div class="rung">
+            <div class="rung-step">4</div>
+            <div class="rung-body"><b>Fan</b><span>Watches the BTS, the cuts, the unscripted you.</span></div>
+          </div>
+          <div class="rung">
+            <div class="rung-step">5</div>
+            <div class="rung-body"><b>Believer</b><span>Hires you, buys from you, refers you — without asking why.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <blockquote class="pull">"The minute Nike moved from brand-building content to 'let's make three rupees back on every rupee spent,' they lost $25 billion in market cap in a single day."</blockquote>
+    <p class="body-text soft">The instant a brand — or a person — switches into transactional mode, the compounding stops. Trust isn't measurable in real time. But it's very real, and it's very rememberable, and it punishes impatience harshly.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 4 ===================== -->
+  <section class="chapter reveal" id="ch4">
+    <p class="chapter-num">Chapter Four</p>
+    <h2 class="h">The 4-7-11 rule</h2>
+    <p class="body-text lede">Google's own research put a number on the Nike question. To move a stranger into genuine, unprompted trust, they need to encounter you across roughly four different platforms, at around seven distinct touch points, adding up to eleven hours of total content.</p>
+
+    <div class="stat-row reveal">
+      <div class="stat-card">
+        <svg class="stat-icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="13" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="3" y="13" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="13" y="13" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.6"/></svg>
+        <div class="stat-num">4</div>
+        <div class="stat-word">Platforms</div>
+      </div>
+      <div class="stat-card">
+        <svg class="stat-icon" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3 3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 3v11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <div class="stat-num">7</div>
+        <div class="stat-word">Touch points</div>
+      </div>
+      <div class="stat-card">
+        <svg class="stat-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="stat-num">11</div>
+        <div class="stat-word">Hours of content</div>
+      </div>
+    </div>
+
+    <p class="body-text soft">Read that number again: eleven hours. Not eleven minutes — eleven hours, accumulated in small, unremembered slices, spread across feeds, recommendations, a friend's mention, a billboard glimpsed at a red light. Nobody consciously logs it. But it's the real price of "no way, I've never heard of you" turning into "of course, I know exactly who that is."</p>
+  </section>
+
+  <!-- ===================== CHAPTER 5 ===================== -->
+  <section class="chapter reveal" id="ch5">
+    <p class="chapter-num">Chapter Five</p>
+    <h2 class="h">How many touches, by deal size</h2>
+    <p class="body-text lede">The 4-7-11 rule is an average. The real number scales hard with what you're asking someone to say yes to — a ₹300 t-shirt is a different animal than an ₹80-lakh annual contract.</p>
+
+    <div class="chart-card reveal">
+      <div class="chart-title">Touch points needed before a genuine "yes"</div>
+
+      <div class="bar-row">
+        <div class="bar-label"><span class="name">Basic B2C</span><span class="val">5–8 touches</span></div>
+        <div class="bar-track"><div class="bar-fill" style="--w:8%; background:var(--s-blue);"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="name">Mid-ticket B2C</span><span class="val">11 touches · 4 channels</span></div>
+        <div class="bar-track"><div class="bar-fill" style="--w:11%; background:var(--s-orange);"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="name">High-consideration B2C</span><span class="val">12–27 touches · 20+ hrs</span></div>
+        <div class="bar-track"><div class="bar-fill" style="--w:27%; background:var(--s-aqua);"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="name">B2B vendor shortlist</span><span class="val">17 touches</span></div>
+        <div class="bar-track"><div class="bar-fill" style="--w:17%; background:var(--s-yellow);"></div></div>
+      </div>
+      <div class="bar-row has-avg">
+        <div class="bar-label"><span class="name">Complex B2B (₹80L+/yr)</span><span class="val">60–100+ touches</span></div>
+        <div class="bar-track">
+          <div class="bar-fill" style="--w:100%; background:var(--s-magenta);"></div>
+          <div class="avg-line"><span>avg ≈ 29 touches, all industries</span></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="body-text soft">Selling insurance, real estate, a degree, or a course? Expect 12 to 27 touches and 20-plus hours of content before a stranger converts. Closing enterprise deals? Some of AOS's larger contracts took 60 to over 100 touch points before a signature — and plenty of those touches were a prospect quietly watching a video months before ever replying to an email. Across every industry, the average sits around <strong>29 touches</strong>. If you're building a career or a business and expecting a shortcut, this is the actual scoreboard.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 6 ===================== -->
+  <section class="chapter reveal" id="ch6">
+    <p class="chapter-num">Chapter Six</p>
+    <h2 class="h">Reading the signals</h2>
+    <p class="body-text lede">A million views with three comments isn't distribution — it's a boosted number an agency can point to in a deck. Real distribution efficiency shows up in a handful of proxy metrics that are easy to check and brutally honest.</p>
+
+    <h3 class="h3">Engagement rate</h3>
+    <p class="body-text soft">Comments + likes as a share of views:</p>
+    <div class="tile-row reveal">
+      <div class="tile"><div class="tile-dot" style="background:var(--bad);"></div><div><b>Under 10%</b><span>Below par — check for bot or boosted traffic</span></div></div>
+      <div class="tile"><div class="tile-dot" style="background:var(--warn);"></div><div><b>10–20%</b><span>Healthy, sustainable distribution</span></div></div>
+      <div class="tile"><div class="tile-dot" style="background:var(--good);"></div><div><b>20%+</b><span>The algorithm actively falls in love with you</span></div></div>
+    </div>
+
+    <h3 class="h3">Watch time (Instagram Reels)</h3>
+    <div class="chart-card reveal" style="margin-top:0;">
+      <div class="gauge-track">
+        <div class="gauge-zone">9–10s</div>
+        <div class="gauge-zone">20–25s</div>
+        <div class="gauge-zone">50s+</div>
+      </div>
+      <div class="gauge-legend">
+        <span>reaches existing audience</span>
+        <span>travels to new audience</span>
+        <span>goes properly viral</span>
+      </div>
+    </div>
+    <p class="body-text soft">Sounds trivial until you actually watch people scroll — most reels lose an audience inside the first second. Holding attention for even 9 seconds is a real achievement. Past 20–25 seconds, you're no longer fighting for reach; the algorithm is actively distributing for you.</p>
+
+    <div class="mini-stats reveal">
+      <div class="mini-stat"><div class="num">4–6%</div><div class="lbl">Thumbnail CTR — solid mid-tier channel</div></div>
+      <div class="mini-stat"><div class="num">10%+</div><div class="lbl">Thumbnail CTR — top decile of channels</div></div>
+      <div class="mini-stat"><div class="num">70%+</div><div class="lbl">Average view duration to aim for</div></div>
+      <div class="mini-stat"><div class="num">15%+</div><div class="lbl">Branded search growth, year over year</div></div>
+    </div>
+
+    <div class="callout reveal">
+      <h4>📊 One video, in numbers</h4>
+      <p>1.2M views → 263 combined days of watch time · 78K likes · 382 comments · 97K shares · 17K bookmarks. The share count alone is close to 8% of total views — the real signal that a video is compounding into distribution, not just impressions.</p>
+    </div>
+  </section>
+
+  <!-- ===================== CHAPTER 7 ===================== -->
+  <section class="chapter reveal" id="ch7">
+    <p class="chapter-num">Chapter Seven</p>
+    <h2 class="h">Founder-led content wins</h2>
+    <p class="body-text lede">The best brands doing this right now aren't run by a marketing manager with a content calendar. They're founder-led — because the founder is the one person in the building actually thinking in decades, not quarters.</p>
+
+    <div class="case-card reveal">
+      <span class="case-tag">Case Study · Zerodha</span>
+      <p class="body-text" style="margin-bottom:0;">Two years into founder-driven content, Zerodha's "Markets by Zerodha" and "WTF" (with Nikhil Kamath) have racked up roughly <strong>10 crore views</strong> — with effectively zero performance-marketing spend. The audience for "Markets by Zerodha" checks in <em>every single morning</em>. That's not a campaign. That's a habit — the highest form of distribution there is.</p>
+      <div class="case-stats">
+        <div><b>~10Cr</b><span>total views</span></div>
+        <div><b>~6Cr</b><span>on the flagship show alone</span></div>
+        <div><b>Daily</b><span>repeat-viewing habit</span></div>
+      </div>
+    </div>
+
+    <p class="body-text soft">If you want to build a company that outlasts you — a legacy, not a quarter's numbers — this is the move founders are increasingly making before anyone tells them to.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 8 ===================== -->
+  <section class="chapter reveal" id="ch8">
+    <p class="chapter-num">Chapter Eight</p>
+    <h2 class="h">Why most marketers never do this</h2>
+    <p class="body-text lede">If distribution is this powerful, why doesn't every CMO run straight at it? Because the average marketing manager lasts two to three years in a role — and this is, by nature, a multi-year game with almost no clean attribution.</p>
+    <p class="body-text soft">When a deal closes because someone quietly watched a founder's video eight months ago, no CEO turns around and thanks the marketing department for that specific reel. It just shows up as "someone reached out." Meanwhile, performance ads offer a dashboard, a clean number, and a story a manager can tell in a quarterly review before they move on to the next job. Distribution asks you to take a long bet on a career that might not even be yours in two years. Almost nobody takes that bet voluntarily — which is exactly why the people who do have so little competition.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 9 / CLOSING ===================== -->
+  <section class="chapter reveal closer" id="ch9">
+    <p class="chapter-num" style="text-align:center;">Chapter Nine</p>
+    <h2>Play the long game.</h2>
+    <p>Whether it's a brand, a business, or your own career — the number of touch points you need with the people who matter isn't one or two. It's somewhere in the twenties or thirties. There is no shortcut past that math. There is only starting today instead of in three years, when you'll wish you had.</p>
+    <p class="signoff">— That's it for me. Bye.</p>
+  </section>
+
+</div>
+
+<footer class="site-footer">
+  <div class="wrap">Notes from an AOS masterclass on content &amp; distribution · read on any device</div>
+</footer>
+
+<script>
+(function () {
+  // theme toggle
+  var root = document.documentElement;
+  var btn = document.getElementById('themeToggle');
+  function currentTheme() {
+    if (root.getAttribute('data-theme')) return root.getAttribute('data-theme');
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  btn.addEventListener('click', function () {
+    var next = currentTheme() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    btn.textContent = next === 'dark' ? '☀' : '◐';
+  });
+  btn.textContent = currentTheme() === 'dark' ? '☀' : '◐';
+
+  // scroll progress
+  var bar = document.getElementById('progress-bar');
+  var floatTop = document.getElementById('floatTop');
+  function onScroll() {
+    var h = document.documentElement;
+    var scrolled = h.scrollTop || document.body.scrollTop;
+    var height = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
+    var pct = height > 0 ? (scrolled / height) * 100 : 0;
+    bar.style.width = pct + '%';
+    if (scrolled > 500) floatTop.classList.add('show'); else floatTop.classList.remove('show');
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  floatTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+  // reveal on scroll
+  var revealEls = document.querySelectorAll('.reveal, .ladder');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    revealEls.forEach(function (el) { io.observe(el); });
+  } else {
+    revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+  }
+
+  // TOC active link
+  var tocLinks = {};
+  document.querySelectorAll('nav.toc a').forEach(function (a) {
+    tocLinks[a.getAttribute('href').slice(1)] = a;
+  });
+  var chapters = document.querySelectorAll('section.chapter');
+  if ('IntersectionObserver' in window) {
+    var tocObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var link = tocLinks[entry.target.id];
+        if (!link) return;
+        if (entry.isIntersecting) {
+          Object.values(tocLinks).forEach(function (l) { l.classList.remove('active'); });
+          link.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-40% 0px -50% 0px' });
+    chapters.forEach(function (c) { if (c.id) tocObserver.observe(c); });
+  }
+})();
+</script>
+
+</body>
+</html>
