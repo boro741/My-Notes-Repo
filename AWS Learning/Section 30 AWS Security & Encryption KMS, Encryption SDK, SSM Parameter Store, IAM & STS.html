@@ -3,24 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Section 30 — AWS Security & Encryption — Notes</title>
+<title>Section 30 — AWS Security & Encryption — Storybook Notes</title>
 <style>
   :root {
     --accent: #e8830f;
     --accent-dark: #c96a08;
-    --bg: #fafafa;
-    --card-bg: #ffffff;
-    --border: #e3e0da;
-    --text: #2b2a28;
-    --text-muted: #6b6a66;
-    --green: #2e7d32;
-    --green-bg: #eef7ee;
-    --red: #c0392b;
-    --red-bg: #fdecea;
-    --amber: #b8790a;
-    --amber-bg: #fff4e2;
-    --purple: #6a4fb3;
-    --purple-bg: #f3f0fb;
+    --bg: #0d0f17;
+    --card-bg: #161926;
+    --border: #2a2e45;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --green: #10b981;
+    --green-bg: rgba(16, 185, 129, 0.12);
+    --red: #ef4444;
+    --red-bg: rgba(239, 68, 68, 0.12);
+    --amber: #f59e0b;
+    --amber-bg: rgba(245, 158, 11, 0.12);
+    --purple: #8b5cf6;
+    --purple-bg: rgba(139, 92, 246, 0.12);
+    --code-bg: #0f111a;
   }
 
   * { box-sizing: border-box; }
@@ -34,21 +35,22 @@
   }
 
   .wrap {
-    max-width: 900px;
+    max-width: 1000px;
     margin: 0 auto;
-    padding: 32px 20px 80px;
+    padding: 40px 20px 80px;
   }
 
   header {
     padding-bottom: 24px;
     border-bottom: 3px solid var(--accent);
-    margin-bottom: 28px;
+    margin-bottom: 32px;
   }
 
   header h1 {
-    margin: 0 0 6px;
-    font-size: 2rem;
-    color: var(--text);
+    margin: 0 0 8px;
+    font-size: 2.2rem;
+    color: #ffffff;
+    letter-spacing: -0.02em;
   }
 
   header h1 span {
@@ -58,38 +60,43 @@
   header p.subtitle {
     margin: 0;
     color: var(--text-muted);
-    font-size: 1.05rem;
+    font-size: 1.1rem;
   }
 
   nav.toc {
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 18px 22px;
-    margin-bottom: 32px;
+    padding: 24px;
+    margin-bottom: 40px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
   }
 
   nav.toc h2 {
-    margin: 0 0 10px;
-    font-size: 1.1rem;
+    margin: 0 0 16px;
+    font-size: 1.2rem;
     color: var(--accent);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
 
   nav.toc ol {
     margin: 0;
-    padding-left: 22px;
+    padding-left: 20px;
     columns: 2;
-    column-gap: 24px;
+    column-gap: 32px;
   }
 
   nav.toc li {
-    margin-bottom: 6px;
+    margin-bottom: 10px;
     break-inside: avoid;
+    font-size: 0.95rem;
   }
 
   nav.toc a {
     color: var(--text);
     text-decoration: none;
+    transition: color 0.2s ease;
   }
 
   nav.toc a:hover {
@@ -101,94 +108,123 @@
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: 14px;
-    padding: 24px 26px;
-    margin-bottom: 24px;
-    scroll-margin-top: 20px;
+    padding: 32px;
+    margin-bottom: 36px;
+    scroll-margin-top: 24px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
   }
 
   .card h2 {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin: 0 0 14px;
-    font-size: 1.3rem;
-    color: var(--text);
+    gap: 14px;
+    margin: 0 0 20px;
+    font-size: 1.45rem;
+    color: #ffffff;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
   }
 
   .badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 32px;
-    height: 32px;
-    padding: 0 6px;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 8px;
     background: var(--accent);
     color: #fff;
     font-weight: 700;
-    font-size: 0.95rem;
+    font-size: 1rem;
     border-radius: 50%;
     flex-shrink: 0;
   }
 
   h3 {
-    color: var(--accent-dark);
-    font-size: 1.05rem;
-    margin: 20px 0 8px;
+    color: var(--accent);
+    font-size: 1.15rem;
+    margin: 24px 0 12px;
   }
 
-  a { color: var(--accent-dark); }
+  h4 {
+    color: #cbd5e1;
+    font-size: 1.02rem;
+    margin: 18px 0 8px;
+  }
+
+  a { color: var(--accent); }
 
   code {
-    background: #f1eee7;
-    border: 1px solid #e6e2d8;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
     border-radius: 4px;
-    padding: 1px 6px;
-    font-size: 0.92em;
+    padding: 2px 7px;
+    font-size: 0.9em;
     font-family: "SF Mono", Consolas, Monaco, monospace;
-    color: #7a4b00;
+    color: #f6ad55;
+  }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    font-size: 0.9em;
+    color: #e2e8f0;
+    line-height: 1.45;
+  }
+
+  pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    color: inherit;
   }
 
   ul, ol { padding-left: 22px; }
-  li { margin-bottom: 6px; }
+  li { margin-bottom: 8px; }
 
   table {
     width: 100%;
     border-collapse: collapse;
-    margin: 14px 0;
+    margin: 18px 0;
     font-size: 0.94rem;
   }
 
   th, td {
     border: 1px solid var(--border);
-    padding: 8px 12px;
+    padding: 10px 14px;
     text-align: left;
     vertical-align: top;
   }
 
   th {
-    background: #f7f2ea;
-    color: var(--text);
+    background: #1e2338;
+    color: var(--accent);
     font-weight: 600;
   }
 
   tr:nth-child(even) td {
-    background: #fcfbf9;
+    background: rgba(255,255,255,0.02);
   }
 
   .callout {
     border-left: 4px solid;
     border-radius: 8px;
-    padding: 12px 16px;
-    margin: 14px 0;
+    padding: 16px 20px;
+    margin: 20px 0;
     font-size: 0.96rem;
   }
 
   .callout strong.tag {
-    display: inline-block;
-    margin-bottom: 4px;
-    font-size: 0.78rem;
-    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
+    font-weight: 700;
   }
 
   .callout.tip {
@@ -213,586 +249,735 @@
     border: 1.5px dashed var(--purple);
     background: var(--purple-bg);
     border-radius: 8px;
-    padding: 12px 16px;
-    margin: 14px 0;
+    padding: 16px 20px;
+    margin: 20px 0;
     font-size: 0.96rem;
   }
   .analogy strong.tag {
-    display: inline-block;
-    margin-bottom: 4px;
-    font-size: 0.78rem;
-    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--purple);
+    font-weight: 700;
   }
 
-  .diagram {
+  .diagram-box {
     border: 1px solid var(--border);
     border-radius: 10px;
-    background: #fdfcfa;
-    padding: 16px;
-    margin: 16px 0 6px;
-    text-align: center;
+    background: var(--code-bg);
+    padding: 20px;
+    margin: 20px 0;
     overflow-x: auto;
   }
 
-  .diagram svg {
-    max-width: 100%;
+  .five-sections {
+    background: #111422;
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 32px;
   }
 
-  .caption {
-    text-align: center;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    margin: 4px 0 16px;
-    font-style: italic;
+  .five-sections h3.sec-title {
+    color: #ffffff;
+    margin-top: 0;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 8px;
+    font-size: 1.15rem;
   }
 
-  .cheatsheet {
-    border: 2px solid var(--accent);
+  .sec-block {
+    margin-bottom: 24px;
   }
 
-  .cheatsheet h2 { color: var(--accent-dark); }
+  .sec-block:last-child {
+    margin-bottom: 0;
+  }
+
+  .sec-block h4 {
+    color: var(--accent);
+    margin: 0 0 8px;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
 
   .back-to-top {
     display: block;
     text-align: center;
-    margin-top: 36px;
+    margin-top: 40px;
     font-weight: 600;
-    color: var(--accent-dark);
+    color: var(--accent);
     text-decoration: none;
+    transition: transform 0.2s ease;
   }
-  .back-to-top:hover { text-decoration: underline; }
-
-  .svg-box { fill: #fff; stroke: #c8917a; stroke-width: 1.5; }
-  .svg-box-accent { fill: #fff4e2; stroke: var(--accent); stroke-width: 1.5; }
-  .svg-box-gray { fill: #eeeeee; stroke: #b8b8b8; stroke-width: 1.5; }
-  .svg-text { font-family: -apple-system, sans-serif; font-size: 12px; fill: #2b2a28; }
-  .svg-label { font-family: -apple-system, sans-serif; font-size: 11px; fill: #6b6a66; }
-  .svg-arrow { stroke: #6b6a66; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+  .back-to-top:hover {
+    transform: translateY(-2px);
+    text-decoration: underline;
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
 
 <header id="top">
-  <h1><span>Section 30</span> — AWS Security & Encryption</h1>
-  <p class="subtitle">My notes on encryption fundamentals, KMS, the Encryption SDK, SSM Parameter Store, Secrets Manager, CloudHSM, and Nitro Enclaves.</p>
+  <h1><span>Section 30</span> — AWS Security & Encryption Storybook Notes</h1>
+  <p class="subtitle">A complete story-driven systems engineering guide to AWS KMS, Encryption SDK, SSM Parameter Store, Secrets Manager, IAM & STS, CloudHSM, and Nitro Enclaves.</p>
 </header>
 
 <nav class="toc">
-  <h2>Contents</h2>
+  <h2>Contents & Modules</h2>
   <ol>
-    <li><a href="#encryption-101">Encryption 101</a></li>
-    <li><a href="#kms-overview">KMS Overview</a></li>
-    <li><a href="#kms-hands-on">KMS Hands On (CLI)</a></li>
-    <li><a href="#envelope-encryption">Envelope Encryption & Encryption SDK</a></li>
-    <li><a href="#kms-limits">KMS Limits</a></li>
-    <li><a href="#kms-lambda">KMS + Lambda Practice</a></li>
-    <li><a href="#s3-bucket-key">S3 Bucket Key</a></li>
-    <li><a href="#kms-key-policies">KMS Key Policies & IAM Principals</a></li>
-    <li><a href="#cloudhsm">CloudHSM Overview</a></li>
-    <li><a href="#ssm-parameter-store">SSM Parameter Store</a></li>
-    <li><a href="#secrets-manager">Secrets Manager</a></li>
-    <li><a href="#ssm-vs-secrets">SSM Parameter Store vs Secrets Manager</a></li>
-    <li><a href="#cfn-integration">CloudFormation — Secrets Manager & SSM</a></li>
-    <li><a href="#cw-logs-encryption">CloudWatch Logs Encryption</a></li>
-    <li><a href="#codebuild-security">CodeBuild Security</a></li>
-    <li><a href="#nitro-enclaves">AWS Nitro Enclaves</a></li>
-    <li><a href="#cheatsheet">Cheat Sheet</a></li>
+    <li><a href="#module-1">1. Encryption 101 — Data Protection</a></li>
+    <li><a href="#module-2">2. AWS KMS & Key Types</a></li>
+    <li><a href="#module-3">3. Envelope Encryption & Encryption SDK</a></li>
+    <li><a href="#module-4">4. KMS Key Policies & Cross-Account</a></li>
+    <li><a href="#module-5">5. KMS Limits, Throttling & S3 Bucket Keys</a></li>
+    <li><a href="#module-6">6. KMS Hands-On & Lambda Security</a></li>
+    <li><a href="#module-7">7. AWS CloudHSM Deep-Dive</a></li>
+    <li><a href="#module-8">8. SSM Parameter Store</a></li>
+    <li><a href="#module-9">9. AWS Secrets Manager</a></li>
+    <li><a href="#module-10">10. SSM vs Secrets Manager</a></li>
+    <li><a href="#module-11">11. CloudFormation Integration</a></li>
+    <li><a href="#module-12">12. Advanced Security Patterns (Nitro Enclaves)</a></li>
   </ol>
 </nav>
 
-<!-- 1. ENCRYPTION 101 -->
-<section class="card" id="encryption-101">
-  <h2><span class="badge">1</span> Encryption 101</h2>
+<!-- MODULE 1 -->
+<section class="card" id="module-1">
+  <h2><span class="badge">1</span> Encryption 101 — Data Protection in Motion & at Rest</h2>
 
-  <p>There are three encryption patterns you'll see across AWS services.</p>
-
-  <div class="diagram">
-    <svg viewBox="0 0 780 210" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-          <path d="M0,0 L6,3 L0,6 Z" fill="#6b6a66"/>
-        </marker>
-      </defs>
-      <text class="svg-label" x="10" y="20" font-size="9">In-flight (TLS/SSL)</text>
-      <rect class="svg-box" x="10" y="25" width="110" height="35" rx="6"/><text class="svg-text" x="65" y="47" text-anchor="middle" font-size="8">Client</text>
-      <path class="svg-arrow" d="M120,42 L340,42"/>
-      <text class="svg-label" x="230" y="35" text-anchor="middle" font-size="7">TLS-encrypted over the wire</text>
-      <rect class="svg-box" x="340" y="25" width="110" height="35" rx="6"/><text class="svg-text" x="395" y="47" text-anchor="middle" font-size="8">Server</text>
-      <text class="svg-label" x="600" y="42" text-anchor="middle" font-size="7">no middle server can read it</text>
-
-      <text class="svg-label" x="10" y="90" font-size="9">At rest (server-side)</text>
-      <rect class="svg-box" x="10" y="95" width="110" height="35" rx="6"/><text class="svg-text" x="65" y="117" text-anchor="middle" font-size="8">Client</text>
-      <path class="svg-arrow" d="M120,105 L280,105"/>
-      <text class="svg-label" x="200" y="98" text-anchor="middle" font-size="7">plaintext (over TLS)</text>
-      <rect class="svg-box-accent" x="280" y="95" width="170" height="35" rx="6"/><text class="svg-text" x="365" y="117" text-anchor="middle" font-size="8">Server: encrypts w/ data key, stores</text>
-      <path class="svg-arrow" d="M280,125 L120,125"/>
-      <text class="svg-label" x="200" y="140" text-anchor="middle" font-size="7">decrypts before returning</text>
-
-      <text class="svg-label" x="10" y="160" font-size="9">Client-side</text>
-      <rect class="svg-box-accent" x="10" y="165" width="170" height="35" rx="6"/><text class="svg-text" x="95" y="187" text-anchor="middle" font-size="8">Client: encrypts w/ own key</text>
-      <path class="svg-arrow" d="M180,182 L340,182"/>
-      <rect class="svg-box-gray" x="340" y="165" width="150" height="35" rx="6"/><text class="svg-text" x="415" y="187" text-anchor="middle" font-size="8">Storage — cannot decrypt</text>
-    </svg>
-  </div>
-  <p class="caption">In-flight protects data crossing the network; at-rest server-side lets the server manage the key; client-side means the storage layer never even sees the plaintext or the key.</p>
-
-  <table>
-    <tr><th>Type</th><th>Where encryption/decryption happens</th><th>Protects against</th></tr>
-    <tr><td>In-flight (TLS/SSL)</td><td>Client encrypts before sending; server decrypts after receiving</td><td>Man-in-the-middle attacks on public networks — this is what HTTPS means</td></tr>
-    <tr><td>At rest — server-side</td><td>Server encrypts on receipt (using a data key), decrypts before serving it back</td><td>Anyone reading the storage medium directly, but the server itself can still decrypt</td></tr>
-    <tr><td>Client-side</td><td>Client encrypts and decrypts; the server/storage only ever holds ciphertext</td><td>A storage service you don't fully trust — it can never decrypt your data</td></tr>
-  </table>
-</section>
-
-<!-- 2. KMS OVERVIEW -->
-<section class="card" id="kms-overview">
-  <h2><span class="badge">2</span> KMS Overview</h2>
-
-  <p><strong>KMS (Key Management Service)</strong> manages encryption keys for you. It's fully integrated with <strong>IAM</strong> for authorization, and every API call made against a key is logged in <strong>CloudTrail</strong> for auditing. Most AWS services with an "enable encryption" checkbox are using KMS under the hood — and you can also call KMS directly (CLI/SDK) to encrypt your own application secrets instead of ever storing them in plain text.</p>
-
-  <div class="diagram">
-    <svg viewBox="0 0 780 140" xmlns="http://www.w3.org/2000/svg">
-      <rect class="svg-box-accent" x="10" y="10" width="360" height="110" rx="8"/>
-      <text class="svg-text" x="190" y="30" text-anchor="middle" font-weight="600" font-size="10">Symmetric key</text>
-      <text class="svg-label" x="190" y="50" text-anchor="middle" font-size="8">1 key, used for both encrypt + decrypt</text>
-      <text class="svg-label" x="190" y="65" text-anchor="middle" font-size="8">never leaves KMS — only usable</text>
-      <text class="svg-label" x="190" y="80" text-anchor="middle" font-size="8">via API calls (Encrypt / Decrypt)</text>
-      <text class="svg-label" x="190" y="100" text-anchor="middle" font-size="8">used by virtually all AWS integrations</text>
-
-      <rect class="svg-box-accent" x="410" y="10" width="360" height="110" rx="8"/>
-      <text class="svg-text" x="590" y="30" text-anchor="middle" font-weight="600" font-size="10">Asymmetric key pair</text>
-      <text class="svg-label" x="590" y="50" text-anchor="middle" font-size="8">public key — downloadable, used to encrypt</text>
-      <text class="svg-label" x="590" y="65" text-anchor="middle" font-size="8">private key — stays in KMS, decrypt/sign</text>
-      <text class="svg-label" x="590" y="80" text-anchor="middle" font-size="8">only via API calls</text>
-      <text class="svg-label" x="590" y="100" text-anchor="middle" font-size="8">for encrypting outside AWS, or sign/verify</text>
-    </svg>
-  </div>
-  <p class="caption">Symmetric keys are the default — the key itself is never exposed. Asymmetric keys let someone without KMS API access encrypt data with the public half.</p>
-
-  <h3>Types of KMS keys</h3>
-  <table>
-    <tr><th>Key type</th><th>Cost</th><th>Notes</th></tr>
-    <tr><td>AWS owned keys</td><td>Free</td><td>Invisible to you — used for things like SSE-S3 or a DynamoDB-owned key</td></tr>
-    <tr><td>AWS managed keys</td><td>Free</td><td>Named <code>aws/&lt;service&gt;</code> (e.g. <code>aws/rds</code>); usable only from within that service</td></tr>
-    <tr><td>Customer managed keys</td><td>$1/month (+ $1/month if imported)</td><td>Full control — custom key policies, rotation settings, cross-account sharing</td></tr>
-  </table>
-
+  <h3>1. Start with the Problem</h3>
+  <p>Imagine you run a digital banking platform. A customer submits a $10,000 money transfer request from their laptop.</p>
   <ul>
-    <li>Pricing for API calls: roughly 3 cents per 10,000 requests.</li>
-    <li><strong>Rotation:</strong> AWS managed keys rotate automatically every year; customer managed keys can have automatic rotation on a period you set, or on-demand rotation; imported keys can only be rotated manually (via an alias).</li>
-    <li><strong>KMS keys are regional.</strong> Moving an encrypted resource (e.g. an EBS snapshot) to another region means: snapshot it (still encrypted with the original key) → copy the snapshot to the target region, re-encrypting it with a different KMS key there → restore a new volume from that copy.</li>
+    <li><strong>Problem A (In-Flight Wiretapping):</strong> As network packets travel across public Wi-Fi and ISP routers, a hacker intercepts the connection (Man-in-the-Middle attack) and reads the clear text account numbers.</li>
+    <li><strong>Problem B (At-Rest Disk Theft):</strong> The server receives the request and writes it to a physical hard drive. If a rogue data center worker pulls out that disk drive, they read all account balances directly from disk.</li>
+    <li><strong>Problem C (Zero-Trust Cloud):</strong> You want to store credit card records on cloud storage, but compliance rules forbid the cloud provider's engineers from ever seeing unencrypted text.</li>
   </ul>
 
+  <h3>2. Meet the Characters</h3>
+  <table>
+    <tr><th>Character</th><th>Real-World Analogy</th><th>Primary Responsibility</th><th>Who it Talks To</th></tr>
+    <tr><td><strong>In-Flight Encryption (TLS/SSL)</strong></td><td>The Armored Courier Truck</td><td>Protects data in transit across public wires.</td><td>Client & Server sockets</td></tr>
+    <tr><td><strong>Server-Side Encryption (SSE)</strong></td><td>The Trusting Manager</td><td>Server encrypts plaintext immediately upon receipt before saving to disk.</td><td>Storage drives & KMS</td></tr>
+    <tr><td><strong>Client-Side Encryption</strong></td><td>The Sealed Lockbox</td><td>Client encrypts data locally BEFORE sending. Cloud only ever holds unreadable bytes.</td><td>Local CPU & Raw Storage</td></tr>
+  </table>
+
+  <h3>3. Visual Workflow</h3>
+  <div class="diagram-box">
+<pre><code>[ IN-FLIGHT ENCRYPTION (TLS/SSL) ]
+User Device ------------ TLS Encrypted Tunnel ------------> Web Server
+                     (Protects against Network MITM)
+
+[ SERVER-SIDE ENCRYPTION (SSE) ]
+User Device ---- Plaintext over TLS ----> Server (Encrypts w/ Key) ----> Encrypted Storage
+                                      <---- Server (Decrypts w/ Key) <----
+
+[ CLIENT-SIDE ENCRYPTION ]
+User Device (Encrypts locally) ---- Ciphertext Only ----> Storage Server (Holds unreadable bytes)</code></pre>
+  </div>
+
+  <h3>4. Cause and Effect & Predicted Questions</h3>
   <div class="callout key">
-    <strong class="tag">Exam point</strong>
-    A KMS key policy is required for anyone to use the key at all — unlike IAM, there's no implicit account-wide access without one. The console's default key policy grants the whole account access (still gated by ordinary IAM permissions); a custom key policy lets you name specific principals, including other AWS accounts, directly.
+    <strong class="tag">Predicted Question</strong>
+    <em>"If S3 Server-Side Encryption is turned on, do I still need HTTPS?"</em><br>
+    <strong>Answer:</strong> YES! SSE only protects data at rest after it reaches the S3 disk. If you send data over HTTP, wiretappers can read it before it lands on S3. You need TLS to protect the trip, and SSE to protect the destination.
+  </div>
+
+  <div class="five-sections">
+    <h3 class="sec-title">Module 1 Master Summary</h3>
+    
+    <div class="sec-block">
+      <h4>1. One-Minute Recap</h4>
+      <p>Data security relies on three pillars: In-flight (TLS/SSL protects network packets), Server-Side At-Rest (AWS encrypts on receipt before writing to disk), and Client-Side (you encrypt locally so cloud storage never sees plaintext or keys).</p>
+    </div>
+
+    <div class="sec-block">
+      <h4>2. Mental Model</h4>
+      <p>Think of data as a secret letter: In-Flight is an armored delivery truck; Server-Side is handing a letter to a vault manager who locks it in a safe; Client-Side is writing in code and putting it in a box only you have the key to.</p>
+    </div>
+
+    <div class="sec-block">
+      <h4>3. Cheat Sheet</h4>
+      <ul>
+        <li><strong>TLS/SSL:</strong> In-flight protection against MITM attacks.</li>
+        <li><strong>SSE-S3 / SSE-EBS / SSE-RDS:</strong> Server-side automatic encryption at rest.</li>
+        <li><strong>Client-Side Encryption:</strong> Maximum privacy. Zero trust cloud storage.</li>
+      </ul>
+    </div>
+
+    <div class="sec-block">
+      <h4>4. Common Interview Questions</h4>
+      <p><strong>Q:</strong> What is the difference between Client-Side Encryption and Server-Side Encryption in AWS S3?<br>
+      <strong>A:</strong> In SSE, S3 receives plaintext over HTTPS, encrypts it using an S3/KMS key, and stores ciphertext. In Client-Side, the client encrypts data locally before sending it to S3, so S3 only ever stores ciphertext and cannot decrypt it.</p>
+    </div>
+
+    <div class="sec-block">
+      <h4>5. Common Misconceptions</h4>
+      <p><strong>Misconception:</strong> "Enabling S3 bucket encryption automatically encrypts network traffic."<br>
+      <strong>Reality:</strong> False! SSE only encrypts data at rest on disk. In-flight network encryption requires TLS (HTTPS).</p>
+    </div>
   </div>
 </section>
 
-<!-- 3. KMS HANDS ON -->
-<section class="card" id="kms-hands-on">
-  <h2><span class="badge">3</span> KMS Hands On (CLI)</h2>
+<!-- MODULE 2 -->
+<section class="card" id="module-2">
+  <h2><span class="badge">2</span> AWS Key Management Service (KMS) & Key Types</h2>
 
-  <p>Creating a customer managed key involves choosing: <strong>symmetric</strong> or <strong>asymmetric</strong>; key usage (encrypt/decrypt vs sign/verify); key origin (<code>KMS</code>-generated, <code>External</code> for an imported key, or a <code>Custom key store</code> backed by CloudHSM); single-region or multi-region; an alias; key administrators; key users; and optionally other AWS accounts to grant access to. Leaving the "who can use this key" step untouched creates the default key policy (whole account, gated by IAM).</p>
+  <h3>1. Start with the Problem</h3>
+  <p>In early cloud days, apps saved cryptographic keys in config files or git repos. Keys leaked on GitHub, manual key rotation broke production, and auditors could not trace who used a key at 2 AM. AWS created <strong>KMS</strong> to serve as a centralized, hardware-backed vault integrated into IAM and CloudTrail.</p>
 
-  <p>Once created, you can view the key policy (as JSON, or a friendlier default summary), enable automatic rotation (a period from 90 up to 2,560 days) or trigger rotation on demand, and see the rotation history.</p>
+  <h3>2. Meet the Character: KMS</h3>
+  <div class="analogy">
+    <strong class="tag">Character Analogy</strong>
+    <strong>KMS (The Master Vault Keeper):</strong> A managed service backed by Hardware Security Modules (HSMs). Plaintext symmetric keys <strong>NEVER leave KMS HSMs</strong>. KMS handles encryption/decryption requests via API calls, checking permissions with IAM and logging every action to CloudTrail.
+  </div>
 
-  <h3>Encrypt / decrypt via the CLI</h3>
+  <h3>3. Key Classification Matrix</h3>
+  <table>
+    <tr><th>Dimension</th><th>AWS Owned Keys</th><th>AWS Managed Keys</th><th>Customer Managed Keys (CMK)</th></tr>
+    <tr><td>Format</td><td>Invisible</td><td><code>aws/s3</code>, <code>aws/rds</code></td><td>Custom Alias (e.g. <code>alias/my-app</code>)</td></tr>
+    <tr><td>Cost</td><td>Free</td><td>Free</td><td>$1.00 / month per key (+ API calls)</td></tr>
+    <tr><td>Rotation</td><td>Automatic</td><td>Automatic every 1 year</td><td>Automatic (90-2560 days) or On-Demand</td></tr>
+    <tr><td>Cross-Account</td><td>No</td><td>No</td><td><strong>YES</strong> (via Custom Key Policy)</td></tr>
+  </table>
+
+  <h3>4. Regionality & Snapshot Replication</h3>
+  <p>KMS Keys are <strong>REGIONAL</strong>. Copying an encrypted EBS Snapshot from <code>us-east-1</code> to <code>eu-west-1</code> requires reading via <code>us-east-1</code> KMS Key A and re-encrypting under <code>eu-west-1</code> KMS Key B during copy.</p>
+
+  <div class="five-sections">
+    <h3 class="sec-title">Module 2 Master Summary</h3>
+    <div class="sec-block">
+      <h4>1. One-Minute Recap</h4>
+      <p>KMS manages encryption keys inside tamper-resistant HSMs. Plaintext symmetric keys never leave KMS. Operations are authorized by IAM/Key Policies and logged to CloudTrail. Customer Managed Keys ($1/mo) are required for custom rotation and cross-account access.</p>
+    </div>
+    <div class="sec-block">
+      <h4>2. Mental Model</h4>
+      <p>Think of KMS as a bank vault with a slot in the door: You don't take the master key home; you pass your document through the slot, the vault keeper processes it inside, and passes the result back out.</p>
+    </div>
+    <div class="sec-block">
+      <h4>3. Cheat Sheet</h4>
+      <ul>
+        <li><strong>Symmetric Key:</strong> AES-256. Same key encrypts/decrypts. Never leaves KMS.</li>
+        <li><strong>Asymmetric Key:</strong> Public key downloadable; Private key locked in KMS.</li>
+        <li><strong>AWS Managed Key:</strong> Free, uneditable policy, no cross-account sharing.</li>
+        <li><strong>Customer Managed Key:</strong> $1/mo, fully customizable policy & cross-account.</li>
+      </ul>
+    </div>
+    <div class="sec-block">
+      <h4>4. Common Interview Questions</h4>
+      <p><strong>Q:</strong> Can I share an AWS Managed Key (e.g., <code>aws/s3</code>) with another AWS account?<br>
+      <strong>A:</strong> No! AWS Managed Keys do not support custom key policy editing or cross-account access. You must use a Customer Managed Key.</p>
+    </div>
+    <div class="sec-block">
+      <h4>5. Common Misconceptions</h4>
+      <p><strong>Misconception:</strong> "When I download an encrypted file from S3, KMS sends me the master key."<br>
+      <strong>Reality:</strong> False! KMS master keys never leave KMS. S3 calls KMS APIs to handle decryption server-side.</p>
+    </div>
+  </div>
+</section>
+
+<!-- MODULE 3 -->
+<section class="card" id="module-3">
+  <h2><span class="badge">3</span> Envelope Encryption & AWS Encryption SDK</h2>
+
+  <h3>1. Start with the Problem</h3>
+  <p>KMS direct <code>Encrypt</code> and <code>Decrypt</code> API calls have a hard ceiling of <strong>4 KB</strong>. If you try to send a 5 GB video file directly to KMS, the API throws a <code>ValidationException</code>. Transferring gigabytes over HTTPS to KMS would crush network bandwidth and HSM compute.</p>
+
+  <h3>2. How Envelope Encryption Works</h3>
+  <div class="diagram-box">
+<pre><code>STEP 1: Call KMS GenerateDataKey(CMK)
+        ---> Returns (1) Plaintext DEK + (2) Encrypted DEK
+
+STEP 2: Encrypt 5 GB File locally on application CPU using Plaintext DEK
+        ---> Wipe Plaintext DEK from RAM immediately!
+
+STEP 3: Store [ Encrypted 5 GB File ] + [ Encrypted DEK ] together as an envelope.
+
+STEP 4: DECRYPTION
+        ---> Send ONLY Encrypted DEK (< 4 KB) to KMS Decrypt API
+        ---> KMS returns Plaintext DEK
+        ---> Decrypt 5 GB File locally on application CPU</code></pre>
+  </div>
+
+  <h3>3. Key KMS API Methods</h3>
+  <table>
+    <tr><th>API Method</th><th>Returns</th><th>Purpose & Exam Trap</th></tr>
+    <tr><td><code>Encrypt</code></td><td>Ciphertext (< 4 KB)</td><td>Encrypt small secrets directly. Payload capped at 4 KB.</td></tr>
+    <tr><td><code>GenerateDataKey</code></td><td>Plaintext DEK + Encrypted DEK</td><td><strong>CORRECT</strong> choice for immediate local envelope encryption.</td></tr>
+    <tr><td><code>GenerateDataKeyWithoutPlaintext</code></td><td>Encrypted DEK ONLY</td><td><strong>EXAM TRAP:</strong> Requires an extra KMS <code>Decrypt</code> call before use!</td></tr>
+    <tr><td><code>Decrypt</code></td><td>Plaintext (< 4 KB)</td><td>Decrypts ciphertext or decodes an Encrypted DEK back to Plaintext DEK.</td></tr>
+  </table>
+
+  <h3>4. AWS Encryption SDK & Data Key Caching</h3>
+  <p>The <strong>AWS Encryption SDK</strong> automates envelope encryption. It supports <strong>Data Key Caching</strong> (<code>LocalCryptoMaterialsCache</code>) to reuse DEKs locally, reducing KMS API calls and cost while staying within TTL, max bytes, and max message limits.</p>
+
+  <div class="five-sections">
+    <h3 class="sec-title">Module 3 Master Summary</h3>
+    <div class="sec-block">
+      <h4>1. One-Minute Recap</h4>
+      <p>KMS direct APIs are limited to 4 KB. Envelope Encryption solves this: KMS generates a small Data Encryption Key (DEK). You encrypt large data locally using the plaintext DEK, discard the plaintext key, and store the encrypted DEK alongside the encrypted payload.</p>
+    </div>
+    <div class="sec-block">
+      <h4>2. Mental Model</h4>
+      <p>Think of envelope encryption like a locked briefcase: The large file is locked inside a briefcase with a brass key (DEK). The brass key is locked inside a steel bank vault (KMS CMK). To open the briefcase, you only ask the vault keeper to unlock the brass key.</p>
+    </div>
+    <div class="sec-block">
+      <h4>3. Cheat Sheet</h4>
+      <ul>
+        <li><strong>4 KB Ceiling:</strong> Limit for direct KMS `Encrypt`/`Decrypt`.</li>
+        <li><strong>`GenerateDataKey`:</strong> Returns Plaintext DEK + Encrypted DEK.</li>
+        <li><strong>`GenerateDataKeyWithoutPlaintext`:</strong> Returns Encrypted DEK only (requires extra KMS roundtrip).</li>
+        <li><strong>AWS Encryption SDK:</strong> Client library for envelope encryption & DEK caching.</li>
+      </ul>
+    </div>
+    <div class="sec-block">
+      <h4>4. Common Interview Questions</h4>
+      <p><strong>Q:</strong> How do you encrypt 100 GB files with KMS considering the 4 KB limit?<br>
+      <strong>A:</strong> Use Envelope Encryption. Call `GenerateDataKey` on KMS, encrypt the 100 GB file locally on CPU using the Plaintext DEK, store the Encrypted DEK with the file, and erase the Plaintext DEK from RAM.</p>
+    </div>
+    <div class="sec-block">
+      <h4>5. Common Misconceptions</h4>
+      <p><strong>Misconception:</strong> "KMS streams large files through its servers during envelope encryption."<br>
+      <strong>Reality:</strong> False! KMS only generates and encrypts the tiny 256-bit DEK. All file processing occurs locally on application CPU.</p>
+    </div>
+  </div>
+</section>
+
+<!-- MODULE 4 -->
+<section class="card" id="module-4">
+  <h2><span class="badge">4</span> KMS Key Policies, Authorization & Cross-Account Access</h2>
+
+  <h3>1. Start with the Problem</h3>
+  <p>In standard AWS IAM, missing resource policies default to evaluation by user policies. But for KMS master keys, if an IAM admin could grant themselves key access without safeguards, security compliance breaks down. KMS enforces a strict rule: <strong>Without a Key Policy, NOBODY can access the key.</strong></p>
+
+  <h3>2. Key Policy Mechanics & Cross-Account Access</h3>
+  <p>The default console key policy delegates access evaluation to the AWS Account Root Principal (enabling IAM user/role policies in that account to work). For <strong>Cross-Account Access</strong>, permissions must be enabled on BOTH sides:</p>
+  <div class="diagram-box">
+<pre><code>ACCOUNT A (Key Owner)                                ACCOUNT B (Recipient)
+Step 1: KMS Key Policy grants access    =====>    Step 2: IAM Role Policy grants
+        to Account B Principal:                           kms:Decrypt & kms:CreateGrant
+        "AWS": "arn:aws:iam::2222...root"                 on Account A's Key ARN
+                                                          
+                                                  Step 3: Copies snapshot locally &
+                                                          re-encrypts w/ Account B CMK</code></pre>
+  </div>
+
+  <div class="five-sections">
+    <h3 class="sec-title">Module 4 Master Summary</h3>
+    <div class="sec-block">
+      <h4>1. One-Minute Recap</h4>
+      <p>KMS Key Policies are mandatory resource policies. Without one, all access is denied. Default key policies delegate evaluation to IAM. Cross-account key access requires explicit authorization in both Account A's KMS Key Policy and Account B's IAM Policy.</p>
+    </div>
+    <div class="sec-block">
+      <h4>2. Mental Model</h4>
+      <p>Think of a Key Policy as the Bouncer's VIP list at the vault door: Even if your IAM badge says "Executive," if your name isn't on the door log (Key Policy), you get turned away.</p>
+    </div>
+    <div class="sec-block">
+      <h4>3. Cheat Sheet</h4>
+      <ul>
+        <li><strong>Mandatory Policy:</strong> KMS keys MUST have a key policy.</li>
+        <li><strong>Root Delegation:</strong> Root principal inclusion enables IAM policy evaluation.</li>
+        <li><strong>Cross-Account Rule:</strong> Requires matching grants in Key Policy (Account A) AND IAM Policy (Account B).</li>
+      </ul>
+    </div>
+    <div class="sec-block">
+      <h4>4. Common Interview Questions</h4>
+      <p><strong>Q:</strong> I attached an IAM policy to a role in Account B allowing `kms:Decrypt` on Account A's key, but get AccessDenied. Why?<br>
+      <strong>A:</strong> Cross-account access requires permissions on BOTH sides. Account A's KMS Key Policy must also explicitly grant access to Account B.</p>
+    </div>
+    <div class="sec-block">
+      <h4>5. Common Misconceptions</h4>
+      <p><strong>Misconception:</strong> "Account root can always access KMS keys even if removed from the Key Policy."<br>
+      <strong>Reality:</strong> False! Removing root from a custom Key Policy locks out everyone, requiring AWS Support intervention to restore governance.</p>
+    </div>
+  </div>
+</section>
+
+<!-- MODULE 5 -->
+<section class="card" id="module-5">
+  <h2><span class="badge">5</span> KMS Limits, Throttling & S3 Bucket Keys</h2>
+
+  <h3>1. Start with the Problem</h3>
+  <p>High-burst applications writing thousands of encrypted files per second hit regional KMS request quotas (5,500–10,000 req/sec), triggering <code>ThrottlingException</code> (HTTP 429) errors and huge KMS API bills.</p>
+
+  <h3>2. S3 Bucket Keys Optimization</h3>
+  <div class="diagram-box">
+<pre><code>WITHOUT S3 BUCKET KEY (100 Uploads = 100 KMS API Calls)
+Upload 1 ---> KMS GenerateDataKey ---> Encrypt 1
+Upload 2 ---> KMS GenerateDataKey ---> Encrypt 2
+
+WITH S3 BUCKET KEY (100 Uploads = 1 KMS API Call)
+KMS GenerateDataKey ---> S3 Bucket Key (Cached in S3)
+Upload 1 ---> Encrypt locally w/ Bucket Key ---> Stored (Zero extra KMS API calls!)
+Upload 2 ---> Encrypt locally w/ Bucket Key ---> Stored</code></pre>
+  </div>
+  <p>Enabling an <strong>S3 Bucket Key</strong> slashes KMS API requests and cost by up to <strong>99%</strong> with zero reduction in security posture.</p>
+
+  <div class="five-sections">
+    <h3 class="sec-title">Module 5 Master Summary</h3>
+    <div class="sec-block">
+      <h4>1. One-Minute Recap</h4>
+      <p>KMS request quotas cause throttling under high traffic. Resolve throttling via exponential backoff retries, SDK data key caching, quota increase requests, or enabling S3 Bucket Keys to cut SSE-KMS API calls by 99%.</p>
+    </div>
+    <div class="sec-block">
+      <h4>2. Mental Model</h4>
+      <p>S3 Bucket Keys are like a Day Pass at an amusement park: Instead of buying a ticket (KMS API call) at every single ride (upload), you buy one day pass at the gate and ride everything instantly.</p>
+    </div>
+    <div class="sec-block">
+      <h4>3. Cheat Sheet</h4>
+      <ul>
+        <li><strong>ThrottlingException:</strong> HTTP 429 quota breach error.</li>
+        <li><strong>S3 Bucket Key:</strong> S3-side caching of bucket data keys. Cuts KMS API calls by up to 99%.</li>
+      </ul>
+    </div>
+    <div class="sec-block">
+      <h4>4. Common Interview Questions</h4>
+      <p><strong>Q:</strong> How do you fix KMS ThrottlingExceptions in high-volume S3 data pipelines without code changes?<br>
+      <strong>A:</strong> Enable S3 Bucket Keys on the target S3 bucket encryption configuration.</p>
+    </div>
+    <div class="sec-block">
+      <h4>5. Common Misconceptions</h4>
+      <p><strong>Misconception:</strong> "S3 Bucket Keys weaken data security."<br>
+      <strong>Reality:</strong> False! S3 uses cryptographically isolated keys derived from the bucket key for each object.</p>
+    </div>
+  </div>
+</section>
+
+<!-- MODULE 6 -->
+<section class="card" id="module-6">
+  <h2><span class="badge">6</span> KMS Hands-On & Lambda Security Patterns</h2>
+
+  <h3>1. Start with the Problem</h3>
+  <p>Storing plain database passwords in Lambda environment variables leaves secrets exposed in clear text to anyone with console viewing permissions (<code>lambda:GetFunction</code>).</p>
+
+  <h3>2. Solution & Workflow</h3>
+  <p>Encrypt environment variables with a Customer Managed KMS Key. At runtime, the Lambda execution role calls KMS <code>Decrypt</code> API to load secrets into function memory. Ensure the IAM execution role has <code>kms:Decrypt</code> permissions and increase function timeouts to account for API latency.</p>
+
+  <div class="five-sections">
+    <h3 class="sec-title">Module 6 Master Summary</h3>
+    <div class="sec-block">
+      <h4>1. One-Minute Recap</h4>
+      <p>Encrypt Lambda environment variables using KMS CMKs. At runtime, application code calls KMS Decrypt via SDK to load secrets into memory. Grant `kms:Decrypt` to the execution role and account for latency in timeouts.</p>
+    </div>
+    <div class="sec-block">
+      <h4>2. Mental Model</h4>
+      <p>Encrypted environment variables are sealed letters attached to a server rack: Anyone walking past sees the envelope, but only the application inside has the security badge to ask the vault keeper to read it.</p>
+    </div>
+    <div class="sec-block">
+      <h4>3. Cheat Sheet</h4>
+      <ul>
+        <li><strong>CLI `fileb://`:</strong> Mandatory for passing binary input in AWS CLI KMS commands.</li>
+        <li><strong>Auto CMK Detection:</strong> `aws kms decrypt` parses key ARN from ciphertext header automatically.</li>
+      </ul>
+    </div>
+    <div class="sec-block">
+      <h4>4. Common Interview Questions</h4>
+      <p><strong>Q:</strong> Why isn't `--key-id` required when running `aws kms decrypt`?<br>
+      <strong>A:</strong> KMS embeds the CMK Key ARN inside the ciphertext blob's metadata header.</p>
+    </div>
+    <div class="sec-block">
+      <h4>5. Common Misconceptions</h4>
+      <p><strong>Misconception:</strong> "Lambda environment variables are hidden from console viewers by default."<br>
+      <strong>Reality:</strong> False! Default AWS encryption auto-decrypts values in the console UI for anyone with viewer access.</p>
+    </div>
+  </div>
+</section>
+
+<!-- MODULE 7 -->
+<section class="card" id="module-7">
+  <h2><span class="badge">7</span> AWS CloudHSM Deep-Dive</h2>
+
+  <h3>1. Start with the Problem</h3>
+  <p>High-compliance industries (PCI-DSS Level 1, Banking) require single-tenant dedicated hardware validated to <strong>FIPS 140-2 Level 3</strong> standards (tamper-evident, zeroizes memory if breached), where AWS admins have ZERO logical access to keys. KMS multi-tenant architecture cannot meet this.</p>
+
+  <h3>2. CloudHSM vs KMS Comparison</h3>
+  <table>
+    <tr><th>Feature</th><th>AWS KMS</th><th>AWS CloudHSM</th></tr>
+    <tr><td>Tenancy</td><td>Multi-tenant</td><td><strong>Single-tenant (Dedicated Hardware)</strong></td></tr>
+    <tr><td>FIPS Validation</td><td>Level 2 (Level 3 for HSMs)</td><td><strong>FIPS 140-2 Level 3</strong></td></tr>
+    <tr><td>Admin Access</td><td>AWS manages software</td><td><strong>AWS has ZERO access</strong> to key material/users</td></tr>
+    <tr><td>API Standards</td><td>KMS REST API</td><td>PKCS#11, JCE, OpenSSL, SSL/TLS Acceleration</td></tr>
+    <tr><td>Pricing</td><td>$1/mo CMK + pennies/API call</td><td><strong>~$1.40-$1.80/hr per HSM (~$1000+/mo, No free tier)</strong></td></tr>
+  </table>
+
+  <h3>3. KMS Custom Key Store</h3>
+  <p>Links KMS to your dedicated CloudHSM cluster so AWS services (EBS, S3, Redshift) can use standard KMS APIs backed by your dedicated CloudHSM hardware.</p>
+
+  <div class="five-sections">
+    <h3 class="sec-title">Module 7 Master Summary</h3>
+    <div class="sec-block">
+      <h4>1. One-Minute Recap</h4>
+      <p>CloudHSM provides dedicated single-tenant FIPS 140-2 Level 3 hardware security modules in your VPC. AWS admins have zero access. Used for PCI-DSS compliance, SSL offloading, and PKCS#11 cryptographic standards.</p>
+    </div>
+    <div class="sec-block">
+      <h4>2. Mental Model</h4>
+      <p>KMS is renting a safe deposit box inside a commercial bank; CloudHSM is buying a heavy physical safe, putting it in your private room, and keeping the only combination in the world.</p>
+    </div>
+    <div class="sec-block">
+      <h4>3. Cheat Sheet</h4>
+      <ul>
+        <li><strong>FIPS 140-2 Level 3:</strong> Primary trigger for CloudHSM in exam questions.</li>
+        <li><strong>User Access:</strong> Managed via CloudHSM crypto users (CUs), NOT IAM.</li>
+      </ul>
+    </div>
+    <div class="sec-block">
+      <h4>4. Common Interview Questions</h4>
+      <p><strong>Q:</strong> When should an enterprise choose CloudHSM over KMS?<br>
+      <strong>A:</strong> When regulatory compliance requires single-tenant dedicated hardware, FIPS 140-2 Level 3 validation, or custom APIs like PKCS#11/JCE.</p>
+    </div>
+    <div class="sec-block">
+      <h4>5. Common Misconceptions</h4>
+      <p><strong>Misconception:</strong> "CloudHSM user permissions are managed using standard IAM policies."<br>
+      <strong>Reality:</strong> False! IAM only provisions the hardware cluster. Key and user management inside HSM is handled via CloudHSM client software.</p>
+    </div>
+  </div>
+</section>
+
+<!-- MODULE 8 -->
+<section class="card" id="module-8">
+  <h2><span class="badge">8</span> AWS SSM Parameter Store</h2>
+
+  <h3>1. Start with the Problem</h3>
+  <p>Managing configuration values (DB URLs, API endpoints, feature flags) across 50 microservices leads to config drift and secret exposure. **SSM Parameter Store** provides a centralized, serverless, hierarchical configuration vault.</p>
+
+  <h3>2. Hierarchical Paths & IAM Scoping</h3>
+  <p>Organizing paths as `/my-app/dev/db-url` and `/my-app/prod/db-url` allows writing clean IAM policies using wildcards (`/my-app/dev/*`) to grant access to Dev environments while blocking Prod access.</p>
+
+  <h3>3. Standard vs Advanced Tiers</h3>
+  <table>
+    <tr><th>Feature</th><th>Standard Tier</th><th>Advanced Tier</th></tr>
+    <tr><td>Price</td><td><strong>FREE</strong></td><td>$0.05 per parameter / month</td></tr>
+    <tr><td>Max Size</td><td>4 KB</td><td><strong>8 KB</strong></td></tr>
+    <tr><td>Parameter Policies</td><td>None</td><td><strong>TTL Expiration & No-Change Alerts</strong></td></tr>
+  </table>
+
+  <div class="five-sections">
+    <h3 class="sec-title">Module 8 Master Summary</h3>
+    <div class="sec-block">
+      <h4>1. One-Minute Recap</h4>
+      <p>SSM Parameter Store is a serverless hierarchical config store supporting String, StringList, and KMS-encrypted SecureString parameters. Standard tier is free (up to 4 KB). IAM wildcard paths enable fine-grained access control.</p>
+    </div>
+    <div class="sec-block">
+      <h4>2. Mental Model</h4>
+      <p>Think of Parameter Store as an organized digital filing cabinet: Drawers are labeled by environment (`/dev`, `/prod`), and secret files are inside locked envelopes (`SecureString`).</p>
+    </div>
+    <div class="sec-block">
+      <h4>3. Cheat Sheet</h4>
+      <ul>
+        <li><strong>Types:</strong> `String`, `StringList`, `SecureString`.</li>
+        <li><strong>CLI Flag:</strong> `--with-decryption` required to get clear text for `SecureString`.</li>
+        <li><strong>Standard Tier:</strong> Free up to 4 KB size limit.</li>
+      </ul>
+    </div>
+    <div class="sec-block">
+      <h4>4. Common Interview Questions</h4>
+      <p><strong>Q:</strong> Running `aws ssm get-parameter` on a `SecureString` returned ciphertext. Why?<br>
+      <strong>A:</strong> You forgot `--with-decryption` in the CLI call.</p>
+    </div>
+    <div class="sec-block">
+      <h4>5. Common Misconceptions</h4>
+      <p><strong>Misconception:</strong> "Parameter Store SecureString automatically rotates RDS database passwords every 30 days."<br>
+      <strong>Reality:</strong> False! Parameter Store does not natively rotate DB passwords. Use AWS Secrets Manager for native rotation.</p>
+    </div>
+  </div>
+</section>
+
+<!-- MODULE 9 -->
+<section class="card" id="module-9">
+  <h2><span class="badge">9</span> AWS Secrets Manager</h2>
+
+  <h3>1. Start with the Problem</h3>
+  <p>Security compliance mandates rotating database passwords every 30-90 days. Manual rotation breaks production if apps get out of sync. **Secrets Manager** automates password rotation natively with RDS, Aurora, Redshift, and DocumentDB using Lambda.</p>
+
+  <h3>2. 4-Step Rotation Lifecycle</h3>
   <ol>
-    <li><code>aws kms encrypt --key-id alias/tutorial --plaintext fileb://ExampleSecretFile.txt --query CiphertextBlob --output text --region ...</code> → a base64 ciphertext blob.</li>
-    <li>Base64-decode that blob to get the raw encrypted binary file — this is the artifact you'd actually share/store.</li>
-    <li><code>aws kms decrypt --ciphertext-blob fileb://... --query Plaintext --output text --region ...</code> → KMS automatically knows which key to use, since that's embedded in the ciphertext blob itself.</li>
-    <li>Base64-decode the result to recover the original plaintext.</li>
+    <li><code>createSecret</code>: Generates new random password string in memory.</li>
+    <li><code>setSecret</code>: Connects to RDS and executes `ALTER USER` to update password.</li>
+    <li><code>testSecret</code>: Verifies database connection using new password.</li>
+    <li><code>finishSecret</code>: Updates secret version tag to `AWSCURRENT`.</li>
   </ol>
 
-  <div class="callout tip">
-    <strong class="tag">Good to know</strong>
-    You never have to tell <code>decrypt</code> which key was used — that information travels along with the encrypted blob.
+  <div class="five-sections">
+    <h3 class="sec-title">Module 9 Master Summary</h3>
+    <div class="sec-block">
+      <h4>1. One-Minute Recap</h4>
+      <p>Secrets Manager is built specifically for credentials and database secrets. Features automated scheduled rotation via Lambda, native RDS integration, mandatory KMS encryption, and multi-region replication.</p>
+    </div>
+    <div class="sec-block">
+      <h4>2. Mental Model</h4>
+      <p>Think of Secrets Manager as a hotel keycard system: Every midnight, a robot manager changes the electronic lock on your hotel door (RDS) and updates your mobile keycard app simultaneously.</p>
+    </div>
+    <div class="sec-block">
+      <h4>3. Cheat Sheet</h4>
+      <ul>
+        <li><strong>Auto Rotation:</strong> Built-in Lambda integration for scheduled credential rotation.</li>
+        <li><strong>Multi-Region Replication:</strong> Syncs secrets across regions for Disaster Recovery.</li>
+        <li><strong>Cost:</strong> ~$0.40/secret/month + $0.05 per 10k API calls.</li>
+      </ul>
+    </div>
+    <div class="sec-block">
+      <h4>4. Common Interview Questions</h4>
+      <p><strong>Q:</strong> How does Secrets Manager rotate RDS passwords without downtime?<br>
+      <strong>A:</strong> Uses a 4-step Lambda lifecycle (`createSecret`, `setSecret`, `testSecret`, `finishSecret`) to update the database engine and vault in sync.</p>
+    </div>
+    <div class="sec-block">
+      <h4>5. Common Misconceptions</h4>
+      <p><strong>Misconception:</strong> "Secrets Manager automatically updates database password strings inside running application memory."<br>
+      <strong>Reality:</strong> False! Apps must fetch secret values dynamically from Secrets Manager rather than caching static strings in memory indefinitely.</p>
+    </div>
   </div>
 </section>
 
-<!-- 4. ENVELOPE ENCRYPTION -->
-<section class="card" id="envelope-encryption">
-  <h2><span class="badge">4</span> Envelope Encryption & Encryption SDK</h2>
+<!-- MODULE 10 -->
+<section class="card" id="module-10">
+  <h2><span class="badge">10</span> SSM Parameter Store vs Secrets Manager</h2>
 
-  <p>KMS's basic <code>Encrypt</code>/<code>Decrypt</code> calls are capped at <strong>4 KB</strong> of data. For anything bigger, use <strong>envelope encryption</strong> via the <code>GenerateDataKey</code> API.</p>
-
-  <div class="diagram">
-    <svg viewBox="0 0 780 220" xmlns="http://www.w3.org/2000/svg">
-      <rect class="svg-box-accent" x="10" y="10" width="140" height="50" rx="8"/><text class="svg-text" x="80" y="32" text-anchor="middle" font-size="9">KMS</text><text class="svg-label" x="80" y="48" text-anchor="middle" font-size="7">GenerateDataKey(CMK)</text>
-      <path class="svg-arrow" d="M150,25 L290,25"/>
-      <text class="svg-label" x="220" y="18" text-anchor="middle" font-size="7">plaintext DEK</text>
-      <rect class="svg-box" x="290" y="10" width="150" height="30" rx="6"/><text class="svg-text" x="365" y="30" text-anchor="middle" font-size="8">Plaintext DEK</text>
-      <path class="svg-arrow" d="M150,45 L290,55"/>
-      <text class="svg-label" x="220" y="65" text-anchor="middle" font-size="7">encrypted DEK</text>
-      <rect class="svg-box" x="290" y="45" width="150" height="30" rx="6"/><text class="svg-text" x="365" y="65" text-anchor="middle" font-size="8">Encrypted DEK</text>
-
-      <path class="svg-arrow" d="M365,40 L365,95"/>
-      <text class="svg-label" x="430" y="90" text-anchor="middle" font-size="7">used client-side to encrypt the big file</text>
-      <rect class="svg-box-gray" x="10" y="95" width="200" height="35" rx="6"/><text class="svg-text" x="110" y="117" text-anchor="middle" font-size="8">Big file (plaintext)</text>
-      <path class="svg-arrow" d="M210,112 L290,100"/>
-      <rect class="svg-box-gray" x="290" y="95" width="200" height="35" rx="6"/><text class="svg-text" x="390" y="117" text-anchor="middle" font-size="8">Encrypted file</text>
-
-      <rect class="svg-box-accent" x="150" y="150" width="340" height="55" rx="8"/>
-      <text class="svg-text" x="320" y="172" text-anchor="middle" font-weight="600" font-size="9">Envelope = Encrypted file + Encrypted DEK</text>
-      <text class="svg-label" x="320" y="190" text-anchor="middle" font-size="7">stored/shared together as one artifact</text>
-
-      <path class="svg-arrow" d="M365,75 L365,150"/>
-    </svg>
-  </div>
-  <p class="caption">KMS only ever generates the small data key; all the heavy encryption/decryption of the actual file happens client-side, using local CPU.</p>
-
-  <p><strong>To decrypt:</strong> send just the small encrypted DEK to KMS's <code>Decrypt</code> API (well under the 4 KB limit) to get back the plaintext DEK, then use that locally to decrypt the big file — no size limit on the file itself, since KMS never touches it directly.</p>
-
-  <h3>AWS Encryption SDK</h3>
-  <p>Implementing this pattern by hand is fiddly, so AWS provides the <strong>Encryption SDK</strong> (a CLI tool, plus libraries for Java, Python, C, and JavaScript) that automates it. It also adds <strong>data key caching</strong> — reusing a DEK across multiple encryptions instead of calling <code>GenerateDataKey</code> every time — via a <code>LocalCryptoMaterialsCache</code>, bounded by max age, max bytes, or max messages per key.</p>
-
-  <div class="callout warning">
-    <strong class="tag">Trade-off</strong>
-    Data key caching means fewer (cheaper) KMS calls, but the same DEK now protects more data — a deliberate security-vs-cost trade-off, still widely used in practice.
-  </div>
-
+  <h3>1. Decision Matrix</h3>
   <table>
-    <tr><th>API</th><th>Purpose</th></tr>
-    <tr><td><code>Encrypt</code></td><td>Encrypt up to 4 KB of data directly through KMS</td></tr>
-    <tr><td><code>GenerateDataKey</code></td><td>Returns both a plaintext DEK <em>and</em> an encrypted copy of it — the one to use for envelope encryption</td></tr>
-    <tr><td><code>GenerateDataKeyWithoutPlaintext</code></td><td>Returns only the encrypted DEK, for use later — needs an extra decrypt step before use, so it's <strong>not</strong> what you call to start envelope encryption right now</td></tr>
-    <tr><td><code>Decrypt</code></td><td>Decrypt up to 4 KB — including decrypting an envelope's DEK</td></tr>
-    <tr><td><code>GenerateRandom</code></td><td>Return a random byte string</td></tr>
+    <tr><th>Feature</th><th>SSM Parameter Store</th><th>Secrets Manager</th></tr>
+    <tr><td>Cost</td><td><strong>Free</strong> (Standard Tier)</td><td><strong>$0.40 per secret / month</strong></td></tr>
+    <tr><td>Primary Use Case</td><td>App configs, feature flags, env URLs</td><td>Passwords, API keys requiring rotation</td></tr>
+    <tr><td>Auto Rotation</td><td>❌ No native rotation</td><td><strong>YES</strong> (Native scheduled rotation)</td></tr>
+    <tr><td>Multi-Region Sync</td><td>Manual setup</td><td><strong>Native Multi-Region Replication</strong></td></tr>
   </table>
 
-  <div class="callout key">
-    <strong class="tag">Exam trap</strong>
-    <code>GenerateDataKeyWithoutPlaintext</code> sounds similar but is the wrong choice for immediate envelope encryption — you want <code>GenerateDataKey</code>, which hands you the plaintext DEK right away.
-  </div>
+  <h3>2. Hybrid Pattern</h3>
+  <p>Reference Secrets Manager secrets directly via SSM API path: <code>/aws/reference/secretsmanager/my-secret</code></p>
 
-  <h3>Hands-on: Encryption SDK CLI</h3>
-  <p>Installed via <code>pip install aws-encryption-sdk-cli</code>. With a CMK ARN exported as an environment variable, <code>encrypt</code> a file (e.g. over 1 MB) against that key — it produces an encrypted output file plus a metadata JSON (showing the algorithm, data key info, key provider, and encryption context). The paired <code>decrypt</code> command recovers the original file exactly.</p>
-</section>
-
-<!-- 5. KMS LIMITS -->
-<section class="card" id="kms-limits">
-  <h2><span class="badge">5</span> KMS Limits</h2>
-
-  <p>Exceeding KMS's request quota returns a <code>ThrottlingException</code>. All cryptographic operations — <code>Encrypt</code>, <code>Decrypt</code>, <code>GenerateDataKey</code>, <code>GenerateRandom</code>, etc. — share <strong>one combined quota per account, per region</strong>, and this includes calls other services make on your behalf (e.g. S3 using SSE-KMS).</p>
-
-  <ul>
-    <li>Symmetric CMK quota is typically 5,500–10,000 requests/sec shared across all operations, up to 30,000/sec in some regions.</li>
-  </ul>
-
-  <div class="callout tip">
-    <strong class="tag">Three ways to handle throttling</strong>
-    (1) Exponential backoff, for transient spikes. (2) Reduce KMS calls with the Encryption SDK's <strong>data key caching</strong>. (3) Request a <strong>service quota increase</strong> via API or an AWS Support ticket.
-  </div>
-</section>
-
-<!-- 6. KMS + LAMBDA -->
-<section class="card" id="kms-lambda">
-  <h2><span class="badge">6</span> KMS + Lambda Practice</h2>
-
-  <p>The problem: never hardcode a secret (e.g. a DB password) directly in Lambda code. Plain environment variables are better, but anyone with console access to the function's configuration can still read them in plain text.</p>
-
-  <p>The fix: in the environment variable's <strong>encryption configuration</strong>, enable encryption helpers and pick a KMS key — Lambda encrypts the value and only ever displays/stores the ciphertext. At runtime, the function's code calls the KMS <code>Decrypt</code> API (via the SDK) on that ciphertext to recover the plaintext value.</p>
-
-  <div class="callout warning">
-    <strong class="tag">Watch out</strong>
-    This decrypt call needs the Lambda's execution role to have an explicit <code>kms:Decrypt</code> permission scoped to that specific key ARN (an inline policy is fine) — otherwise the call fails with <code>AccessDeniedException</code>. Also budget a little extra time in the function's timeout setting, since the KMS round-trip takes longer than the 3-second default.
+  <div class="five-sections">
+    <h3 class="sec-title">Module 10 Master Summary</h3>
+    <div class="sec-block">
+      <h4>1. One-Minute Recap</h4>
+      <p>Use SSM Parameter Store for general configs and low-cost non-rotating parameters. Use Secrets Manager when you need automated scheduled rotation for database credentials or multi-region replication.</p>
+    </div>
+    <div class="sec-block">
+      <h4>2. Mental Model</h4>
+      <p>SSM Parameter Store is a cost-effective utility toolbox; Secrets Manager is a specialized high-security safe with an automated lock changer.</p>
+    </div>
+    <div class="sec-block">
+      <h4>3. Cheat Sheet</h4>
+      <ul>
+        <li><strong>Choose SSM:</strong> Free, simple config storage, hierarchical paths.</li>
+        <li><strong>Choose Secrets Manager:</strong> Automated DB rotation, multi-region replication.</li>
+      </ul>
+    </div>
+    <div class="sec-block">
+      <h4>4. Common Interview Questions</h4>
+      <p><strong>Q:</strong> You have 5,000 static parameters and 10 RDS passwords. What design is most cost-effective?<br>
+      <strong>A:</strong> Store 5,000 static parameters in SSM Parameter Store Standard (Free). Store 10 RDS passwords in Secrets Manager ($4/mo) for automated rotation.</p>
+    </div>
+    <div class="sec-block">
+      <h4>5. Common Misconceptions</h4>
+      <p><strong>Misconception:</strong> "Secrets Manager is always better than SSM Parameter Store."<br>
+      <strong>Reality:</strong> False! Storing 10,000 static config strings in Secrets Manager would cost $4,000/month, whereas SSM Parameter Store Standard Tier is free.</p>
+    </div>
   </div>
 </section>
 
-<!-- 7. S3 BUCKET KEY -->
-<section class="card" id="s3-bucket-key">
-  <h2><span class="badge">7</span> S3 Bucket Key</h2>
+<!-- MODULE 11 -->
+<section class="card" id="module-11">
+  <h2><span class="badge">11</span> CloudFormation Integration — Secrets & Parameters</h2>
 
-  <p>An <strong>S3 Bucket Key</strong> is an SSE-KMS optimization that can cut the number of calls S3 makes to KMS — and your KMS cost — by up to <strong>99%</strong>, with no loss of security.</p>
+  <h3>1. Start with the Problem</h3>
+  <p>Never hardcode plaintext passwords in Git-committed CloudFormation templates or stack parameters (which show up in clear text in stack logs).</p>
 
-  <div class="diagram">
-    <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg">
-      <text class="svg-label" x="10" y="20" font-size="9">Without bucket key</text>
-      <rect class="svg-box" x="10" y="30" width="140" height="30" rx="6"/><text class="svg-text" x="80" y="50" text-anchor="middle" font-size="8">Object 1</text>
-      <rect class="svg-box" x="10" y="65" width="140" height="30" rx="6"/><text class="svg-text" x="80" y="85" text-anchor="middle" font-size="8">Object 2</text>
-      <rect class="svg-box" x="10" y="100" width="140" height="30" rx="6"/><text class="svg-text" x="80" y="120" text-anchor="middle" font-size="8">Object 3</text>
-      <path class="svg-arrow" d="M150,45 L280,90"/>
-      <path class="svg-arrow" d="M150,80 L280,90"/>
-      <path class="svg-arrow" d="M150,115 L280,95"/>
-      <rect class="svg-box-gray" x="280" y="65" width="130" height="50" rx="8"/><text class="svg-text" x="345" y="86" text-anchor="middle" font-size="8">KMS</text><text class="svg-label" x="345" y="102" text-anchor="middle" font-size="7">1 call per object</text>
+  <h3>2. Solution: Dynamic References</h3>
+  <pre><code>MasterUserPassword: '{{resolve:secretsmanager:my-db-secret:SecretString:password}}'
+# OR for SSM SecureString (Requires explicit version number!):
+# MasterUserPassword: '{{resolve:ssm-secure:my-app-db-pass:1}}'</code></pre>
 
-      <text class="svg-label" x="470" y="20" font-size="9">With bucket key</text>
-      <rect class="svg-box" x="470" y="30" width="140" height="30" rx="6"/><text class="svg-text" x="540" y="50" text-anchor="middle" font-size="8">Object 1</text>
-      <rect class="svg-box" x="470" y="65" width="140" height="30" rx="6"/><text class="svg-text" x="540" y="85" text-anchor="middle" font-size="8">Object 2</text>
-      <rect class="svg-box" x="470" y="100" width="140" height="30" rx="6"/><text class="svg-text" x="540" y="120" text-anchor="middle" font-size="8">Object 3</text>
-      <path class="svg-arrow" d="M610,45 L680,80"/>
-      <path class="svg-arrow" d="M610,80 L680,80"/>
-      <path class="svg-arrow" d="M610,115 L680,85"/>
-      <rect class="svg-box-accent" x="680" y="65" width="90" height="50" rx="8"/><text class="svg-text" x="725" y="86" text-anchor="middle" font-size="8">S3 bucket</text><text class="svg-label" x="725" y="100" text-anchor="middle" font-size="7">key (local)</text>
-    </svg>
-  </div>
-  <p class="caption">Without a bucket key, every object upload calls KMS directly. With it, KMS generates one data key periodically, and S3 reuses it locally to encrypt many objects — far fewer KMS calls.</p>
+  <h3>3. Managed RDS Passwords</h3>
+  <p>Set <code>ManageMasterUserPassword: true</code> on RDS DBInstance resources to let RDS auto-generate and manage secret rotation in Secrets Manager automatically!</p>
 
-  <p>Enabled per-bucket alongside SSE-KMS (on by default in the console). Trade-off-free from a security standpoint — just fewer direct KMS API calls and, as a side effect, fewer KMS-related CloudTrail events for that bucket.</p>
-</section>
-
-<!-- 8. KMS KEY POLICIES -->
-<section class="card" id="kms-key-policies">
-  <h2><span class="badge">8</span> KMS Key Policies & IAM Principals</h2>
-
-  <p>A key policy decides who can touch a KMS key — with <strong>no key policy at all, nobody can use the key</strong>, which is different from ordinary IAM's default-deny-until-granted model. The default (console-created) key policy allows the whole account access, still gated by regular IAM permissions on each user/role.</p>
-
-  <p>A custom key policy can name specific principals <strong>directly</strong>, without needing a separate IAM grant for them:</p>
-
-  <table>
-    <tr><th>Principal type</th><th>Example</th></tr>
-    <tr><td>Account / root user</td><td>The whole account, with IAM policies still applying on top</td></tr>
-    <tr><td>Specific IAM role</td><td>A role ARN named directly in the policy's principal block</td></tr>
-    <tr><td>IAM role sessions</td><td>An assumed role, or an identity federated in (e.g. via Cognito or SAML)</td></tr>
-    <tr><td>Specific IAM user</td><td>A named user, in your account or another account</td></tr>
-    <tr><td>Federated user sessions</td><td>A specific federated user</td></tr>
-    <tr><td>AWS service principal</td><td>Allow a specific service (e.g. <code>logs.amazonaws.com</code>) to use the key</td></tr>
-    <tr><td>Everyone</td><td><code>"AWS": "*"</code></td></tr>
-  </table>
-
-  <div class="callout key">
-    <strong class="tag">Exam point</strong>
-    This is exactly the mechanism behind <strong>cross-account KMS access</strong> — e.g. sharing an encrypted EBS snapshot with another account requires naming that account (or a role in it) directly in the key's policy.
+  <div class="five-sections">
+    <h3 class="sec-title">Module 11 Master Summary</h3>
+    <div class="sec-block">
+      <h4>1. One-Minute Recap</h4>
+      <p>Inject secrets into CloudFormation templates using Dynamic References (`{{resolve:...}}`) to avoid clear text logging. For RDS, use `ManageMasterUserPassword: true` to automate credential lifecycles.</p>
+    </div>
+    <div class="sec-block">
+      <h4>2. Mental Model</h4>
+      <p>Dynamic References are blank checks handed in sealed envelopes: CloudFormation hands the sealed envelope to the vault keeper, who fills in funds at deployment time without anyone seeing.</p>
+    </div>
+    <div class="sec-block">
+      <h4>3. Cheat Sheet</h4>
+      <ul>
+        <li><strong>Syntax:</strong> `{{resolve:service:reference-key}}`</li>
+        <li><strong>SSM SecureString:</strong> Requires explicit version number (`{{resolve:ssm-secure:path:1}}`).</li>
+      </ul>
+    </div>
+    <div class="sec-block">
+      <h4>4. Common Interview Questions</h4>
+      <p><strong>Q:</strong> Why does `{{resolve:ssm-secure:...}}` require specifying a version number?<br>
+      <strong>A:</strong> Mandated by AWS to prevent stack drift or unexpected deployment failures if a secret is updated concurrently.</p>
+    </div>
+    <div class="sec-block">
+      <h4>5. Common Misconceptions</h4>
+      <p><strong>Misconception:</strong> "CloudFormation console shows clear text resolved secret values in execution logs."<br>
+      <strong>Reality:</strong> False! AWS CloudFormation redacts dynamically resolved secret values from stack events and outputs.</p>
+    </div>
   </div>
 </section>
 
-<!-- 9. CLOUDHSM -->
-<section class="card" id="cloudhsm">
-  <h2><span class="badge">9</span> CloudHSM Overview</h2>
+<!-- MODULE 12 -->
+<section class="card" id="module-12">
+  <h2><span class="badge">12</span> Advanced Security Patterns (CloudWatch Logs, CodeBuild, Nitro Enclaves)</h2>
 
-  <p>With KMS, AWS manages the encryption software and (for AWS-owned/managed keys) can touch the underlying key material. With <strong>CloudHSM</strong>, AWS provisions dedicated, tamper-resistant hardware (an HSM device, <strong>FIPS 140-2 Level 3</strong> compliant) — and you manage your own encryption keys entirely; AWS has no access.</p>
+  <h3>1. CloudWatch Logs KMS Encryption</h3>
+  <p>Must be configured via CLI/SDK (<code>aws logs associate-kms-key</code>). The KMS Key Policy MUST grant permissions to service principal <code>logs.<region>.amazonaws.com</code>.</p>
 
-  <ul>
-    <li>Supports both symmetric and asymmetric keys (e.g. SSL/TLS keys).</li>
-    <li>No free tier; requires the CloudHSM client software to connect.</li>
-    <li>Integrates with Redshift for database encryption, and is a strong fit for <strong>SSE-C</strong> on S3, since you fully control your own keys.</li>
-    <li>Clusters span multiple AZs for high availability — clients can connect to either.</li>
-  </ul>
+  <h3>2. CodeBuild Secret Injection</h3>
+  <p>Inject secrets safely into build containers by declaring <code>env.parameter-store</code> and <code>env.secrets-manager</code> in <code>buildspec.yml</code>. CodeBuild masks these values from build execution logs.</p>
 
-  <div class="diagram">
-    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
-      <rect class="svg-box" x="10" y="45" width="160" height="40" rx="6"/><text class="svg-text" x="90" y="63" text-anchor="middle" font-size="8">CloudHSM cluster</text><text class="svg-label" x="90" y="77" text-anchor="middle" font-size="7">(your keys, multi-AZ)</text>
-      <path class="svg-arrow" d="M170,65 L300,65"/>
-      <rect class="svg-box-accent" x="300" y="45" width="180" height="40" rx="6"/><text class="svg-text" x="390" y="63" text-anchor="middle" font-size="8">KMS custom key store</text>
-      <path class="svg-arrow" d="M480,65 L600,65"/>
-      <rect class="svg-box" x="600" y="30" width="170" height="70" rx="6"/><text class="svg-text" x="685" y="55" text-anchor="middle" font-size="8">EBS / S3 / RDS</text><text class="svg-label" x="685" y="72" text-anchor="middle" font-size="7">"KMS" encryption</text><text class="svg-label" x="685" y="86" text-anchor="middle" font-size="7">backed by your HSM</text>
-    </svg>
+  <h3>3. AWS Nitro Enclaves</h3>
+  <div class="diagram-box">
+<pre><code>PARENT EC2 INSTANCE (Nitro System)
+  +------------------------+             +----------------------+
+  |     Parent OS / App    |  vSock      |    NITRO ENCLAVE     |
+  |  * Has Network Access  |<===========>|  * NO Storage        |
+  |  * Has SSH/Root Access |  (Secure    |  * NO External Net   |
+  |  * Has EBS Drives      |   Channel)  |  * NO SSH / Root     |
+  +------------------------+             +----------------------+
+                                                    |
+                                        Cryptographic Attestation (PCR Hashes)
+                                                    v
+                                            [ AWS KMS CMK ]
+                           (Decrypts payload ONLY IF attestation passes!)</code></pre>
   </div>
-  <p class="caption">A KMS custom key store bridges CloudHSM into services that only know how to talk to KMS — calls still get logged in CloudTrail.</p>
+  <p>Nitro Enclaves provide fully isolated compute (no storage, no network, no SSH) for processing credit cards or private keys using <strong>Cryptographic Attestation</strong> with KMS.</p>
 
-  <table>
-    <tr><th></th><th>KMS</th><th>CloudHSM</th></tr>
-    <tr><td>Tenancy</td><td>Multi-tenant</td><td>Single-tenant</td></tr>
-    <tr><td>Master key ownership</td><td>AWS owned, AWS managed, or customer managed</td><td>Customer managed only — AWS cannot access it</td></tr>
-    <tr><td>Key types</td><td>Symmetric, asymmetric, digital signing</td><td>Symmetric, asymmetric, digital signing, hashing</td></tr>
-    <tr><td>Accessibility</td><td>Multi-region</td><td>VPC-scoped (shareable across VPCs)</td></tr>
-    <tr><td>Crypto acceleration</td><td>None</td><td>SSL/TLS acceleration, Oracle TDE acceleration</td></tr>
-    <tr><td>Access/auth</td><td>IAM</td><td>Its own user/permission management</td></tr>
-    <tr><td>High availability</td><td>Fully managed</td><td>Multiple HSM devices across AZs</td></tr>
-    <tr><td>Cost</td><td>Free tier available</td><td>No free tier</td></tr>
-  </table>
-</section>
-
-<!-- 10. SSM PARAMETER STORE -->
-<section class="card" id="ssm-parameter-store">
-  <h2><span class="badge">10</span> SSM Parameter Store</h2>
-
-  <p><strong>SSM Parameter Store</strong> is secure, serverless, scalable, durable storage for configuration and secrets. Values are optionally encrypted with KMS; updates are version-tracked; access is controlled by IAM; EventBridge can send notifications; and it integrates with CloudFormation.</p>
-
-  <div class="diagram">
-    <svg viewBox="0 0 780 160" xmlns="http://www.w3.org/2000/svg">
-      <rect class="svg-box-accent" x="330" y="10" width="120" height="30" rx="6"/><text class="svg-text" x="390" y="30" text-anchor="middle" font-size="8">/my-app</text>
-      <path class="svg-arrow" d="M360,40 L250,70"/>
-      <path class="svg-arrow" d="M420,40 L530,70"/>
-      <rect class="svg-box" x="170" y="70" width="120" height="30" rx="6"/><text class="svg-text" x="230" y="90" text-anchor="middle" font-size="8">/dev</text>
-      <rect class="svg-box" x="480" y="70" width="120" height="30" rx="6"/><text class="svg-text" x="540" y="90" text-anchor="middle" font-size="8">/prod</text>
-      <path class="svg-arrow" d="M210,100 L110,130"/>
-      <path class="svg-arrow" d="M250,100 L290,130"/>
-      <path class="svg-arrow" d="M520,100 L440,130"/>
-      <path class="svg-arrow" d="M560,100 L640,130"/>
-      <rect class="svg-box-gray" x="30" y="130" width="150" height="25" rx="5"/><text class="svg-text" x="105" y="147" text-anchor="middle" font-size="7">db-url</text>
-      <rect class="svg-box-gray" x="220" y="130" width="150" height="25" rx="5"/><text class="svg-text" x="295" y="147" text-anchor="middle" font-size="7">db-password</text>
-      <rect class="svg-box-gray" x="400" y="130" width="130" height="25" rx="5"/><text class="svg-text" x="465" y="147" text-anchor="middle" font-size="7">db-url</text>
-      <rect class="svg-box-gray" x="580" y="130" width="150" height="25" rx="5"/><text class="svg-text" x="655" y="147" text-anchor="middle" font-size="7">db-password</text>
-    </svg>
+  <div class="five-sections">
+    <h3 class="sec-title">Module 12 Master Summary</h3>
+    <div class="sec-block">
+      <h4>1. One-Minute Recap</h4>
+      <p>CloudWatch Logs KMS encryption requires CLI setup and a service principal key policy. CodeBuild injects secrets via buildspec env declarations. Nitro Enclaves isolate sensitive processing (no storage/network/SSH) using vSock and KMS cryptographic attestation.</p>
+    </div>
+    <div class="sec-block">
+      <h4>2. Mental Model</h4>
+      <p>Nitro Enclaves are soundproof cleanrooms inside a building: The parent EC2 has doors and windows, but the cleanroom inside has no doors, no windows, and no cameras. Items pass through an airtight hatch (`vSock`).</p>
+    </div>
+    <div class="sec-block">
+      <h4>3. Cheat Sheet</h4>
+      <ul>
+        <li><strong>CloudWatch Logs KMS:</strong> Requires CLI + Service Principal Key Policy.</li>
+        <li><strong>CodeBuild:</strong> Masked secret injection in `buildspec.yml`.</li>
+        <li><strong>Nitro Enclaves:</strong> Isolated compute, no storage/SSH/net, uses vSock + KMS Attestation.</li>
+      </ul>
+    </div>
+    <div class="sec-block">
+      <h4>4. Common Interview Questions</h4>
+      <p><strong>Q:</strong> How does a Nitro Enclave prove its integrity to KMS before receiving decrypted data?<br>
+      <strong>A:</strong> Presents a signed Cryptographic Attestation Document with PCR measurement hashes of its code image, which KMS validates against key policy conditions.</p>
+    </div>
+    <div class="sec-block">
+      <h4>5. Common Misconceptions</h4>
+      <p><strong>Misconception:</strong> "An EC2 root administrator can SSH into a Nitro Enclave to inspect memory."<br>
+      <strong>Reality:</strong> False! Nitro Enclaves block all interactive access, SSH logins, and memory inspection tools—even for root users on the parent host.</p>
+    </div>
   </div>
-  <p class="caption">Parameters are organized hierarchically by path, so IAM policies can scope access to a whole app, a whole environment, or one specific value.</p>
-
-  <p>You can also reference a Secrets Manager secret through the Parameter Store API, and pull AWS-published <strong>public parameters</strong> (e.g. the latest Amazon Linux AMI ID for a region).</p>
-
-  <table>
-    <tr><th></th><th>Standard tier</th><th>Advanced tier</th></tr>
-    <tr><td>Cost</td><td>Free</td><td>$0.05/month per parameter</td></tr>
-    <tr><td>Max parameters</td><td>10,000</td><td>100,000</td></tr>
-    <tr><td>Max size</td><td>4 KB</td><td>8 KB</td></tr>
-    <tr><td>Parameter policies</td><td>None</td><td>TTL/expiration, no-change notifications</td></tr>
-  </table>
-
-  <p>Parameter policies (advanced only): a <strong>TTL/expiration</strong> forces rotation of stale secrets (EventBridge notifies ahead of the deadline so you can update in time), and a <strong>no-change notification</strong> alerts you if a value hasn't been updated in X days.</p>
-
-  <h3>CLI hands-on</h3>
-  <ul>
-    <li><code>aws ssm get-parameters --names /my-app/dev/db-url /my-app/dev/db-password --with-decryption</code> — <code>--with-decryption</code> is required to get plaintext back for a <code>SecureString</code>.</li>
-    <li><code>aws ssm get-parameters-by-path --path /my-app --recursive --with-decryption</code> — fetches everything under a hierarchy in one call.</li>
-  </ul>
-</section>
-
-<!-- 11. SECRETS MANAGER -->
-<section class="card" id="secrets-manager">
-  <h2><span class="badge">11</span> Secrets Manager</h2>
-
-  <p><strong>Secrets Manager</strong> is purpose-built for secrets: it supports <strong>forced automatic rotation</strong> on a schedule via a Lambda function (AWS provides ready-made rotation Lambdas for RDS, Redshift, and DocumentDB, or you write your own), has tight native integration with those databases (storing and rotating the username + password directly), and <strong>mandates KMS encryption</strong>.</p>
-
-  <div class="diagram">
-    <svg viewBox="0 0 780 100" xmlns="http://www.w3.org/2000/svg">
-      <rect class="svg-box-accent" x="10" y="35" width="180" height="40" rx="6"/><text class="svg-text" x="100" y="59" text-anchor="middle" font-size="8">Secrets Manager</text>
-      <path class="svg-arrow" d="M190,55 L320,55"/>
-      <text class="svg-label" x="255" y="45" text-anchor="middle" font-size="7">every N days</text>
-      <rect class="svg-box" x="320" y="35" width="150" height="40" rx="6"/><text class="svg-text" x="395" y="59" text-anchor="middle" font-size="8">Rotation Lambda</text>
-      <path class="svg-arrow" d="M470,55 L600,55"/>
-      <text class="svg-label" x="535" y="45" text-anchor="middle" font-size="7">changes password</text>
-      <rect class="svg-box" x="600" y="35" width="170" height="40" rx="6"/><text class="svg-text" x="685" y="59" text-anchor="middle" font-size="8">RDS / Redshift / DocumentDB</text>
-    </svg>
-  </div>
-  <p class="caption">Native rotation: Secrets Manager invokes a Lambda on a schedule, which updates both the secret's value and the actual database credential.</p>
-
-  <p>Also supports <strong>multi-region secrets</strong> — replicated from a primary region and kept in sync — useful for multi-region apps, disaster recovery, or promoting a replica to standalone if the primary region has an issue.</p>
-
-  <p><strong>Hands-on:</strong> create a secret as a database credential type (attachable directly to RDS/Redshift/DocumentDB) or a generic key/value or plaintext secret; choose a KMS key; optionally enable rotation on a schedule (e.g. every 60 days) tied to a Lambda; retrieve it at runtime via a <code>get_secret_value</code>-style SDK call. Pricing is roughly $0.40/secret/month plus $0.05 per 10,000 API calls, with a 30-day free trial per secret.</p>
-</section>
-
-<!-- 12. SSM VS SECRETS MANAGER -->
-<section class="card" id="ssm-vs-secrets">
-  <h2><span class="badge">12</span> SSM Parameter Store vs Secrets Manager</h2>
-
-  <table>
-    <tr><th></th><th>SSM Parameter Store</th><th>Secrets Manager</th></tr>
-    <tr><td>Cost</td><td>Cheaper (free at Standard tier)</td><td>More expensive</td></tr>
-    <tr><td>Rotation</td><td>None natively — build your own with EventBridge + Lambda</td><td>Native scheduled rotation via Lambda (some provided out of the box)</td></tr>
-    <tr><td>KMS encryption</td><td>Optional</td><td>Mandatory</td></tr>
-    <tr><td>CloudFormation integration</td><td>Yes</td><td>Yes</td></tr>
-    <tr><td>Cross-reference</td><td>Can pull a Secrets Manager secret via the SSM API</td><td>—</td></tr>
-  </table>
-
-  <p>To roll your own rotation on the Parameter Store: create an EventBridge rule that fires every N days, invoking a Lambda you write yourself that changes the actual credential (e.g. an RDS password) <em>and</em> updates the stored parameter value.</p>
-</section>
-
-<!-- 13. CFN INTEGRATION -->
-<section class="card" id="cfn-integration">
-  <h2><span class="badge">13</span> CloudFormation — Secrets Manager & SSM Integration</h2>
-
-  <p><strong>Dynamic references</strong> let a CloudFormation template pull a live value from SSM or Secrets Manager at create/update/delete time, using <code>{{resolve:service-name:reference-key}}</code>:</p>
-
-  <table>
-    <tr><th>Prefix</th><th>Source</th></tr>
-    <tr><td><code>ssm</code></td><td>A plaintext value in SSM Parameter Store</td></tr>
-    <tr><td><code>ssm-secure</code></td><td>A <code>SecureString</code> value in SSM Parameter Store</td></tr>
-    <tr><td><code>secretsmanager</code></td><td>A secret value in Secrets Manager</td></tr>
-  </table>
-
-  <p>Example uses: resolving an S3 bucket's access-control setting from an SSM parameter, an IAM user's password from an SSM SecureString, or an RDS instance's master username/password directly from Secrets Manager.</p>
-
-  <h3>RDS/Aurora specifics</h3>
-  <ul>
-    <li>Setting <code>ManageMasterUserPassword: true</code> on the DB resource makes RDS itself create and manage the Secrets Manager secret implicitly — retrieve its ARN in the template's outputs via <code>GetAtt</code>.</li>
-    <li>Alternatively, define the secret explicitly in the template (using <code>GenerateStringKey</code> to auto-generate a password), reference it into the DB instance with a dynamic reference, and add a <strong>secret-target attachment</strong> resource linking the two — this keeps the secret rotating in sync with the actual database credential.</li>
-  </ul>
-</section>
-
-<!-- 14. CW LOGS ENCRYPTION -->
-<section class="card" id="cw-logs-encryption">
-  <h2><span class="badge">14</span> CloudWatch Logs Encryption</h2>
-
-  <p>CloudWatch Logs can be encrypted with a KMS key at the <strong>log group</strong> level (not per log stream). This can only be done via the CLI/SDK — <code>associate-kms-key</code> for an existing log group, or <code>create-log-group</code> with a key ID for a new one — <strong>not</strong> through the console.</p>
-
-  <div class="callout warning">
-    <strong class="tag">Watch out</strong>
-    Association fails with an access-denied error unless the KMS key's policy explicitly grants the <code>logs.&lt;region&gt;.amazonaws.com</code> service principal permissions (encrypt, decrypt, re-encrypt, generate data key, describe) — this has to be added manually to the key policy first.
-  </div>
-</section>
-
-<!-- 15. CODEBUILD SECURITY -->
-<section class="card" id="codebuild-security">
-  <h2><span class="badge">15</span> CodeBuild Security</h2>
-
-  <ul>
-    <li>CodeBuild runs outside your VPC by default, but can be launched <strong>inside</strong> your VPC to reach VPC-only resources.</li>
-    <li>Never store secrets as plaintext CodeBuild environment variables. Instead, define an environment variable whose value is a <strong>reference</strong> to an SSM Parameter Store parameter or a Secrets Manager secret — CodeBuild resolves it and injects the real value into the build container at runtime.</li>
-    <li>The CodeBuild project's IAM role needs the matching SSM/Secrets Manager read permissions for this to work.</li>
-  </ul>
-</section>
-
-<!-- 16. NITRO ENCLAVES -->
-<section class="card" id="nitro-enclaves">
-  <h2><span class="badge">16</span> AWS Nitro Enclaves</h2>
-
-  <p>For processing highly sensitive data (PII, healthcare, financial, credit card data) in a fully isolated compute environment — without hand-rolling a locked-down VPC — use <strong>Nitro Enclaves</strong>.</p>
-
-  <div class="diagram">
-    <svg viewBox="0 0 780 140" xmlns="http://www.w3.org/2000/svg">
-      <rect class="svg-box" x="10" y="10" width="500" height="120" rx="10"/>
-      <text class="svg-label" x="30" y="30" font-size="8">EC2 host (Nitro hypervisor)</text>
-      <rect class="svg-box-accent" x="290" y="45" width="190" height="70" rx="8"/>
-      <text class="svg-text" x="385" y="68" text-anchor="middle" font-weight="600" font-size="9">Nitro Enclave</text>
-      <text class="svg-label" x="385" y="85" text-anchor="middle" font-size="7">no storage, no SSH,</text>
-      <text class="svg-label" x="385" y="98" text-anchor="middle" font-size="7">no external network</text>
-      <path class="svg-arrow" d="M290,80 L200,80"/>
-      <text class="svg-label" x="245" y="70" text-anchor="middle" font-size="7">secure local channel only</text>
-      <rect class="svg-box-gray" x="30" y="55" width="160" height="50" rx="6"/><text class="svg-text" x="110" y="84" text-anchor="middle" font-size="8">Parent EC2 instance</text>
-    </svg>
-  </div>
-  <p class="caption">The enclave shares the host's CPU and memory but is otherwise walled off — no persistent storage, no interactive access, no external networking.</p>
-
-  <ul>
-    <li><strong>Cryptographic attestation</strong> ensures only your signed code can run inside the enclave.</li>
-    <li>Combined with <strong>KMS encryption</strong>, you can guarantee that only the enclave (nothing else) is able to decrypt the sensitive data.</li>
-    <li>Setup: launch a Nitro-compatible EC2 instance with <code>EnclaveOptions: true</code>, package the app into an Enclave Image File (EIF) with the Nitro CLI, then launch the enclave from that image.</li>
-    <li>Use cases: private key processing, credit card processing, secure multi-party computation.</li>
-  </ul>
-</section>
-
-<!-- CHEAT SHEET -->
-<section class="card cheatsheet" id="cheatsheet">
-  <h2><span class="badge">✓</span> Cheat Sheet</h2>
-
-  <h3>Key facts to remember</h3>
-  <ul>
-    <li>Three encryption patterns: in-flight (TLS/SSL, protects against MITM), at-rest server-side (server manages the key), client-side (server/storage never sees plaintext or key).</li>
-    <li>KMS symmetric keys are never exposed — only usable via API calls; asymmetric keys let you download the public key for encryption outside AWS, or sign/verify.</li>
-    <li>Three kinds of underlying keys: AWS owned (free, invisible), AWS managed (free, <code>aws/&lt;service&gt;</code>), customer managed ($1/month — needed for custom key policies, custom rotation, and cross-account sharing).</li>
-    <li>KMS <code>Encrypt</code>/<code>Decrypt</code> caps out at 4 KB — bigger data needs envelope encryption via <code>GenerateDataKey</code> (returns plaintext + encrypted DEK); <code>GenerateDataKeyWithoutPlaintext</code> is the exam trap since it needs an extra decrypt step.</li>
-    <li>All KMS cryptographic operations share one quota per account/region; handle throttling with exponential backoff, data key caching, or a quota increase request.</li>
-    <li>S3 Bucket Keys cut SSE-KMS API calls (and cost) by up to 99%, with no security downside.</li>
-    <li>A KMS key policy is mandatory — no policy means no access at all; custom policies can name specific principals (users, roles, services, other accounts) directly, which is how cross-account key sharing works.</li>
-    <li>CloudHSM = dedicated, single-tenant, tamper-resistant hardware fully under your control (no AWS access); a KMS custom key store bridges it into services that only speak "KMS."</li>
-    <li>SSM Parameter Store: hierarchical config/secrets, optional KMS encryption, no native rotation, Standard (free, 4 KB) vs Advanced ($0.05/mo, 8 KB, parameter policies/TTL).</li>
-    <li>Secrets Manager: built for secrets specifically — native scheduled rotation via Lambda, mandatory KMS encryption, deep RDS/Redshift/DocumentDB integration, multi-region replication.</li>
-    <li>CloudFormation dynamic references (<code>{{resolve:...}}</code>) pull live SSM/Secrets Manager values at deploy time via the <code>ssm</code>, <code>ssm-secure</code>, and <code>secretsmanager</code> prefixes.</li>
-    <li>CloudWatch Logs encryption is per log group, CLI/SDK-only, and needs the log service principal explicitly added to the KMS key's policy.</li>
-    <li>Nitro Enclaves give you an isolated, no-storage, no-SSH, no-network VM for the most sensitive data processing, gated by cryptographic attestation and KMS.</li>
-  </ul>
-
-  <h3>Decision guide</h3>
-  <table>
-    <tr><th>Need</th><th>Use</th></tr>
-    <tr><td>Protect data crossing a network</td><td>TLS/SSL (encryption in flight)</td></tr>
-    <tr><td>Let the server manage encryption for you</td><td>Server-side encryption (SSE) with a KMS key</td></tr>
-    <tr><td>Storage provider must never see your plaintext or key</td><td>Client-side encryption</td></tr>
-    <tr><td>Encrypt more than 4 KB of data with KMS</td><td>Envelope encryption (<code>GenerateDataKey</code> + Encryption SDK)</td></tr>
-    <tr><td>High-volume SSE-KMS uploads hitting cost/throttle limits</td><td>Enable S3 Bucket Keys</td></tr>
-    <tr><td>Full physical control over your own key hardware</td><td>CloudHSM</td></tr>
-    <tr><td>Simple hierarchical config/secrets, cheaper, rotation not required</td><td>SSM Parameter Store</td></tr>
-    <tr><td>Automatic secret rotation with native DB integration</td><td>Secrets Manager</td></tr>
-    <tr><td>Pull a live secret into a CloudFormation deploy</td><td>Dynamic reference (<code>{{resolve:...}}</code>)</td></tr>
-    <tr><td>Process the most sensitive data in total isolation</td><td>Nitro Enclaves</td></tr>
-  </table>
-
-  <h3>Mental model</h3>
-  <p>Everything in this section boils down to one question: who is allowed to see the plaintext, and when? In-flight, at-rest, and client-side encryption answer that for data in motion vs. at storage vs. never-trust-the-server. KMS is the key-management backbone underneath almost every AWS encryption feature — symmetric keys you never see directly, a hard 4 KB ceiling that pushes you toward envelope encryption for anything bigger, and a key policy model where silence means "nobody gets in." Parameter Store and Secrets Manager both hold configuration and secrets, but solve different problems: one is cheap and general-purpose, the other is built specifically around automatic rotation and database integration. CloudHSM and Nitro Enclaves sit at the far end of the trust spectrum — dedicated hardware and fully isolated compute for the cases where "AWS manages it for you" isn't good enough.</p>
 </section>
 
 <a class="back-to-top" href="#top">↑ Back to top</a>
