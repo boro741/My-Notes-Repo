@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 20 — AWS Monitoring & Audit: CloudWatch, X-Ray & CloudTrail — Notes</title>
+<style>
+  :root {
+    --accent: #e8830f;
+    --accent-dark: #c96a08;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --border: #e3e0da;
+    --text: #2b2a28;
+    --text-muted: #6b6a66;
+    --green: #2e7d32;
+    --green-bg: #eef7ee;
+    --red: #c0392b;
+    --red-bg: #fdecea;
+    --amber: #b8790a;
+    --amber-bg: #fff4e2;
+    --purple: #6a4fb3;
+    --purple-bg: #f3f0fb;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  header {
+    padding-bottom: 24px;
+    border-bottom: 3px solid var(--accent);
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 2rem;
+    color: var(--text);
+  }
+
+  header h1 span {
+    color: var(--accent);
+  }
+
+  header p.subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+  }
+
+  nav.toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 32px;
+  }
+
+  nav.toc h2 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  nav.toc ol {
+    margin: 0;
+    padding-left: 22px;
+    columns: 2;
+    column-gap: 24px;
+  }
+
+  nav.toc li {
+    margin-bottom: 6px;
+    break-inside: avoid;
+  }
+
+  nav.toc a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  nav.toc a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 24px;
+    scroll-margin-top: 20px;
+  }
+
+  .card h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 14px;
+    font-size: 1.3rem;
+    color: var(--text);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    color: var(--accent-dark);
+    font-size: 1.05rem;
+    margin: 20px 0 8px;
+  }
+
+  a { color: var(--accent-dark); }
+
+  code {
+    background: #f1eee7;
+    border: 1px solid #e6e2d8;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.92em;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    color: #7a4b00;
+  }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 0.94rem;
+  }
+
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f7f2ea;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) td {
+    background: #fcfbf9;
+  }
+
+  .callout {
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+
+  .callout strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .callout.tip {
+    background: var(--green-bg);
+    border-color: var(--green);
+  }
+  .callout.tip strong.tag { color: var(--green); }
+
+  .callout.warning {
+    background: var(--red-bg);
+    border-color: var(--red);
+  }
+  .callout.warning strong.tag { color: var(--red); }
+
+  .callout.key {
+    background: var(--amber-bg);
+    border-color: var(--amber);
+  }
+  .callout.key strong.tag { color: var(--amber); }
+
+  .analogy {
+    border: 1.5px dashed var(--purple);
+    background: var(--purple-bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+  .analogy strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--purple);
+  }
+
+  .diagram {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fdfcfa;
+    padding: 16px;
+    margin: 16px 0 6px;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  .diagram svg {
+    max-width: 100%;
+  }
+
+  .caption {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 4px 0 16px;
+    font-style: italic;
+  }
+
+  .cheatsheet {
+    border: 2px solid var(--accent);
+  }
+
+  .cheatsheet h2 { color: var(--accent-dark); }
+
+  .back-to-top {
+    display: block;
+    text-align: center;
+    margin-top: 36px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    text-decoration: none;
+  }
+  .back-to-top:hover { text-decoration: underline; }
+
+  .svg-box { fill: #fff; stroke: #c8917a; stroke-width: 1.5; }
+  .svg-box-accent { fill: #fff4e2; stroke: var(--accent); stroke-width: 1.5; }
+  .svg-box-gray { fill: #eeeeee; stroke: #b8b8b8; stroke-width: 1.5; }
+  .svg-text { font-family: -apple-system, sans-serif; font-size: 12px; fill: #2b2a28; }
+  .svg-label { font-family: -apple-system, sans-serif; font-size: 11px; fill: #6b6a66; }
+  .svg-arrow { stroke: #6b6a66; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+  /* Learning helpers: compact prompts added without changing lecture content */
+  .study-lens {
+    border: 1px solid #bfdbfe;
+    background: #eff6ff;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin: 12px 0 18px;
+    font-size: 0.95rem;
+  }
+
+  .study-lens .lens-label {
+    color: #1d4ed8;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .study-lens p { margin: 0 0 8px; }
+  .study-lens ul, .study-lens ol { margin: 8px 0 0; }
+  .study-lens li { margin-bottom: 5px; }
+
+  .recall-drill {
+    border-top: 1px solid #bfdbfe;
+    margin-top: 10px;
+    padding-top: 8px;
+  }
+
+  .recall-drill summary {
+    cursor: pointer;
+    color: #1d4ed8;
+    font-weight: 700;
+  }
+
+  .recall-drill summary:hover { text-decoration: underline; }
+
+
+
+  /* Tips popup for assumed AWS terms and prerequisite concepts */
+  .tips-trigger {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 999;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 14px;
+    border: 1px solid #f59e0b;
+    border-radius: 999px;
+    background: #fffbeb;
+    color: #92400e;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+  }
+
+  .tips-trigger:hover { background: #fef3c7; }
+
+  .tips-trigger .tips-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+
+  .tips-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(17, 24, 39, 0.46);
+  }
+
+  .tips-overlay.open { display: flex; }
+
+  .tips-panel {
+    width: min(760px, 100%);
+    max-height: min(76vh, 720px);
+    overflow: auto;
+    background: #ffffff;
+    color: var(--text, #1f2937);
+    border: 1px solid #fcd34d;
+    border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  }
+
+  .tips-header {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 18px;
+    background: #fffbeb;
+    border-bottom: 1px solid #fde68a;
+  }
+
+  .tips-header h2 {
+    margin: 0;
+    color: #92400e;
+    font-size: 1.1rem;
+  }
+
+  .tips-close {
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #92400e;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+    line-height: 1;
+    padding: 7px 10px;
+  }
+
+  .tips-body { padding: 16px 18px 18px; }
+
+  .tips-intro {
+    margin: 0 0 12px;
+    color: var(--muted, var(--text-muted, #6b7280));
+    font-size: 0.95rem;
+  }
+
+  .tips-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tips-list li {
+    margin: 0;
+    padding: 10px 12px;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    background: #fffdf5;
+  }
+
+  .tips-list strong {
+    display: block;
+    margin-bottom: 3px;
+    color: #92400e;
+  }
+
+  .tips-empty { margin: 0; color: var(--muted, var(--text-muted, #6b7280)); }
+
+  @media (max-width: 480px) {
+    .tips-trigger {
+      right: 12px;
+      bottom: 12px;
+      padding: 10px 12px;
+    }
+
+    .tips-trigger span:not(.tips-icon) { display: none; }
+    .tips-overlay { padding: 10px; }
+    .tips-panel { max-height: 82vh; }
+    .tips-list { grid-template-columns: 1fr; }
+  }
+
+
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header id="top">
+  <h1><span>Section 20</span> — Monitoring & Audit: CloudWatch, X-Ray & CloudTrail</h1>
+  <p class="subtitle">My notes on knowing what's happening inside your AWS applications — metrics, logs, events, tracing, and auditing.</p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#overview">Monitoring Overview in AWS</a></li>
+    <li><a href="#metrics">CloudWatch Metrics</a></li>
+    <li><a href="#custom-metrics">CloudWatch Custom Metrics</a></li>
+    <li><a href="#logs">CloudWatch Logs</a></li>
+    <li><a href="#logs-hands-on">CloudWatch Logs — Hands On & Live Tail</a></li>
+    <li><a href="#agent">CloudWatch Agent & Logs Agent</a></li>
+    <li><a href="#metric-filters">CloudWatch Logs Metric Filters</a></li>
+    <li><a href="#alarms">CloudWatch Alarms</a></li>
+    <li><a href="#synthetics">CloudWatch Synthetics</a></li>
+    <li><a href="#eventbridge">Amazon EventBridge</a></li>
+    <li><a href="#eventbridge-multi">EventBridge Multi-Account Aggregation</a></li>
+    <li><a href="#xray-overview">X-Ray Overview</a></li>
+    <li><a href="#xray-hands-on">X-Ray — Hands On</a></li>
+    <li><a href="#xray-concepts">X-Ray Instrumentation & Concepts</a></li>
+    <li><a href="#xray-sampling">X-Ray Sampling Rules</a></li>
+    <li><a href="#xray-apis">X-Ray APIs</a></li>
+    <li><a href="#xray-integrations">X-Ray with Beanstalk & ECS</a></li>
+    <li><a href="#otel">AWS Distro for OpenTelemetry</a></li>
+    <li><a href="#cloudtrail">CloudTrail</a></li>
+    <li><a href="#cloudtrail-eventbridge">CloudTrail + EventBridge Integration</a></li>
+    <li><a href="#comparison">CloudTrail vs CloudWatch vs X-Ray</a></li>
+    <li><a href="#cheatsheet">Cheat Sheet</a></li>
+  </ol>
+</nav>
+
+<!-- 1. OVERVIEW -->
+<section class="card" id="overview">
+  <h2><span class="badge">1</span> Monitoring Overview in AWS</h2>
+
+  <p>Users don't care <em>how</em> you deployed your app — they only care that it works: low latency, no outages, no need to call IT to complain. The goal of monitoring is to catch and fix problems <strong>before</strong> your users do, understand performance/cost trends, and learn from what happened.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#6b6a66"/>
+        </marker>
+      </defs>
+      <rect class="svg-box-accent" x="20" y="20" width="230" height="110" rx="8"/>
+      <text class="svg-text" x="135" y="42" text-anchor="middle" font-weight="600" font-size="12">CloudWatch</text>
+      <text class="svg-label" x="135" y="65" text-anchor="middle" font-size="9">Metrics, Logs,</text>
+      <text class="svg-label" x="135" y="80" text-anchor="middle" font-size="9">Events, Alarms</text>
+      <text class="svg-label" x="135" y="105" text-anchor="middle" font-size="9">"Is something wrong,</text>
+      <text class="svg-label" x="135" y="118" text-anchor="middle" font-size="9">and how bad?"</text>
+
+      <rect class="svg-box-accent" x="275" y="20" width="230" height="110" rx="8"/>
+      <text class="svg-text" x="390" y="42" text-anchor="middle" font-weight="600" font-size="12">X-Ray</text>
+      <text class="svg-label" x="390" y="65" text-anchor="middle" font-size="9">Distributed tracing,</text>
+      <text class="svg-label" x="390" y="80" text-anchor="middle" font-size="9">service maps</text>
+      <text class="svg-label" x="390" y="105" text-anchor="middle" font-size="9">"Where exactly is it</text>
+      <text class="svg-label" x="390" y="118" text-anchor="middle" font-size="9">slow or broken?"</text>
+
+      <rect class="svg-box-accent" x="530" y="20" width="230" height="110" rx="8"/>
+      <text class="svg-text" x="645" y="42" text-anchor="middle" font-weight="600" font-size="12">CloudTrail</text>
+      <text class="svg-label" x="645" y="65" text-anchor="middle" font-size="9">API call history,</text>
+      <text class="svg-label" x="645" y="80" text-anchor="middle" font-size="9">audit trail</text>
+      <text class="svg-label" x="645" y="105" text-anchor="middle" font-size="9">"Who changed</text>
+      <text class="svg-label" x="645" y="118" text-anchor="middle" font-size="9">what, and when?"</text>
+    </svg>
+  </div>
+  <p class="caption">Three complementary tools: CloudWatch watches health, X-Ray traces individual requests through your architecture, and CloudTrail audits who did what.</p>
+</section>
+
+<!-- 2. METRICS -->
+<section class="card" id="metrics">
+  <h2><span class="badge">2</span> CloudWatch Metrics</h2>
+
+  <ul>
+    <li>Every AWS service provides metrics automatically (e.g. CPU Utilization, NetworkIn) — the name usually tells you what it measures.</li>
+    <li>Metrics belong to <strong>namespaces</strong>, and have <strong>dimensions</strong> (attributes like instance ID, environment) — up to 30 dimensions per metric.</li>
+    <li>Metrics have timestamps and can be visualized on <strong>CloudWatch Dashboards</strong> (line, stacked area, number, pie chart, etc.), filtered by time range, exported as CSV, or shared.</li>
+  </ul>
+
+  <h3>EC2 monitoring granularity</h3>
+  <table>
+    <tr><th>Mode</th><th>Frequency</th><th>Cost</th></tr>
+    <tr><td>Default</td><td>Every 5 minutes</td><td>Free</td></tr>
+    <tr><td>Detailed monitoring</td><td>Every 1 minute</td><td>Additional cost</td></tr>
+  </table>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    Even with detailed monitoring, <strong>memory (RAM) usage is not pushed by default</strong> — it must be sent as a custom metric.
+  </div>
+</section>
+
+<!-- 3. CUSTOM METRICS -->
+<section class="card" id="custom-metrics">
+  <h2><span class="badge">3</span> CloudWatch Custom Metrics</h2>
+
+  <p>Push your own metrics (e.g. RAM usage, disk usage, logged-in users) using the <code>PutMetricData</code> API call.</p>
+
+  <ul>
+    <li>Add dimensions (e.g. <code>InstanceId</code>, <code>Environment</code>) as you like.</li>
+    <li><strong>Resolution</strong>: standard (push every 60 seconds) or high-resolution (every 1, 5, 10, or 30 seconds), set via the <code>StorageResolution</code> parameter.</li>
+  </ul>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    You can push a metric with a timestamp up to <strong>2 weeks in the past</strong> or <strong>2 hours in the future</strong> — CloudWatch accepts it without error. Make sure your EC2 instance's clock is properly synced if you want accurate timestamps.
+  </div>
+
+  <p>The CloudWatch Unified Agent uses this same <code>PutMetricData</code> API under the hood to push metrics regularly from your servers.</p>
+</section>
+
+<!-- 4. LOGS -->
+<section class="card" id="logs">
+  <h2><span class="badge">4</span> CloudWatch Logs</h2>
+
+  <p>The place to store application logs in AWS.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="35" width="200" height="60" rx="6"/>
+      <text class="svg-text" x="120" y="70" text-anchor="middle" font-size="11">Log Group</text>
+      <text class="svg-label" x="120" y="85" text-anchor="middle" font-size="9">(e.g. one per app)</text>
+      <path class="svg-arrow" d="M220,65 L300,65"/>
+      <rect class="svg-box-accent" x="300" y="10" width="200" height="35" rx="5"/><text class="svg-text" x="400" y="32" text-anchor="middle" font-size="9">Log Stream (instance A)</text>
+      <rect class="svg-box-accent" x="300" y="52" width="200" height="35" rx="5"/><text class="svg-text" x="400" y="74" text-anchor="middle" font-size="9">Log Stream (instance B)</text>
+      <rect class="svg-box-accent" x="300" y="94" width="200" height="35" rx="5"/><text class="svg-text" x="400" y="116" text-anchor="middle" font-size="9">Log Stream (container C)</text>
+    </svg>
+  </div>
+  <p class="caption">A log group (e.g. one per application) contains multiple log streams (e.g. one per instance/container/log file).</p>
+
+  <ul>
+    <li>Set a <strong>retention policy</strong>: never expire, or 1 day up to 10 years.</li>
+    <li>Encrypted by default; optional custom KMS key.</li>
+    <li>Export destinations: batch to S3, or stream to Kinesis Data Streams/Firehose, Lambda, OpenSearch.</li>
+  </ul>
+
+  <h3>Who sends logs here</h3>
+  <p>CloudWatch Unified Agent (the old CloudWatch Logs Agent is deprecated), Elastic Beanstalk, ECS (from containers), Lambda (from functions), VPC Flow Logs, API Gateway, CloudTrail (filtered), and Route 53 (DNS query logs).</p>
+
+  <h3>CloudWatch Logs Insights</h3>
+  <p>A query engine (its own query language) for searching and analyzing log data — auto-detects fields, supports filtering, aggregate stats, sorting, saved queries, and dashboards. Can query <strong>multiple log groups</strong> across accounts at once.</p>
+
+  <div class="callout warning">
+    <strong class="tag">Important</strong>
+    Logs Insights is a <strong>query engine, not real-time</strong> — it only searches historical data at the moment you run a query.
+  </div>
+
+  <h3>Exporting logs</h3>
+  <table>
+    <tr><th>Method</th><th>Nature</th><th>Use for</th></tr>
+    <tr><td><code>CreateExportTask</code> → S3</td><td>Batch (can take up to 12 hours)</td><td>Bulk archival</td></tr>
+    <tr><td>Subscription filter → Kinesis Data Streams/Firehose/Lambda</td><td>Real-time / near real-time</td><td>Live processing, cross-account/region log aggregation</td></tr>
+  </table>
+
+  <p>Cross-account log aggregation works via a <strong>destination</strong> in the recipient account (representing e.g. a Kinesis stream), a <strong>destination access policy</strong> allowing the sender account to write, and an IAM role in the recipient account the sender can assume.</p>
+</section>
+
+<!-- 5. LOGS HANDS ON -->
+<section class="card" id="logs-hands-on">
+  <h2><span class="badge">5</span> CloudWatch Logs — Hands On & Live Tail</h2>
+
+  <ul>
+    <li>Create a log group with your own name, retention, storage class, and optional KMS key / deletion protection.</li>
+    <li>Log streams populate over time (e.g. one per Lambda invocation batch) — each contains timestamped log lines.</li>
+    <li>You can create a <strong>metric filter</strong> directly from a log group to turn matching log lines (e.g. containing "info" or "start") into a CloudWatch metric — useful groundwork for alarms.</li>
+    <li>Other log group actions: edit retention, export to S3, <strong>start tailing</strong> (see logs as they happen), set up subscription filters (OpenSearch, Kinesis, Firehose, Lambda), and run Logs Insights queries.</li>
+  </ul>
+
+  <h3>Live Tail</h3>
+  <p>A real-time log viewer: filter by log group (and optionally log stream), and matching log events appear live as they're written — great for active debugging.</p>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    Live Tail has a free usage allowance (roughly an hour a day) — remember to stop/close your Live Tail session when done to avoid extra cost.
+  </div>
+</section>
+
+<!-- 6. AGENT -->
+<section class="card" id="agent">
+  <h2><span class="badge">6</span> CloudWatch Agent & Logs Agent</h2>
+
+  <p>By default, <strong>no logs flow from an EC2 instance to CloudWatch</strong> — you need to install and run an agent. This also works on on-premises servers (e.g. VMware).</p>
+
+  <table>
+    <tr><th>Agent</th><th>Sends logs?</th><th>Sends metrics?</th><th>Notes</th></tr>
+    <tr><td>CloudWatch Logs Agent (old)</td><td>Yes</td><td>No</td><td>Older, being phased out</td></tr>
+    <tr><td>CloudWatch Unified Agent (new)</td><td>Yes</td><td>Yes — much more granular (CPU sub-metrics, disk, RAM, netstat, processes, swap)</td><td>Configurable centrally via SSM Parameter Store</td></tr>
+  </table>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    Out of the box, EC2 gives you disk, CPU, and network metrics — <strong>not memory or swap</strong>. For that level of granularity, you need the CloudWatch Unified Agent.
+  </div>
+
+  <p>The EC2 instance also needs an <strong>IAM role</strong> permitting it to send data to CloudWatch Logs.</p>
+</section>
+
+<!-- 7. METRIC FILTERS -->
+<section class="card" id="metric-filters">
+  <h2><span class="badge">7</span> CloudWatch Logs Metric Filters</h2>
+
+  <p>A metric filter turns a pattern match in your logs (e.g. the word "error", or an IP address) into a real CloudWatch metric — which can then drive an alarm.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 110" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="35" width="160" height="40" rx="6"/>
+      <text class="svg-text" x="100" y="59" text-anchor="middle" font-size="10">CloudWatch Logs</text>
+      <path class="svg-arrow" d="M180,55 L300,55"/>
+      <text class="svg-label" x="240" y="45" text-anchor="middle" font-size="9">metric filter</text>
+      <rect class="svg-box-accent" x="300" y="35" width="160" height="40" rx="6"/>
+      <text class="svg-text" x="380" y="59" text-anchor="middle" font-size="10">CloudWatch Metric</text>
+      <path class="svg-arrow" d="M460,55 L580,55"/>
+      <text class="svg-label" x="520" y="45" text-anchor="middle" font-size="9">threshold breached</text>
+      <rect class="svg-box-accent" x="580" y="35" width="160" height="40" rx="6"/>
+      <text class="svg-text" x="660" y="59" text-anchor="middle" font-size="10">Alarm → SNS</text>
+    </svg>
+  </div>
+  <p class="caption">A metric filter watches for a pattern in log lines, turns matches into a metric, and an alarm on that metric can notify you (e.g. via SNS).</p>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    Metric filters are <strong>not retroactive</strong> — they only count log events that arrive <em>after</em> the filter is created, never historical ones. You can define up to 3 dimensions per metric filter.
+  </div>
+</section>
+
+<!-- 8. ALARMS -->
+<section class="card" id="alarms">
+  <h2><span class="badge">8</span> CloudWatch Alarms</h2>
+
+  <p>Alarms trigger actions based on a metric crossing a threshold. Three states: <code>OK</code>, <code>INSUFFICIENT_DATA</code>, <code>ALARM</code>. You set an evaluation <strong>period</strong> (e.g. every 5 minutes, or down to 10/30 seconds for high-resolution custom metrics).</p>
+
+  <h3>Alarm targets</h3>
+  <ul>
+    <li><strong>EC2 actions</strong> — stop, terminate, reboot, or recover an instance.</li>
+    <li><strong>Auto Scaling actions</strong> — scale out or in.</li>
+    <li><strong>SNS notification</strong> — which can trigger a Lambda function for custom logic.</li>
+  </ul>
+
+  <h3>Composite Alarms</h3>
+  <p>A single alarm only watches one metric. A <strong>Composite Alarm</strong> combines multiple underlying alarms with <code>AND</code>/<code>OR</code> logic — great for reducing alarm noise (e.g. only alert if CPU is high <em>and</em> IOPS is high, not either alone).</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="20" width="180" height="40" rx="6"/><text class="svg-text" x="110" y="44" text-anchor="middle" font-size="10">Alarm A: CPU high</text>
+      <rect class="svg-box" x="20" y="75" width="180" height="40" rx="6"/><text class="svg-text" x="110" y="99" text-anchor="middle" font-size="10">Alarm B: IOPS high</text>
+      <path class="svg-arrow" d="M200,40 L320,60"/>
+      <path class="svg-arrow" d="M200,95 L320,70"/>
+      <rect class="svg-box-accent" x="320" y="40" width="200" height="50" rx="6"/>
+      <text class="svg-text" x="420" y="60" text-anchor="middle" font-size="10">Composite Alarm</text>
+      <text class="svg-label" x="420" y="78" text-anchor="middle" font-size="9">(A AND B)</text>
+      <path class="svg-arrow" d="M520,65 L640,65"/>
+      <rect class="svg-box" x="640" y="45" width="120" height="40" rx="6"/><text class="svg-text" x="700" y="69" text-anchor="middle" font-size="10">SNS notify</text>
+    </svg>
+  </div>
+  <p class="caption">A composite alarm only fires when its combined condition across multiple underlying alarms is met — much quieter than alerting on either alarm individually.</p>
+
+  <h3>EC2 status checks & recovery</h3>
+  <ul>
+    <li><strong>Instance status check</strong> — the VM itself.</li>
+    <li><strong>System status check</strong> — the underlying host hardware.</li>
+    <li><strong>Attached EBS status check</strong> — attached volume health.</li>
+  </ul>
+  <p>An alarm on these can trigger <strong>EC2 instance recovery</strong> — moves the instance to new hardware while preserving its private/public/elastic IP, metadata, and placement group.</p>
+
+  <div class="callout tip">
+    <strong class="tag">Tip</strong>
+    Use the <code>SetAlarmState</code> CLI call to manually force an alarm into the <code>ALARM</code> state for testing — confirms your downstream actions actually work without waiting for a real threshold breach.
+  </div>
+</section>
+
+<!-- 9. SYNTHETICS -->
+<section class="card" id="synthetics">
+  <h2><span class="badge">9</span> CloudWatch Synthetics</h2>
+
+  <p><strong>Synthetics Canary</strong> runs a configurable script (Node.js or Python, with a headless Chrome browser) that reproduces what a real customer would do — e.g. visit a product page, add to cart, check out — on a schedule or one-off, so you find problems before your users do.</p>
+
+  <ul>
+    <li>Can check endpoint availability/latency, store load-time data, and take UI screenshots.</li>
+    <li><strong>Blueprints</strong>: Heartbeat Monitor, API Canary, Broken Link Checker, Visual Monitoring (compare screenshots to a baseline), Canary Recorder (record your actions, auto-generate the script), GUI Workflow Builder.</li>
+  </ul>
+
+  <p>Example architecture: Canary detects a failure → triggers a CloudWatch alarm → invokes a Lambda function → Lambda updates a Route 53 record to fail over to a healthy region.</p>
+</section>
+
+<!-- 10. EVENTBRIDGE -->
+<section class="card" id="eventbridge">
+  <h2><span class="badge">10</span> Amazon EventBridge</h2>
+
+  <p>Formerly "CloudWatch Events." Reacts to events happening across AWS (or on a schedule) and routes them to targets.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 170" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="10" width="150" height="35" rx="5"/><text class="svg-text" x="95" y="32" text-anchor="middle" font-size="9">EC2 state change</text>
+      <rect class="svg-box" x="20" y="55" width="150" height="35" rx="5"/><text class="svg-text" x="95" y="77" text-anchor="middle" font-size="9">S3 object created</text>
+      <rect class="svg-box" x="20" y="100" width="150" height="35" rx="5"/><text class="svg-text" x="95" y="122" text-anchor="middle" font-size="9">Schedule (cron/rate)</text>
+      <rect class="svg-box" x="20" y="145" width="150" height="20" rx="5"/><text class="svg-text" x="95" y="159" text-anchor="middle" font-size="8">CloudTrail API calls</text>
+
+      <path class="svg-arrow" d="M170,27 L310,80"/>
+      <path class="svg-arrow" d="M170,72 L310,85"/>
+      <path class="svg-arrow" d="M170,117 L310,95"/>
+      <path class="svg-arrow" d="M170,155 L310,100"/>
+      <rect class="svg-box-accent" x="310" y="60" width="160" height="50" rx="6"/>
+      <text class="svg-text" x="390" y="90" text-anchor="middle" font-weight="600" font-size="11">EventBridge</text>
+
+      <path class="svg-arrow" d="M470,75 L600,30"/>
+      <path class="svg-arrow" d="M470,85 L600,70"/>
+      <path class="svg-arrow" d="M470,95 L600,110"/>
+      <path class="svg-arrow" d="M470,105 L600,150"/>
+      <rect class="svg-box" x="600" y="10" width="160" height="30" rx="5"/><text class="svg-text" x="680" y="30" text-anchor="middle" font-size="9">Lambda</text>
+      <rect class="svg-box" x="600" y="55" width="160" height="30" rx="5"/><text class="svg-text" x="680" y="75" text-anchor="middle" font-size="9">SQS / SNS</text>
+      <rect class="svg-box" x="600" y="100" width="160" height="30" rx="5"/><text class="svg-text" x="680" y="120" text-anchor="middle" font-size="9">ECS task / Step Functions</text>
+      <rect class="svg-box" x="600" y="140" width="160" height="25" rx="5"/><text class="svg-text" x="680" y="157" text-anchor="middle" font-size="8">Kinesis / CodePipeline / etc.</text>
+    </svg>
+  </div>
+  <p class="caption">Sources (AWS services, schedules, CloudTrail-captured API calls) feed events into EventBridge, which filters and routes matching events to a wide range of targets.</p>
+
+  <ul>
+    <li><strong>Event bus types</strong>: default (AWS service events), partner (SaaS partners like Zendesk, Datadog, Auth0), custom (your own applications).</li>
+    <li>Events can be <strong>archived</strong> (indefinite or set retention) and later <strong>replayed</strong> — great for fixing a bug in a Lambda consumer and re-testing against real past events.</li>
+    <li><strong>Schema Registry</strong> infers the JSON shape of events and can generate code for your application to consume them correctly; schemas are versioned.</li>
+    <li><strong>Resource-based policies</strong> on an event bus control cross-account/region access — the basis for centralized event aggregation.</li>
+  </ul>
+
+  <h3>Hands-on recap</h3>
+  <p>Create a <strong>rule with an event pattern</strong> (e.g. react to <code>EC2 Instance State-change Notification</code> where state = <code>shutting-down</code> or <code>terminated</code>) targeting an SNS topic. Or create a <strong>schedule</strong> (one-time or recurring, cron or rate-based) that invokes a target like a Lambda function every hour.</p>
+</section>
+
+<!-- 11. EVENTBRIDGE MULTI-ACCOUNT -->
+<section class="card" id="eventbridge-multi">
+  <h2><span class="badge">11</span> EventBridge Multi-Account Aggregation</h2>
+
+  <p>To centrally capture events (e.g. EC2 state changes) from multiple AWS accounts into one central account:</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="10" width="140" height="30" rx="5"/><text class="svg-text" x="90" y="30" text-anchor="middle" font-size="9">Account A rule</text>
+      <rect class="svg-box" x="20" y="50" width="140" height="30" rx="5"/><text class="svg-text" x="90" y="70" text-anchor="middle" font-size="9">Account B rule</text>
+      <rect class="svg-box" x="20" y="90" width="140" height="30" rx="5"/><text class="svg-text" x="90" y="110" text-anchor="middle" font-size="9">Account C rule</text>
+      <path class="svg-arrow" d="M160,25 L330,55"/>
+      <path class="svg-arrow" d="M160,65 L330,65"/>
+      <path class="svg-arrow" d="M160,105 L330,75"/>
+      <rect class="svg-box-accent" x="330" y="40" width="200" height="50" rx="6"/>
+      <text class="svg-text" x="430" y="60" text-anchor="middle" font-size="10">Central account</text>
+      <text class="svg-text" x="430" y="78" text-anchor="middle" font-size="10">event bus</text>
+      <path class="svg-arrow" d="M530,65 L650,65"/>
+      <rect class="svg-box" x="650" y="45" width="110" height="40" rx="5"/><text class="svg-text" x="705" y="69" text-anchor="middle" font-size="9">SNS / Lambda</text>
+    </svg>
+  </div>
+  <p class="caption">Each account's event rule targets the central account's event bus (an event rule's target can be an event bus in another account); a resource policy on the central bus allows those accounts to send events.</p>
+
+  <ol>
+    <li>Attach a <strong>resource-based policy</strong> to the central account's event bus, accepting events from the other accounts.</li>
+    <li>In each source account, define the event pattern and create a rule whose <strong>target is the central account's event bus</strong>.</li>
+    <li>On the central bus, create your own rule(s) to react (e.g. SNS notification, Lambda function) once events land there.</li>
+  </ol>
+</section>
+
+<!-- 12. XRAY OVERVIEW -->
+<section class="card" id="xray-overview">
+  <h2><span class="badge">12</span> X-Ray Overview</h2>
+
+  <p><strong>X-Ray</strong> gives a visual, end-to-end analysis of your application — instead of hunting through scattered logs across microservices, you get a <strong>service map</strong> showing exactly how requests flow and where errors/latency originate.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="45" width="130" height="40" rx="6"/><text class="svg-text" x="85" y="69" text-anchor="middle" font-size="10">Client</text>
+      <path class="svg-arrow" d="M150,65 L280,65"/>
+      <rect class="svg-box-accent" x="280" y="45" width="140" height="40" rx="6"/><text class="svg-text" x="350" y="69" text-anchor="middle" font-size="10">EC2 App</text>
+      <path class="svg-arrow" d="M420,55 L540,25"/>
+      <rect class="svg-box" x="540" y="10" width="120" height="30" rx="5"/><text class="svg-text" x="600" y="30" text-anchor="middle" font-size="9">SNS</text>
+      <path class="svg-arrow" d="M420,75 L540,105"/>
+      <rect class="svg-box" x="540" y="90" width="120" height="30" rx="5"/><text class="svg-text" x="600" y="110" text-anchor="middle" font-size="9" fill="#c0392b">DynamoDB (error!)</text>
+    </svg>
+  </div>
+  <p class="caption">The service map visually shows every hop a request makes — including which specific downstream dependency is actually causing the error, without digging through raw logs.</p>
+
+  <h3>Advantages</h3>
+  <ul>
+    <li>Troubleshoot performance bottlenecks; understand microservice dependencies visually.</li>
+    <li>Pinpoint which service is causing issues; find errors/exceptions per request.</li>
+    <li>Check if you're meeting latency SLAs; identify which service throttles you; see which users are impacted.</li>
+  </ul>
+
+  <p>Compatible with Lambda, Beanstalk, ECS, ELB, API Gateway, EC2, and any application server (even on-premises).</p>
+
+  <h3>Concepts</h3>
+  <ul>
+    <li><strong>Segments</strong> — each component handling a request adds its own segment; segments can have <strong>subsegments</strong> for more granularity.</li>
+    <li><strong>Trace</strong> — all segments collected together = an end-to-end view of one request.</li>
+    <li><strong>Sampling</strong> — controls how many requests get traced (reduces cost).</li>
+    <li>Security: IAM authorization; KMS encryption at rest.</li>
+  </ul>
+
+  <h3>How to enable it</h3>
+  <ol>
+    <li><strong>Instrument your code</strong> — import the X-Ray SDK (Java, Python, Go, Node.js, .NET) so it captures AWS SDK calls, HTTP(S) requests, and database calls (MySQL, PostgreSQL, DynamoDB).</li>
+    <li><strong>Run the X-Ray daemon</strong> — a small UDP packet interceptor program (Linux/Windows/Mac). Some services (like Lambda) run it for you automatically.</li>
+    <li>Your application needs <strong>IAM permissions</strong> to write to X-Ray.</li>
+  </ol>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    "It works locally but not on EC2" is almost always because the <strong>X-Ray daemon isn't running</strong> on the EC2 instance (only on your local machine).
+  </div>
+</section>
+
+<!-- 13. XRAY HANDS ON -->
+<section class="card" id="xray-hands-on">
+  <h2><span class="badge">13</span> X-Ray — Hands On</h2>
+
+  <ul>
+    <li>The X-Ray console now lives inside the CloudWatch console (<strong>Service map</strong> and <strong>Traces</strong> sections).</li>
+    <li>A demo app (ECS-based, using DynamoDB and SNS) was deployed via CloudFormation to generate real traces.</li>
+    <li>The <strong>service map</strong> visually shows all components and their dependencies — a component in error (e.g. SNS calls failing) is highlighted, e.g. in orange.</li>
+    <li>Clicking a node shows latency graphs, request counts, faults, and response time distribution.</li>
+    <li><strong>Traces</strong> can be filtered/queried by node (e.g. only requests touching a specific DynamoDB table) — useful for finding the one slow request among many and drilling into its full breakdown (which calls happened, in what order, how long each took).</li>
+  </ul>
+</section>
+
+<!-- 14. XRAY CONCEPTS -->
+<section class="card" id="xray-concepts">
+  <h2><span class="badge">14</span> X-Ray Instrumentation & Concepts</h2>
+
+  <p><strong>Instrumentation</strong> = measuring performance, diagnosing errors, and writing trace data — done by adding the X-Ray SDK to your code (sometimes just a config change, sometimes custom interceptors/filters/handlers/middleware for more control).</p>
+
+  <table>
+    <tr><th>Term</th><th>Meaning</th></tr>
+    <tr><td>Segment</td><td>What one component/service sends per request</td></tr>
+    <tr><td>Subsegment</td><td>More granular detail within a segment</td></tr>
+    <tr><td>Trace</td><td>All segments together = end-to-end view of one request</td></tr>
+    <tr><td>Annotations</td><td>Key-value pairs that ARE indexed — searchable/filterable</td></tr>
+    <tr><td>Metadata</td><td>Key-value pairs that are NOT indexed — not searchable</td></tr>
+  </table>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Use <strong>annotations</strong> (not metadata) whenever you need to search or filter traces by that data.
+  </div>
+
+  <p>The X-Ray daemon can also be configured to send traces <strong>across accounts</strong> (assuming an IAM role) — useful for centralized tracing.</p>
+</section>
+
+<!-- 15. XRAY SAMPLING -->
+<section class="card" id="xray-sampling">
+  <h2><span class="badge">15</span> X-Ray Sampling Rules</h2>
+
+  <p>Sampling rules control how much data gets sent to X-Ray (and therefore, cost) — <strong>without changing your code</strong>.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 110" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box-accent" x="20" y="30" width="260" height="50" rx="6"/>
+      <text class="svg-text" x="150" y="52" text-anchor="middle" font-size="10">Reservoir: 1 request/sec guaranteed</text>
+      <text class="svg-label" x="150" y="70" text-anchor="middle" font-size="9">(always traced, no matter what)</text>
+      <rect class="svg-box-accent" x="300" y="30" width="260" height="50" rx="6"/>
+      <text class="svg-text" x="430" y="52" text-anchor="middle" font-size="10">Rate: 5% of the rest</text>
+      <text class="svg-label" x="430" y="70" text-anchor="middle" font-size="9">(sampled beyond the reservoir)</text>
+    </svg>
+  </div>
+  <p class="caption">Default sampling rule: guarantee 1 trace per second per service (the reservoir), then sample only 5% of everything above that (the rate).</p>
+
+  <ul>
+    <li>You can create <strong>custom rules</strong> with your own reservoir/rate, targeting a specific service, HTTP method, and/or URL path (e.g. sample 100% of a specific service's POST requests for deep debugging).</li>
+    <li>Priority ranges 1–9,999 — <strong>lower number = higher priority</strong>.</li>
+  </ul>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    Changing sampling rules in the console takes effect <strong>automatically</strong> — no need to restart your application or the X-Ray daemon.
+  </div>
+</section>
+
+<!-- 16. XRAY APIS -->
+<section class="card" id="xray-apis">
+  <h2><span class="badge">16</span> X-Ray APIs</h2>
+
+  <h3>Write APIs (used by the X-Ray daemon)</h3>
+  <table>
+    <tr><th>API</th><th>Purpose</th></tr>
+    <tr><td><code>PutTraceSegments</code></td><td>Upload segment documents to X-Ray</td></tr>
+    <tr><td><code>PutTelemetryRecords</code></td><td>Upload daemon health info (segments received/rejected, connection errors)</td></tr>
+    <tr><td><code>GetSamplingRules</code></td><td>Fetch current sampling rules so the daemon knows what/how much to send</td></tr>
+    <tr><td><code>GetSamplingTargets</code> / <code>GetSamplingStatisticSummaries</code></td><td>Advanced sampling-rule related APIs</td></tr>
+  </table>
+
+  <h3>Read APIs (used by the console)</h3>
+  <table>
+    <tr><th>API</th><th>Purpose</th></tr>
+    <tr><td><code>GetServiceGraph</code></td><td>The main service map graph</td></tr>
+    <tr><td><code>BatchGetTraces</code></td><td>Retrieve full traces by ID</td></tr>
+    <tr><td><code>GetTraceSummaries</code></td><td>Get trace IDs + annotations for a time range</td></tr>
+    <tr><td><code>GetTraceGraph</code></td><td>Service graph for one or more specific trace IDs</td></tr>
+  </table>
+</section>
+
+<!-- 17. XRAY INTEGRATIONS -->
+<section class="card" id="xray-integrations">
+  <h2><span class="badge">17</span> X-Ray with Beanstalk & ECS</h2>
+
+  <h3>Elastic Beanstalk</h3>
+  <ul>
+    <li>Beanstalk platforms already include the X-Ray daemon — just flip one setting (Configuration → Monitoring → enable X-Ray daemon), or add an <code>.ebextensions/x-ray-daemon.config</code> file.</li>
+    <li>Your EC2 instance profile still needs the right IAM permissions (Beanstalk's default web-tier role already includes them).</li>
+    <li>Your application code still needs to be instrumented with the X-Ray SDK.</li>
+  </ul>
+
+  <h3>ECS — three patterns</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 780 170" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="10" width="230" height="140" rx="8"/>
+      <text class="svg-text" x="135" y="30" text-anchor="middle" font-weight="600" font-size="10">Daemon container (EC2)</text>
+      <text class="svg-label" x="135" y="50" text-anchor="middle" font-size="9">1 X-Ray daemon per EC2</text>
+      <text class="svg-label" x="135" y="65" text-anchor="middle" font-size="9">instance, shared by all</text>
+      <text class="svg-label" x="135" y="80" text-anchor="middle" font-size="9">app containers on it</text>
+
+      <rect class="svg-box" x="280" y="10" width="230" height="140" rx="8"/>
+      <text class="svg-text" x="395" y="30" text-anchor="middle" font-weight="600" font-size="10">Sidecar (EC2)</text>
+      <text class="svg-label" x="395" y="50" text-anchor="middle" font-size="9">1 X-Ray daemon per</text>
+      <text class="svg-label" x="395" y="65" text-anchor="middle" font-size="9">app container — runs</text>
+      <text class="svg-label" x="395" y="80" text-anchor="middle" font-size="9">side-by-side with it</text>
+
+      <rect class="svg-box" x="540" y="10" width="230" height="140" rx="8"/>
+      <text class="svg-text" x="655" y="30" text-anchor="middle" font-weight="600" font-size="10">Sidecar (Fargate)</text>
+      <text class="svg-label" x="655" y="50" text-anchor="middle" font-size="9">Only option on Fargate —</text>
+      <text class="svg-label" x="655" y="65" text-anchor="middle" font-size="9">no EC2 instances to run</text>
+      <text class="svg-label" x="655" y="80" text-anchor="middle" font-size="9">a shared daemon on</text>
+    </svg>
+  </div>
+  <p class="caption">On EC2-backed clusters you can share one daemon per instance or run one per app container (sidecar); on Fargate, sidecar is the only option since there's no shared host to run a daemon on.</p>
+
+  <ul>
+    <li>The daemon container maps container port <strong>2000/UDP</strong>.</li>
+    <li>Your app container needs the env var <code>AWS_XRAY_DAEMON_ADDRESS</code> pointing at <code>xray-daemon:2000</code>.</li>
+    <li>The two containers must be <strong>linked</strong> from a networking standpoint so the app container can resolve the daemon's hostname.</li>
+  </ul>
+</section>
+
+<!-- 18. OTEL -->
+<section class="card" id="otel">
+  <h2><span class="badge">18</span> AWS Distro for OpenTelemetry</h2>
+
+  <p><strong>OpenTelemetry</strong> is an open-source project providing a single set of APIs/libraries/agents/collectors for distributed traces and metrics. AWS provides its own secure, production-ready <strong>distribution</strong> of it.</p>
+
+  <ul>
+    <li>Very similar to X-Ray conceptually — auto-instrumented agents collect traces without code changes.</li>
+    <li>Works across EC2, ECS, EKS, Fargate, Lambda, or on-premises apps.</li>
+    <li>Traces/metrics can be sent to <strong>multiple destinations simultaneously</strong>: X-Ray, CloudWatch, Amazon Managed Service for Prometheus, or partner tools (e.g. Datadog).</li>
+  </ul>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    Consider migrating from X-Ray to the AWS Distro for OpenTelemetry if you want to standardize on open-source APIs, or need to send trace data to multiple destinations at once — something X-Ray alone doesn't do.
+  </div>
+</section>
+
+<!-- 19. CLOUDTRAIL -->
+<section class="card" id="cloudtrail">
+  <h2><span class="badge">19</span> CloudTrail</h2>
+
+  <p><strong>CloudTrail</strong> gives governance, compliance, and audit — a history of every API call made in your account (console, SDK, CLI, other AWS services). <strong>Enabled by default.</strong></p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="45" width="150" height="40" rx="6"/><text class="svg-text" x="95" y="69" text-anchor="middle" font-size="9">Console / SDK / CLI / services</text>
+      <path class="svg-arrow" d="M170,65 L300,65"/>
+      <rect class="svg-box-accent" x="300" y="45" width="150" height="40" rx="6"/><text class="svg-text" x="375" y="69" text-anchor="middle" font-size="10">CloudTrail</text>
+      <path class="svg-arrow" d="M450,55 L580,30"/>
+      <rect class="svg-box" x="580" y="10" width="160" height="35" rx="5"/><text class="svg-text" x="660" y="32" text-anchor="middle" font-size="9">CloudWatch Logs</text>
+      <path class="svg-arrow" d="M450,75 L580,100"/>
+      <rect class="svg-box" x="580" y="85" width="160" height="35" rx="5"/><text class="svg-text" x="660" y="107" text-anchor="middle" font-size="9">S3 (long-term, + Athena)</text>
+    </svg>
+  </div>
+  <p class="caption">Every API call is logged by CloudTrail; forward to CloudWatch Logs or S3 to retain it beyond the default 90 days.</p>
+
+  <h3>Event types</h3>
+  <table>
+    <tr><th>Type</th><th>Logged by default?</th><th>Examples</th></tr>
+    <tr><td>Management Events</td><td>Yes</td><td>IAM <code>AttachRolePolicy</code>, creating a subnet — split into Read (no changes) and Write (modifies resources)</td></tr>
+    <tr><td>Data Events</td><td>No (high volume)</td><td>S3 object-level activity (<code>GetObject</code>/<code>PutObject</code>/<code>DeleteObject</code>), Lambda <code>Invoke</code></td></tr>
+    <tr><td>CloudTrail Insights Events</td><td>No (opt-in, paid)</td><td>Detected unusual activity — see below</td></tr>
+  </table>
+
+  <h3>CloudTrail Insights</h3>
+  <p>Analyzes your normal Management Event activity to build a baseline, then flags anomalies — inaccurate resource provisioning, hitting service limits, bursts of IAM actions, gaps in maintenance activity. Insight events show up in the console and can also trigger an EventBridge event (e.g. for automated alerting).</p>
+
+  <div class="callout warning">
+    <strong class="tag">Important</strong>
+    Events are retained in CloudTrail for <strong>90 days by default</strong>. For longer retention, log events to S3, then query them with <strong>Athena</strong> when needed.
+  </div>
+
+  <h3>Hands-on recap</h3>
+  <p>Terminating an EC2 instance shows up in CloudTrail's <strong>Event history</strong> as a <code>TerminateInstances</code> API call — with the event source, access key used, region, and full event details.</p>
+</section>
+
+<!-- 20. CLOUDTRAIL EVENTBRIDGE -->
+<section class="card" id="cloudtrail-eventbridge">
+  <h2><span class="badge">20</span> CloudTrail + EventBridge Integration</h2>
+
+  <p>Every API call logged by CloudTrail also becomes an event in <strong>EventBridge</strong> — letting you react to specific API calls in near real-time.</p>
+
+  <ul>
+    <li>E.g. get an SNS notification whenever someone calls DynamoDB's <code>DeleteTable</code>, IAM's <code>AssumeRole</code>, or EC2's <code>AuthorizeSecurityGroupIngress</code> (changing inbound security group rules).</li>
+  </ul>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    "Alert me whenever &lt;specific API call&gt; happens" → CloudTrail logs the call → EventBridge rule matches it → SNS (or Lambda, etc.) reacts.
+  </div>
+</section>
+
+<!-- 21. COMPARISON -->
+<section class="card" id="comparison">
+  <h2><span class="badge">21</span> CloudTrail vs CloudWatch vs X-Ray</h2>
+
+  <table>
+    <tr><th>Service</th><th>What it's for</th><th>Use it to...</th></tr>
+    <tr><td>CloudTrail</td><td>Audit API calls made in your account (user, service, or console)</td><td>Detect unauthorized calls, find the root cause of a change</td></tr>
+    <tr><td>CloudWatch</td><td>Metrics (monitoring), Logs (storage), Alarms (notifications on unexpected metrics)</td><td>Overall health/performance monitoring</td></tr>
+    <tr><td>X-Ray</td><td>Automated trace analysis, central service map visualization</td><td>Debug distributed systems, analyze latency/errors/faults, track a request across services</td></tr>
+  </table>
+</section>
+
+<!-- CHEAT SHEET -->
+<section class="card cheatsheet" id="cheatsheet">
+  <h2><span class="badge">✓</span> Cheat Sheet</h2>
+
+  <h3>Key facts to remember</h3>
+  <ul>
+    <li>EC2 gives metrics every 5 min by default, every 1 min with detailed monitoring (paid) — RAM/memory is never included, always a custom metric.</li>
+    <li>Custom metrics accept timestamps up to 2 weeks in the past / 2 hours in the future.</li>
+    <li>CloudWatch Logs: log group → log streams → log events; export via batch (S3, up to 12h) or subscription filter (real-time, to Kinesis/Firehose/Lambda).</li>
+    <li>CloudWatch Unified Agent > old Logs Agent — sends both logs and much more granular metrics (RAM, swap, per-process, netstat).</li>
+    <li>Metric filters are not retroactive — only count events after creation; feed into alarms.</li>
+    <li>Alarms: OK / INSUFFICIENT_DATA / ALARM; targets = EC2 action, ASG action, or SNS. Composite alarms combine multiple alarms with AND/OR to cut noise.</li>
+    <li>Synthetics Canary = scripted, scheduled synthetic user journeys to catch issues before customers do.</li>
+    <li>EventBridge (formerly CloudWatch Events): default/partner/custom event buses, archive + replay, Schema Registry, resource policies for cross-account routing.</li>
+    <li>X-Ray needs (1) SDK-instrumented code and (2) a running daemon (or built-in integration, e.g. Lambda) with IAM permission to write.</li>
+    <li>Annotations are indexed/searchable in X-Ray; metadata is not.</li>
+    <li>X-Ray sampling: reservoir (guaranteed rate) + rate (% of the rest) — customizable per service/method/path, no restart needed.</li>
+    <li>ECS + X-Ray: daemon-per-instance or sidecar-per-container on EC2; sidecar-only on Fargate. Needs port 2000/UDP, the <code>AWS_XRAY_DAEMON_ADDRESS</code> env var, and container linking.</li>
+    <li>CloudTrail is on by default; Management Events logged by default, Data Events and Insights are opt-in (high volume/cost). 90-day retention unless exported to S3 (+ Athena for querying).</li>
+    <li>CloudTrail → EventBridge lets you react to specific API calls (e.g. DeleteTable, AssumeRole) in near real-time.</li>
+  </ul>
+
+  <h3>Decision guide</h3>
+  <table>
+    <tr><th>Question</th><th>Tool</th></tr>
+    <tr><td>Is my app's CPU/latency/error rate healthy?</td><td>CloudWatch Metrics + Alarms</td></tr>
+    <tr><td>What did my application actually log?</td><td>CloudWatch Logs (+ Logs Insights to query)</td></tr>
+    <tr><td>Which exact downstream call is slow or failing?</td><td>X-Ray service map + traces</td></tr>
+    <tr><td>Who deleted/changed this resource, and when?</td><td>CloudTrail</td></tr>
+    <tr><td>React automatically to an AWS event or schedule</td><td>EventBridge</td></tr>
+    <tr><td>Catch a broken user flow before customers do</td><td>CloudWatch Synthetics</td></tr>
+    <tr><td>Send traces/metrics to X-Ray AND a third-party tool</td><td>AWS Distro for OpenTelemetry</td></tr>
+  </table>
+
+  <h3>Mental model</h3>
+  <p>Think of these three services as answering three different questions about your running application. CloudWatch answers "is something wrong, and how bad" — via metrics, logs, and alarms that watch numbers and text over time. X-Ray answers "where exactly, in this web of services, did it go wrong" — by stitching every hop of a single request into one visual trace. CloudTrail answers "who did this, and when" — an immutable record of every API call, which becomes even more powerful when wired into EventBridge to react to specific actions the moment they happen. Together they turn "my manager is calling me at 2am" into "I already knew, and I already know why."</p>
+</section>
+
+<a class="back-to-top" href="#top">↑ Back to top</a>
+
+</div>
+<script>
+(function () {
+  const cards = document.querySelectorAll('section.card, section.lecture, div.card');
+  cards.forEach((card) => {
+    if (card.querySelector(':scope > .study-lens')) return;
+    if (card.classList.contains('cheatsheet')) return;
+    const id = (card.id || '').toLowerCase();
+    if (id.includes('summary') || id === 'cheatsheet') return;
+
+    const heading = card.querySelector(':scope > h2, :scope > h3');
+    if (!heading) return;
+
+    const rawTitle = heading.textContent.replace(/^[0-9✓#]+\s*/, '').trim();
+    if (!rawTitle) return;
+
+    const safeTitle = escapeHtml(rawTitle);
+    const lens = document.createElement('div');
+    lens.className = 'study-lens';
+    lens.innerHTML = [
+      '<div class="lens-label">Study focus</div>',
+      '<p><strong>Target:</strong> finish this topic by being able to explain <em>' + safeTitle + '</em> in plain words, then connect it to one real AWS use case.</p>',
+      '<ul>',
+      '<li><strong>Before reading:</strong> predict what problem this AWS feature solves.</li>',
+      '<li><strong>While reading:</strong> mark the service limits, pricing/security clues, and any exam trap words.</li>',
+      '<li><strong>After reading:</strong> say when you would use it, when you would avoid it, and which AWS service it is often confused with.</li>',
+      '</ul>',
+      '<details class="recall-drill">',
+      '<summary>Active recall check</summary>',
+      '<ol>',
+      '<li>What is the one-sentence purpose of ' + safeTitle + '?</li>',
+      '<li>Which configuration choices or limits matter most here?</li>',
+      '<li>What real system would need this?</li>',
+      '<li>What mistake would a beginner make with this topic?</li>',
+      '</ol>',
+      '</details>'
+    ].join('');
+    heading.insertAdjacentElement('afterend', lens);
+  });
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
+  }
+}());
+</script>
+
+<script>
+(function () {
+  if (document.querySelector('.tips-trigger')) return;
+
+  const glossary = [
+    ['API Gateway', 'Managed front door for APIs. It receives client requests, applies features like auth/throttling, then sends traffic to Lambda, HTTP backends, or AWS services.'],
+    ['Application Load Balancer', 'Layer 7 load balancer for HTTP/HTTPS traffic. Often compared with API Gateway when exposing web apps or Lambda.'],
+    ['Auto Scaling Group', 'A group that keeps the desired number of EC2 instances running and can scale capacity based on policies.'],
+    ['Availability Zone', 'One isolated data center zone inside a Region. Multi-AZ designs survive failure of one zone.'],
+    ['CloudFormation', 'AWS infrastructure-as-code service. Templates describe resources; stacks create and update them.'],
+    ['CloudFront', 'AWS content delivery network. It caches content at edge locations close to users.'],
+    ['CloudWatch', 'AWS monitoring service for metrics, logs, alarms, and events from AWS resources.'],
+    ['Cognito', 'AWS identity service for app users. User Pools handle sign-in; Identity Pools give temporary AWS credentials.'],
+    ['CodeDeploy', 'Deployment service that rolls new application versions to EC2, Lambda, ECS, or on-prem servers.'],
+    ['CodePipeline', 'CI/CD workflow service that connects source, build, test, and deploy stages.'],
+    ['DynamoDB', 'Serverless NoSQL key-value/document database. Design starts with access patterns, partition keys, and sort keys.'],
+    ['EventBridge', 'Event bus for routing events between AWS services, apps, and scheduled rules.'],
+    ['Internet Gateway', 'VPC component that lets public subnet resources communicate with the internet.'],
+    ['Lambda', 'Serverless compute for short-running functions triggered by events or requests.'],
+    ['NAT Gateway', 'Lets private subnet resources start outbound internet connections without being directly reachable from the internet.'],
+    ['OpenSearch', 'Search and analytics engine used for full-text search, log analytics, and dashboards.'],
+    ['Parameter Store', 'Systems Manager feature for storing config values and secrets; can integrate with KMS.'],
+    ['Private CA', 'Private certificate authority for internal TLS certificates, not public internet trust.'],
+    ['Route 53', 'AWS DNS service. It maps names like example.com to targets such as load balancers or IPs.'],
+    ['Security Group', 'Stateful firewall attached to ENIs/resources. Return traffic is automatically allowed.'],
+    ['Step Functions', 'Workflow service for orchestrating Lambda functions and AWS services with retries, branching, and state.'],
+    ['VPC Endpoint', 'Private connection from a VPC to supported AWS services without public internet routing.'],
+    ['access key', 'Long-term credential pair for programmatic access: Access Key ID plus Secret Access Key. Treat it like a password.'],
+    ['alias record', 'Route 53-specific DNS record that can point to AWS resources like load balancers and CloudFront distributions.'],
+    ['asynchronous', 'Caller sends work and does not wait for the final result. Failures usually need retries, DLQs, or destinations.'],
+    ['cache', 'Stored copy of data used to reduce latency, repeated work, or backend load.'],
+    ['canary', 'Gradual release pattern where a small percentage of traffic receives the new version first.'],
+    ['CIDR', 'IP range notation such as 10.0.0.0/16. Smaller suffix number means a larger network range.'],
+    ['CLI', 'Command Line Interface. For AWS, this means running AWS operations from terminal commands.'],
+    ['cold start', 'Extra startup latency when Lambda has to create a fresh execution environment.'],
+    ['concurrency', 'How many executions run at the same time. In Lambda, it directly affects scaling and throttling.'],
+    ['CORS', 'Browser security rule controlling whether frontend code from one origin can call another origin.'],
+    ['DNS', 'Name system that translates human-friendly domains into routing targets such as IP addresses.'],
+    ['DLQ', 'Dead-letter queue. Stores failed messages/events so you can inspect or replay them later.'],
+    ['edge location', 'AWS site closer to users than a Region, mainly used by CloudFront and edge compute.'],
+    ['encryption at rest', 'Data is encrypted while stored on disk, object storage, database storage, or backups.'],
+    ['encryption in transit', 'Data is encrypted while moving over the network, usually with TLS/HTTPS.'],
+    ['environment variables', 'Configuration values injected into a runtime without changing code. Secrets need extra care.'],
+    ['GSI', 'Global Secondary Index in DynamoDB. It supports alternate query patterns and has its own partition/sort key.'],
+    ['health check', 'Automated test that decides whether a target is healthy enough to receive traffic.'],
+    ['hosted zone', 'Route 53 container for DNS records for a domain. Public zones answer internet DNS queries.'],
+    ['IAM', 'Identity and Access Management. It controls who can do what in AWS.'],
+    ['idempotency', 'Design property where repeating the same request does not create unintended duplicate effects.'],
+    ['IOPS', 'Input/output operations per second. Common storage performance number for disks and databases.'],
+    ['JSON', 'Structured text format used heavily by AWS policies, templates, and API responses.'],
+    ['KMS', 'Key Management Service. It creates and controls encryption keys used by AWS services and applications.'],
+    ['least privilege', 'Security principle: grant only the permissions needed, nothing extra.'],
+    ['LSI', 'Local Secondary Index in DynamoDB. It shares the table partition key but uses a different sort key.'],
+    ['MFA', 'Multi-factor authentication. Login requires password plus a second factor such as an authenticator app.'],
+    ['origin', 'The backend source CloudFront fetches content from, such as S3, ALB, or a custom server.'],
+    ['partition key', 'Primary DynamoDB key component that determines item distribution and query access pattern.'],
+    ['policy', 'Permission document that allows or denies actions on resources, often written in JSON.'],
+    ['Region', 'Geographic AWS area containing multiple Availability Zones, such as us-east-1.'],
+    ['replication', 'Copying data to another place for durability, latency, compliance, or disaster recovery.'],
+    ['REST', 'API style based around resources, HTTP methods, and stateless requests.'],
+    ['role', 'Temporary AWS identity that can be assumed by users, services, or external accounts.'],
+    ['root account', 'The original AWS account identity with full power. Use it rarely and protect it strongly.'],
+    ['SDK', 'Software Development Kit. Language-specific library for calling AWS APIs from code.'],
+    ['sort key', 'Optional DynamoDB key component that orders items within the same partition key.'],
+    ['subnet', 'A slice of a VPC IP range placed inside one Availability Zone.'],
+    ['synchronous', 'Caller waits for the result immediately. Useful for request/response workflows.'],
+    ['throughput', 'Amount of data processed per second. Different from IOPS, which counts operations.'],
+    ['TLS', 'Encryption protocol behind HTTPS. Used to protect data in transit.'],
+    ['TTL', 'Time to live. In DNS it controls cache duration; in DynamoDB it can expire old items.'],
+    ['VPC', 'Virtual Private Cloud. Your isolated network boundary inside AWS.'],
+    ['WebSocket', 'Persistent two-way connection useful for real-time apps like chat or live updates.']
+  ];
+
+  const pageText = document.body.innerText.replace(/\s+/g, ' ');
+  const found = glossary.filter(([term]) => new RegExp('(^|[^A-Za-z0-9])' + escapeRegExp(term) + '([^A-Za-z0-9]|$)', 'i').test(pageText));
+  if (!found.length) return;
+
+  const button = document.createElement('button');
+  button.className = 'tips-trigger';
+  button.type = 'button';
+  button.setAttribute('aria-haspopup', 'dialog');
+  button.setAttribute('aria-expanded', 'false');
+  button.innerHTML = '<span class="tips-icon" aria-hidden="true">💡</span><span>Tips</span>';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'tips-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'tips-title');
+  overlay.innerHTML = [
+    '<div class="tips-panel">',
+    '<div class="tips-header">',
+    '<h2 id="tips-title">💡 Tips & assumed concepts</h2>',
+    '<button class="tips-close" type="button" aria-label="Close tips">Close</button>',
+    '</div>',
+    '<div class="tips-body">',
+    '<p class="tips-intro">These are prerequisite terms that this page uses without always stopping to define them. Read this first when a section feels abstract.</p>',
+    '<ul class="tips-list">' + found.map(([term, tip]) => '<li><strong>' + escapeHtml(term) + '</strong>' + escapeHtml(tip) + '</li>').join('') + '</ul>',
+    '</div>',
+    '</div>'
+  ].join('');
+
+  document.body.appendChild(button);
+  document.body.appendChild(overlay);
+
+  const closeButton = overlay.querySelector('.tips-close');
+  function openTips() {
+    overlay.classList.add('open');
+    button.setAttribute('aria-expanded', 'true');
+    closeButton.focus();
+  }
+  function closeTips() {
+    overlay.classList.remove('open');
+    button.setAttribute('aria-expanded', 'false');
+    button.focus();
+  }
+
+  button.addEventListener('click', openTips);
+  closeButton.addEventListener('click', closeTips);
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) closeTips();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && overlay.classList.contains('open')) closeTips();
+  });
+
+  function escapeRegExp(value) {
+    return value.replace(/[.*+?^$()|[\]\\]/g, '\\</body>').replace(/[{}]/g, '\\</body>');
+  }
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
+  }
+}());
+</script>
+
+</body>
+</html>

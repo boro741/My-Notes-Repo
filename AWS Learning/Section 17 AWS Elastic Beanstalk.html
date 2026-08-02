@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 17 — AWS Elastic Beanstalk — Notes</title>
+<style>
+  :root {
+    --accent: #e8830f;
+    --accent-dark: #c96a08;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --border: #e3e0da;
+    --text: #2b2a28;
+    --text-muted: #6b6a66;
+    --green: #2e7d32;
+    --green-bg: #eef7ee;
+    --red: #c0392b;
+    --red-bg: #fdecea;
+    --amber: #b8790a;
+    --amber-bg: #fff4e2;
+    --purple: #6a4fb3;
+    --purple-bg: #f3f0fb;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  header {
+    padding-bottom: 24px;
+    border-bottom: 3px solid var(--accent);
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 2rem;
+    color: var(--text);
+  }
+
+  header h1 span {
+    color: var(--accent);
+  }
+
+  header p.subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+  }
+
+  nav.toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 32px;
+  }
+
+  nav.toc h2 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  nav.toc ol {
+    margin: 0;
+    padding-left: 22px;
+    columns: 2;
+    column-gap: 24px;
+  }
+
+  nav.toc li {
+    margin-bottom: 6px;
+    break-inside: avoid;
+  }
+
+  nav.toc a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  nav.toc a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 24px;
+    scroll-margin-top: 20px;
+  }
+
+  .card h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 14px;
+    font-size: 1.3rem;
+    color: var(--text);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    color: var(--accent-dark);
+    font-size: 1.05rem;
+    margin: 20px 0 8px;
+  }
+
+  a { color: var(--accent-dark); }
+
+  code {
+    background: #f1eee7;
+    border: 1px solid #e6e2d8;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.92em;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    color: #7a4b00;
+  }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 0.94rem;
+  }
+
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f7f2ea;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) td {
+    background: #fcfbf9;
+  }
+
+  .callout {
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+
+  .callout strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .callout.tip {
+    background: var(--green-bg);
+    border-color: var(--green);
+  }
+  .callout.tip strong.tag { color: var(--green); }
+
+  .callout.warning {
+    background: var(--red-bg);
+    border-color: var(--red);
+  }
+  .callout.warning strong.tag { color: var(--red); }
+
+  .callout.key {
+    background: var(--amber-bg);
+    border-color: var(--amber);
+  }
+  .callout.key strong.tag { color: var(--amber); }
+
+  .analogy {
+    border: 1.5px dashed var(--purple);
+    background: var(--purple-bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+  .analogy strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--purple);
+  }
+
+  .diagram {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fdfcfa;
+    padding: 16px;
+    margin: 16px 0 6px;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  .diagram svg {
+    max-width: 100%;
+  }
+
+  .caption {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 4px 0 16px;
+    font-style: italic;
+  }
+
+  .cheatsheet {
+    border: 2px solid var(--accent);
+  }
+
+  .cheatsheet h2 { color: var(--accent-dark); }
+
+  .back-to-top {
+    display: block;
+    text-align: center;
+    margin-top: 36px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    text-decoration: none;
+  }
+  .back-to-top:hover { text-decoration: underline; }
+
+  .svg-box { fill: #fff; stroke: #c8917a; stroke-width: 1.5; }
+  .svg-box-accent { fill: #fff4e2; stroke: var(--accent); stroke-width: 1.5; }
+  .svg-box-gray { fill: #eeeeee; stroke: #b8b8b8; stroke-width: 1.5; }
+  .svg-text { font-family: -apple-system, sans-serif; font-size: 12px; fill: #2b2a28; }
+  .svg-label { font-family: -apple-system, sans-serif; font-size: 11px; fill: #6b6a66; }
+  .svg-arrow { stroke: #6b6a66; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+  /* Learning helpers: compact prompts added without changing lecture content */
+  .study-lens {
+    border: 1px solid #bfdbfe;
+    background: #eff6ff;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin: 12px 0 18px;
+    font-size: 0.95rem;
+  }
+
+  .study-lens .lens-label {
+    color: #1d4ed8;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .study-lens p { margin: 0 0 8px; }
+  .study-lens ul, .study-lens ol { margin: 8px 0 0; }
+  .study-lens li { margin-bottom: 5px; }
+
+  .recall-drill {
+    border-top: 1px solid #bfdbfe;
+    margin-top: 10px;
+    padding-top: 8px;
+  }
+
+  .recall-drill summary {
+    cursor: pointer;
+    color: #1d4ed8;
+    font-weight: 700;
+  }
+
+  .recall-drill summary:hover { text-decoration: underline; }
+
+
+
+  /* Tips popup for assumed AWS terms and prerequisite concepts */
+  .tips-trigger {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 999;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 14px;
+    border: 1px solid #f59e0b;
+    border-radius: 999px;
+    background: #fffbeb;
+    color: #92400e;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+  }
+
+  .tips-trigger:hover { background: #fef3c7; }
+
+  .tips-trigger .tips-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+
+  .tips-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(17, 24, 39, 0.46);
+  }
+
+  .tips-overlay.open { display: flex; }
+
+  .tips-panel {
+    width: min(760px, 100%);
+    max-height: min(76vh, 720px);
+    overflow: auto;
+    background: #ffffff;
+    color: var(--text, #1f2937);
+    border: 1px solid #fcd34d;
+    border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  }
+
+  .tips-header {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 18px;
+    background: #fffbeb;
+    border-bottom: 1px solid #fde68a;
+  }
+
+  .tips-header h2 {
+    margin: 0;
+    color: #92400e;
+    font-size: 1.1rem;
+  }
+
+  .tips-close {
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #92400e;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+    line-height: 1;
+    padding: 7px 10px;
+  }
+
+  .tips-body { padding: 16px 18px 18px; }
+
+  .tips-intro {
+    margin: 0 0 12px;
+    color: var(--muted, var(--text-muted, #6b7280));
+    font-size: 0.95rem;
+  }
+
+  .tips-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tips-list li {
+    margin: 0;
+    padding: 10px 12px;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    background: #fffdf5;
+  }
+
+  .tips-list strong {
+    display: block;
+    margin-bottom: 3px;
+    color: #92400e;
+  }
+
+  .tips-empty { margin: 0; color: var(--muted, var(--text-muted, #6b7280)); }
+
+  @media (max-width: 480px) {
+    .tips-trigger {
+      right: 12px;
+      bottom: 12px;
+      padding: 10px 12px;
+    }
+
+    .tips-trigger span:not(.tips-icon) { display: none; }
+    .tips-overlay { padding: 10px; }
+    .tips-panel { max-height: 82vh; }
+    .tips-list { grid-template-columns: 1fr; }
+  }
+
+
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header id="top">
+  <h1><span>Section 17</span> — AWS Elastic Beanstalk</h1>
+  <p class="subtitle">My notes on deploying applications the easy way: environments, deployment modes, extensions, cloning, and migrations.</p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#overview">Elastic Beanstalk Overview</a></li>
+    <li><a href="#first-env">First Environment — Hands On</a></li>
+    <li><a href="#second-env">Second Environment — Hands On</a></li>
+    <li><a href="#deployment-modes">Deployment Modes</a></li>
+    <li><a href="#deployment-hands-on">Deployment Modes — Hands On</a></li>
+    <li><a href="#cli">Beanstalk CLI & Deployment Process</a></li>
+    <li><a href="#lifecycle-policy">Lifecycle Policy</a></li>
+    <li><a href="#extensions">Beanstalk Extensions</a></li>
+    <li><a href="#cloudformation">Beanstalk & CloudFormation</a></li>
+    <li><a href="#cloning">Beanstalk Cloning</a></li>
+    <li><a href="#migrations">Beanstalk Migrations</a></li>
+    <li><a href="#cleanup">Beanstalk Cleanup</a></li>
+    <li><a href="#cheatsheet">Cheat Sheet</a></li>
+  </ol>
+</nav>
+
+<!-- 1. OVERVIEW -->
+<section class="card" id="overview">
+  <h2><span class="badge">1</span> Elastic Beanstalk Overview</h2>
+
+  <p>This is one of the trickier exam sections, but a genuinely useful one: <strong>Elastic Beanstalk</strong> lets you deploy applications easily, quickly, and safely — instead of manually wiring up load balancers, auto scaling groups, and databases every single time.</p>
+
+  <p>Most web apps end up with the same shape: a load balancer → an Auto Scaling Group spread across AZs → EC2 instances → maybe an RDS database and ElastiCache in the back. Recreating that by hand for every app is a pain. Beanstalk gives you a <strong>developer-centric</strong> view: you focus on your code, and Beanstalk provisions and manages EC2, ASG, ELB, RDS, capacity, scaling, health monitoring, and instance configuration for you — while you still retain full control over each component's configuration if you need it.</p>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    Beanstalk itself is <strong>free</strong> — you only pay for the underlying resources it creates (EC2, ELB, RDS, etc.).
+  </div>
+
+  <h3>Core concepts</h3>
+  <table>
+    <tr><th>Term</th><th>Meaning</th></tr>
+    <tr><td>Application</td><td>A collection of Beanstalk components — environments, versions, configurations</td></tr>
+    <tr><td>Application Version</td><td>One iteration of your code (v1, v2, v3...)</td></tr>
+    <tr><td>Environment</td><td>A collection of resources running one specific application version at a time</td></tr>
+  </table>
+
+  <p>Typical flow: create an application → upload a version → launch an environment → manage its lifecycle → upload new versions and redeploy to update.</p>
+
+  <p>Beanstalk supports many platforms: Go, Java SE, Java + Tomcat, .NET Core (Linux) / .NET (Windows), Node.js, PHP, Python, Ruby, Packer Builder, and Docker (single or multi-container, or pre-configured).</p>
+
+  <h3>Web tier vs Worker tier</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 780 190" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#6b6a66"/>
+        </marker>
+      </defs>
+      <rect class="svg-box" x="20" y="20" width="340" height="150" rx="8"/>
+      <text class="svg-text" x="190" y="42" text-anchor="middle" font-weight="600">Web Server Tier</text>
+      <rect class="svg-box" x="40" y="55" width="100" height="35" rx="5"/><text class="svg-text" x="90" y="77" text-anchor="middle" font-size="9">Users</text>
+      <path class="svg-arrow" d="M140,72 L210,72"/>
+      <rect class="svg-box-accent" x="210" y="55" width="130" height="35" rx="5"/><text class="svg-text" x="275" y="77" text-anchor="middle" font-size="9">Load Balancer</text>
+      <path class="svg-arrow" d="M275,90 L275,110"/>
+      <rect class="svg-box-accent" x="60" y="115" width="270" height="40" rx="5"/><text class="svg-text" x="195" y="140" text-anchor="middle" font-size="9">Auto Scaling Group: EC2 web servers</text>
+
+      <rect class="svg-box" x="410" y="20" width="350" height="150" rx="8"/>
+      <text class="svg-text" x="585" y="42" text-anchor="middle" font-weight="600">Worker Tier</text>
+      <rect class="svg-box" x="430" y="55" width="100" height="35" rx="5"/><text class="svg-text" x="480" y="77" text-anchor="middle" font-size="9">App</text>
+      <path class="svg-arrow" d="M530,72 L600,72"/>
+      <rect class="svg-box-accent" x="600" y="55" width="130" height="35" rx="5"/><text class="svg-text" x="665" y="77" text-anchor="middle" font-size="9">SQS Queue</text>
+      <path class="svg-arrow" d="M665,90 L665,110"/>
+      <rect class="svg-box-accent" x="450" y="115" width="270" height="40" rx="5"/><text class="svg-text" x="585" y="140" text-anchor="middle" font-size="9">Auto Scaling Group: EC2 workers (poll SQS)</text>
+    </svg>
+  </div>
+  <p class="caption">Web tier: a load balancer sends user traffic straight to EC2 instances. Worker tier: EC2 instances instead pull messages off an SQS queue and scale based on queue length — the two can be connected by having the web tier push messages the worker tier consumes.</p>
+
+  <h3>Deployment modes</h3>
+  <table>
+    <tr><th>Mode</th><th>Best for</th></tr>
+    <tr><td>Single instance</td><td>Development — one EC2 instance with an Elastic IP (can include an RDS DB)</td></tr>
+    <tr><td>High availability (load balanced)</td><td>Production — load balancer + ASG across multiple AZs, optionally a Multi-AZ RDS database</td></tr>
+  </table>
+</section>
+
+<!-- 2. FIRST ENVIRONMENT -->
+<section class="card" id="first-env">
+  <h2><span class="badge">2</span> First Environment — Hands On</h2>
+
+  <ul>
+    <li>Choose <strong>Web server environment</strong> (vs Worker environment) to run a website.</li>
+    <li>Pick a managed platform (e.g. Node.js) and a sample application to start from.</li>
+    <li><strong>Presets</strong>: Single instance (free-tier eligible), High availability, or Custom configuration. Start with <strong>Single instance</strong> to keep things simple.</li>
+    <li>Configure <strong>service access</strong>: create a service role (for the Beanstalk environment itself) and an <strong>EC2 instance profile</strong> (for Beanstalk Compute) if they don't already exist.</li>
+  </ul>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    Behind the scenes, Beanstalk creates and manages a <strong>CloudFormation</strong> stack for you — you can watch it in the CloudFormation console and even visualize it in Application Composer (security groups, launch configuration, Elastic IP, etc. all show up there).
+  </div>
+
+  <p>Once launched, you get a domain name — visiting it shows your running sample app ("Congratulations, you are now running Elastic Beanstalk"). From the environment you also get tabs for <strong>Health</strong>, <strong>Logs</strong>, <strong>Monitoring</strong>, <strong>Alarms</strong>, <strong>Managed updates</strong>, and <strong>Configuration</strong> (to view/modify everything Beanstalk set up).</p>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Beanstalk is centered around <strong>code + environments</strong>; CloudFormation (which Beanstalk uses internally) is the more general-purpose service for deploying arbitrary infrastructure stacks.
+  </div>
+</section>
+
+<!-- 3. SECOND ENVIRONMENT -->
+<section class="card" id="second-env">
+  <h2><span class="badge">3</span> Second Environment — Hands On</h2>
+
+  <p>Creating a second environment (e.g. "prod") using the <strong>High Availability</strong> preset exposes a lot more configuration up front:</p>
+  <ul>
+    <li><strong>Networking</strong> — which VPC/subnets to launch into (all subnets, for high availability); no public IPs needed since traffic comes through a load balancer.</li>
+    <li><strong>Database</strong> — optional; if added, its lifecycle is tied to the environment (deleting the environment deletes the DB, unless you snapshot first).</li>
+    <li><strong>Instances</strong> — root volume, security groups.</li>
+    <li><strong>Auto Scaling Group</strong> — min/max capacity (e.g. 1–4), fleet composition (On-Demand/Spot), instance types, scaling triggers.</li>
+    <li><strong>Load balancer</strong> — public/private, subnets, ALB vs NLB, dedicated vs shared across environments (to save cost), listeners.</li>
+    <li><strong>Health reporting, rolling updates, platform software</strong> (X-Ray, CloudWatch log streaming) — all configurable here too.</li>
+  </ul>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    Once launched, this creates a real load balancer across multiple AZs, a target group with healthy EC2 instances, correctly configured security groups (LB allows port 80 from anywhere; instances allow port 80 only from the LB's security group), and an ASG with dynamic scaling policies — all automatically, from just uploading code and choosing "High Availability."
+  </div>
+</section>
+
+<!-- 4. DEPLOYMENT MODES -->
+<section class="card" id="deployment-modes">
+  <h2><span class="badge">4</span> Deployment Modes</h2>
+
+  <p>When updating an app version, Beanstalk offers several deployment policies, each trading off speed, downtime, and cost differently.</p>
+
+  <table>
+    <tr><th>Mode</th><th>Downtime?</th><th>Extra cost?</th><th>Notes</th></tr>
+    <tr><td>All at once</td><td>Yes</td><td>No</td><td>Fastest — updates every instance simultaneously</td></tr>
+    <tr><td>Rolling</td><td>No (runs below capacity briefly)</td><td>No</td><td>Updates one "bucket" of instances at a time</td></tr>
+    <tr><td>Rolling with additional batch</td><td>No</td><td>Small</td><td>Adds extra instances first so capacity never drops</td></tr>
+    <tr><td>Immutable</td><td>No</td><td>Higher (doubles capacity temporarily)</td><td>New version deployed to a brand-new temporary ASG; very safe/fast rollback</td></tr>
+    <tr><td>Blue/Green</td><td>No</td><td>Higher (whole new environment)</td><td>Not a built-in Beanstalk feature — manual, using a new environment + Route 53 weighted routing</td></tr>
+    <tr><td>Traffic splitting (canary)</td><td>No</td><td>Higher (temporarily doubles capacity)</td><td>Automated canary testing with a temporary ASG</td></tr>
+  </table>
+
+  <h3>All at once vs Rolling</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 780 170" xmlns="http://www.w3.org/2000/svg">
+      <text class="svg-text" x="20" y="20" font-weight="600" font-size="12">All at once</text>
+      <rect class="svg-box-accent" x="20" y="30" width="50" height="30" rx="4"/>
+      <rect class="svg-box-accent" x="80" y="30" width="50" height="30" rx="4"/>
+      <rect class="svg-box-accent" x="140" y="30" width="50" height="30" rx="4"/>
+      <rect class="svg-box-accent" x="200" y="30" width="50" height="30" rx="4"/>
+      <text class="svg-label" x="135" y="75" text-anchor="middle" font-size="9">v1 (all instances)</text>
+      <path class="svg-arrow" d="M135,85 L135,105"/>
+      <rect class="svg-box-gray" x="20" y="110" width="230" height="30" rx="4"/>
+      <text class="svg-label" x="135" y="130" text-anchor="middle" font-size="9">all down at once (downtime)</text>
+
+      <text class="svg-text" x="420" y="20" font-weight="600" font-size="12">Rolling (bucket = 2)</text>
+      <rect class="svg-box-gray" x="420" y="30" width="50" height="30" rx="4"/>
+      <rect class="svg-box-gray" x="480" y="30" width="50" height="30" rx="4"/>
+      <rect class="svg-box-accent" x="540" y="30" width="50" height="30" rx="4"/>
+      <rect class="svg-box-accent" x="600" y="30" width="50" height="30" rx="4"/>
+      <text class="svg-label" x="540" y="75" text-anchor="middle" font-size="9">bucket 1 updates while bucket 2 keeps serving v1</text>
+      <path class="svg-arrow" d="M540,85 L540,105"/>
+      <rect class="svg-box-accent" x="420" y="110" width="230" height="30" rx="4"/>
+      <text class="svg-label" x="535" y="130" text-anchor="middle" font-size="9">all instances now on v2, no downtime</text>
+    </svg>
+  </div>
+  <p class="caption">All-at-once takes everything down together (fast, but downtime); rolling updates one bucket at a time so some capacity always stays on the old version.</p>
+
+  <h3>Immutable deployments</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="20" width="200" height="45" rx="6"/>
+      <text class="svg-text" x="120" y="47" text-anchor="middle" font-size="10">Current ASG: 3× v1</text>
+      <path class="svg-arrow" d="M220,42 L340,42"/>
+      <rect class="svg-box-accent" x="340" y="20" width="200" height="45" rx="6"/>
+      <text class="svg-text" x="440" y="47" text-anchor="middle" font-size="10">Temp ASG: 3× v2 (health checked)</text>
+      <path class="svg-arrow" d="M440,65 L440,90"/>
+      <rect class="svg-box-accent" x="20" y="95" width="520" height="45" rx="6"/>
+      <text class="svg-text" x="280" y="122" text-anchor="middle" font-size="10">Merged into current ASG (6 instances) → old v1 terminated → temp ASG removed</text>
+    </svg>
+  </div>
+  <p class="caption">Immutable: new instances are validated in a separate temporary ASG first, then merged into the main ASG once healthy, and only then are the old instances removed — very safe, quick rollback (just terminate the temp ASG), but temporarily doubles capacity/cost.</p>
+
+  <h3>Blue/Green & Traffic Splitting (Canary)</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="55" width="130" height="45" rx="6"/>
+      <text class="svg-text" x="85" y="82" text-anchor="middle" font-size="10">Route 53 / ALB</text>
+      <path class="svg-arrow" d="M150,65 L280,35"/>
+      <text class="svg-label" x="215" y="30" text-anchor="middle" font-size="9">90%</text>
+      <rect class="svg-box-accent" x="280" y="15" width="180" height="40" rx="6"/>
+      <text class="svg-text" x="370" y="40" text-anchor="middle" font-size="10">Blue env / Main ASG (v1)</text>
+      <path class="svg-arrow" d="M150,90 L280,110"/>
+      <text class="svg-label" x="215" y="120" text-anchor="middle" font-size="9">10%</text>
+      <rect class="svg-box-accent" x="280" y="95" width="180" height="40" rx="6"/>
+      <text class="svg-text" x="370" y="120" text-anchor="middle" font-size="10">Green env / Temp ASG (v2)</text>
+      <text class="svg-label" x="620" y="45" text-anchor="middle" font-size="9">Blue/Green = new env, manual</text>
+      <text class="svg-label" x="620" y="65" text-anchor="middle" font-size="9">Route 53 CNAME swap</text>
+      <text class="svg-label" x="620" y="105" text-anchor="middle" font-size="9">Traffic splitting = temp ASG,</text>
+      <text class="svg-label" x="620" y="125" text-anchor="middle" font-size="9">automated canary + rollback</text>
+    </svg>
+  </div>
+  <p class="caption">Both send a small slice of traffic to the new version first — Blue/Green does it across two full separate environments (manual, via DNS); Traffic Splitting (canary) does it within one environment via a temporary ASG, with automated health monitoring and rollback.</p>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    "Canary testing" on the exam = <strong>traffic splitting</strong>. It's largely an automated improvement on the manual blue/green technique — same idea (test with a slice of traffic first), but Beanstalk handles the monitoring and rollback for you.
+  </div>
+</section>
+
+<!-- 5. DEPLOYMENT HANDS ON -->
+<section class="card" id="deployment-hands-on">
+  <h2><span class="badge">5</span> Deployment Modes — Hands On</h2>
+
+  <ul>
+    <li>Deployment policy is set under <strong>Configuration → Updates, monitoring, and logging → Rolling updates and deployments</strong>.</li>
+    <li>For <strong>Rolling</strong> / <strong>Rolling with additional batch</strong>, you set a batch size — either fixed (e.g. 1 instance) or a percentage (e.g. 30%).</li>
+    <li>App-specific customization can live in a <strong>.ebextensions</strong> directory in your source zip (covered later) — e.g. changing a background color via config.</li>
+  </ul>
+
+  <h3>Watching an immutable deployment happen</h3>
+  <ol>
+    <li>Beanstalk launches <strong>one instance</strong> first on a temporary ASG to verify health.</li>
+    <li>Once healthy, it launches the rest of the new instances, attaches them to the load balancer.</li>
+    <li>New instances are detached from the temporary ASG and merged into the permanent ASG.</li>
+    <li>Old instances and the temporary ASG are terminated — deployment complete.</li>
+  </ol>
+
+  <h3>Environment swapping</h3>
+  <p><strong>Swap environment domains</strong> exchanges the DNS/URL mapping between two environments (e.g. prod ↔ dev) — handy after cloning an environment, testing a new version there thoroughly, then promoting it to be the "real" prod without redeploying anything. DNS propagation can take a few minutes.</p>
+</section>
+
+<!-- 6. CLI -->
+<section class="card" id="cli">
+  <h2><span class="badge">6</span> Beanstalk CLI & Deployment Process</h2>
+
+  <p>The <strong>EB CLI</strong> is a dedicated command-line tool for working with Beanstalk (<code>eb create</code>, <code>eb status</code>, <code>eb health</code>, <code>eb events</code>, <code>eb logs</code>, <code>eb open</code>, <code>eb deploy</code>, <code>eb config</code>, <code>eb terminate</code>, and more) — useful for automating deployment pipelines.</p>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    Not required for the Developer exam — it matters more for the DevOps exam. No hands-on for it in this course, just know it exists.
+  </div>
+
+  <h3>Deployment process, regardless of tool</h3>
+  <ol>
+    <li>Describe your dependencies (e.g. <code>requirements.txt</code> for Python, <code>package.json</code> for Node.js).</li>
+    <li>Package your code + dependency file as a <strong>zip</strong>.</li>
+    <li>Upload the zip to Beanstalk — this creates a new application version and gets stored in an <strong>Amazon S3</strong> bundle behind the scenes.</li>
+    <li>Deploy that version via the console or CLI — Beanstalk pushes the zip to each EC2 instance, resolves dependencies, and starts the app.</li>
+  </ol>
+</section>
+
+<!-- 7. LIFECYCLE POLICY -->
+<section class="card" id="lifecycle-policy">
+  <h2><span class="badge">7</span> Lifecycle Policy</h2>
+
+  <div class="callout warning">
+    <strong class="tag">Important</strong>
+    Beanstalk can store at most <strong>1,000 application versions</strong> per account. If you never clean up old ones, you'll eventually be unable to deploy new versions.
+  </div>
+
+  <p>A <strong>lifecycle policy</strong> automatically phases out old versions, based on either:</p>
+  <ul>
+    <li><strong>Age</strong> — e.g. only keep versions from the last 180 days.</li>
+    <li><strong>Count</strong> — e.g. keep a maximum of 200 versions.</li>
+  </ul>
+
+  <ul>
+    <li>Versions <strong>currently in use</strong> by any environment are never deleted, regardless of the policy.</li>
+    <li>You can choose whether to also delete the source bundle from S3, or <strong>retain</strong> it (useful if you might want to restore an old version later).</li>
+  </ul>
+
+  <p>All application version source bundles live in an S3 bucket that Beanstalk creates automatically for your applications.</p>
+</section>
+
+<!-- 8. EXTENSIONS -->
+<section class="card" id="extensions">
+  <h2><span class="badge">8</span> Beanstalk Extensions</h2>
+
+  <p><strong>.ebextensions</strong> let you configure things via code instead of the console UI — anything you can set in the UI (and more) can be defined in config files bundled with your source code.</p>
+
+  <ul>
+    <li>Files must live in a <code>.ebextensions/</code> directory at the root of your source bundle.</li>
+    <li>Written in YAML or JSON, but the file extension must always be <code>.config</code> (e.g. <code>logging.config</code>).</li>
+    <li>Modify default settings via <code>option_settings</code>, or add extra AWS resources (RDS, ElastiCache, DynamoDB, etc.) that aren't directly configurable through the console.</li>
+  </ul>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    Any resource created via .ebextensions is tied to the environment's lifecycle — if you delete the Beanstalk environment, that resource (e.g. an ElastiCache cluster) gets deleted too.
+  </div>
+
+  <h3>Example: setting environment variables via .ebextensions</h3>
+  <p>A file like <code>.ebextensions/environment-variables.config</code> can define <code>option_settings</code> under <code>aws:elasticbeanstalk:application:environment</code> to set variables like <code>DB_URL</code> or <code>DB_USER</code> — useful for pointing your app at an external RDS database without hardcoding connection info. After deploying, these show up under the environment's <strong>Configuration → Environment properties</strong>, exactly as if you'd typed them into the console.</p>
+</section>
+
+<!-- 9. CLOUDFORMATION -->
+<section class="card" id="cloudformation">
+  <h2><span class="badge">9</span> Beanstalk & CloudFormation</h2>
+
+  <p>Under the hood, every Beanstalk environment is provisioned via a <strong>CloudFormation</strong> stack — that's how it can reliably create and coordinate multiple AWS resources as one unit.</p>
+
+  <ul>
+    <li>Each environment gets its own stack (e.g. one for "dev," one for "prod") — you can inspect these directly in the CloudFormation console and see every resource created: ASG, launch configuration, Elastic IP, security groups, scaling policies, CloudWatch alarms, load balancer, listener rules, target groups, etc.</li>
+  </ul>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    Because .ebextensions can include raw CloudFormation resources, you're not limited to what the Beanstalk console UI exposes — you can provision virtually anything (ElastiCache, DynamoDB, S3 buckets, etc.) as part of your environment.
+  </div>
+</section>
+
+<!-- 10. CLONING -->
+<section class="card" id="cloning">
+  <h2><span class="badge">10</span> Beanstalk Cloning</h2>
+
+  <p><strong>Clone Environment</strong> creates a brand-new environment with the <strong>exact same configuration</strong> as an existing one — load balancer type/config, RDS database type (though not its data), environment variables, etc.</p>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    Great for spinning up a test copy of production with identical settings — deploy and test a new version there, then use environment swapping to promote it once you're happy.
+  </div>
+
+  <p>After cloning, you're free to customize the new environment's settings via its Configuration tab.</p>
+</section>
+
+<!-- 11. MIGRATIONS -->
+<section class="card" id="migrations">
+  <h2><span class="badge">11</span> Beanstalk Migrations</h2>
+
+  <h3>Changing load balancer type</h3>
+  <div class="callout warning">
+    <strong class="tag">Important</strong>
+    Once an environment is created, you <strong>cannot change its load balancer type</strong> (e.g. Classic → Application), only its configuration. Cloning doesn't help here either, since cloning copies the same LB type.
+  </div>
+
+  <p>To migrate load balancer types:</p>
+  <ol>
+    <li>Manually create a new environment with the same configuration, but the new load balancer type.</li>
+    <li>Deploy your application to the new environment.</li>
+    <li>Shift traffic over via a CNAME swap or Route 53 DNS update.</li>
+  </ol>
+
+  <h3>Decoupling RDS from a Beanstalk environment</h3>
+  <p>RDS provisioned directly inside a Beanstalk environment is fine for dev/test, but risky for production — its lifecycle is tied to the environment's. Deleting the environment deletes the database too. The fix: separate the database from the environment.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="10" y="55" width="130" height="40" rx="5"/><text class="svg-text" x="75" y="79" text-anchor="middle" font-size="9">1. Snapshot RDS</text>
+      <path class="svg-arrow" d="M140,75 L170,75"/>
+      <rect class="svg-box" x="170" y="55" width="130" height="40" rx="5"/><text class="svg-text" x="235" y="79" text-anchor="middle" font-size="9">2. Enable deletion protection</text>
+      <path class="svg-arrow" d="M300,75 L330,75"/>
+      <rect class="svg-box" x="330" y="55" width="130" height="40" rx="5"/><text class="svg-text" x="395" y="79" text-anchor="middle" font-size="9">3. New env, no RDS, points to existing DB</text>
+      <path class="svg-arrow" d="M460,75 L490,75"/>
+      <rect class="svg-box" x="490" y="55" width="130" height="40" rx="5"/><text class="svg-text" x="555" y="79" text-anchor="middle" font-size="9">4. CNAME swap</text>
+      <path class="svg-arrow" d="M620,75 L650,75"/>
+      <rect class="svg-box-accent" x="650" y="55" width="120" height="40" rx="5"/><text class="svg-text" x="710" y="79" text-anchor="middle" font-size="9">5. Terminate old env</text>
+    </svg>
+  </div>
+  <p class="caption">Decoupling RDS: snapshot as a safety net, protect the DB from deletion, stand up a new environment pointing at the same existing database via a connection string, swap traffic over, then remove the old environment.</p>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    Because RDS deletion protection is enabled, terminating the old environment will leave its CloudFormation stack in a <strong>Delete Failed</strong> state (it can't delete the protected RDS instance) — you need to go into CloudFormation and manually delete that stack afterward.
+  </div>
+</section>
+
+<!-- 12. CLEANUP -->
+<section class="card" id="cleanup">
+  <h2><span class="badge">12</span> Beanstalk Cleanup</h2>
+
+  <p>To avoid ongoing cost from running environments: go to the <strong>application</strong> level, choose <strong>Actions → Delete application</strong>, and confirm by typing the name.</p>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    Deleting the application deletes all its environments, which in turn tells CloudFormation to tear down every resource it created for them (load balancers, ASGs, security groups, etc.) — one action cleans up everything.
+  </div>
+</section>
+
+<!-- CHEAT SHEET -->
+<section class="card cheatsheet" id="cheatsheet">
+  <h2><span class="badge">✓</span> Cheat Sheet</h2>
+
+  <h3>Key facts to remember</h3>
+  <ul>
+    <li>Beanstalk = developer-centric PaaS: you supply code, it provisions EC2/ASG/ELB/RDS via CloudFormation under the hood. The service itself is free — you pay for what it creates.</li>
+    <li>Two tiers: <strong>Web server</strong> (load balancer → EC2) and <strong>Worker</strong> (SQS queue → EC2 workers, scales on queue depth).</li>
+    <li>Two deployment presets: <strong>Single instance</strong> (dev) vs <strong>High availability</strong> (load balanced, prod).</li>
+    <li>Deployment modes, in order of increasing cost/safety: All at once → Rolling → Rolling with additional batch → Immutable → Blue/Green (manual) / Traffic Splitting (automated canary).</li>
+    <li>"Canary testing" on the exam = <strong>traffic splitting</strong>.</li>
+    <li>Max 1,000 application versions per account — use a <strong>lifecycle policy</strong> (by age or count) to clean up unused ones; in-use versions are never deleted.</li>
+    <li><strong>.ebextensions</strong> (in a <code>.ebextensions/</code> folder, files ending in <code>.config</code>, YAML/JSON) let you configure anything via code, including raw CloudFormation resources.</li>
+    <li>Load balancer <strong>type</strong> cannot be changed after environment creation — only its configuration. Changing type requires a new environment + traffic cutover.</li>
+    <li>RDS inside a Beanstalk environment is tied to that environment's lifecycle — decouple it for production by snapshotting, enabling deletion protection, and pointing a new environment at the existing DB via a connection string.</li>
+    <li><strong>Cloning</strong> copies an environment's exact configuration (not RDS data) into a new environment — handy for spinning up test copies of prod.</li>
+    <li><strong>Swap environment domains</strong> exchanges DNS between two environments — the mechanism behind promoting a tested clone to become the new prod.</li>
+  </ul>
+
+  <h3>Decision guide</h3>
+  <table>
+    <tr><th>Need</th><th>Use</th></tr>
+    <tr><td>Quick dev iteration, don't care about downtime</td><td>All at once</td></tr>
+    <tr><td>No downtime, minimal extra cost</td><td>Rolling</td></tr>
+    <tr><td>No downtime, maintain full capacity throughout</td><td>Rolling with additional batch</td></tr>
+    <tr><td>Production-safe, fast rollback, willing to pay more</td><td>Immutable</td></tr>
+    <tr><td>Test a new version extensively before cutover</td><td>Blue/Green (clone + new env + DNS swap)</td></tr>
+    <tr><td>Automated canary testing with auto-rollback</td><td>Traffic splitting</td></tr>
+    <tr><td>Configure something the console UI doesn't expose</td><td>.ebextensions (+ CloudFormation resources)</td></tr>
+    <tr><td>Production database that must outlive the environment</td><td>Decouple RDS from Beanstalk</td></tr>
+  </table>
+
+  <h3>Mental model</h3>
+  <p>Elastic Beanstalk is a thin, developer-friendly layer over CloudFormation: you hand it code and a few high-level choices (platform, single-instance vs. high-availability, deployment mode), and it assembles the same load-balancer-plus-auto-scaling-group architecture you'd otherwise build by hand — while still letting you drop down into .ebextensions and CloudFormation whenever you need something the console doesn't expose. Everything else in this section — deployment modes, lifecycle policies, cloning, migrations — is really about answering one question safely: how do I roll out a new version (or a new architecture) without breaking what's already running for users.</p>
+</section>
+
+<a class="back-to-top" href="#top">↑ Back to top</a>
+
+</div>
+<script>
+(function () {
+  const cards = document.querySelectorAll('section.card, section.lecture, div.card');
+  cards.forEach((card) => {
+    if (card.querySelector(':scope > .study-lens')) return;
+    if (card.classList.contains('cheatsheet')) return;
+    const id = (card.id || '').toLowerCase();
+    if (id.includes('summary') || id === 'cheatsheet') return;
+
+    const heading = card.querySelector(':scope > h2, :scope > h3');
+    if (!heading) return;
+
+    const rawTitle = heading.textContent.replace(/^[0-9✓#]+\s*/, '').trim();
+    if (!rawTitle) return;
+
+    const safeTitle = escapeHtml(rawTitle);
+    const lens = document.createElement('div');
+    lens.className = 'study-lens';
+    lens.innerHTML = [
+      '<div class="lens-label">Study focus</div>',
+      '<p><strong>Target:</strong> finish this topic by being able to explain <em>' + safeTitle + '</em> in plain words, then connect it to one real AWS use case.</p>',
+      '<ul>',
+      '<li><strong>Before reading:</strong> predict what problem this AWS feature solves.</li>',
+      '<li><strong>While reading:</strong> mark the service limits, pricing/security clues, and any exam trap words.</li>',
+      '<li><strong>After reading:</strong> say when you would use it, when you would avoid it, and which AWS service it is often confused with.</li>',
+      '</ul>',
+      '<details class="recall-drill">',
+      '<summary>Active recall check</summary>',
+      '<ol>',
+      '<li>What is the one-sentence purpose of ' + safeTitle + '?</li>',
+      '<li>Which configuration choices or limits matter most here?</li>',
+      '<li>What real system would need this?</li>',
+      '<li>What mistake would a beginner make with this topic?</li>',
+      '</ol>',
+      '</details>'
+    ].join('');
+    heading.insertAdjacentElement('afterend', lens);
+  });
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
+  }
+}());
+</script>
+
+<script>
+(function () {
+  if (document.querySelector('.tips-trigger')) return;
+
+  const glossary = [
+    ['API Gateway', 'Managed front door for APIs. It receives client requests, applies features like auth/throttling, then sends traffic to Lambda, HTTP backends, or AWS services.'],
+    ['Application Load Balancer', 'Layer 7 load balancer for HTTP/HTTPS traffic. Often compared with API Gateway when exposing web apps or Lambda.'],
+    ['Auto Scaling Group', 'A group that keeps the desired number of EC2 instances running and can scale capacity based on policies.'],
+    ['Availability Zone', 'One isolated data center zone inside a Region. Multi-AZ designs survive failure of one zone.'],
+    ['CloudFormation', 'AWS infrastructure-as-code service. Templates describe resources; stacks create and update them.'],
+    ['CloudFront', 'AWS content delivery network. It caches content at edge locations close to users.'],
+    ['CloudWatch', 'AWS monitoring service for metrics, logs, alarms, and events from AWS resources.'],
+    ['Cognito', 'AWS identity service for app users. User Pools handle sign-in; Identity Pools give temporary AWS credentials.'],
+    ['CodeDeploy', 'Deployment service that rolls new application versions to EC2, Lambda, ECS, or on-prem servers.'],
+    ['CodePipeline', 'CI/CD workflow service that connects source, build, test, and deploy stages.'],
+    ['DynamoDB', 'Serverless NoSQL key-value/document database. Design starts with access patterns, partition keys, and sort keys.'],
+    ['EventBridge', 'Event bus for routing events between AWS services, apps, and scheduled rules.'],
+    ['Internet Gateway', 'VPC component that lets public subnet resources communicate with the internet.'],
+    ['Lambda', 'Serverless compute for short-running functions triggered by events or requests.'],
+    ['NAT Gateway', 'Lets private subnet resources start outbound internet connections without being directly reachable from the internet.'],
+    ['OpenSearch', 'Search and analytics engine used for full-text search, log analytics, and dashboards.'],
+    ['Parameter Store', 'Systems Manager feature for storing config values and secrets; can integrate with KMS.'],
+    ['Private CA', 'Private certificate authority for internal TLS certificates, not public internet trust.'],
+    ['Route 53', 'AWS DNS service. It maps names like example.com to targets such as load balancers or IPs.'],
+    ['Security Group', 'Stateful firewall attached to ENIs/resources. Return traffic is automatically allowed.'],
+    ['Step Functions', 'Workflow service for orchestrating Lambda functions and AWS services with retries, branching, and state.'],
+    ['VPC Endpoint', 'Private connection from a VPC to supported AWS services without public internet routing.'],
+    ['access key', 'Long-term credential pair for programmatic access: Access Key ID plus Secret Access Key. Treat it like a password.'],
+    ['alias record', 'Route 53-specific DNS record that can point to AWS resources like load balancers and CloudFront distributions.'],
+    ['asynchronous', 'Caller sends work and does not wait for the final result. Failures usually need retries, DLQs, or destinations.'],
+    ['cache', 'Stored copy of data used to reduce latency, repeated work, or backend load.'],
+    ['canary', 'Gradual release pattern where a small percentage of traffic receives the new version first.'],
+    ['CIDR', 'IP range notation such as 10.0.0.0/16. Smaller suffix number means a larger network range.'],
+    ['CLI', 'Command Line Interface. For AWS, this means running AWS operations from terminal commands.'],
+    ['cold start', 'Extra startup latency when Lambda has to create a fresh execution environment.'],
+    ['concurrency', 'How many executions run at the same time. In Lambda, it directly affects scaling and throttling.'],
+    ['CORS', 'Browser security rule controlling whether frontend code from one origin can call another origin.'],
+    ['DNS', 'Name system that translates human-friendly domains into routing targets such as IP addresses.'],
+    ['DLQ', 'Dead-letter queue. Stores failed messages/events so you can inspect or replay them later.'],
+    ['edge location', 'AWS site closer to users than a Region, mainly used by CloudFront and edge compute.'],
+    ['encryption at rest', 'Data is encrypted while stored on disk, object storage, database storage, or backups.'],
+    ['encryption in transit', 'Data is encrypted while moving over the network, usually with TLS/HTTPS.'],
+    ['environment variables', 'Configuration values injected into a runtime without changing code. Secrets need extra care.'],
+    ['GSI', 'Global Secondary Index in DynamoDB. It supports alternate query patterns and has its own partition/sort key.'],
+    ['health check', 'Automated test that decides whether a target is healthy enough to receive traffic.'],
+    ['hosted zone', 'Route 53 container for DNS records for a domain. Public zones answer internet DNS queries.'],
+    ['IAM', 'Identity and Access Management. It controls who can do what in AWS.'],
+    ['idempotency', 'Design property where repeating the same request does not create unintended duplicate effects.'],
+    ['IOPS', 'Input/output operations per second. Common storage performance number for disks and databases.'],
+    ['JSON', 'Structured text format used heavily by AWS policies, templates, and API responses.'],
+    ['KMS', 'Key Management Service. It creates and controls encryption keys used by AWS services and applications.'],
+    ['least privilege', 'Security principle: grant only the permissions needed, nothing extra.'],
+    ['LSI', 'Local Secondary Index in DynamoDB. It shares the table partition key but uses a different sort key.'],
+    ['MFA', 'Multi-factor authentication. Login requires password plus a second factor such as an authenticator app.'],
+    ['origin', 'The backend source CloudFront fetches content from, such as S3, ALB, or a custom server.'],
+    ['partition key', 'Primary DynamoDB key component that determines item distribution and query access pattern.'],
+    ['policy', 'Permission document that allows or denies actions on resources, often written in JSON.'],
+    ['Region', 'Geographic AWS area containing multiple Availability Zones, such as us-east-1.'],
+    ['replication', 'Copying data to another place for durability, latency, compliance, or disaster recovery.'],
+    ['REST', 'API style based around resources, HTTP methods, and stateless requests.'],
+    ['role', 'Temporary AWS identity that can be assumed by users, services, or external accounts.'],
+    ['root account', 'The original AWS account identity with full power. Use it rarely and protect it strongly.'],
+    ['SDK', 'Software Development Kit. Language-specific library for calling AWS APIs from code.'],
+    ['sort key', 'Optional DynamoDB key component that orders items within the same partition key.'],
+    ['subnet', 'A slice of a VPC IP range placed inside one Availability Zone.'],
+    ['synchronous', 'Caller waits for the result immediately. Useful for request/response workflows.'],
+    ['throughput', 'Amount of data processed per second. Different from IOPS, which counts operations.'],
+    ['TLS', 'Encryption protocol behind HTTPS. Used to protect data in transit.'],
+    ['TTL', 'Time to live. In DNS it controls cache duration; in DynamoDB it can expire old items.'],
+    ['VPC', 'Virtual Private Cloud. Your isolated network boundary inside AWS.'],
+    ['WebSocket', 'Persistent two-way connection useful for real-time apps like chat or live updates.']
+  ];
+
+  const pageText = document.body.innerText.replace(/\s+/g, ' ');
+  const found = glossary.filter(([term]) => new RegExp('(^|[^A-Za-z0-9])' + escapeRegExp(term) + '([^A-Za-z0-9]|$)', 'i').test(pageText));
+  if (!found.length) return;
+
+  const button = document.createElement('button');
+  button.className = 'tips-trigger';
+  button.type = 'button';
+  button.setAttribute('aria-haspopup', 'dialog');
+  button.setAttribute('aria-expanded', 'false');
+  button.innerHTML = '<span class="tips-icon" aria-hidden="true">💡</span><span>Tips</span>';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'tips-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'tips-title');
+  overlay.innerHTML = [
+    '<div class="tips-panel">',
+    '<div class="tips-header">',
+    '<h2 id="tips-title">💡 Tips & assumed concepts</h2>',
+    '<button class="tips-close" type="button" aria-label="Close tips">Close</button>',
+    '</div>',
+    '<div class="tips-body">',
+    '<p class="tips-intro">These are prerequisite terms that this page uses without always stopping to define them. Read this first when a section feels abstract.</p>',
+    '<ul class="tips-list">' + found.map(([term, tip]) => '<li><strong>' + escapeHtml(term) + '</strong>' + escapeHtml(tip) + '</li>').join('') + '</ul>',
+    '</div>',
+    '</div>'
+  ].join('');
+
+  document.body.appendChild(button);
+  document.body.appendChild(overlay);
+
+  const closeButton = overlay.querySelector('.tips-close');
+  function openTips() {
+    overlay.classList.add('open');
+    button.setAttribute('aria-expanded', 'true');
+    closeButton.focus();
+  }
+  function closeTips() {
+    overlay.classList.remove('open');
+    button.setAttribute('aria-expanded', 'false');
+    button.focus();
+  }
+
+  button.addEventListener('click', openTips);
+  closeButton.addEventListener('click', closeTips);
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) closeTips();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && overlay.classList.contains('open')) closeTips();
+  });
+
+  function escapeRegExp(value) {
+    return value.replace(/[.*+?^$()|[\]\\]/g, '\\</body>').replace(/[{}]/g, '\\</body>');
+  }
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
+  }
+}());
+</script>
+
+</body>
+</html>

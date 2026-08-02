@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 19 — AWS Integration & Messaging: SQS, SNS & Kinesis — Notes</title>
+<style>
+  :root {
+    --accent: #e8830f;
+    --accent-dark: #c96a08;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --border: #e3e0da;
+    --text: #2b2a28;
+    --text-muted: #6b6a66;
+    --green: #2e7d32;
+    --green-bg: #eef7ee;
+    --red: #c0392b;
+    --red-bg: #fdecea;
+    --amber: #b8790a;
+    --amber-bg: #fff4e2;
+    --purple: #6a4fb3;
+    --purple-bg: #f3f0fb;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  header {
+    padding-bottom: 24px;
+    border-bottom: 3px solid var(--accent);
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 2rem;
+    color: var(--text);
+  }
+
+  header h1 span {
+    color: var(--accent);
+  }
+
+  header p.subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+  }
+
+  nav.toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 32px;
+  }
+
+  nav.toc h2 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  nav.toc ol {
+    margin: 0;
+    padding-left: 22px;
+    columns: 2;
+    column-gap: 24px;
+  }
+
+  nav.toc li {
+    margin-bottom: 6px;
+    break-inside: avoid;
+  }
+
+  nav.toc a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  nav.toc a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 24px;
+    scroll-margin-top: 20px;
+  }
+
+  .card h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 14px;
+    font-size: 1.3rem;
+    color: var(--text);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    color: var(--accent-dark);
+    font-size: 1.05rem;
+    margin: 20px 0 8px;
+  }
+
+  a { color: var(--accent-dark); }
+
+  code {
+    background: #f1eee7;
+    border: 1px solid #e6e2d8;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.92em;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    color: #7a4b00;
+  }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 0.94rem;
+  }
+
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f7f2ea;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) td {
+    background: #fcfbf9;
+  }
+
+  .callout {
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+
+  .callout strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .callout.tip {
+    background: var(--green-bg);
+    border-color: var(--green);
+  }
+  .callout.tip strong.tag { color: var(--green); }
+
+  .callout.warning {
+    background: var(--red-bg);
+    border-color: var(--red);
+  }
+  .callout.warning strong.tag { color: var(--red); }
+
+  .callout.key {
+    background: var(--amber-bg);
+    border-color: var(--amber);
+  }
+  .callout.key strong.tag { color: var(--amber); }
+
+  .analogy {
+    border: 1.5px dashed var(--purple);
+    background: var(--purple-bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+  .analogy strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--purple);
+  }
+
+  .diagram {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fdfcfa;
+    padding: 16px;
+    margin: 16px 0 6px;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  .diagram svg {
+    max-width: 100%;
+  }
+
+  .caption {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 4px 0 16px;
+    font-style: italic;
+  }
+
+  .cheatsheet {
+    border: 2px solid var(--accent);
+  }
+
+  .cheatsheet h2 { color: var(--accent-dark); }
+
+  .back-to-top {
+    display: block;
+    text-align: center;
+    margin-top: 36px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    text-decoration: none;
+  }
+  .back-to-top:hover { text-decoration: underline; }
+
+  .svg-box { fill: #fff; stroke: #c8917a; stroke-width: 1.5; }
+  .svg-box-accent { fill: #fff4e2; stroke: var(--accent); stroke-width: 1.5; }
+  .svg-box-gray { fill: #eeeeee; stroke: #b8b8b8; stroke-width: 1.5; }
+  .svg-text { font-family: -apple-system, sans-serif; font-size: 12px; fill: #2b2a28; }
+  .svg-label { font-family: -apple-system, sans-serif; font-size: 11px; fill: #6b6a66; }
+  .svg-arrow { stroke: #6b6a66; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+  /* Learning helpers: compact prompts added without changing lecture content */
+  .study-lens {
+    border: 1px solid #bfdbfe;
+    background: #eff6ff;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin: 12px 0 18px;
+    font-size: 0.95rem;
+  }
+
+  .study-lens .lens-label {
+    color: #1d4ed8;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .study-lens p { margin: 0 0 8px; }
+  .study-lens ul, .study-lens ol { margin: 8px 0 0; }
+  .study-lens li { margin-bottom: 5px; }
+
+  .recall-drill {
+    border-top: 1px solid #bfdbfe;
+    margin-top: 10px;
+    padding-top: 8px;
+  }
+
+  .recall-drill summary {
+    cursor: pointer;
+    color: #1d4ed8;
+    font-weight: 700;
+  }
+
+  .recall-drill summary:hover { text-decoration: underline; }
+
+
+
+  /* Tips popup for assumed AWS terms and prerequisite concepts */
+  .tips-trigger {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 999;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 14px;
+    border: 1px solid #f59e0b;
+    border-radius: 999px;
+    background: #fffbeb;
+    color: #92400e;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+  }
+
+  .tips-trigger:hover { background: #fef3c7; }
+
+  .tips-trigger .tips-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+
+  .tips-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(17, 24, 39, 0.46);
+  }
+
+  .tips-overlay.open { display: flex; }
+
+  .tips-panel {
+    width: min(760px, 100%);
+    max-height: min(76vh, 720px);
+    overflow: auto;
+    background: #ffffff;
+    color: var(--text, #1f2937);
+    border: 1px solid #fcd34d;
+    border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  }
+
+  .tips-header {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 18px;
+    background: #fffbeb;
+    border-bottom: 1px solid #fde68a;
+  }
+
+  .tips-header h2 {
+    margin: 0;
+    color: #92400e;
+    font-size: 1.1rem;
+  }
+
+  .tips-close {
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #92400e;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+    line-height: 1;
+    padding: 7px 10px;
+  }
+
+  .tips-body { padding: 16px 18px 18px; }
+
+  .tips-intro {
+    margin: 0 0 12px;
+    color: var(--muted, var(--text-muted, #6b7280));
+    font-size: 0.95rem;
+  }
+
+  .tips-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tips-list li {
+    margin: 0;
+    padding: 10px 12px;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    background: #fffdf5;
+  }
+
+  .tips-list strong {
+    display: block;
+    margin-bottom: 3px;
+    color: #92400e;
+  }
+
+  .tips-empty { margin: 0; color: var(--muted, var(--text-muted, #6b7280)); }
+
+  @media (max-width: 480px) {
+    .tips-trigger {
+      right: 12px;
+      bottom: 12px;
+      padding: 10px 12px;
+    }
+
+    .tips-trigger span:not(.tips-icon) { display: none; }
+    .tips-overlay { padding: 10px; }
+    .tips-panel { max-height: 82vh; }
+    .tips-list { grid-template-columns: 1fr; }
+  }
+
+
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header id="top">
+  <h1><span>Section 19</span> — Integration & Messaging: SQS, SNS & Kinesis</h1>
+  <p class="subtitle">My notes on decoupling applications: queues, pub/sub, and real-time data streaming.</p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#intro">Introduction to Messaging</a></li>
+    <li><a href="#sqs-overview">SQS Standard Queues Overview</a></li>
+    <li><a href="#sqs-hands-on">SQS Standard Queue — Hands On</a></li>
+    <li><a href="#sqs-access-policy">SQS Queue Access Policy</a></li>
+    <li><a href="#visibility-timeout">Message Visibility Timeout</a></li>
+    <li><a href="#dlq">Dead Letter Queues</a></li>
+    <li><a href="#delay-queues">Delay Queues</a></li>
+    <li><a href="#dev-concepts">SQS Developer Concepts</a></li>
+    <li><a href="#fifo">FIFO Queues</a></li>
+    <li><a href="#sns">Amazon SNS</a></li>
+    <li><a href="#fan-out">SNS + SQS Fan-Out Pattern</a></li>
+    <li><a href="#sns-hands-on">SNS — Hands On</a></li>
+    <li><a href="#kinesis-streams">Kinesis Data Streams</a></li>
+    <li><a href="#kinesis-hands-on">Kinesis Data Streams — Hands On</a></li>
+    <li><a href="#firehose">Amazon Data Firehose</a></li>
+    <li><a href="#firehose-hands-on">Amazon Data Firehose — Hands On</a></li>
+    <li><a href="#flink">Managed Service for Apache Flink</a></li>
+    <li><a href="#comparison">SQS vs SNS vs Kinesis</a></li>
+    <li><a href="#cheatsheet">Cheat Sheet</a></li>
+  </ol>
+</nav>
+
+<!-- 1. INTRO -->
+<section class="card" id="intro">
+  <h2><span class="badge">1</span> Introduction to Messaging</h2>
+
+  <p>Once you're running more than one application, they need to talk to each other. There are two patterns for that.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 160" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#6b6a66"/>
+        </marker>
+      </defs>
+      <rect class="svg-box" x="20" y="30" width="160" height="50" rx="6"/>
+      <text class="svg-text" x="100" y="59" text-anchor="middle" font-size="10">Buying service</text>
+      <path class="svg-arrow" d="M180,55 L300,55"/>
+      <text class="svg-label" x="240" y="45" text-anchor="middle" font-size="9">direct call</text>
+      <rect class="svg-box" x="300" y="30" width="160" height="50" rx="6"/>
+      <text class="svg-text" x="380" y="59" text-anchor="middle" font-size="10">Shipping service</text>
+      <text class="svg-label" x="240" y="95" text-anchor="middle" font-size="10" font-weight="600">Synchronous</text>
+
+      <rect class="svg-box" x="20" y="115" width="160" height="40" rx="6"/>
+      <text class="svg-text" x="100" y="139" text-anchor="middle" font-size="10">Buying service</text>
+      <path class="svg-arrow" d="M180,135 L300,135"/>
+      <rect class="svg-box-accent" x="300" y="115" width="120" height="40" rx="6"/>
+      <text class="svg-text" x="360" y="139" text-anchor="middle" font-size="9">Queue</text>
+      <path class="svg-arrow" d="M420,135 L560,135"/>
+      <rect class="svg-box" x="560" y="115" width="160" height="40" rx="6"/>
+      <text class="svg-text" x="640" y="139" text-anchor="middle" font-size="10">Shipping service</text>
+      <text class="svg-label" x="360" y="105" text-anchor="middle" font-size="10" font-weight="600">Asynchronous</text>
+    </svg>
+  </div>
+  <p class="caption">Synchronous: services call each other directly. Asynchronous/event-based: a middleware (queue, topic, or stream) sits between them, so neither side has to talk to the other directly.</p>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Synchronous communication can be fragile — a sudden spike on one side (e.g. 1,000 videos to encode instead of 10) can overwhelm the other and cause outages. When traffic is spiky or unpredictable, <strong>decouple</strong> your applications so the middleware absorbs the load and each side scales independently.
+  </div>
+
+  <p>Three decoupling tools, covered in this section:</p>
+  <ul>
+    <li><strong>SQS</strong> — a queue model</li>
+    <li><strong>SNS</strong> — a pub/sub model</li>
+    <li><strong>Kinesis</strong> — real-time streaming for big data</li>
+  </ul>
+</section>
+
+<!-- 2. SQS OVERVIEW -->
+<section class="card" id="sqs-overview">
+  <h2><span class="badge">2</span> SQS Standard Queues Overview</h2>
+
+  <p><strong>SQS</strong> (Simple Queue Service) is AWS's oldest service (10+ years old) — a fully managed queue used to <strong>decouple applications</strong>. Whenever you see "application decoupling" on the exam, think SQS.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="45" width="140" height="45" rx="6"/>
+      <text class="svg-text" x="90" y="72" text-anchor="middle" font-size="10">Producers</text>
+      <path class="svg-arrow" d="M160,67 L300,67"/>
+      <text class="svg-label" x="230" y="55" text-anchor="middle" font-size="9">SendMessage</text>
+      <rect class="svg-box-accent" x="300" y="35" width="180" height="65" rx="6"/>
+      <text class="svg-text" x="390" y="72" text-anchor="middle" font-size="11" font-weight="600">SQS Queue</text>
+      <path class="svg-arrow" d="M480,67 L620,67"/>
+      <text class="svg-label" x="550" y="55" text-anchor="middle" font-size="9">poll + delete</text>
+      <rect class="svg-box" x="620" y="45" width="140" height="45" rx="6"/>
+      <text class="svg-text" x="690" y="72" text-anchor="middle" font-size="10">Consumers</text>
+    </svg>
+  </div>
+  <p class="caption">Producers send messages into the queue; consumers poll for messages, process them, and delete them — the queue is the buffer that decouples the two sides.</p>
+
+  <h3>Key characteristics</h3>
+  <table>
+    <tr><th>Property</th><th>Value</th></tr>
+    <tr><td>Throughput</td><td>Unlimited — as many messages/second as you want, unlimited queue size</td></tr>
+    <tr><td>Retention</td><td>4 days by default, up to 14 days max — unprocessed messages are lost after that</td></tr>
+    <tr><td>Latency</td><td>&lt;10ms on publish and receive</td></tr>
+    <tr><td>Message size</td><td>Up to 256 KB per message</td></tr>
+    <tr><td>Delivery</td><td>At-least-once (possible duplicates)</td></tr>
+    <tr><td>Ordering</td><td>Best-effort (can be out of order) — unless you use FIFO queues</td></tr>
+  </table>
+
+  <h3>Producers & consumers</h3>
+  <ul>
+    <li>Producers send messages via the SDK, using the <code>SendMessage</code> API.</li>
+    <li>Consumers can run on EC2, on-premises servers, or Lambda. They poll (<code>ReceiveMessage</code>, up to 10 messages at a time), process, then call <code>DeleteMessage</code> to remove it — otherwise other consumers could see it again.</li>
+    <li>Multiple consumers can process messages from the same queue <strong>in parallel</strong> for horizontal scaling.</li>
+  </ul>
+
+  <div class="callout tip">
+    <strong class="tag">Common exam architecture</strong>
+    Auto Scale your consumer fleet on the <strong>ApproximateNumberOfMessages</strong> CloudWatch metric (queue length) — a CloudWatch alarm bumps your ASG's desired capacity as the queue backs up, so more EC2 instances appear to help drain it.
+  </div>
+
+  <h3>Decoupling application tiers</h3>
+  <p>Classic use case: a video-processing app. Instead of one monolithic app handling both the upload request <em>and</em> the (slow) encoding, split it into a front-end tier (takes the request, drops a message in SQS) and a back-end tier (its own ASG, polls SQS, does the heavy processing, e.g. on GPU instances). Each tier scales independently, and SQS's unlimited throughput/capacity makes the whole thing robust.</p>
+
+  <h3>Security</h3>
+  <ul>
+    <li>In-flight encryption via HTTPS API; at-rest encryption via KMS; client-side encryption if you implement it yourself.</li>
+    <li><strong>IAM policies</strong> regulate the SQS API; <strong>SQS access policies</strong> (resource policies, like S3 bucket policies) handle cross-account access or letting other services (SNS, S3) write to your queue.</li>
+  </ul>
+</section>
+
+<!-- 3. SQS HANDS ON -->
+<section class="card" id="sqs-hands-on">
+  <h2><span class="badge">3</span> SQS Standard Queue — Hands On</h2>
+
+  <ul>
+    <li>Creating a queue: choose <strong>Standard</strong> or <strong>FIFO</strong>. Configure visibility timeout, delivery delay, wait time, retention period (up to 14 days), max message size (up to 256 KB).</li>
+    <li><strong>Encryption</strong>: disabled, <code>SSE-SQS</code> (Amazon-managed key, like S3's SSE-S3), or SSE-KMS (choose a CMK, optionally set a data key reuse period to limit KMS API calls).</li>
+    <li><strong>Access policy</strong>: define who can send/receive — just the queue owner, or specific accounts/users/roles — generates a JSON resource policy just like an S3 bucket policy.</li>
+  </ul>
+
+  <p>In the console's <strong>Send and receive messages</strong> panel: sending a message makes it available; polling retrieves it (with metadata like message ID, receive count, size, and the body). If you poll again without deleting, the message reappears after its visibility timeout and the <strong>receive count increments</strong> — deleting it is what signals "processed" to SQS.</p>
+
+  <p>Other queue options: <strong>Purge</strong> (delete all messages — type "purge" to confirm; great for dev, not for prod), monitoring (queue depth, oldest message age — useful for scaling decisions), and dead-letter redrive status.</p>
+</section>
+
+<!-- 4. SQS ACCESS POLICY -->
+<section class="card" id="sqs-access-policy">
+  <h2><span class="badge">4</span> SQS Queue Access Policy</h2>
+
+  <p>SQS access policies are JSON resource policies attached directly to a queue — similar in spirit to S3 bucket policies. Two common use cases:</p>
+
+  <ol>
+    <li><strong>Cross-account access</strong> — e.g. an EC2 instance in Account B needs to poll a queue in Account A. Attach a policy on the queue in Account A allowing <code>sqs:ReceiveMessage</code> for principal <code>111122223333</code> (Account B).</li>
+    <li><strong>Allowing another AWS service to write</strong> — e.g. S3 event notifications need to send messages into an SQS queue. The policy must allow <code>sqs:SendMessage</code> from principal <code>*</code>, conditioned on the source ARN matching the specific bucket and the source account matching the bucket owner.</li>
+  </ol>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    Without the right access policy, attempting to save an S3 event notification pointing at an SQS queue fails with an error saying the destination configuration can't be validated — the queue simply hasn't granted S3 permission to write to it yet.
+  </div>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Both cross-account access to an SQS queue and letting AWS services (S3, SNS) publish into an SQS queue are done the <strong>same way</strong>: an SQS access policy.
+  </div>
+</section>
+
+<!-- 5. VISIBILITY TIMEOUT -->
+<section class="card" id="visibility-timeout">
+  <h2><span class="badge">5</span> Message Visibility Timeout</h2>
+
+  <p>When a consumer polls and receives a message, that message becomes <strong>invisible to other consumers</strong> for the duration of the <strong>visibility timeout</strong> (default 30 seconds).</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 140" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="45" width="140" height="40" rx="6"/>
+      <text class="svg-text" x="90" y="69" text-anchor="middle" font-size="10">Consumer A receives msg</text>
+      <path class="svg-arrow" d="M160,65 L300,65"/>
+      <rect class="svg-box-gray" x="300" y="45" width="220" height="40" rx="6"/>
+      <text class="svg-text" x="410" y="69" text-anchor="middle" font-size="9">Message invisible (visibility timeout window)</text>
+      <path class="svg-arrow" d="M520,65 L660,65"/>
+      <rect class="svg-box-accent" x="660" y="45" width="100" height="40" rx="6"/>
+      <text class="svg-text" x="710" y="69" text-anchor="middle" font-size="9">Not deleted → reappears</text>
+      <text class="svg-label" x="410" y="105" text-anchor="middle" font-size="9">If deleted in time → gone for good. If not → visible again, may be processed twice.</text>
+    </svg>
+  </div>
+  <p class="caption">A received message hides from other consumers for the visibility timeout; if it isn't deleted before that window ends, it becomes visible again and could be picked up (and processed) a second time.</p>
+
+  <ul>
+    <li>If a consumer needs more time to finish processing, it should call <strong>ChangeMessageVisibility</strong> to extend the timeout, rather than risk the message being picked up again.</li>
+  </ul>
+
+  <table>
+    <tr><th>Timeout setting</th><th>Risk</th></tr>
+    <tr><td>Too high (e.g. hours)</td><td>If the consumer crashes, the message won't reappear for a long time</td></tr>
+    <tr><td>Too low (e.g. seconds)</td><td>Message may be read multiple times by different consumers before it's actually processed — duplicate processing</td></tr>
+  </table>
+
+  <p>Configurable from 0 seconds up to 12 hours per queue.</p>
+</section>
+
+<!-- 6. DLQ -->
+<section class="card" id="dlq">
+  <h2><span class="badge">6</span> Dead Letter Queues</h2>
+
+  <p>If a consumer keeps failing to process a message, it keeps bouncing back into the queue after each visibility timeout — a failure loop. A <strong>Dead Letter Queue (DLQ)</strong> catches messages that exceed a <strong>maxReceiveCount</strong> threshold, moving them out of the main queue for later inspection.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box-accent" x="20" y="45" width="200" height="45" rx="6"/>
+      <text class="svg-text" x="120" y="72" text-anchor="middle" font-size="10">Source Queue (received 3× → still failing)</text>
+      <path class="svg-arrow" d="M220,60 L360,60"/>
+      <text class="svg-label" x="290" y="50" text-anchor="middle" font-size="9">exceeds maxReceiveCount</text>
+      <rect class="svg-box" x="360" y="45" width="180" height="45" rx="6"/>
+      <text class="svg-text" x="450" y="72" text-anchor="middle" font-size="10">Dead Letter Queue</text>
+      <path class="svg-arrow" d="M360,95 L220,95"/>
+      <text class="svg-label" x="290" y="112" text-anchor="middle" font-size="9">DLQ redrive (after fixing the consumer)</text>
+    </svg>
+  </div>
+  <p class="caption">Messages that repeatedly fail get moved to a DLQ for debugging; once the underlying issue is fixed, a redrive sends them back to the source queue for reprocessing.</p>
+
+  <ul>
+    <li>A FIFO queue's DLQ must also be FIFO; a Standard queue's DLQ must also be Standard.</li>
+    <li>Set a <strong>long retention period</strong> on the DLQ (e.g. 14 days) so you have time to investigate before messages expire.</li>
+    <li><strong>Redrive to source</strong> lets you send messages from the DLQ back into the original queue once you've fixed the consumer — reprocessing happens transparently.</li>
+  </ul>
+
+  <h3>Hands-on recap</h3>
+  <p>Create a DLQ, then on the source queue enable "Dead-letter queue" pointing at it, with a <strong>Maximum receives</strong> value (e.g. 3). After a message is received that many times without being deleted, it moves to the DLQ. From the DLQ, <strong>Start DLQ redrive</strong> sends it back to the source queue.</p>
+</section>
+
+<!-- 7. DELAY QUEUES -->
+<section class="card" id="delay-queues">
+  <h2><span class="badge">7</span> Delay Queues</h2>
+
+  <p>A <strong>delay queue</strong> hides new messages from consumers for a set period (up to 15 minutes) after they're sent.</p>
+
+  <ul>
+    <li>Default delay is 0 seconds (immediately visible).</li>
+    <li>Set a default at the <strong>queue level</strong>, or override per-message using the <code>DelaySeconds</code> parameter on <code>SendMessage</code>.</li>
+  </ul>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    Just know this feature exists for the exam — it's a simple setting, not a complex mechanism.
+  </div>
+</section>
+
+<!-- 8. DEV CONCEPTS -->
+<section class="card" id="dev-concepts">
+  <h2><span class="badge">8</span> SQS Developer Concepts</h2>
+
+  <h3>Long polling</h3>
+  <p>Instead of immediately returning empty when the queue has nothing, a consumer can <strong>wait</strong> for a message to arrive (1–20 seconds, 20 is preferred). This reduces the number of API calls (cheaper, less CPU) and reduces latency (message is delivered to the consumer as soon as it exists).</p>
+  <ul>
+    <li>Set at the <strong>queue level</strong>, or per API call via <code>ReceiveMessageWaitTimeSeconds</code>.</li>
+  </ul>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    If a scenario mentions a consumer making too many API calls (cost, CPU, latency) — the answer is <strong>long polling</strong>.
+  </div>
+
+  <h3>SQS Extended Client (large messages)</h3>
+  <p>Max message size is 256 KB. To send bigger payloads (e.g. a 1GB video), use the <strong>SQS Extended Client</strong> (a Java library, but the pattern can be replicated in any language): the large payload goes into an <strong>S3 bucket</strong>, and SQS only carries a small metadata message pointing to it. The consumer reads the pointer and fetches the real payload from S3.</p>
+
+  <h3>Key API calls</h3>
+  <table>
+    <tr><th>API</th><th>Purpose</th></tr>
+    <tr><td><code>CreateQueue</code> / <code>DeleteQueue</code></td><td>Create a queue (with <code>MessageRetentionPeriod</code>) / delete it and its messages</td></tr>
+    <tr><td><code>PurgeQueue</code></td><td>Delete all messages in a queue</td></tr>
+    <tr><td><code>SendMessage</code></td><td>Send a message (supports <code>DelaySeconds</code>)</td></tr>
+    <tr><td><code>ReceiveMessage</code></td><td>Poll for messages (<code>MaxNumberOfMessages</code> up to 10, <code>ReceiveMessageWaitTimeSeconds</code> for long polling)</td></tr>
+    <tr><td><code>DeleteMessage</code></td><td>Remove a processed message</td></tr>
+    <tr><td><code>ChangeMessageVisibility</code></td><td>Extend the visibility timeout for a message being processed</td></tr>
+  </table>
+
+  <p><code>SendMessage</code>, <code>DeleteMessage</code>, and <code>ChangeMessageVisibility</code> all have <strong>batch</strong> versions to cut down on API call volume and cost.</p>
+</section>
+
+<!-- 9. FIFO -->
+<section class="card" id="fifo">
+  <h2><span class="badge">9</span> FIFO Queues</h2>
+
+  <p><strong>FIFO</strong> (First-In-First-Out) queues guarantee message order — something Standard queues don't. Queue names must end in <code>.fifo</code>.</p>
+
+  <table>
+    <tr><th>Feature</th><th>Standard</th><th>FIFO</th></tr>
+    <tr><td>Ordering</td><td>Best-effort</td><td>Strictly preserved (per message group)</td></tr>
+    <tr><td>Delivery</td><td>At-least-once (duplicates possible)</td><td>Exactly-once</td></tr>
+    <tr><td>Throughput</td><td>Unlimited</td><td>~300 msg/sec (3,000 with batching)</td></tr>
+  </table>
+
+  <h3>Deduplication</h3>
+  <p>Within a <strong>5-minute deduplication interval</strong>, duplicate messages are dropped, using either:</p>
+  <ul>
+    <li><strong>Content-based deduplication</strong> — SQS computes a SHA-256 hash of the message body; identical bodies within the window are deduplicated automatically.</li>
+    <li><strong>Explicit deduplication ID</strong> — you provide your own ID; a repeated ID within the window is dropped.</li>
+  </ul>
+
+  <h3>Message grouping</h3>
+  <p>Every FIFO message needs a <strong>message group ID</strong>. Messages sharing the same group ID are strictly ordered <em>and</em> consumed by a single consumer; different group IDs can be processed by different consumers in parallel — ordering across groups isn't guaranteed, only within a group.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box-accent" x="20" y="15" width="220" height="35" rx="5"/><text class="svg-text" x="130" y="37" text-anchor="middle" font-size="9">Group "user123": A1 → A2 → A3</text>
+      <path class="svg-arrow" d="M240,32 L340,32"/>
+      <rect class="svg-box" x="340" y="15" width="120" height="35" rx="5"/><text class="svg-text" x="400" y="37" text-anchor="middle" font-size="9">Consumer 1</text>
+
+      <rect class="svg-box-accent" x="20" y="60" width="220" height="35" rx="5"/><text class="svg-text" x="130" y="82" text-anchor="middle" font-size="9">Group "user234": B1 → B2</text>
+      <path class="svg-arrow" d="M240,77 L340,77"/>
+      <rect class="svg-box" x="340" y="60" width="120" height="35" rx="5"/><text class="svg-text" x="400" y="82" text-anchor="middle" font-size="9">Consumer 2</text>
+
+      <text class="svg-label" x="600" y="45" text-anchor="middle" font-size="9">Each group ID keeps its own order</text>
+      <text class="svg-label" x="600" y="65" text-anchor="middle" font-size="9">and can be processed by a</text>
+      <text class="svg-label" x="600" y="85" text-anchor="middle" font-size="9">different consumer in parallel</text>
+    </svg>
+  </div>
+  <p class="caption">Using a per-customer (or per-entity) message group ID lets you keep strict ordering where it matters while still processing many groups in parallel.</p>
+</section>
+
+<!-- 10. SNS -->
+<section class="card" id="sns">
+  <h2><span class="badge">10</span> Amazon SNS</h2>
+
+  <p><strong>SNS</strong> (Simple Notification Service) implements the <strong>pub/sub</strong> pattern: a producer publishes once to an <strong>SNS topic</strong>, and every subscriber gets a copy — instead of the producer having to integrate with each receiver individually.</p>
+
+  <ul>
+    <li>Up to (roughly) 12 million+ subscriptions per topic, and up to 100,000 topics per account (soft limits, can be raised — not something the exam tests directly).</li>
+    <li>Subscriber types: email, SMS, mobile push, HTTP/HTTPS endpoints, and direct AWS integrations — <strong>SQS</strong>, <strong>Lambda</strong>, <strong>Kinesis Data Firehose</strong>.</li>
+    <li>Many AWS services can publish <em>into</em> SNS directly: CloudWatch Alarms, Auto Scaling notifications, CloudFormation state changes, Budgets, S3, DMS, Lambda, DynamoDB, RDS events, and more.</li>
+  </ul>
+
+  <h3>Publishing methods</h3>
+  <ul>
+    <li><strong>Topic publish</strong> — create a topic, add subscriptions, publish — every subscriber gets it automatically.</li>
+    <li><strong>Direct publish</strong> — for mobile apps: create a platform application + platform endpoint, publish directly to a device via Google GCM, Apple APNS, or Amazon ADM.</li>
+  </ul>
+
+  <h3>Security</h3>
+  <p>Same shape as SQS: in-flight HTTPS encryption, at-rest KMS encryption, optional client-side encryption; IAM policies regulate the API, and <strong>SNS access policies</strong> (resource policies, like S3 bucket policies) handle cross-account access or letting services like S3 publish into a topic.</p>
+</section>
+
+<!-- 11. FAN OUT -->
+<section class="card" id="fan-out">
+  <h2><span class="badge">11</span> SNS + SQS Fan-Out Pattern</h2>
+
+  <p>Need one message delivered reliably to <strong>multiple SQS queues</strong>? Publishing to each queue individually is fragile (partial failures, needing to add more queues later). Instead: publish <strong>once to an SNS topic</strong>, and subscribe as many SQS queues as you like.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="55" width="140" height="45" rx="6"/>
+      <text class="svg-text" x="90" y="82" text-anchor="middle" font-size="10">Buying service</text>
+      <path class="svg-arrow" d="M160,77 L280,77"/>
+      <rect class="svg-box-accent" x="280" y="55" width="140" height="45" rx="6"/>
+      <text class="svg-text" x="350" y="82" text-anchor="middle" font-size="10">SNS Topic</text>
+
+      <path class="svg-arrow" d="M420,65 L560,25"/>
+      <rect class="svg-box" x="560" y="5" width="180" height="40" rx="6"/><text class="svg-text" x="650" y="30" text-anchor="middle" font-size="9">SQS: Fraud service</text>
+
+      <path class="svg-arrow" d="M420,90 L560,90"/>
+      <rect class="svg-box" x="560" y="70" width="180" height="40" rx="6"/><text class="svg-text" x="650" y="95" text-anchor="middle" font-size="9">SQS: Shipping service</text>
+
+      <path class="svg-arrow" d="M420,95 L560,135"/>
+      <rect class="svg-box" x="560" y="115" width="180" height="30" rx="6"/><text class="svg-text" x="650" y="135" text-anchor="middle" font-size="9">SQS: Analytics, etc.</text>
+    </svg>
+  </div>
+  <p class="caption">Publishing once to an SNS topic and fanning out to multiple SQS queues gives full decoupling, no data loss (SQS persists/retries), and lets you add more consumers later without touching the producer.</p>
+
+  <ul>
+    <li>Requires the SQS <strong>access policy</strong> on each queue to allow the SNS topic to write to it.</li>
+    <li>Works cross-region — an SNS topic in one region can fan out to SQS queues in others.</li>
+  </ul>
+
+  <h3>Other fan-out use cases</h3>
+  <ul>
+    <li><strong>Multiple S3 event targets</strong>: S3 only allows one event rule per (event type + prefix) combination — fan out via SNS to reach multiple SQS queues from a single S3 event.</li>
+    <li><strong>SNS → Kinesis Data Firehose → S3</strong>: direct integration lets SNS messages land in S3 (or any KDF-supported destination) without extra glue code.</li>
+  </ul>
+
+  <h3>SNS FIFO</h3>
+  <p>SNS also has a FIFO mode: ordering by message group ID, deduplication (explicit or content-based) — but its subscribers can only be <strong>SQS queues</strong> (Standard or FIFO), and throughput matches SQS FIFO limits. Use it when you need fan-out <em>plus</em> ordering plus deduplication together.</p>
+
+  <h3>Message filtering</h3>
+  <p>A JSON <strong>filter policy</strong> on a subscription restricts which messages that subscriber receives (default: no filter = receive everything). E.g. filter on <code>State: Placed</code> for one SQS queue, <code>State: Cancelled</code> for another, and no filter at all for a queue that should see every message — all fed from the same topic.</p>
+</section>
+
+<!-- 12. SNS HANDS ON -->
+<section class="card" id="sns-hands-on">
+  <h2><span class="badge">12</span> SNS — Hands On</h2>
+
+  <ul>
+    <li>Creating a topic: choose <strong>Standard</strong> (best-effort ordering, at-least-once, highest throughput, supports SQS/Lambda/HTTPS/SMS/email/mobile) or <strong>FIFO</strong> (strict ordering, exactly-once, up to 300 pub/sec, subscribers limited to SQS).</li>
+    <li>Access policy works the same as SQS's — controls who/what can publish and subscribe.</li>
+    <li>Add a subscription: choose a protocol (Kinesis Data Firehose, SQS, Lambda, Email, Email-JSON, HTTP, HTTPS, SMS) and an endpoint (e.g. an email address).</li>
+    <li>Email subscriptions require <strong>confirmation</strong> — click the confirmation link sent to that address before messages will actually arrive.</li>
+    <li>Publishing a test message delivers it to every confirmed subscriber — in this case, straight to the inbox.</li>
+  </ul>
+</section>
+
+<!-- 13. KINESIS STREAMS -->
+<section class="card" id="kinesis-streams">
+  <h2><span class="badge">13</span> Kinesis Data Streams</h2>
+
+  <p><strong>Kinesis Data Streams</strong> collects and stores <strong>real-time</strong> streaming data — click-streams, IoT device data, server metrics/logs, etc. Exam keyword: <strong>real-time</strong>.</p>
+
+  <ul>
+    <li><strong>Producers</strong>: your own application code (SDK), or the <strong>Kinesis Agent</strong> installed on servers for metrics/logs.</li>
+    <li><strong>Consumers</strong>: your own application code, Lambda, Amazon Data Firehose, or Managed Service for Apache Flink (for analytics).</li>
+  </ul>
+
+  <h3>Key characteristics</h3>
+  <table>
+    <tr><th>Property</th><th>Value</th></tr>
+    <tr><td>Retention</td><td>Up to 365 days — data persists, so consumers can <strong>replay</strong> it; you can't delete data early, only wait for it to expire</td></tr>
+    <tr><td>Record size</td><td>Up to 1 MB, but typically used for lots of small real-time records</td></tr>
+    <tr><td>Ordering</td><td>Guaranteed for records sharing the same <strong>partition key</strong> (same shard)</td></tr>
+    <tr><td>Security</td><td>At-rest KMS encryption, in-flight HTTPS</td></tr>
+  </table>
+
+  <p>High-throughput producer/consumer code should use the <strong>Kinesis Producer Library (KPL)</strong> and <strong>Kinesis Client Library (KCL)</strong> respectively.</p>
+
+  <h3>Shards & capacity modes</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box-accent" x="20" y="20" width="220" height="90" rx="8"/>
+      <text class="svg-text" x="130" y="42" text-anchor="middle" font-weight="600" font-size="11">Provisioned mode</text>
+      <text class="svg-label" x="130" y="62" text-anchor="middle" font-size="9">You choose the number of shards</text>
+      <text class="svg-label" x="130" y="78" text-anchor="middle" font-size="9">1 shard = 1MB/sec in, 2MB/sec out</text>
+      <text class="svg-label" x="130" y="94" text-anchor="middle" font-size="9">Pay per shard-hour</text>
+
+      <rect class="svg-box-accent" x="280" y="20" width="220" height="90" rx="8"/>
+      <text class="svg-text" x="390" y="42" text-anchor="middle" font-weight="600" font-size="11">On-demand mode</text>
+      <text class="svg-label" x="390" y="62" text-anchor="middle" font-size="9">Auto-scales based on</text>
+      <text class="svg-label" x="390" y="78" text-anchor="middle" font-size="9">observed throughput (30 days)</text>
+      <text class="svg-label" x="390" y="94" text-anchor="middle" font-size="9">Pay per stream-hour + data</text>
+    </svg>
+  </div>
+  <p class="caption">Provisioned mode requires you to size and manually scale shards yourself; on-demand mode auto-scales but has no free tier either — pick based on how predictable your traffic is.</p>
+</section>
+
+<!-- 14. KINESIS HANDS ON -->
+<section class="card" id="kinesis-hands-on">
+  <h2><span class="badge">14</span> Kinesis Data Streams — Hands On</h2>
+
+  <ul>
+    <li>Creating a stream: choose <strong>On-demand</strong> (no capacity planning, but no free tier) or <strong>Provisioned</strong> (choose shard count — 1 shard = cheapest, enough for a demo).</li>
+    <li>Producing (low-level CLI): <code>aws kinesis put-record --stream-name ... --partition-key ... --data ...</code> (with <code>--cli-binary-format raw-in-base64-out</code> for text data).</li>
+    <li>Consuming (low-level CLI): first <code>describe-stream</code> to find the shard ID, then <code>get-shard-iterator</code> (e.g. <code>TRIM_HORIZON</code> to read from the very start of the stream), then <code>get-records</code> using that iterator — data comes back Base64-encoded. Each response includes a <code>NextShardIterator</code> to continue consuming from where you left off.</li>
+  </ul>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    This low-level shard-by-shard consumption is the <strong>shared (standard) consumption mode</strong>. In real applications, the <strong>Kinesis Client Library (KCL)</strong> handles all this shard-iterator bookkeeping for you.
+  </div>
+</section>
+
+<!-- 15. FIREHOSE -->
+<section class="card" id="firehose">
+  <h2><span class="badge">15</span> Amazon Data Firehose</h2>
+
+  <p><strong>Amazon Data Firehose</strong> (formerly Kinesis Data Firehose) loads streaming data from sources into target destinations — fully managed, auto-scaling, and <strong>near real-time</strong> (exam keyword) because of an internal buffer.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="55" width="140" height="45" rx="6"/>
+      <text class="svg-text" x="90" y="72" text-anchor="middle" font-size="9">Kinesis Data Streams</text>
+      <text class="svg-label" x="90" y="88" text-anchor="middle" font-size="8">/ Direct PUT / CloudWatch / IoT</text>
+      <path class="svg-arrow" d="M160,77 L280,77"/>
+      <rect class="svg-box-accent" x="280" y="55" width="160" height="45" rx="6"/>
+      <text class="svg-text" x="360" y="72" text-anchor="middle" font-size="10">Firehose (buffer</text>
+      <text class="svg-text" x="360" y="88" text-anchor="middle" font-size="10">+ optional Lambda transform)</text>
+      <path class="svg-arrow" d="M440,77 L560,77"/>
+      <rect class="svg-box" x="560" y="35" width="200" height="30" rx="5"/><text class="svg-text" x="660" y="55" text-anchor="middle" font-size="9">S3 / Redshift / OpenSearch</text>
+      <rect class="svg-box" x="560" y="70" width="200" height="30" rx="5"/><text class="svg-text" x="660" y="90" text-anchor="middle" font-size="9">Splunk / Datadog / etc.</text>
+      <rect class="svg-box" x="560" y="105" width="200" height="30" rx="5"/><text class="svg-text" x="660" y="125" text-anchor="middle" font-size="9">Custom HTTP endpoint</text>
+    </svg>
+  </div>
+  <p class="caption">Firehose ingests from streams/agents/AWS services, optionally transforms records with Lambda, buffers them, then batch-delivers to S3, Redshift, OpenSearch, third-party tools, or any custom HTTP endpoint.</p>
+
+  <ul>
+    <li>Buffer flushes based on <strong>size or time</strong> — whichever threshold hits first.</li>
+    <li>Supports CSV, JSON, Parquet, Avro, text, or binary input; can convert to Parquet/ORC and compress with gzip/Snappy; use Lambda for custom transformations (e.g. CSV → JSON).</li>
+    <li>Failed (or all) records can optionally be backed up to an S3 bucket.</li>
+  </ul>
+
+  <h3>Kinesis Data Streams vs Amazon Data Firehose</h3>
+  <table>
+    <tr><th></th><th>Kinesis Data Streams</th><th>Amazon Data Firehose</th></tr>
+    <tr><td>Nature</td><td>Streaming data collection — you write producer/consumer code</td><td>Loads streaming data into destinations — fully managed</td></tr>
+    <tr><td>Timing</td><td>Real-time</td><td>Near real-time (buffered)</td></tr>
+    <tr><td>Storage / replay</td><td>Up to 365 days, replayable</td><td>No storage, no replay</td></tr>
+    <tr><td>Scaling</td><td>Provisioned or on-demand — you manage it (in provisioned mode)</td><td>Fully automatic</td></tr>
+  </table>
+</section>
+
+<!-- 16. FIREHOSE HANDS ON -->
+<section class="card" id="firehose-hands-on">
+  <h2><span class="badge">16</span> Amazon Data Firehose — Hands On</h2>
+
+  <ul>
+    <li>Create a delivery stream: source = Kinesis Data Stream (or Direct PUT, or another AWS service), destination = S3 (also remember: OpenSearch and Redshift are supported directly, plus third-party and custom HTTP destinations).</li>
+    <li>Optional Lambda transform step for filtering/converting records; optional record format conversion (e.g. to Parquet/ORC).</li>
+    <li><strong>Buffer hints</strong>: set a buffer size (e.g. 1 MB) and interval (e.g. 60 seconds) — whichever condition is met first triggers delivery. Smaller/faster settings mean quicker delivery but less batching efficiency.</li>
+    <li>Optional compression (gzip, Snappy, Zip, Hadoop-compatible Snappy) and encryption.</li>
+    <li>Firehose automatically creates an <strong>IAM role</strong> with the permissions it needs to read from the source and write to the destination.</li>
+  </ul>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    Firehose only picks up <strong>new</strong> data sent after the delivery stream is created — old records already sitting in the source Kinesis stream won't retroactively flow through. Send fresh test data after setup, then wait out the buffer interval before checking the destination.
+  </div>
+</section>
+
+<!-- 17. FLINK -->
+<section class="card" id="flink">
+  <h2><span class="badge">17</span> Managed Service for Apache Flink</h2>
+
+  <p>Formerly "Kinesis Data Analytics for Apache Flink." <strong>Apache Flink</strong> is a framework (Java, SQL, or Scala) for processing data streams in real time.</p>
+
+  <ul>
+    <li>Reads from <strong>Kinesis Data Streams</strong> or <strong>Amazon MSK</strong> (managed Apache Kafka).</li>
+    <li>Runs on a fully managed cluster — AWS handles compute provisioning, parallel computation, auto scaling, and application backups (checkpoints/snapshots).</li>
+  </ul>
+
+  <div class="callout warning">
+    <strong class="tag">Exam trap</strong>
+    Flink can read from <strong>Kinesis Data Streams</strong> but <strong>cannot</strong> read directly from Amazon Data Firehose.
+  </div>
+</section>
+
+<!-- 18. COMPARISON -->
+<section class="card" id="comparison">
+  <h2><span class="badge">18</span> SQS vs SNS vs Kinesis</h2>
+
+  <table>
+    <tr><th></th><th>SQS</th><th>SNS</th><th>Kinesis Data Streams</th></tr>
+    <tr><td>Model</td><td>Pull — consumers poll and delete messages</td><td>Push (pub/sub) — data pushed to many subscribers</td><td>Pull (standard) or push (enhanced fan-out)</td></tr>
+    <tr><td>Consumers</td><td>Any number of workers, cooperatively draining the queue</td><td>Up to ~12.5 million subscribers per topic</td><td>2 MB/sec per shard (standard); 2 MB/sec per shard <em>per consumer</em> with enhanced fan-out</td></tr>
+    <tr><td>Persistence</td><td>Messages persist until deleted or expired (up to 14 days)</td><td>Not persistent — undelivered messages can be lost</td><td>Persisted, replayable (1–365 days)</td></tr>
+    <tr><td>Ordering</td><td>Only with FIFO queues</td><td>Only with FIFO topics (SQS subscribers only)</td><td>Guaranteed per shard (via partition key)</td></tr>
+    <tr><td>Scaling</td><td>Fully managed, no provisioning needed</td><td>Fully managed, no provisioning needed</td><td>You manage shard count (provisioned) or use on-demand</td></tr>
+    <tr><td>Best for</td><td>Decoupling app tiers, buffering work</td><td>Fan-out notifications to many receivers</td><td>Real-time big data, analytics, ETL</td></tr>
+  </table>
+</section>
+
+<!-- CHEAT SHEET -->
+<section class="card cheatsheet" id="cheatsheet">
+  <h2><span class="badge">✓</span> Cheat Sheet</h2>
+
+  <h3>Key facts to remember</h3>
+  <ul>
+    <li>Sync communication = direct calls, fragile under spikes; async = middleware (queue/topic/stream) decouples and lets each side scale independently.</li>
+    <li>SQS: unlimited throughput, 256KB max message size, 4-day default / 14-day max retention, at-least-once delivery, best-effort ordering (unless FIFO).</li>
+    <li>Visibility timeout (default 30s) hides a received message from other consumers; extend it with <code>ChangeMessageVisibility</code> if you need more time.</li>
+    <li>Dead Letter Queues catch messages exceeding <code>maxReceiveCount</code>; redrive them back to the source once fixed. FIFO DLQ ↔ FIFO source; Standard DLQ ↔ Standard source.</li>
+    <li>Delay queues hide new messages for up to 15 minutes (queue-level default or per-message <code>DelaySeconds</code>).</li>
+    <li>Long polling (1–20s) cuts API calls and latency — use it over short polling whenever possible.</li>
+    <li>Messages over 256KB → SQS Extended Client pattern (payload in S3, pointer in SQS).</li>
+    <li>FIFO queues/topics: strict ordering (per message group ID), exactly-once via deduplication (content-based or explicit ID, 5-minute window), lower throughput than Standard.</li>
+    <li>SNS = pub/sub; combine with SQS for the <strong>fan-out pattern</strong> (one publish, many durable queues) — needs an SQS access policy allowing SNS to write.</li>
+    <li>SNS message filtering (JSON filter policy) lets different subscribers receive different subsets of a topic's messages.</li>
+    <li>Kinesis Data Streams = real-time, replayable (up to 365 days), ordered per shard/partition key, provisioned or on-demand capacity.</li>
+    <li>Amazon Data Firehose = near real-time, fully managed, buffers then batch-delivers to S3/Redshift/OpenSearch/third-party/HTTP — no storage or replay of its own.</li>
+    <li>Managed Service for Apache Flink reads from Kinesis Data Streams or MSK — <strong>not</strong> from Firehose.</li>
+  </ul>
+
+  <h3>Decision guide</h3>
+  <table>
+    <tr><th>Need</th><th>Use</th></tr>
+    <tr><td>Decouple two application tiers with a work buffer</td><td>SQS</td></tr>
+    <tr><td>Guarantee no message reprocessing (per group) and exactly-once</td><td>SQS FIFO</td></tr>
+    <tr><td>One event, many independent receivers</td><td>SNS</td></tr>
+    <tr><td>One event, many <em>durable</em> queues that must not lose data</td><td>SNS + SQS fan-out</td></tr>
+    <tr><td>Real-time big data stream you need to replay/analyze</td><td>Kinesis Data Streams</td></tr>
+    <tr><td>Load streaming data into S3/Redshift/OpenSearch with minimal code</td><td>Amazon Data Firehose</td></tr>
+    <tr><td>Real-time stream processing/transformation logic</td><td>Managed Service for Apache Flink</td></tr>
+  </table>
+
+  <h3>Mental model</h3>
+  <p>This section is about breaking the assumption that your applications must talk to each other directly. SQS gives you a durable buffer so a burst of work never overwhelms the thing processing it; SNS gives you a megaphone so one event reaches any number of independent listeners, and combining the two (fan-out) gets you both breadth and durability at once; Kinesis (Streams, Firehose, and Flink on top) is the toolkit for when "messages" become "continuous real-time data" — ingesting, buffering, transforming, and finally landing that data somewhere useful, at a scale queues and topics aren't built for.</p>
+</section>
+
+<a class="back-to-top" href="#top">↑ Back to top</a>
+
+</div>
+<script>
+(function () {
+  const cards = document.querySelectorAll('section.card, section.lecture, div.card');
+  cards.forEach((card) => {
+    if (card.querySelector(':scope > .study-lens')) return;
+    if (card.classList.contains('cheatsheet')) return;
+    const id = (card.id || '').toLowerCase();
+    if (id.includes('summary') || id === 'cheatsheet') return;
+
+    const heading = card.querySelector(':scope > h2, :scope > h3');
+    if (!heading) return;
+
+    const rawTitle = heading.textContent.replace(/^[0-9✓#]+\s*/, '').trim();
+    if (!rawTitle) return;
+
+    const safeTitle = escapeHtml(rawTitle);
+    const lens = document.createElement('div');
+    lens.className = 'study-lens';
+    lens.innerHTML = [
+      '<div class="lens-label">Study focus</div>',
+      '<p><strong>Target:</strong> finish this topic by being able to explain <em>' + safeTitle + '</em> in plain words, then connect it to one real AWS use case.</p>',
+      '<ul>',
+      '<li><strong>Before reading:</strong> predict what problem this AWS feature solves.</li>',
+      '<li><strong>While reading:</strong> mark the service limits, pricing/security clues, and any exam trap words.</li>',
+      '<li><strong>After reading:</strong> say when you would use it, when you would avoid it, and which AWS service it is often confused with.</li>',
+      '</ul>',
+      '<details class="recall-drill">',
+      '<summary>Active recall check</summary>',
+      '<ol>',
+      '<li>What is the one-sentence purpose of ' + safeTitle + '?</li>',
+      '<li>Which configuration choices or limits matter most here?</li>',
+      '<li>What real system would need this?</li>',
+      '<li>What mistake would a beginner make with this topic?</li>',
+      '</ol>',
+      '</details>'
+    ].join('');
+    heading.insertAdjacentElement('afterend', lens);
+  });
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
+  }
+}());
+</script>
+
+<script>
+(function () {
+  if (document.querySelector('.tips-trigger')) return;
+
+  const glossary = [
+    ['API Gateway', 'Managed front door for APIs. It receives client requests, applies features like auth/throttling, then sends traffic to Lambda, HTTP backends, or AWS services.'],
+    ['Application Load Balancer', 'Layer 7 load balancer for HTTP/HTTPS traffic. Often compared with API Gateway when exposing web apps or Lambda.'],
+    ['Auto Scaling Group', 'A group that keeps the desired number of EC2 instances running and can scale capacity based on policies.'],
+    ['Availability Zone', 'One isolated data center zone inside a Region. Multi-AZ designs survive failure of one zone.'],
+    ['CloudFormation', 'AWS infrastructure-as-code service. Templates describe resources; stacks create and update them.'],
+    ['CloudFront', 'AWS content delivery network. It caches content at edge locations close to users.'],
+    ['CloudWatch', 'AWS monitoring service for metrics, logs, alarms, and events from AWS resources.'],
+    ['Cognito', 'AWS identity service for app users. User Pools handle sign-in; Identity Pools give temporary AWS credentials.'],
+    ['CodeDeploy', 'Deployment service that rolls new application versions to EC2, Lambda, ECS, or on-prem servers.'],
+    ['CodePipeline', 'CI/CD workflow service that connects source, build, test, and deploy stages.'],
+    ['DynamoDB', 'Serverless NoSQL key-value/document database. Design starts with access patterns, partition keys, and sort keys.'],
+    ['EventBridge', 'Event bus for routing events between AWS services, apps, and scheduled rules.'],
+    ['Internet Gateway', 'VPC component that lets public subnet resources communicate with the internet.'],
+    ['Lambda', 'Serverless compute for short-running functions triggered by events or requests.'],
+    ['NAT Gateway', 'Lets private subnet resources start outbound internet connections without being directly reachable from the internet.'],
+    ['OpenSearch', 'Search and analytics engine used for full-text search, log analytics, and dashboards.'],
+    ['Parameter Store', 'Systems Manager feature for storing config values and secrets; can integrate with KMS.'],
+    ['Private CA', 'Private certificate authority for internal TLS certificates, not public internet trust.'],
+    ['Route 53', 'AWS DNS service. It maps names like example.com to targets such as load balancers or IPs.'],
+    ['Security Group', 'Stateful firewall attached to ENIs/resources. Return traffic is automatically allowed.'],
+    ['Step Functions', 'Workflow service for orchestrating Lambda functions and AWS services with retries, branching, and state.'],
+    ['VPC Endpoint', 'Private connection from a VPC to supported AWS services without public internet routing.'],
+    ['access key', 'Long-term credential pair for programmatic access: Access Key ID plus Secret Access Key. Treat it like a password.'],
+    ['alias record', 'Route 53-specific DNS record that can point to AWS resources like load balancers and CloudFront distributions.'],
+    ['asynchronous', 'Caller sends work and does not wait for the final result. Failures usually need retries, DLQs, or destinations.'],
+    ['cache', 'Stored copy of data used to reduce latency, repeated work, or backend load.'],
+    ['canary', 'Gradual release pattern where a small percentage of traffic receives the new version first.'],
+    ['CIDR', 'IP range notation such as 10.0.0.0/16. Smaller suffix number means a larger network range.'],
+    ['CLI', 'Command Line Interface. For AWS, this means running AWS operations from terminal commands.'],
+    ['cold start', 'Extra startup latency when Lambda has to create a fresh execution environment.'],
+    ['concurrency', 'How many executions run at the same time. In Lambda, it directly affects scaling and throttling.'],
+    ['CORS', 'Browser security rule controlling whether frontend code from one origin can call another origin.'],
+    ['DNS', 'Name system that translates human-friendly domains into routing targets such as IP addresses.'],
+    ['DLQ', 'Dead-letter queue. Stores failed messages/events so you can inspect or replay them later.'],
+    ['edge location', 'AWS site closer to users than a Region, mainly used by CloudFront and edge compute.'],
+    ['encryption at rest', 'Data is encrypted while stored on disk, object storage, database storage, or backups.'],
+    ['encryption in transit', 'Data is encrypted while moving over the network, usually with TLS/HTTPS.'],
+    ['environment variables', 'Configuration values injected into a runtime without changing code. Secrets need extra care.'],
+    ['GSI', 'Global Secondary Index in DynamoDB. It supports alternate query patterns and has its own partition/sort key.'],
+    ['health check', 'Automated test that decides whether a target is healthy enough to receive traffic.'],
+    ['hosted zone', 'Route 53 container for DNS records for a domain. Public zones answer internet DNS queries.'],
+    ['IAM', 'Identity and Access Management. It controls who can do what in AWS.'],
+    ['idempotency', 'Design property where repeating the same request does not create unintended duplicate effects.'],
+    ['IOPS', 'Input/output operations per second. Common storage performance number for disks and databases.'],
+    ['JSON', 'Structured text format used heavily by AWS policies, templates, and API responses.'],
+    ['KMS', 'Key Management Service. It creates and controls encryption keys used by AWS services and applications.'],
+    ['least privilege', 'Security principle: grant only the permissions needed, nothing extra.'],
+    ['LSI', 'Local Secondary Index in DynamoDB. It shares the table partition key but uses a different sort key.'],
+    ['MFA', 'Multi-factor authentication. Login requires password plus a second factor such as an authenticator app.'],
+    ['origin', 'The backend source CloudFront fetches content from, such as S3, ALB, or a custom server.'],
+    ['partition key', 'Primary DynamoDB key component that determines item distribution and query access pattern.'],
+    ['policy', 'Permission document that allows or denies actions on resources, often written in JSON.'],
+    ['Region', 'Geographic AWS area containing multiple Availability Zones, such as us-east-1.'],
+    ['replication', 'Copying data to another place for durability, latency, compliance, or disaster recovery.'],
+    ['REST', 'API style based around resources, HTTP methods, and stateless requests.'],
+    ['role', 'Temporary AWS identity that can be assumed by users, services, or external accounts.'],
+    ['root account', 'The original AWS account identity with full power. Use it rarely and protect it strongly.'],
+    ['SDK', 'Software Development Kit. Language-specific library for calling AWS APIs from code.'],
+    ['sort key', 'Optional DynamoDB key component that orders items within the same partition key.'],
+    ['subnet', 'A slice of a VPC IP range placed inside one Availability Zone.'],
+    ['synchronous', 'Caller waits for the result immediately. Useful for request/response workflows.'],
+    ['throughput', 'Amount of data processed per second. Different from IOPS, which counts operations.'],
+    ['TLS', 'Encryption protocol behind HTTPS. Used to protect data in transit.'],
+    ['TTL', 'Time to live. In DNS it controls cache duration; in DynamoDB it can expire old items.'],
+    ['VPC', 'Virtual Private Cloud. Your isolated network boundary inside AWS.'],
+    ['WebSocket', 'Persistent two-way connection useful for real-time apps like chat or live updates.']
+  ];
+
+  const pageText = document.body.innerText.replace(/\s+/g, ' ');
+  const found = glossary.filter(([term]) => new RegExp('(^|[^A-Za-z0-9])' + escapeRegExp(term) + '([^A-Za-z0-9]|$)', 'i').test(pageText));
+  if (!found.length) return;
+
+  const button = document.createElement('button');
+  button.className = 'tips-trigger';
+  button.type = 'button';
+  button.setAttribute('aria-haspopup', 'dialog');
+  button.setAttribute('aria-expanded', 'false');
+  button.innerHTML = '<span class="tips-icon" aria-hidden="true">💡</span><span>Tips</span>';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'tips-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'tips-title');
+  overlay.innerHTML = [
+    '<div class="tips-panel">',
+    '<div class="tips-header">',
+    '<h2 id="tips-title">💡 Tips & assumed concepts</h2>',
+    '<button class="tips-close" type="button" aria-label="Close tips">Close</button>',
+    '</div>',
+    '<div class="tips-body">',
+    '<p class="tips-intro">These are prerequisite terms that this page uses without always stopping to define them. Read this first when a section feels abstract.</p>',
+    '<ul class="tips-list">' + found.map(([term, tip]) => '<li><strong>' + escapeHtml(term) + '</strong>' + escapeHtml(tip) + '</li>').join('') + '</ul>',
+    '</div>',
+    '</div>'
+  ].join('');
+
+  document.body.appendChild(button);
+  document.body.appendChild(overlay);
+
+  const closeButton = overlay.querySelector('.tips-close');
+  function openTips() {
+    overlay.classList.add('open');
+    button.setAttribute('aria-expanded', 'true');
+    closeButton.focus();
+  }
+  function closeTips() {
+    overlay.classList.remove('open');
+    button.setAttribute('aria-expanded', 'false');
+    button.focus();
+  }
+
+  button.addEventListener('click', openTips);
+  closeButton.addEventListener('click', closeTips);
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) closeTips();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && overlay.classList.contains('open')) closeTips();
+  });
+
+  function escapeRegExp(value) {
+    return value.replace(/[.*+?^$()|[\]\\]/g, '\\</body>').replace(/[{}]/g, '\\</body>');
+  }
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
+  }
+}());
+</script>
+
+</body>
+</html>

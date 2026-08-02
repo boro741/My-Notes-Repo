@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 16 — ECS, ECR & Fargate — Notes</title>
+<style>
+  :root {
+    --accent: #e8830f;
+    --accent-dark: #c96a08;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --border: #e3e0da;
+    --text: #2b2a28;
+    --text-muted: #6b6a66;
+    --green: #2e7d32;
+    --green-bg: #eef7ee;
+    --red: #c0392b;
+    --red-bg: #fdecea;
+    --amber: #b8790a;
+    --amber-bg: #fff4e2;
+    --purple: #6a4fb3;
+    --purple-bg: #f3f0fb;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  header {
+    padding-bottom: 24px;
+    border-bottom: 3px solid var(--accent);
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 2rem;
+    color: var(--text);
+  }
+
+  header h1 span {
+    color: var(--accent);
+  }
+
+  header p.subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+  }
+
+  nav.toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 32px;
+  }
+
+  nav.toc h2 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  nav.toc ol {
+    margin: 0;
+    padding-left: 22px;
+    columns: 2;
+    column-gap: 24px;
+  }
+
+  nav.toc li {
+    margin-bottom: 6px;
+    break-inside: avoid;
+  }
+
+  nav.toc a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  nav.toc a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin-bottom: 24px;
+    scroll-margin-top: 20px;
+  }
+
+  .card h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 14px;
+    font-size: 1.3rem;
+    color: var(--text);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  h3 {
+    color: var(--accent-dark);
+    font-size: 1.05rem;
+    margin: 20px 0 8px;
+  }
+
+  a { color: var(--accent-dark); }
+
+  code {
+    background: #f1eee7;
+    border: 1px solid #e6e2d8;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.92em;
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    color: #7a4b00;
+  }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 0.94rem;
+  }
+
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f7f2ea;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) td {
+    background: #fcfbf9;
+  }
+
+  .callout {
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+
+  .callout strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .callout.tip {
+    background: var(--green-bg);
+    border-color: var(--green);
+  }
+  .callout.tip strong.tag { color: var(--green); }
+
+  .callout.warning {
+    background: var(--red-bg);
+    border-color: var(--red);
+  }
+  .callout.warning strong.tag { color: var(--red); }
+
+  .callout.key {
+    background: var(--amber-bg);
+    border-color: var(--amber);
+  }
+  .callout.key strong.tag { color: var(--amber); }
+
+  .analogy {
+    border: 1.5px dashed var(--purple);
+    background: var(--purple-bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.96rem;
+  }
+  .analogy strong.tag {
+    display: inline-block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--purple);
+  }
+
+  .diagram {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fdfcfa;
+    padding: 16px;
+    margin: 16px 0 6px;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  .diagram svg {
+    max-width: 100%;
+  }
+
+  .caption {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 4px 0 16px;
+    font-style: italic;
+  }
+
+  .cheatsheet {
+    border: 2px solid var(--accent);
+  }
+
+  .cheatsheet h2 { color: var(--accent-dark); }
+
+  .back-to-top {
+    display: block;
+    text-align: center;
+    margin-top: 36px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    text-decoration: none;
+  }
+  .back-to-top:hover { text-decoration: underline; }
+
+  .svg-box { fill: #fff; stroke: #c8917a; stroke-width: 1.5; }
+  .svg-box-accent { fill: #fff4e2; stroke: var(--accent); stroke-width: 1.5; }
+  .svg-text { font-family: -apple-system, sans-serif; font-size: 12px; fill: #2b2a28; }
+  .svg-label { font-family: -apple-system, sans-serif; font-size: 11px; fill: #6b6a66; }
+  .svg-arrow { stroke: #6b6a66; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+  /* Learning helpers: compact prompts added without changing lecture content */
+  .study-lens {
+    border: 1px solid #bfdbfe;
+    background: #eff6ff;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin: 12px 0 18px;
+    font-size: 0.95rem;
+  }
+
+  .study-lens .lens-label {
+    color: #1d4ed8;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .study-lens p { margin: 0 0 8px; }
+  .study-lens ul, .study-lens ol { margin: 8px 0 0; }
+  .study-lens li { margin-bottom: 5px; }
+
+  .recall-drill {
+    border-top: 1px solid #bfdbfe;
+    margin-top: 10px;
+    padding-top: 8px;
+  }
+
+  .recall-drill summary {
+    cursor: pointer;
+    color: #1d4ed8;
+    font-weight: 700;
+  }
+
+  .recall-drill summary:hover { text-decoration: underline; }
+
+
+
+  /* Tips popup for assumed AWS terms and prerequisite concepts */
+  .tips-trigger {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 999;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 14px;
+    border: 1px solid #f59e0b;
+    border-radius: 999px;
+    background: #fffbeb;
+    color: #92400e;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+  }
+
+  .tips-trigger:hover { background: #fef3c7; }
+
+  .tips-trigger .tips-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+
+  .tips-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(17, 24, 39, 0.46);
+  }
+
+  .tips-overlay.open { display: flex; }
+
+  .tips-panel {
+    width: min(760px, 100%);
+    max-height: min(76vh, 720px);
+    overflow: auto;
+    background: #ffffff;
+    color: var(--text, #1f2937);
+    border: 1px solid #fcd34d;
+    border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  }
+
+  .tips-header {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 18px;
+    background: #fffbeb;
+    border-bottom: 1px solid #fde68a;
+  }
+
+  .tips-header h2 {
+    margin: 0;
+    color: #92400e;
+    font-size: 1.1rem;
+  }
+
+  .tips-close {
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #92400e;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+    line-height: 1;
+    padding: 7px 10px;
+  }
+
+  .tips-body { padding: 16px 18px 18px; }
+
+  .tips-intro {
+    margin: 0 0 12px;
+    color: var(--muted, var(--text-muted, #6b7280));
+    font-size: 0.95rem;
+  }
+
+  .tips-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tips-list li {
+    margin: 0;
+    padding: 10px 12px;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    background: #fffdf5;
+  }
+
+  .tips-list strong {
+    display: block;
+    margin-bottom: 3px;
+    color: #92400e;
+  }
+
+  .tips-empty { margin: 0; color: var(--muted, var(--text-muted, #6b7280)); }
+
+  @media (max-width: 480px) {
+    .tips-trigger {
+      right: 12px;
+      bottom: 12px;
+      padding: 10px 12px;
+    }
+
+    .tips-trigger span:not(.tips-icon) { display: none; }
+    .tips-overlay { padding: 10px; }
+    .tips-panel { max-height: 82vh; }
+    .tips-list { grid-template-columns: 1fr; }
+  }
+
+
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header id="top">
+  <h1><span>Section 16</span> — ECS, ECR & Fargate</h1>
+  <p class="subtitle">My notes on running Docker containers in AWS: ECS, Fargate, task definitions, scaling, placement, ECR, and a peek at EKS.</p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#docker-intro">Docker Introduction</a></li>
+    <li><a href="#ecs-overview">Amazon ECS Overview</a></li>
+    <li><a href="#ecs-cluster-hands-on">Creating an ECS Cluster — Hands On</a></li>
+    <li><a href="#ecs-service-hands-on">Creating an ECS Service — Hands On</a></li>
+    <li><a href="#ecs-autoscaling">ECS Service Auto Scaling</a></li>
+    <li><a href="#ecs-rolling-updates">ECS Rolling Updates</a></li>
+    <li><a href="#ecs-architectures">ECS Solution Architectures</a></li>
+    <li><a href="#ecs-task-def">ECS Task Definitions — Deep Dive</a></li>
+    <li><a href="#ecs-task-def-hands-on">ECS Task Definitions — Hands On</a></li>
+    <li><a href="#ecs-placement">ECS Task Placement</a></li>
+    <li><a href="#ecs-cleanup">ECS Clean Up — Hands On</a></li>
+    <li><a href="#ecr">Amazon ECR</a></li>
+    <li><a href="#ecr-hands-on">Amazon ECR — Hands On</a></li>
+    <li><a href="#eks">Amazon EKS</a></li>
+    <li><a href="#cheatsheet">Cheat Sheet</a></li>
+  </ol>
+</nav>
+
+<!-- 1. DOCKER INTRO -->
+<section class="card" id="docker-intro">
+  <h2><span class="badge">1</span> Docker Introduction</h2>
+
+  <p><strong>Docker</strong> is a platform for packaging and running apps in <strong>containers</strong> — standardized units that run the same way regardless of the machine or OS underneath. No compatibility issues, predictable behavior, easier to maintain and deploy — works with any language, OS, or technology.</p>
+
+  <ul>
+    <li>Common use cases: microservice architectures, lift-and-shift from on-premises to the cloud, or just "I need to run a container."</li>
+    <li>A server runs a <strong>Docker agent/daemon</strong>, and you start containers on top of it — e.g. one container running a Java app, another running Node.js. You can run multiple instances of the same container too (and even databases like MySQL in containers).</li>
+  </ul>
+
+  <h3>Docker vs a Virtual Machine</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#6b6a66"/>
+        </marker>
+      </defs>
+      <rect class="svg-box" x="20" y="10" width="330" height="180" rx="8"/>
+      <text class="svg-text" x="185" y="30" text-anchor="middle" font-weight="600">Virtual Machines</text>
+      <rect class="svg-box-accent" x="40" y="45" width="290" height="25" rx="4"/><text class="svg-text" x="185" y="62" text-anchor="middle" font-size="10">Infrastructure</text>
+      <rect class="svg-box-accent" x="40" y="75" width="290" height="25" rx="4"/><text class="svg-text" x="185" y="92" text-anchor="middle" font-size="10">Host OS</text>
+      <rect class="svg-box-accent" x="40" y="105" width="290" height="25" rx="4"/><text class="svg-text" x="185" y="122" text-anchor="middle" font-size="10">Hypervisor</text>
+      <rect class="svg-box" x="40" y="135" width="135" height="40" rx="4"/><text class="svg-text" x="107" y="152" text-anchor="middle" font-size="9">Guest OS</text><text class="svg-text" x="107" y="165" text-anchor="middle" font-size="9">+ App</text>
+      <rect class="svg-box" x="195" y="135" width="135" height="40" rx="4"/><text class="svg-text" x="262" y="152" text-anchor="middle" font-size="9">Guest OS</text><text class="svg-text" x="262" y="165" text-anchor="middle" font-size="9">+ App</text>
+
+      <rect class="svg-box" x="410" y="10" width="330" height="180" rx="8"/>
+      <text class="svg-text" x="575" y="30" text-anchor="middle" font-weight="600">Docker Containers</text>
+      <rect class="svg-box-accent" x="430" y="45" width="290" height="25" rx="4"/><text class="svg-text" x="575" y="62" text-anchor="middle" font-size="10">Infrastructure</text>
+      <rect class="svg-box-accent" x="430" y="75" width="290" height="25" rx="4"/><text class="svg-text" x="575" y="92" text-anchor="middle" font-size="10">Host OS</text>
+      <rect class="svg-box-accent" x="430" y="105" width="290" height="25" rx="4"/><text class="svg-text" x="575" y="122" text-anchor="middle" font-size="10">Docker Daemon</text>
+      <rect class="svg-box" x="430" y="135" width="90" height="40" rx="4"/><text class="svg-text" x="475" y="158" text-anchor="middle" font-size="9">App A</text>
+      <rect class="svg-box" x="530" y="135" width="90" height="40" rx="4"/><text class="svg-text" x="575" y="158" text-anchor="middle" font-size="9">App B</text>
+      <rect class="svg-box" x="630" y="135" width="90" height="40" rx="4"/><text class="svg-text" x="675" y="158" text-anchor="middle" font-size="9">App C</text>
+    </svg>
+  </div>
+  <p class="caption">VMs each carry a full guest OS on top of a hypervisor (isolated, heavier); Docker containers share the host OS via the Docker daemon (lighter, more containers per server, slightly less isolated).</p>
+
+  <h3>Where Docker images live</h3>
+  <ul>
+    <li><strong>Docker Hub</strong> — public repository, base images for lots of technologies/OSes (Ubuntu, MySQL, etc.).</li>
+    <li><strong>Amazon ECR</strong> (Elastic Container Registry) — for private images, plus a public option via the <strong>ECR Public Gallery</strong>.</li>
+  </ul>
+
+  <h3>The basic Docker workflow</h3>
+  <ol>
+    <li>Write a <strong>Dockerfile</strong> — starts from a base image, adds your files.</li>
+    <li><strong>Build</strong> it into a <strong>Docker image</strong>.</li>
+    <li><strong>Push</strong> the image to a repository (Docker Hub or ECR).</li>
+    <li><strong>Pull</strong> the image back down wherever you need it.</li>
+    <li><strong>Run</strong> it — the image becomes a running <strong>Docker container</strong>.</li>
+  </ol>
+
+  <h3>Container management options on AWS</h3>
+  <table>
+    <tr><th>Service</th><th>What it is</th></tr>
+    <tr><td>Amazon ECS</td><td>AWS's own container orchestration platform (Elastic Container Service)</td></tr>
+    <tr><td>Amazon EKS</td><td>AWS's managed version of Kubernetes (the open-source orchestration project)</td></tr>
+    <tr><td>AWS Fargate</td><td>Serverless container compute — works with both ECS and EKS</td></tr>
+    <tr><td>Amazon ECR</td><td>Stores your container images</td></tr>
+  </table>
+</section>
+
+<!-- 2. ECS OVERVIEW -->
+<section class="card" id="ecs-overview">
+  <h2><span class="badge">2</span> Amazon ECS Overview</h2>
+
+  <p>ECS = <strong>Elastic Container Service</strong>. You launch Docker containers as an <strong>ECS Task</strong> on an <strong>ECS Cluster</strong>. There are two launch types.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 170" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="20" width="340" height="130" rx="8"/>
+      <text class="svg-text" x="190" y="42" text-anchor="middle" font-weight="600">EC2 Launch Type</text>
+      <text class="svg-label" x="190" y="60" text-anchor="middle" font-size="9">You provision & maintain EC2 instances</text>
+      <rect class="svg-box-accent" x="40" y="75" width="90" height="55" rx="5"/><text class="svg-text" x="85" y="98" text-anchor="middle" font-size="9">EC2 + ECS Agent</text><text class="svg-text" x="85" y="115" text-anchor="middle" font-size="9">tasks</text>
+      <rect class="svg-box-accent" x="145" y="75" width="90" height="55" rx="5"/><text class="svg-text" x="190" y="98" text-anchor="middle" font-size="9">EC2 + ECS Agent</text><text class="svg-text" x="190" y="115" text-anchor="middle" font-size="9">tasks</text>
+      <rect class="svg-box-accent" x="250" y="75" width="90" height="55" rx="5"/><text class="svg-text" x="295" y="98" text-anchor="middle" font-size="9">EC2 + ECS Agent</text><text class="svg-text" x="295" y="115" text-anchor="middle" font-size="9">tasks</text>
+
+      <rect class="svg-box" x="410" y="20" width="350" height="130" rx="8"/>
+      <text class="svg-text" x="585" y="42" text-anchor="middle" font-weight="600">Fargate Launch Type</text>
+      <text class="svg-label" x="585" y="60" text-anchor="middle" font-size="9">Serverless — no instances to manage</text>
+      <rect class="svg-box-accent" x="440" y="80" width="90" height="45" rx="5"/><text class="svg-text" x="485" y="106" text-anchor="middle" font-size="9">Task</text>
+      <rect class="svg-box-accent" x="545" y="80" width="90" height="45" rx="5"/><text class="svg-text" x="590" y="106" text-anchor="middle" font-size="9">Task</text>
+      <rect class="svg-box-accent" x="650" y="80" width="90" height="45" rx="5"/><text class="svg-text" x="695" y="106" text-anchor="middle" font-size="9">Task</text>
+    </svg>
+  </div>
+  <p class="caption">EC2 launch type: you manage the fleet of EC2 instances tasks land on. Fargate: you just define tasks and AWS runs them — no server management at all.</p>
+
+  <table>
+    <tr><th></th><th>EC2 Launch Type</th><th>Fargate Launch Type</th></tr>
+    <tr><td>Infrastructure</td><td>You provision & maintain EC2 instances, each running the <strong>ECS Agent</strong> to register with the cluster</td><td>Fully serverless — no EC2 instances to manage</td></tr>
+    <tr><td>Scaling</td><td>You manage instance capacity too</td><td>Just increase the number of tasks</td></tr>
+    <tr><td>Exam guidance</td><td>—</td><td>The exam pushes Fargate a lot — it's simpler to manage</td></tr>
+  </table>
+
+  <h3>IAM Roles for ECS</h3>
+  <table>
+    <tr><th>Role</th><th>Used by</th><th>Purpose</th></tr>
+    <tr><td>EC2 Instance Profile</td><td>The ECS Agent (EC2 launch type only)</td><td>Make API calls to ECS (register instance), CloudWatch Logs, ECR (pull images), Secrets Manager/SSM Parameter Store</td></tr>
+    <tr><td>ECS Task Role</td><td>Each individual task (both EC2 and Fargate)</td><td>Lets that specific task call other AWS services — e.g. Task A → S3, Task B → DynamoDB. Defined in the task definition, so different tasks can have different permissions.</td></tr>
+  </table>
+
+  <h3>Load Balancer integration</h3>
+  <ul>
+    <li><strong>Application Load Balancer (ALB)</strong> — supports most use cases, works with Fargate. Good default choice.</li>
+    <li><strong>Network Load Balancer (NLB)</strong> — only if you need very high throughput/performance, or need AWS PrivateLink.</li>
+    <li><strong>Classic Load Balancer</strong> — old generation, not recommended, doesn't support Fargate.</li>
+  </ul>
+
+  <h3>Persistent data: EFS</h3>
+  <p>To share data across tasks (regardless of AZ), mount an <strong>Amazon EFS</strong> file system — it's compatible with both EC2 and Fargate launch types since it's a network file system.</p>
+
+  <div class="callout tip">
+    <strong class="tag">Tip</strong>
+    The "ultimate combo" for a fully serverless setup: Fargate for compute + EFS for shared storage — no servers to manage anywhere, pay-as-you-go.
+  </div>
+</section>
+
+<!-- 3. CREATE CLUSTER HANDS ON -->
+<section class="card" id="ecs-cluster-hands-on">
+  <h2><span class="badge">3</span> Creating an ECS Cluster — Hands On</h2>
+
+  <p>When creating a cluster, under <strong>Infrastructure</strong> you choose how to get capacity:</p>
+  <ul>
+    <li><strong>Fargate only</strong> — fully serverless.</li>
+    <li><strong>Fargate + AWS-managed instances</strong> — AWS manages the EC2 instances behind the scenes for you (you just create an instance profile + infrastructure role).</li>
+    <li><strong>Fargate + self-managed instances</strong> — the older way: you create your own Auto Scaling Group, choose the AMI/instance type, etc.</li>
+  </ul>
+
+  <p>Creating a cluster with self-managed instances actually spins up an <strong>Auto Scaling Group</strong> behind the scenes (e.g. named <code>Infra-ECS-Cluster</code>). Inside the cluster, you'll see <strong>capacity providers</strong>:</p>
+  <ul>
+    <li><code>FARGATE</code> — launch Fargate tasks.</li>
+    <li><code>FARGATE_SPOT</code> — launch Fargate tasks on Spot capacity.</li>
+    <li>An <strong>ASG provider</strong> — launch tasks on the EC2 instances managed by your Auto Scaling Group.</li>
+  </ul>
+
+  <p>Bumping the ASG's desired capacity spins up an EC2 instance that registers itself as a <strong>container instance</strong> in the cluster, showing available CPU/memory — that's the capacity tasks can be placed into.</p>
+</section>
+
+<!-- 4. CREATE SERVICE HANDS ON -->
+<section class="card" id="ecs-service-hands-on">
+  <h2><span class="badge">4</span> Creating an ECS Service — Hands On</h2>
+
+  <p>Before creating a service, you need a <strong>task definition</strong>: name it, choose Fargate or EC2, OS/architecture, task size (vCPU + memory), and:</p>
+  <ul>
+    <li><strong>Task role</strong> — optional IAM role if the container needs to call AWS services.</li>
+    <li><strong>Task execution role</strong> — created automatically if it doesn't exist yet.</li>
+    <li><strong>Container</strong> — name, image URL (e.g. pulled straight from Docker Hub), port mappings (e.g. container port 80), resource limits, env vars, logging.</li>
+    <li><strong>Storage</strong> — Fargate provides some ephemeral storage by default.</li>
+  </ul>
+
+  <h3>Launching the service</h3>
+  <ul>
+    <li>Pick the task definition + revision, name the service, choose Fargate as the compute config.</li>
+    <li><strong>Deployment configuration: replica</strong> — set how many tasks you want running (e.g. start with 1).</li>
+    <li><strong>Networking</strong> — pick subnets, create a security group allowing HTTP from anywhere, enable a public IP.</li>
+    <li><strong>Load balancing</strong> — create an ALB + target group so traffic reaches the tasks on port 80.</li>
+  </ul>
+
+  <div class="callout tip">
+    <strong class="tag">Good to know</strong>
+    Scaling up is as simple as updating the service's desired task count (e.g. 1 → 3) — Fargate automatically provisions whatever resources are needed behind the scenes, and the ALB load-balances traffic across all running tasks (refreshing the page shows a different container IP each time).
+  </div>
+
+  <p>To wind a demo down without deleting anything: update the service's desired task count to 0, and (if using EC2 launch type) set the ASG's desired capacity to 0 too.</p>
+</section>
+
+<!-- 5. AUTO SCALING -->
+<section class="card" id="ecs-autoscaling">
+  <h2><span class="badge">5</span> ECS Service Auto Scaling</h2>
+
+  <p>ECS Service Auto Scaling (via <strong>AWS Application Auto Scaling</strong>) can automatically increase/decrease the number of tasks based on:</p>
+  <ul>
+    <li><strong>CPU Utilization</strong> of the ECS service</li>
+    <li><strong>Memory Utilization</strong> of the ECS service</li>
+    <li><strong>ALB Request Count Per Target</strong></li>
+  </ul>
+
+  <p>Scaling types: <strong>Target Tracking</strong> (track a target value for one of the metrics above), <strong>Step Scaling</strong>, or <strong>Scheduled Scaling</strong> (for predictable load changes).</p>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Scaling your ECS <em>service</em> (task count) is <strong>not the same</strong> as scaling the underlying EC2 <em>cluster</em> capacity (if you're on the EC2 launch type). That's exactly why Fargate makes auto scaling simpler — there's no separate instance layer to scale.
+  </div>
+
+  <h3>Scaling the EC2 instances themselves (EC2 launch type only)</h3>
+  <table>
+    <tr><th>Method</th><th>How it works</th></tr>
+    <tr><td>Auto Scaling Group Scaling</td><td>Scale the ASG directly (e.g. on CPU utilization) — adds EC2 instances over time</td></tr>
+    <tr><td>ECS Cluster Capacity Provider (recommended)</td><td>Smarter — automatically scales the paired ASG as soon as the cluster lacks capacity to place new tasks</td></tr>
+  </table>
+</section>
+
+<!-- 6. ROLLING UPDATES -->
+<section class="card" id="ecs-rolling-updates">
+  <h2><span class="badge">6</span> ECS Rolling Updates</h2>
+
+  <p>When updating an ECS service (e.g. v1 → v2), two settings control how tasks get replaced: <strong>minimum healthy percent</strong> and <strong>maximum percent</strong> (defaults: 100% and 200%).</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 190" xmlns="http://www.w3.org/2000/svg">
+      <text class="svg-text" x="20" y="25" font-size="11" font-weight="600">Min 50% / Max 100% (start: 4 tasks)</text>
+      <rect class="svg-box" x="20" y="35" width="60" height="30" rx="4"/><text class="svg-label" x="50" y="80" text-anchor="middle" font-size="9">4 old</text>
+      <path class="svg-arrow" d="M90,50 L150,50"/>
+      <rect class="svg-box" x="150" y="35" width="60" height="30" rx="4"/><text class="svg-label" x="180" y="80" text-anchor="middle" font-size="9">2 old (50%)</text>
+      <path class="svg-arrow" d="M220,50 L280,50"/>
+      <rect class="svg-box-accent" x="280" y="35" width="90" height="30" rx="4"/><text class="svg-label" x="325" y="80" text-anchor="middle" font-size="9">2 old + 2 new (100%)</text>
+      <path class="svg-arrow" d="M380,50 L440,50"/>
+      <rect class="svg-box-accent" x="440" y="35" width="60" height="30" rx="4"/><text class="svg-label" x="470" y="80" text-anchor="middle" font-size="9">2 new (50%)</text>
+      <path class="svg-arrow" d="M510,50 L570,50"/>
+      <rect class="svg-box-accent" x="570" y="35" width="90" height="30" rx="4"/><text class="svg-label" x="615" y="80" text-anchor="middle" font-size="9">4 new (100%)</text>
+
+      <text class="svg-text" x="20" y="115" font-size="11" font-weight="600">Min 100% / Max 150% (start: 4 tasks)</text>
+      <rect class="svg-box" x="20" y="125" width="60" height="30" rx="4"/><text class="svg-label" x="50" y="170" text-anchor="middle" font-size="9">4 old (100%)</text>
+      <path class="svg-arrow" d="M90,140 L150,140"/>
+      <rect class="svg-box-accent" x="150" y="125" width="120" height="30" rx="4"/><text class="svg-label" x="210" y="170" text-anchor="middle" font-size="9">4 old + 2 new (150%)</text>
+      <path class="svg-arrow" d="M280,140 L340,140"/>
+      <rect class="svg-box-accent" x="340" y="125" width="90" height="30" rx="4"/><text class="svg-label" x="385" y="170" text-anchor="middle" font-size="9">2 old + 2 new (100%)</text>
+      <path class="svg-arrow" d="M440,140 L500,140"/>
+      <rect class="svg-box-accent" x="500" y="125" width="120" height="30" rx="4"/><text class="svg-label" x="560" y="170" text-anchor="middle" font-size="9">2 old + 4 new (150%)</text>
+      <path class="svg-arrow" d="M630,140 L690,140"/>
+      <rect class="svg-box-accent" x="690" y="125" width="70" height="30" rx="4"/><text class="svg-label" x="725" y="170" text-anchor="middle" font-size="9">4 new (100%)</text>
+    </svg>
+  </div>
+  <p class="caption">Lower minimum-healthy% allows terminating old tasks first (dips below 100% capacity); higher maximum% allows creating new tasks first (temporarily exceeds 100%) before removing the old ones.</p>
+
+  <ul>
+    <li><strong>Min 50% / Max 100%</strong>: terminates old tasks down to 50%, then creates new ones back up to 100%, repeating until fully replaced.</li>
+    <li><strong>Min 100% / Max 150%</strong>: creates new tasks first (up to 150%), then terminates old ones back to 100%, repeating until fully replaced — capacity never dips below 100%.</li>
+  </ul>
+</section>
+
+<!-- 7. ARCHITECTURES -->
+<section class="card" id="ecs-architectures">
+  <h2><span class="badge">7</span> ECS Solution Architectures</h2>
+
+  <h3>1. EventBridge-triggered processing (S3 → ECS → DynamoDB)</h3>
+  <p>User uploads to S3 → S3 events go to EventBridge → a rule runs an ECS/Fargate task → the task (using an ECS task role) processes the object and writes results to DynamoDB. Fully serverless image/object processing.</p>
+
+  <h3>2. Scheduled batch processing</h3>
+  <p>An EventBridge <strong>schedule</strong> (e.g. every hour) triggers an ECS/Fargate task with a task role granting S3 access — the task does batch processing on a schedule, fully serverless.</p>
+
+  <h3>3. ECS + SQS with auto scaling</h3>
+  <p>An ECS service polls an SQS queue for messages. Enable ECS Service Auto Scaling so the number of tasks grows with the number of queued messages.</p>
+
+  <h3>4. Reacting to task lifecycle events</h3>
+  <p>EventBridge can also capture events <em>from</em> your ECS cluster — e.g. "task state change: stopped" with a reason — which you can route to an SNS topic to alert administrators.</p>
+</section>
+
+<!-- 8. TASK DEFINITIONS DEEP DIVE -->
+<section class="card" id="ecs-task-def">
+  <h2><span class="badge">8</span> ECS Task Definitions — Deep Dive</h2>
+
+  <p>A task definition (written in JSON, with a console UI to help) tells ECS how to run one or more Docker containers. Key fields: image name, port bindings, CPU/memory, environment variables, networking, IAM role, and logging config. You can define <strong>up to 10 containers</strong> per task definition.</p>
+
+  <h3>Container port vs host port</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 780 190" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="20" width="330" height="150" rx="8"/>
+      <text class="svg-text" x="185" y="42" text-anchor="middle" font-weight="600" font-size="12">EC2 Launch Type</text>
+      <text class="svg-label" x="185" y="60" text-anchor="middle" font-size="9">Dynamic host port mapping</text>
+      <rect class="svg-box-accent" x="40" y="75" width="120" height="70" rx="5"/>
+      <text class="svg-text" x="100" y="98" text-anchor="middle" font-size="9">Task A</text>
+      <text class="svg-label" x="100" y="115" text-anchor="middle" font-size="9">container:80</text>
+      <text class="svg-label" x="100" y="130" text-anchor="middle" font-size="9">host: random</text>
+      <rect class="svg-box-accent" x="190" y="75" width="120" height="70" rx="5"/>
+      <text class="svg-text" x="250" y="98" text-anchor="middle" font-size="9">Task B</text>
+      <text class="svg-label" x="250" y="115" text-anchor="middle" font-size="9">container:80</text>
+      <text class="svg-label" x="250" y="130" text-anchor="middle" font-size="9">host: random</text>
+
+      <rect class="svg-box" x="410" y="20" width="350" height="150" rx="8"/>
+      <text class="svg-text" x="585" y="42" text-anchor="middle" font-weight="600" font-size="12">Fargate Launch Type</text>
+      <text class="svg-label" x="585" y="60" text-anchor="middle" font-size="9">Each task gets its own ENI + private IP</text>
+      <rect class="svg-box-accent" x="430" y="75" width="140" height="70" rx="5"/>
+      <text class="svg-text" x="500" y="98" text-anchor="middle" font-size="9">Task A (ENI)</text>
+      <text class="svg-label" x="500" y="115" text-anchor="middle" font-size="9">container:80</text>
+      <rect class="svg-box-accent" x="590" y="75" width="140" height="70" rx="5"/>
+      <text class="svg-text" x="660" y="98" text-anchor="middle" font-size="9">Task B (ENI)</text>
+      <text class="svg-label" x="660" y="115" text-anchor="middle" font-size="9">container:80</text>
+    </svg>
+  </div>
+  <p class="caption">EC2 launch type: each task shares the host's IP but gets a random host port (only the ALB — not the Classic LB — knows how to follow this). Fargate: every task gets its own private IP via an ENI, so container ports don't need remapping.</p>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Dynamic host port mapping (EC2 launch type + ALB) means the EC2 instance's security group must allow <strong>any port</strong> from the ALB's security group, since the host port isn't known in advance. On Fargate, since every task gets its own ENI, the ENI security group just needs to allow the container's actual port (e.g. 80) from the ALB.
+  </div>
+
+  <h3>IAM roles</h3>
+  <p>ECS Task Roles are assigned <strong>at the task definition level</strong>, not at the service level — every task launched from that definition inherits that role. Different task definitions can have different roles (e.g. one with S3 access, another with DynamoDB access).</p>
+
+  <h3>Environment variables</h3>
+  <table>
+    <tr><th>Source</th><th>Use for</th></tr>
+    <tr><td>Hardcoded in the task definition</td><td>Fixed, non-secret values (e.g. a URL)</td></tr>
+    <tr><td>SSM Parameter Store / Secrets Manager</td><td>Sensitive values (API keys, DB passwords) — resolved and injected at task launch time</td></tr>
+    <tr><td>Bulk load from an S3 file</td><td>Loading many environment variables at once from a file</td></tr>
+  </table>
+
+  <h3>Sharing data between containers (bind mounts)</h3>
+  <p>A task can hold multiple containers — e.g. an app container plus a <strong>sidecar</strong> for logging/metrics. To let them share files, mount a shared data volume ("bind mount") accessible to both, e.g. at <code>/var/logs</code>.</p>
+  <ul>
+    <li><strong>EC2 tasks</strong>: the bind mount is the EC2 instance's own storage — tied to that instance's lifecycle.</li>
+    <li><strong>Fargate tasks</strong>: uses ephemeral storage (20GB–200GB available) — tied to the task's lifecycle; disappears when the task does.</li>
+  </ul>
+</section>
+
+<!-- 9. TASK DEFINITIONS HANDS ON -->
+<section class="card" id="ecs-task-def-hands-on">
+  <h2><span class="badge">9</span> ECS Task Definitions — Hands On</h2>
+
+  <p>This hands-on lecture revisits the same task definition concepts covered in the deep dive — container/host port mapping, task roles being defined at the task-definition level, environment variable sources, and bind mounts for sharing data between sidecar containers. See the previous card for the full breakdown.</p>
+</section>
+
+<!-- 10. TASK PLACEMENT -->
+<section class="card" id="ecs-placement">
+  <h2><span class="badge">10</span> ECS Task Placement</h2>
+
+  <div class="callout warning">
+    <strong class="tag">Important</strong>
+    Task placement strategies and constraints only apply to the <strong>EC2 launch type</strong>. On Fargate, AWS decides where to run tasks for you — there's no backend instance to place onto.
+  </div>
+
+  <h3>How ECS decides where to place a task</h3>
+  <ol>
+    <li>Identify instances that satisfy the task's CPU/memory/port requirements.</li>
+    <li>Filter by any <strong>task placement constraints</strong>.</li>
+    <li>Pick the instance that best matches the <strong>task placement strategy</strong> (best-effort, not guaranteed).</li>
+  </ol>
+
+  <h3>Placement strategies</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 780 170" xmlns="http://www.w3.org/2000/svg">
+      <text class="svg-text" x="130" y="20" text-anchor="middle" font-weight="600" font-size="12">binpack</text>
+      <rect class="svg-box-accent" x="30" y="35" width="200" height="30" rx="4"/><text class="svg-label" x="130" y="55" text-anchor="middle" font-size="9">Instance 1: full of tasks</text>
+      <rect class="svg-box" x="30" y="75" width="200" height="30" rx="4"/><text class="svg-label" x="130" y="95" text-anchor="middle" font-size="9">Instance 2: empty</text>
+      <text class="svg-label" x="130" y="120" text-anchor="middle" font-size="9">Fills one instance before using the next — minimizes instance count</text>
+
+      <text class="svg-text" x="390" y="20" text-anchor="middle" font-weight="600" font-size="12">random</text>
+      <rect class="svg-box-accent" x="290" y="35" width="90" height="30" rx="4"/><text class="svg-label" x="335" y="55" text-anchor="middle" font-size="9">Instance 1</text>
+      <rect class="svg-box-accent" x="400" y="35" width="90" height="30" rx="4"/><text class="svg-label" x="445" y="55" text-anchor="middle" font-size="9">Instance 2</text>
+      <text class="svg-label" x="390" y="90" text-anchor="middle" font-size="9">Tasks land wherever — no optimization logic</text>
+
+      <text class="svg-text" x="650" y="20" text-anchor="middle" font-weight="600" font-size="12">spread</text>
+      <rect class="svg-box-accent" x="560" y="35" width="60" height="30" rx="4"/><text class="svg-label" x="590" y="55" text-anchor="middle" font-size="8">AZ-A</text>
+      <rect class="svg-box-accent" x="630" y="35" width="60" height="30" rx="4"/><text class="svg-label" x="660" y="55" text-anchor="middle" font-size="8">AZ-B</text>
+      <rect class="svg-box-accent" x="700" y="35" width="60" height="30" rx="4"/><text class="svg-label" x="730" y="55" text-anchor="middle" font-size="8">AZ-C</text>
+      <text class="svg-label" x="650" y="90" text-anchor="middle" font-size="9">Evenly distributed — maximizes availability</text>
+    </svg>
+  </div>
+
+  <table>
+    <tr><th>Strategy</th><th>Behavior</th><th>Good for</th></tr>
+    <tr><td><code>binpack</code></td><td>Fills one instance's CPU/memory before moving to the next</td><td>Cost saving — fewer instances in use</td></tr>
+    <tr><td><code>random</code></td><td>No logic, purely random placement</td><td>Simple, not optimal</td></tr>
+    <tr><td><code>spread</code></td><td>Evenly distributes tasks across a value (e.g. AZ, instance ID)</td><td>High availability</td></tr>
+  </table>
+
+  <p>Strategies can be combined (e.g. spread across AZ, then binpack on memory within each AZ).</p>
+
+  <h3>Placement constraints</h3>
+  <table>
+    <tr><th>Constraint</th><th>Meaning</th></tr>
+    <tr><td><code>distinctInstance</code></td><td>Each task must land on a different container instance — never two tasks on the same instance</td></tr>
+    <tr><td><code>memberOf</code></td><td>Only place tasks on instances matching a cluster query language expression (e.g. only <code>t2</code> instance types)</td></tr>
+  </table>
+</section>
+
+<!-- 11. CLEAN UP -->
+<section class="card" id="ecs-cleanup">
+  <h2><span class="badge">11</span> ECS Clean Up — Hands On</h2>
+
+  <ol>
+    <li>Set the service's desired task count to 0, then delete the service (type <code>Delete</code> to confirm). This kicks off a CloudFormation stack deletion behind the scenes — removing the ECS service, load balancer listener, load balancer, security group, and target groups.</li>
+    <li>Once the service is fully gone, delete the cluster — this also triggers CloudFormation to remove the capacity provider, Auto Scaling Group, cluster, and launch templates.</li>
+    <li>Task definitions can be left as-is (they're free, just definitions) or explicitly <strong>deregistered</strong> if you want to clean them up too.</li>
+  </ol>
+</section>
+
+<!-- 12. ECR -->
+<section class="card" id="ecr">
+  <h2><span class="badge">12</span> Amazon ECR</h2>
+
+  <p><strong>ECR = Elastic Container Registry</strong> — stores and manages Docker images on AWS.</p>
+
+  <ul>
+    <li><strong>Private repositories</strong> — for your own account(s) only.</li>
+    <li><strong>Public repositories</strong> — published to the <strong>ECR Public Gallery</strong>.</li>
+    <li>Fully integrated with ECS — images are backed by S3 under the hood.</li>
+    <li>Access is controlled via <strong>IAM</strong> — e.g. an EC2 instance needs an IAM role permitting it to pull images.</li>
+  </ul>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box-accent" x="20" y="45" width="160" height="45" rx="6"/>
+      <text class="svg-text" x="100" y="72" text-anchor="middle" font-size="10">Amazon ECR (images)</text>
+      <path class="svg-arrow" d="M180,67 L300,67"/>
+      <text class="svg-label" x="240" y="55" text-anchor="middle" font-size="9">pull (via IAM role)</text>
+      <rect class="svg-box" x="300" y="45" width="180" height="45" rx="6"/>
+      <text class="svg-text" x="390" y="67" text-anchor="middle" font-size="10">EC2 instance (ECS cluster)</text>
+      <path class="svg-arrow" d="M480,67 L600,67"/>
+      <text class="svg-label" x="540" y="55" text-anchor="middle" font-size="9">runs</text>
+      <rect class="svg-box" x="600" y="45" width="160" height="45" rx="6"/>
+      <text class="svg-text" x="680" y="67" text-anchor="middle" font-size="10">Running container</text>
+    </svg>
+  </div>
+  <p class="caption">The EC2 instance uses its IAM role to authenticate and pull the image from ECR, then starts the container from it.</p>
+
+  <p>Extra ECR features: <strong>image vulnerability scanning</strong>, versioning, image tags, and image lifecycle policies.</p>
+
+  <div class="callout key">
+    <strong class="tag">Exam point</strong>
+    Anytime the exam mentions "storing Docker images" on AWS — think <strong>ECR</strong>.
+  </div>
+</section>
+
+<!-- 13. ECR HANDS ON -->
+<section class="card" id="ecr-hands-on">
+  <h2><span class="badge">13</span> Amazon ECR — Hands On</h2>
+
+  <ol>
+    <li>Authenticate Docker CLI to ECR: <code>aws ecr get-login-password</code> piped into <code>docker login</code> (username <code>AWS</code>).</li>
+    <li>Create a private repository (options include tag immutability to block overwriting the same tag twice, and image scan-on-push — though registry-level scanning via <strong>Amazon Inspector</strong> is the modern recommended approach).</li>
+    <li><code>docker pull</code> an existing image (e.g. from Docker Hub).</li>
+    <li><code>docker tag</code> it to match your ECR repository's URI + tag.</li>
+    <li><code>docker push</code> — Docker recognizes the retagged name and pushes it into your ECR repository.</li>
+  </ol>
+
+  <div class="callout warning">
+    <strong class="tag">Don't forget</strong>
+    If push/pull fails, it's almost always an <strong>IAM permissions</strong> issue — check your policies.
+  </div>
+
+  <p>Once pushed, you can point a new task definition at this image URL instead of pulling from Docker Hub.</p>
+</section>
+
+<!-- 14. EKS -->
+<section class="card" id="eks">
+  <h2><span class="badge">14</span> Amazon EKS</h2>
+
+  <p><strong>EKS = Elastic Kubernetes Service</strong> — AWS's managed way to run <strong>Kubernetes</strong>, an open-source container orchestration system. It's an alternative to ECS with the same general goal but a different (and cloud-agnostic) API.</p>
+
+  <ul>
+    <li>Supports both <strong>EC2 launch mode</strong> (worker node EC2 instances) and <strong>Fargate mode</strong> (serverless).</li>
+    <li>Use EKS if your company already uses Kubernetes on-prem or on another cloud, or wants to stay cloud-agnostic (Kubernetes also runs on Azure, Google Cloud, etc.) for easier multi-cloud migration.</li>
+  </ul>
+
+  <div class="diagram">
+    <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg">
+      <rect class="svg-box" x="20" y="20" width="330" height="110" rx="8"/>
+      <text class="svg-text" x="185" y="40" text-anchor="middle" font-weight="600" font-size="11">EKS Worker Node (EC2)</text>
+      <rect class="svg-box-accent" x="40" y="55" width="130" height="55" rx="5"/><text class="svg-text" x="105" y="85" text-anchor="middle" font-size="9">Pod</text>
+      <rect class="svg-box-accent" x="190" y="55" width="130" height="55" rx="5"/><text class="svg-text" x="255" y="85" text-anchor="middle" font-size="9">Pod</text>
+
+      <rect class="svg-box" x="410" y="20" width="350" height="110" rx="8"/>
+      <text class="svg-text" x="585" y="40" text-anchor="middle" font-weight="600" font-size="11">EKS Fargate mode</text>
+      <rect class="svg-box-accent" x="430" y="55" width="150" height="55" rx="5"/><text class="svg-text" x="505" y="85" text-anchor="middle" font-size="9">Pod (no node to manage)</text>
+      <rect class="svg-box-accent" x="590" y="55" width="150" height="55" rx="5"/><text class="svg-text" x="665" y="85" text-anchor="middle" font-size="9">Pod (no node to manage)</text>
+    </svg>
+  </div>
+  <p class="caption">EKS "pods" (Kubernetes' equivalent of ECS tasks) run on worker node EC2 instances you manage, or serverlessly via Fargate mode.</p>
+
+  <h3>Node types</h3>
+  <table>
+    <tr><th>Type</th><th>Details</th></tr>
+    <tr><td>Managed Node Groups</td><td>AWS creates/manages the EC2 nodes as part of an ASG; supports On-Demand & Spot</td></tr>
+    <tr><td>Self-managed nodes</td><td>You create and register your own nodes into the cluster (can use the EKS-optimized AMI or build your own); more control, more work; supports On-Demand & Spot</td></tr>
+    <tr><td>Fargate mode</td><td>No nodes at all — fully serverless, no maintenance</td></tr>
+  </table>
+
+  <h3>Storage on EKS</h3>
+  <p>Attach data volumes via a <strong>StorageClass manifest</strong>, using a <strong>Container Storage Interface (CSI)</strong> compliant driver. Supported: Amazon EBS, Amazon EFS (the only one that works with Fargate), Amazon FSx for Lustre, and Amazon FSx for NetApp ONTAP.</p>
+</section>
+
+<!-- CHEAT SHEET -->
+<section class="card cheatsheet" id="cheatsheet">
+  <h2><span class="badge">✓</span> Cheat Sheet</h2>
+
+  <h3>Key facts to remember</h3>
+  <ul>
+    <li>ECS launch types: <strong>EC2</strong> (you manage instances + ECS Agent) vs <strong>Fargate</strong> (serverless, exam-favorite).</li>
+    <li>EC2 Instance Profile → used by the ECS Agent. ECS Task Role → used by individual tasks, defined at the <strong>task definition</strong> level.</li>
+    <li>ALB works with Fargate and supports dynamic host port mapping (EC2 launch type); Classic LB does not support either.</li>
+    <li>EFS is the shared-storage option compatible with both EC2 and Fargate launch types (and the only EKS storage class that works with Fargate).</li>
+    <li>Service Auto Scaling metrics: CPU utilization, memory utilization, ALB request count per target. Use ECS Cluster Capacity Provider (not plain ASG scaling) to also scale the EC2 fleet.</li>
+    <li>Rolling updates are controlled by <strong>minimum healthy percent</strong> and <strong>maximum percent</strong>.</li>
+    <li>Task placement (EC2 launch type only): <code>binpack</code> (cost saving), <code>random</code> (simple), <code>spread</code> (high availability); constraints: <code>distinctInstance</code>, <code>memberOf</code>.</li>
+    <li>Up to 10 containers per task definition; sidecars share data via bind mounts.</li>
+    <li>ECR stores Docker images (private or public gallery), backed by S3, access controlled by IAM; supports vulnerability scanning, tags, lifecycle policies.</li>
+    <li>EKS = managed Kubernetes; cloud-agnostic API; supports EC2 or Fargate mode, and Managed/self-managed node groups.</li>
+  </ul>
+
+  <h3>Decision guide</h3>
+  <table>
+    <tr><th>Need</th><th>Use</th></tr>
+    <tr><td>Simplest container hosting, no server management</td><td>ECS with Fargate launch type</td></tr>
+    <tr><td>Full control over the underlying instances</td><td>ECS with EC2 launch type</td></tr>
+    <tr><td>Already using Kubernetes / need cloud portability</td><td>Amazon EKS</td></tr>
+    <tr><td>Store your own Docker images</td><td>Amazon ECR</td></tr>
+    <tr><td>Share files between sidecar containers</td><td>Bind mount (task definition volume)</td></tr>
+    <tr><td>Persistent storage shared across AZs/tasks</td><td>Amazon EFS</td></tr>
+    <tr><td>Minimize EC2 instance count for cost</td><td><code>binpack</code> placement strategy</td></tr>
+    <tr><td>Maximize availability across AZs</td><td><code>spread</code> placement strategy</td></tr>
+  </table>
+
+  <h3>Mental model</h3>
+  <p>Docker packages your app into a portable container; ECS (or EKS if you need Kubernetes) is the orchestrator that decides where those containers run and keeps them healthy; Fargate removes the "where" entirely by making compute serverless; ECR is simply where your container images live before ECS pulls and runs them. Everything else in this section — task definitions, IAM task roles, placement strategies, rolling updates, auto scaling — is really about answering one question as cleanly as possible: how many copies of my container should run, where, with what permissions, and how do I change that safely over time.</p>
+</section>
+
+<a class="back-to-top" href="#top">↑ Back to top</a>
+
+</div>
+<script>
+(function () {
+  const cards = document.querySelectorAll('section.card, section.lecture, div.card');
+  cards.forEach((card) => {
+    if (card.querySelector(':scope > .study-lens')) return;
+    if (card.classList.contains('cheatsheet')) return;
+    const id = (card.id || '').toLowerCase();
+    if (id.includes('summary') || id === 'cheatsheet') return;
+
+    const heading = card.querySelector(':scope > h2, :scope > h3');
+    if (!heading) return;
+
+    const rawTitle = heading.textContent.replace(/^[0-9✓#]+\s*/, '').trim();
+    if (!rawTitle) return;
+
+    const safeTitle = escapeHtml(rawTitle);
+    const lens = document.createElement('div');
+    lens.className = 'study-lens';
+    lens.innerHTML = [
+      '<div class="lens-label">Study focus</div>',
+      '<p><strong>Target:</strong> finish this topic by being able to explain <em>' + safeTitle + '</em> in plain words, then connect it to one real AWS use case.</p>',
+      '<ul>',
+      '<li><strong>Before reading:</strong> predict what problem this AWS feature solves.</li>',
+      '<li><strong>While reading:</strong> mark the service limits, pricing/security clues, and any exam trap words.</li>',
+      '<li><strong>After reading:</strong> say when you would use it, when you would avoid it, and which AWS service it is often confused with.</li>',
+      '</ul>',
+      '<details class="recall-drill">',
+      '<summary>Active recall check</summary>',
+      '<ol>',
+      '<li>What is the one-sentence purpose of ' + safeTitle + '?</li>',
+      '<li>Which configuration choices or limits matter most here?</li>',
+      '<li>What real system would need this?</li>',
+      '<li>What mistake would a beginner make with this topic?</li>',
+      '</ol>',
+      '</details>'
+    ].join('');
+    heading.insertAdjacentElement('afterend', lens);
+  });
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
+  }
+}());
+</script>
+
+<script>
+(function () {
+  if (document.querySelector('.tips-trigger')) return;
+
+  const glossary = [
+    ['API Gateway', 'Managed front door for APIs. It receives client requests, applies features like auth/throttling, then sends traffic to Lambda, HTTP backends, or AWS services.'],
+    ['Application Load Balancer', 'Layer 7 load balancer for HTTP/HTTPS traffic. Often compared with API Gateway when exposing web apps or Lambda.'],
+    ['Auto Scaling Group', 'A group that keeps the desired number of EC2 instances running and can scale capacity based on policies.'],
+    ['Availability Zone', 'One isolated data center zone inside a Region. Multi-AZ designs survive failure of one zone.'],
+    ['CloudFormation', 'AWS infrastructure-as-code service. Templates describe resources; stacks create and update them.'],
+    ['CloudFront', 'AWS content delivery network. It caches content at edge locations close to users.'],
+    ['CloudWatch', 'AWS monitoring service for metrics, logs, alarms, and events from AWS resources.'],
+    ['Cognito', 'AWS identity service for app users. User Pools handle sign-in; Identity Pools give temporary AWS credentials.'],
+    ['CodeDeploy', 'Deployment service that rolls new application versions to EC2, Lambda, ECS, or on-prem servers.'],
+    ['CodePipeline', 'CI/CD workflow service that connects source, build, test, and deploy stages.'],
+    ['DynamoDB', 'Serverless NoSQL key-value/document database. Design starts with access patterns, partition keys, and sort keys.'],
+    ['EventBridge', 'Event bus for routing events between AWS services, apps, and scheduled rules.'],
+    ['Internet Gateway', 'VPC component that lets public subnet resources communicate with the internet.'],
+    ['Lambda', 'Serverless compute for short-running functions triggered by events or requests.'],
+    ['NAT Gateway', 'Lets private subnet resources start outbound internet connections without being directly reachable from the internet.'],
+    ['OpenSearch', 'Search and analytics engine used for full-text search, log analytics, and dashboards.'],
+    ['Parameter Store', 'Systems Manager feature for storing config values and secrets; can integrate with KMS.'],
+    ['Private CA', 'Private certificate authority for internal TLS certificates, not public internet trust.'],
+    ['Route 53', 'AWS DNS service. It maps names like example.com to targets such as load balancers or IPs.'],
+    ['Security Group', 'Stateful firewall attached to ENIs/resources. Return traffic is automatically allowed.'],
+    ['Step Functions', 'Workflow service for orchestrating Lambda functions and AWS services with retries, branching, and state.'],
+    ['VPC Endpoint', 'Private connection from a VPC to supported AWS services without public internet routing.'],
+    ['access key', 'Long-term credential pair for programmatic access: Access Key ID plus Secret Access Key. Treat it like a password.'],
+    ['alias record', 'Route 53-specific DNS record that can point to AWS resources like load balancers and CloudFront distributions.'],
+    ['asynchronous', 'Caller sends work and does not wait for the final result. Failures usually need retries, DLQs, or destinations.'],
+    ['cache', 'Stored copy of data used to reduce latency, repeated work, or backend load.'],
+    ['canary', 'Gradual release pattern where a small percentage of traffic receives the new version first.'],
+    ['CIDR', 'IP range notation such as 10.0.0.0/16. Smaller suffix number means a larger network range.'],
+    ['CLI', 'Command Line Interface. For AWS, this means running AWS operations from terminal commands.'],
+    ['cold start', 'Extra startup latency when Lambda has to create a fresh execution environment.'],
+    ['concurrency', 'How many executions run at the same time. In Lambda, it directly affects scaling and throttling.'],
+    ['CORS', 'Browser security rule controlling whether frontend code from one origin can call another origin.'],
+    ['DNS', 'Name system that translates human-friendly domains into routing targets such as IP addresses.'],
+    ['DLQ', 'Dead-letter queue. Stores failed messages/events so you can inspect or replay them later.'],
+    ['edge location', 'AWS site closer to users than a Region, mainly used by CloudFront and edge compute.'],
+    ['encryption at rest', 'Data is encrypted while stored on disk, object storage, database storage, or backups.'],
+    ['encryption in transit', 'Data is encrypted while moving over the network, usually with TLS/HTTPS.'],
+    ['environment variables', 'Configuration values injected into a runtime without changing code. Secrets need extra care.'],
+    ['GSI', 'Global Secondary Index in DynamoDB. It supports alternate query patterns and has its own partition/sort key.'],
+    ['health check', 'Automated test that decides whether a target is healthy enough to receive traffic.'],
+    ['hosted zone', 'Route 53 container for DNS records for a domain. Public zones answer internet DNS queries.'],
+    ['IAM', 'Identity and Access Management. It controls who can do what in AWS.'],
+    ['idempotency', 'Design property where repeating the same request does not create unintended duplicate effects.'],
+    ['IOPS', 'Input/output operations per second. Common storage performance number for disks and databases.'],
+    ['JSON', 'Structured text format used heavily by AWS policies, templates, and API responses.'],
+    ['KMS', 'Key Management Service. It creates and controls encryption keys used by AWS services and applications.'],
+    ['least privilege', 'Security principle: grant only the permissions needed, nothing extra.'],
+    ['LSI', 'Local Secondary Index in DynamoDB. It shares the table partition key but uses a different sort key.'],
+    ['MFA', 'Multi-factor authentication. Login requires password plus a second factor such as an authenticator app.'],
+    ['origin', 'The backend source CloudFront fetches content from, such as S3, ALB, or a custom server.'],
+    ['partition key', 'Primary DynamoDB key component that determines item distribution and query access pattern.'],
+    ['policy', 'Permission document that allows or denies actions on resources, often written in JSON.'],
+    ['Region', 'Geographic AWS area containing multiple Availability Zones, such as us-east-1.'],
+    ['replication', 'Copying data to another place for durability, latency, compliance, or disaster recovery.'],
+    ['REST', 'API style based around resources, HTTP methods, and stateless requests.'],
+    ['role', 'Temporary AWS identity that can be assumed by users, services, or external accounts.'],
+    ['root account', 'The original AWS account identity with full power. Use it rarely and protect it strongly.'],
+    ['SDK', 'Software Development Kit. Language-specific library for calling AWS APIs from code.'],
+    ['sort key', 'Optional DynamoDB key component that orders items within the same partition key.'],
+    ['subnet', 'A slice of a VPC IP range placed inside one Availability Zone.'],
+    ['synchronous', 'Caller waits for the result immediately. Useful for request/response workflows.'],
+    ['throughput', 'Amount of data processed per second. Different from IOPS, which counts operations.'],
+    ['TLS', 'Encryption protocol behind HTTPS. Used to protect data in transit.'],
+    ['TTL', 'Time to live. In DNS it controls cache duration; in DynamoDB it can expire old items.'],
+    ['VPC', 'Virtual Private Cloud. Your isolated network boundary inside AWS.'],
+    ['WebSocket', 'Persistent two-way connection useful for real-time apps like chat or live updates.']
+  ];
+
+  const pageText = document.body.innerText.replace(/\s+/g, ' ');
+  const found = glossary.filter(([term]) => new RegExp('(^|[^A-Za-z0-9])' + escapeRegExp(term) + '([^A-Za-z0-9]|$)', 'i').test(pageText));
+  if (!found.length) return;
+
+  const button = document.createElement('button');
+  button.className = 'tips-trigger';
+  button.type = 'button';
+  button.setAttribute('aria-haspopup', 'dialog');
+  button.setAttribute('aria-expanded', 'false');
+  button.innerHTML = '<span class="tips-icon" aria-hidden="true">💡</span><span>Tips</span>';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'tips-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'tips-title');
+  overlay.innerHTML = [
+    '<div class="tips-panel">',
+    '<div class="tips-header">',
+    '<h2 id="tips-title">💡 Tips & assumed concepts</h2>',
+    '<button class="tips-close" type="button" aria-label="Close tips">Close</button>',
+    '</div>',
+    '<div class="tips-body">',
+    '<p class="tips-intro">These are prerequisite terms that this page uses without always stopping to define them. Read this first when a section feels abstract.</p>',
+    '<ul class="tips-list">' + found.map(([term, tip]) => '<li><strong>' + escapeHtml(term) + '</strong>' + escapeHtml(tip) + '</li>').join('') + '</ul>',
+    '</div>',
+    '</div>'
+  ].join('');
+
+  document.body.appendChild(button);
+  document.body.appendChild(overlay);
+
+  const closeButton = overlay.querySelector('.tips-close');
+  function openTips() {
+    overlay.classList.add('open');
+    button.setAttribute('aria-expanded', 'true');
+    closeButton.focus();
+  }
+  function closeTips() {
+    overlay.classList.remove('open');
+    button.setAttribute('aria-expanded', 'false');
+    button.focus();
+  }
+
+  button.addEventListener('click', openTips);
+  closeButton.addEventListener('click', closeTips);
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) closeTips();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && overlay.classList.contains('open')) closeTips();
+  });
+
+  function escapeRegExp(value) {
+    return value.replace(/[.*+?^$()|[\]\\]/g, '\\</body>').replace(/[{}]/g, '\\</body>');
+  }
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
+  }
+}());
+</script>
+
+</body>
+</html>
