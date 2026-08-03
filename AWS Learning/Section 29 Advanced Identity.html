@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script id="dark-theme-init">
+(function() {
+  var saved = localStorage.getItem('aws-notes-theme');
+  if (saved === 'dark' || (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark-mode');
+  }
+})();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <title>Section 29 — Advanced Identity — The Story</title>
@@ -385,6 +393,217 @@
     .tips-list { grid-template-columns: 1fr; }
   }
 
+</style>
+<style id="dark-theme-styles">
+  /* ══ DARK THEME OVERRIDES (Soft Slate/Charcoal - Eye Friendly) ══ */
+  html.dark-mode, body.dark-mode {
+    --bg: #181926;
+    --card-bg: #222436;
+    --card: #222436;
+    --border: #33384f;
+    --text: #c0caf5;
+    --text-muted: #94a3b8;
+    --muted: #94a3b8;
+    --code-bg: #13141f;
+    --accent: #f59e0b;
+    --accent-dark: #fbbf24;
+    --green: #34d399;
+    --green-bg: #142921;
+    --red: #f87171;
+    --red-bg: #2f1b1e;
+    --amber: #fbbf24;
+    --amber-bg: #25231c;
+    --purple: #c084fc;
+    --purple-bg: #221c35;
+    --blue: #60a5fa;
+    background-color: #181926 !important;
+    color: #c0caf5 !important;
+  }
+
+  body.dark-mode {
+    background-color: #181926 !important;
+    color: #c0caf5 !important;
+  }
+
+  /* Headers & Typography */
+  body.dark-mode header.page-header h1,
+  body.dark-mode header h1,
+  body.dark-mode header.hero h1 {
+    color: #fbbf24 !important;
+  }
+  body.dark-mode header.page-header p,
+  body.dark-mode header p.subtitle,
+  body.dark-mode header.hero p {
+    color: #94a3b8 !important;
+  }
+  body.dark-mode h2, 
+  body.dark-mode h3, 
+  body.dark-mode h4 {
+    color: #f59e0b !important;
+  }
+  body.dark-mode a {
+    color: #60a5fa;
+  }
+
+  /* Navigation / TOC */
+  body.dark-mode nav.toc {
+    background: #1f2335 !important;
+    border-color: #33384f !important;
+  }
+  body.dark-mode nav.toc h2 {
+    color: #fbbf24 !important;
+  }
+  body.dark-mode nav.toc a {
+    color: #60a5fa !important;
+  }
+  body.dark-mode nav.toc a:hover {
+    color: #93c5fd !important;
+  }
+
+  /* Cards & Sections */
+  body.dark-mode section.lecture,
+  body.dark-mode section.lesson,
+  body.dark-mode .card {
+    background: #222436 !important;
+    border-color: #33384f !important;
+    color: #c0caf5 !important;
+  }
+  body.dark-mode section.lecture h2,
+  body.dark-mode section.lesson h2,
+  body.dark-mode .card h2 {
+    color: #e2e8f0 !important;
+    border-bottom-color: #33384f !important;
+  }
+
+  /* Tables */
+  body.dark-mode table {
+    border-color: #33384f !important;
+  }
+  body.dark-mode th, 
+  body.dark-mode td {
+    border-color: #33384f !important;
+  }
+  body.dark-mode th {
+    background: #1f2335 !important;
+    color: #fbbf24 !important;
+  }
+  body.dark-mode td {
+    color: #cbd5e1 !important;
+  }
+  body.dark-mode tr:nth-child(even) td {
+    background: #1a1d2d !important;
+  }
+
+  /* Code & Pre */
+  body.dark-mode code {
+    background: #13141f !important;
+    color: #e2e8f0 !important;
+    border: 1px solid #2e324a !important;
+  }
+  body.dark-mode pre {
+    background: #13141f !important;
+    color: #e2e8f0 !important;
+    border-color: #2e324a !important;
+  }
+
+  /* Callouts & Alert Boxes */
+  body.dark-mode .callout {
+    background: #25231c !important;
+    border-left-color: #f59e0b !important;
+    color: #fef3c7 !important;
+  }
+  body.dark-mode .callout.tip {
+    background: #142921 !important;
+    border-left-color: #34d399 !important;
+    color: #d1fae5 !important;
+  }
+  body.dark-mode .callout.exam {
+    background: #2f1b1e !important;
+    border-left-color: #f87171 !important;
+    color: #fee2e2 !important;
+  }
+  body.dark-mode .callout.warn {
+    background: #321f17 !important;
+    border-left-color: #fb923c !important;
+    color: #ffedd5 !important;
+  }
+  body.dark-mode .analogy {
+    background: #1d2038 !important;
+    border-color: #6366f1 !important;
+    color: #e0e7ff !important;
+  }
+  body.dark-mode .summary-box {
+    background: #142921 !important;
+    border-color: #059669 !important;
+    color: #d1fae5 !important;
+  }
+  body.dark-mode .summary-box h3 {
+    color: #34d399 !important;
+  }
+
+  /* Badges */
+  body.dark-mode .badge.old {
+    background: #33384f !important;
+    color: #94a3b8 !important;
+  }
+  body.dark-mode .badge.new {
+    background: #142921 !important;
+    color: #34d399 !important;
+  }
+
+  /* ══ DIAGRAMS IN DARK MODE (Preserving Diagram Visual Integrity) ══ */
+  body.dark-mode .diagram {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 12px !important;
+    padding: 16px !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+  }
+  body.dark-mode .diagram-caption {
+    color: #475569 !important;
+    font-weight: 500 !important;
+  }
+
+  /* ══ FLOATING TOGGLE BUTTON STYLING ══ */
+  .theme-toggle-btn {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 10000;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 20px;
+    background: #ffffff;
+    color: #1f2937;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    user-select: none;
+  }
+  .theme-toggle-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  }
+  body.dark-mode .theme-toggle-btn {
+    background: #24273a !important;
+    color: #e2e8f0 !important;
+    border-color: #363a4f !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+  }
+  @media (max-width: 480px) {
+    .theme-toggle-btn {
+      top: 12px;
+      right: 12px;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+  }
 </style>
 </head>
 <body>
@@ -1079,5 +1298,45 @@
 }());
 </script>
 
+<!-- Dark Theme Toggle Button -->
+<button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme" title="Toggle Light/Dark Theme">
+  <span class="theme-toggle-icon">🌙</span>
+  <span class="theme-toggle-text">Dark</span>
+</button>
+
+<script id="dark-theme-script">
+(function() {
+  function setupThemeToggle() {
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+
+    function syncUI() {
+      var isDark = document.documentElement.classList.contains('dark-mode') || document.body.classList.contains('dark-mode');
+      var icon = btn.querySelector('.theme-toggle-icon');
+      var text = btn.querySelector('.theme-toggle-text');
+      if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+      if (text) text.textContent = isDark ? 'Light' : 'Dark';
+    }
+
+    if (document.documentElement.classList.contains('dark-mode')) {
+      document.body.classList.add('dark-mode');
+    }
+    syncUI();
+
+    btn.addEventListener('click', function() {
+      var isDark = document.documentElement.classList.toggle('dark-mode');
+      document.body.classList.toggle('dark-mode', isDark);
+      localStorage.setItem('aws-notes-theme', isDark ? 'dark' : 'light');
+      syncUI();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupThemeToggle);
+  } else {
+    setupThemeToggle();
+  }
+})();
+</script>
 </body>
 </html>
