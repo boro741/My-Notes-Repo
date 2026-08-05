@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Service Decision Tree</title>
+<style>
+  :root{
+    --bg1:#0f172a; --bg2:#1e293b;
+    --panel:#ffffff; --ink:#0f172a; --muted:#64748b;
+    --line:#e2e8f0;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;background:#0b1120;}
+
+  .app{display:flex;flex-direction:column;height:100vh;}
+
+  /* Header */
+  .header{
+    background:linear-gradient(135deg,#0f172a 0%,#1e293b 55%,#312e81 100%);
+    color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;
+    box-shadow:0 2px 12px rgba(0,0,0,.35); z-index:20; flex-shrink:0;
+  }
+  .header h1{font-size:19px;font-weight:700;letter-spacing:.2px;}
+  .header p{font-size:11.5px;color:#93a3c7;margin-top:2px;}
+  .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .search-box{
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+    border-radius:8px;padding:7px 12px;color:#fff;font-size:12.5px;width:220px;outline:none;
+  }
+  .search-box::placeholder{color:#93a3c7;}
+  .btn{
+    background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.22);color:#fff;
+    padding:7px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;
+    transition:all .15s ease; display:flex;align-items:center;gap:6px;
+  }
+  .btn:hover{background:rgba(255,255,255,.22);transform:translateY(-1px);}
+  .zoom-pill{color:#c7d2fe;font-size:11.5px;font-weight:600;min-width:44px;text-align:center;}
+
+  /* Path Inspector */
+  .inspector{
+    background:#fff;border-bottom:1px solid var(--line);padding:12px 24px;
+    display:flex; align-items:center; gap:16px; min-height:34px; flex-shrink:0;
+    box-shadow:0 1px 4px rgba(0,0,0,.04); z-index:15;
+  }
+  .inspector .crumbs{display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1;font-size:12.5px;}
+  .crumb{
+    display:flex;align-items:center;gap:5px;background:#f1f5f9;border:1px solid #e2e8f0;
+    border-radius:999px;padding:4px 10px;font-weight:600;color:#1e293b;white-space:nowrap;
+  }
+  .crumb.leaf{color:#fff;border-color:transparent;}
+  .cond{color:#94a3b8;font-size:11px;font-weight:600;white-space:nowrap;}
+  .cond .chip{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:6px;padding:2px 7px;}
+  .purpose-text{font-size:12.5px;color:#475569;border-left:3px solid #6366f1;padding-left:12px;max-width:38%;flex-shrink:0;}
+  .purpose-text b{color:#1e293b;}
+  .inspector .placeholder{color:#94a3b8;font-size:12.5px;font-style:italic;}
+
+  /* Canvas */
+  .canvas-wrap{flex:1;position:relative;overflow:hidden;background:#0b1120;}
+  canvas{display:block;}
+  #main{cursor:grab;}
+  #main:active{cursor:grabbing;}
+  #minimap{position:absolute;right:16px;bottom:16px;border-radius:10px;border:1px solid rgba(255,255,255,.15);
+    box-shadow:0 8px 24px rgba(0,0,0,.4); background:rgba(15,23,42,.85); cursor:pointer;}
+
+  /* Legend */
+  .legend{
+    position:absolute;left:16px;top:16px;background:rgba(15,23,42,.82);backdrop-filter:blur(6px);
+    border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 12px;
+    display:flex;flex-direction:column;gap:6px;z-index:10; max-width:210px;
+  }
+  .legend .title{font-size:10.5px;color:#93a3c7;text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin-bottom:2px;}
+  .legend-item{display:flex;align-items:center;gap:8px;font-size:11.5px;color:#e2e8f0;cursor:pointer;padding:2px 4px;border-radius:6px;transition:background .15s;}
+  .legend-item:hover{background:rgba(255,255,255,.08);}
+  .dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+
+  .shape-legend{margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.12);}
+  .shape-sample{width:22px;height:12px;border-radius:3px;flex-shrink:0;border:1.5px solid #94a3b8;}
+  .shape-sample.dashed{border-style:dashed;background:transparent;}
+  .shape-sample.solid{background:#475569;border-style:solid;}
+
+  .hint{
+    position:absolute; left:16px; bottom:16px; z-index:10; color:#64748b; font-size:11px;
+    background:rgba(15,23,42,.6); padding:6px 10px; border-radius:8px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div>
+      <h1>🌲 AWS Service Decision Tree</h1>
+      <p>Left → right decision paths, every service colored by domain · scroll to zoom, drag to pan</p>
+    </div>
+    <div class="controls">
+      <input class="search-box" id="search" placeholder="🔍 Search a service…" />
+      <button class="btn" id="fitBtn">⛶ Fit All</button>
+      <button class="btn" id="zoomInBtn">＋</button>
+      <span class="zoom-pill" id="zoomLevel">100%</span>
+      <button class="btn" id="zoomOutBtn">－</button>
+      <button class="btn" id="resetBtn">Reset</button>
+      <button class="btn" id="downloadBtn">⬇ PNG</button>
+    </div>
+  </div>
+
+  <div class="inspector" id="inspector">
+    <div class="crumbs" id="crumbs"><span class="placeholder">Hover or click any node to see its full decision path here…</span></div>
+    <div class="purpose-text" id="purposeText" style="display:none;"></div>
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="main"></canvas>
+    <div class="legend" id="legend">
+      <div class="title">Domains</div>
+      <!-- filled by JS -->
+    </div>
+    <div class="hint">Drag any node to reposition it (double-click to snap back) · Click ⬥ decision/domain nodes to collapse/expand · Click empty space to pan · Click a service to pin its path</div>
+    <canvas id="minimap" width="190" height="130"></canvas>
+  </div>
+</div>
+
+<script>
+/* ============================= DATA ============================= */
+const DOMAIN_COLORS = {
+  compute:    '#6366f1',
+  storage:    '#f59e0b',
+  database:   '#10b981',
+  networking: '#3b82f6',
+  messaging:  '#ec4899',
+  security:   '#ef4444',
+  monitoring: '#14b8a6',
+  devops:     '#8b5cf6',
+  api:        '#06b6d4',
+  analytics:  '#f97316',
+};
+const DOMAIN_NAMES = {
+  compute:'Compute & Containers', storage:'Storage & Files', database:'Databases & Caching',
+  networking:'Networking & CDN', messaging:'Messaging & Events', security:'Security & Identity',
+  monitoring:'Monitoring & Audit', devops:'DevOps & CI/CD', api:'API & Edge Compute', analytics:'Analytics & Big Data',
+};
+
+function svc(id,label,purpose,icon,extra){ return Object.assign({id,label,purpose,icon,type:'service',children:[]}, extra||{}); }
+function dec(id,label,children){ return {id,label,type:'decision',children}; }
+function dom(id,label,purpose,icon,children){ return {id,label,purpose,icon,type:'domain',domainKey:id,children}; }
+function e(edge,node){ node.edgeFromParent = edge; return node; }
+
+const root = {
+  id:'root', type:'root', icon:'🌐', label:'Internet / User Request',
+  purpose:'Every architecture decision starts here. Follow a path left → right to land on the exact AWS service for your use case.',
+  children: [
+    e('Need to run code/apps', dom('compute','Compute & Containers','Where should your code actually run?','🖥️',[
+      dec('compute-duration','Execution duration & workload pattern?',[
+        e('<15 min · event-driven', svc('lambda','AWS Lambda','Serverless functions. Zero server mgmt, pay per ms, scales 0→1000s instantly. (If you need a static IP or >15 min runtime, move to Fargate.)','⚡')),
+        e('Long-running / continuous', dec('container-choice','Containerized application (Docker)?',[
+          e('No: monolith / legacy', dec('control-level','Level of server control needed?',[
+            e('High: custom OS/kernel', svc('ec2','Amazon EC2','Virtual machines. Full OS/kernel control, custom drivers & networking.','🖥️')),
+            e('Low: PaaS, code only', svc('beanstalk','Elastic Beanstalk','PaaS. Auto provisioning, load balancing & scaling — just deploy your code.','🌱')),
+          ])),
+          e('Yes: Docker containers', dec('orch-pref','Orchestration preference?',[
+            e('Kubernetes APIs (kubectl/Helm)', svc('eks','Amazon EKS','Managed Kubernetes control plane. Use standard kubectl/Helm workflows.','☸️')),
+            e('Managed ECS framework', dec('ecs-launch','Manage the underlying infrastructure?',[
+              e('No: serverless containers', svc('fargate','AWS Fargate','Serverless containers. No EC2 provisioning, patching or capacity planning.','🚀')),
+              e('Yes: full cluster control', svc('ecs-ec2','Amazon ECS on EC2','Containers on EC2 instances you manage. Full cluster & instance control.','📦')),
+            ])),
+          ])),
+        ])),
+      ]),
+      dec('ec2-purchasing','EC2 purchasing strategy — workload characteristics?',[
+        e('Predictable & steady-state', dec('commit-term','Commitment duration?',[
+          e('1–3 yr commitment', svc('savings-plan','Savings Plans / RIs','Up to 72% discount for predictable, steady-state workloads with 1-3yr commitment.','💰')),
+          e('No commitment / spiky', svc('on-demand','On-Demand Instances','Pay-as-you-go standard rate. No commitment — for short-term or spiky usage.','🕐')),
+        ])),
+        e('Fault-tolerant / batch / stateless', svc('spot','Spot Instances','Spare EC2 capacity at up to 90% discount. For fault-tolerant, interruptible batch jobs.','🎯')),
+        e('Compliance / licensing / BYOL', dec('dedicated-hw','Dedicated hardware required?',[
+          e('Physical server, BYOL cores', svc('dedicated-host','Dedicated Hosts','Physical server access. For BYOL licensing tied to CPU cores/sockets.','🏠')),
+          e('Isolated single-tenant', svc('dedicated-instance','Dedicated Instances','Isolated hardware at the instance level for a single tenant.','🔒')),
+        ])),
+      ]),
+    ])),
+
+    e('Need to store data', dom('storage','Storage & Files','How and where should data be stored & accessed?','💾',[
+      dec('storage-protocol','Access protocol & structure?',[
+        e('Block · single EC2', svc('ebs','Amazon EBS','Block storage. Attaches to a single EC2 instance — boot volumes, DB volumes.','💽')),
+        e('Shared FS · multi-instance', dec('shared-fs','OS protocol needed?',[
+          e('Linux · NFSv4', svc('efs','Amazon EFS','Shared NFSv4 file system. Concurrent read/write from 1000s of Linux EC2s across AZs.','📁')),
+          e('Windows · SMB/CIFS', svc('fsx-windows','FSx for Windows','Managed SMB/CIFS file storage built for Windows workloads.','🪟')),
+          e('HPC · Lustre', svc('fsx-lustre','FSx for Lustre','High-throughput file system for HPC/ML workloads on Linux.','⚙️')),
+        ])),
+        e('Object storage · HTTP API', svc('s3','Amazon S3','Object storage via HTTP API. 11 nines durability, virtually infinite scale.','🪣')),
+        e('Ultra-low latency scratch', svc('instance-store','EC2 Instance Store','Physical NVMe SSD. Max IOPS but data is lost on stop — scratch/cache only.','⚡')),
+      ]),
+      dec('s3-lifecycle','S3 object access pattern & retrieval speed?',[
+        e('Frequent / unknown pattern', dec('s3-dynamic','Is the access pattern predictable?',[
+          e('Unpredictable, auto-save', svc('s3-intelligent','S3 Intelligent-Tiering','Auto-moves objects between tiers with no retrieval fee — for unknown access patterns.','🧠')),
+          e('Active, daily access', svc('s3-standard','S3 Standard','Default S3 tier. Multi-AZ, high availability, for frequently accessed data.','📗')),
+          e('Single-AZ, low-cost cache', svc('s3-express','S3 Express One Zone','Single-digit millisecond latency in one AZ — high-performance caching tier.','🚄')),
+        ])),
+        e('Infrequent <1×/month', dec('s3-multiaz','AZ redundancy required?',[
+          e('Yes: multi-AZ', svc('s3-sia','S3 Standard-IA','Infrequent access, multi-AZ redundancy. Cheaper storage, small retrieval fee.','📙')),
+          e('No: single-AZ cheaper', svc('s3-oia','S3 One Zone-IA','Infrequent access, single-AZ only. Lowest-cost IA tier.','📘')),
+        ])),
+        e('Archive > 90 days', dec('s3-arch','Retrieval time allowed?',[
+          e('Instant · milliseconds', svc('s3-gir','Glacier Instant Retrieval','Archive storage with millisecond retrieval — for rarely accessed but urgent data.','🧊')),
+          e('Minutes to hours', svc('s3-gfr','Glacier Flexible Retrieval','Archive storage with minutes-to-hours retrieval for bulk archive workloads.','🧊')),
+          e('Hours · lowest cost', svc('s3-gda','Glacier Deep Archive','Lowest-cost AWS storage (~$0.00099/GB/mo). 12-hour bulk retrieval, 7-10yr+ compliance data.','🧊')),
+        ])),
+      ]),
+    ])),
+
+    e('Need to persist/query data', dom('database','Databases & Caching','What engine should persist & query your data?','🗄️',[
+      dec('db-model','Data model & schema structure?',[
+        e('Relational · SQL · ACID', dec('rel-scale','Scale & managed level?',[
+          e('Serverless / high-scale MySQL & Postgres', svc('aurora','Amazon Aurora','MySQL/Postgres-compatible. 5x/3x perf, serverless auto-scaling, up to 15 read replicas.','🐬')),
+          e('Standard managed RDBMS', svc('rds','Amazon RDS','Managed relational DB — MySQL, Postgres, Oracle, SQL Server, MariaDB.','🗄️')),
+        ])),
+        e('Key-value / document NoSQL', dec('nosql-scale','Request pattern & scale?',[
+          e('Unpredictable, serverless, <ms', svc('dynamodb','Amazon DynamoDB','Serverless NoSQL key-value store. Single-digit millisecond latency at any scale.','⚡')),
+          e('MongoDB-compatible', svc('documentdb','Amazon DocumentDB','MongoDB-compatible managed document database.','📄')),
+        ])),
+        e('In-memory cache · sub-ms', dec('cache-engine','In-memory engine needed?',[
+          e('Rich data structures, pub/sub', svc('redis','ElastiCache for Redis','In-memory cache with rich data structures, pub/sub, multi-AZ failover, persistence.','🔴')),
+          e('Simple key-value, multithreaded', svc('memcached','ElastiCache for Memcached','Simple, multithreaded in-memory key-value cache.','🔵')),
+          e('In front of DynamoDB', svc('dax','DynamoDB Accelerator (DAX)','Microsecond read cache in front of DynamoDB. Zero code changes needed.','🚄')),
+        ])),
+        e('Graph / social network data', svc('neptune','Amazon Neptune','Managed graph database for social, network & relationship data.','🕸️')),
+        e('Petabyte analytics warehouse', svc('redshift-db','Amazon Redshift','Petabyte-scale data warehouse. Columnar, MPP SQL analytics engine.','📊')),
+      ]),
+    ])),
+
+    e('Need routing / delivery', dom('networking','Networking & CDN','How should traffic route, connect & get delivered?','🌐',[
+      dec('lb-choice','OSI layer & routing type?',[
+        e('L7 · HTTP/HTTPS web routing', svc('alb','Application Load Balancer','Layer 7 HTTP/HTTPS LB. Path/host routing, WebSockets, native WAF integration.','🔀')),
+        e('L4 · TCP/UDP high throughput', svc('nlb','Network Load Balancer','Layer 4 TCP/UDP LB. Millions of RPS, static IP, ultra-low latency.','⚖️')),
+        e('L3 · inline appliance traffic', svc('gwlb','Gateway Load Balancer','Layer 3 inline traffic inspection — firewalls, IDS/IPS appliances.','🛡️')),
+        e('DNS routing & health checks', dec('r53-policy','Route 53 routing policy?',[
+          e('Active-passive', svc('r53-fail','Failover Routing Policy','DNS failover — routes to a passive standby when the primary fails health checks.','🔁')),
+          e('Lowest latency region', svc('r53-lat','Latency-Based Routing Policy','Routes users to the AWS region with the lowest measured latency.','📶')),
+          e('User geographic location', svc('r53-geo','Geolocation Routing Policy','Routes traffic based on the geographic location of the requester.','📍')),
+          e('Split traffic %', svc('r53-weight','Weighted Routing Policy','Splits traffic by assigned weight — great for gradual rollouts/A-B testing.','⚖️')),
+        ])),
+        e('Global edge CDN caching', svc('cloudfront','Amazon CloudFront','Global CDN. Edge caching for static/dynamic content & APIs.','🌍')),
+      ]),
+      dec('vpc-connectivity','VPC connectivity destination & type?',[
+        e('Outbound internet, private subnet', dec('nat-arch','NAT architecture?',[
+          e('Fully managed, HA', svc('nat-gateway','NAT Gateway','Managed, highly-available outbound internet access for private subnets.','🔁')),
+          e('Low cost, small scale', svc('nat-instance','NAT Instance','Self-managed EC2-based NAT — lower cost at small scale.','🔁')),
+        ])),
+        e('Private link to AWS services', dec('vpc-endpoint','VPC endpoint type?',[
+          e('S3 & DynamoDB only, free', svc('gateway-endpoint','Gateway Endpoint','Free private route to S3/DynamoDB via a route table entry.','🚪')),
+          e('Other services / PrivateLink', svc('interface-endpoint','Interface Endpoint','PrivateLink ENI for other AWS services with a private IP.','🔌')),
+        ])),
+        e('Connect exactly 2 VPCs', svc('vpc-peering','VPC Peering','Direct, non-transitive private connection between two VPCs.','🔗')),
+        e('Connect 10+ VPCs + on-prem hub', svc('transit-gateway','AWS Transit Gateway','Transitive hub-and-spoke routing for 10+ VPCs & on-premises networks.','🕸️')),
+        e('On-premises hybrid link', dec('hybrid-link','Speed & reliability needed?',[
+          e('Encrypted, public internet', svc('vpn','Site-to-Site VPN','Encrypted tunnel over the public internet — quick, cost-effective hybrid link.','🔐')),
+          e('Dedicated private fiber', svc('direct-connect','AWS Direct Connect','Dedicated private fiber line from your data center to AWS, 1-10 Gbps.','🔌')),
+        ])),
+      ]),
+    ])),
+
+    e('Need async communication', dom('messaging','Messaging & Events','How should services communicate & decouple?','📬',[
+      dec('msg-pattern','Communication pattern?',[
+        e('Point-to-point decoupling', dec('sqs-ordering','Ordering strictness required?',[
+          e('Best-effort, max throughput', svc('sqs-standard','SQS Standard Queue','Best-effort ordering queue. Unlimited throughput, decouples microservices.','📬')),
+          e('Strict FIFO, exactly-once', svc('sqs-fifo','SQS FIFO Queue','Strict FIFO order, exactly-once processing — e.g. financial transactions.','📥')),
+        ])),
+        e('1-to-many fan-out push', svc('sns','Amazon SNS','Pub/sub topic. Pushes one event to many subscribers simultaneously.','📢')),
+        e('Real-time big data streaming', dec('kinesis-target','Streaming target & processing?',[
+          e('Custom processing, multi-day replay', svc('kinesis-ds','Kinesis Data Streams','Real-time streaming with custom consumers & up to 365-day replay.','🌊')),
+          e('Near real-time load to S3/Redshift', svc('kinesis-df','Kinesis Data Firehose','Fully managed stream delivery straight into S3/Redshift — no code required.','🚰')),
+        ])),
+        e('Multi-step workflow orchestration', svc('step-functions','AWS Step Functions','Visual state machine. Orchestrates multi-step workflows with built-in retries.','🔄')),
+        e('Event-driven SaaS / AWS event bus', svc('eventbridge','Amazon EventBridge','Event bus connecting AWS services & SaaS apps via routing rules.','🎫')),
+      ]),
+    ])),
+
+    e('Need identity / secrets', dom('security','Security & Identity','How should identity, secrets & keys be managed?','🔐',[
+      dec('sec-category','Requirement category?',[
+        e('User auth & directory', dec('auth-target','Target user base?',[
+          e('Customer web/mobile app users', svc('cognito-up','Cognito User Pools','User directory for customer apps — sign-up/in, MFA, JWT token issuance.','👤')),
+          e('OAuth → temporary AWS creds', svc('cognito-ip','Cognito Identity Pools','Exchanges CUP/3rd-party identity tokens for temporary AWS credentials.','🪪')),
+        ])),
+        e('Secrets & parameter storage', dec('secrets-rotation','Needs auto-rotation & cross-account?',[
+          e('Yes: DB passwords, OAuth keys', svc('secrets-manager','AWS Secrets Manager','Stores secrets with automatic rotation — e.g. RDS/Aurora DB passwords.','🔑')),
+          e('No: standard config params', svc('ssm-param','SSM Parameter Store','Free hierarchical config/parameter storage, KMS-encrypted.','⚙️')),
+        ])),
+        e('Encryption key management', dec('key-owner','Key owner & multi-region?',[
+          e('AWS/customer managed keys', svc('kms','AWS KMS','Managed encryption keys — envelope encryption for S3, EBS, RDS & more.','🔐')),
+          e('Dedicated hardware module', svc('cloudhsm','AWS CloudHSM','Dedicated, single-tenant FIPS 140-2 Level 3 hardware security module.','🔒')),
+        ])),
+      ]),
+    ])),
+
+    e('Need observability', dom('monitoring','Monitoring & Audit','How should you observe, trace & audit the system?','📊',[
+      dec('obs-goal','Primary data type & objective?',[
+        e('Metrics, logs & alarms', dec('cw-component','CloudWatch component?',[
+          e('Infra & app metrics', svc('cw-metrics','CloudWatch Metrics','Infrastructure & app performance metrics at 1-60s resolution.','📈')),
+          e('Centralized app logs', svc('cw-logs','CloudWatch Logs','Centralized log aggregation & search across all services.','📝')),
+          e('Threshold notifications', svc('cw-alarms','CloudWatch Alarms','Threshold-based alerts — triggers notifications or auto-scaling.','🚨')),
+        ])),
+        e('Distributed tracing / latency', svc('xray','AWS X-Ray','Distributed tracing — pinpoints latency bottlenecks across microservice calls.','🔬')),
+        e('Account API audit & governance', dec('audit-objective','Audit objective?',[
+          e('Track every API call', svc('cloudtrail','AWS CloudTrail','Immutable audit log of every API call — who did what, and when.','📜')),
+          e('Detect anomalous activity', svc('cloudtrail-insights','CloudTrail Insights','ML-based baseline analysis to surface anomalous API activity.','🔍')),
+        ])),
+      ]),
+    ])),
+
+    e('Need to ship code/infra', dom('devops','DevOps & CI/CD','How should infra & code get built, tested & shipped?','🔧',[
+      dec('devops-task','Task type?',[
+        e('Infrastructure as Code', dec('iac-lang','Language & framework?',[
+          e('Declarative JSON/YAML', svc('cloudformation','AWS CloudFormation','Declarative JSON/YAML templates that provision AWS infrastructure.','📋')),
+          e('Imperative TS/Python/Java', svc('cdk','AWS CDK','Define infrastructure in real code (TS/Python/Java) — compiles to CloudFormation.','💻')),
+          e('Serverless-app focused', svc('sam','AWS SAM','Simplified IaC framework purpose-built for serverless applications.','⚡')),
+        ])),
+        e('CI/CD automation pipeline', dec('cicd-phase','Pipeline phase?',[
+          e('Source control (Git)', svc('codecommit','AWS CodeCommit','Managed, private Git source-control repositories.','📚')),
+          e('Build & test engine', svc('codebuild','AWS CodeBuild','Fully managed build & test compute service.','🔨')),
+          e('Deployment orchestration', svc('codedeploy','AWS CodeDeploy','Automates app deployment across EC2/Lambda/ECS with rollback support.','🚢',{children:[
+            svc('deploy-allatonce','All-at-Once','Downtime: Yes · Rollback: slow · 100% capacity. Fast dev/test deploys.','①'),
+            svc('deploy-inplace','In-Place (Rolling)','Downtime: No · Rollback: medium · 100% capacity. Prod without extra capacity.','②'),
+            svc('deploy-bluegreen','Blue/Green','Downtime: Zero · Rollback: instant (DNS/ELB swap) · needs 200% capacity. Mission-critical prod.','③'),
+            svc('deploy-canary','Canary','Downtime: Zero · Rollback: instant · 100-200% capacity. Test on 5-10% real traffic first.','④'),
+          ]})),
+          e('Workflow automation', svc('codepipeline','AWS CodePipeline','Orchestrates the full CI/CD release workflow end-to-end.','🔧')),
+        ])),
+      ]),
+    ])),
+
+    e('Need to expose an API', dom('api','API & Edge Compute','How should clients call services & run logic at the edge?','⚡',[
+      dec('api-type','Traffic type & edge logic?',[
+        e('RESTful / HTTP endpoints', dec('gateway-feature','API feature requirements?',[
+          e('Cost-optimized, low latency', svc('http-api','API Gateway HTTP API','Cost-optimized REST-style API — up to 71% cheaper, lower latency than REST API.','🌐')),
+          e('Usage plans, keys, WAF', svc('rest-api','API Gateway REST API','Full-featured API Gateway — usage plans, API keys, WAF, request validation.','🔌')),
+          e('Real-time bi-directional', svc('websocket-api','API Gateway WebSocket API','Persistent, stateful, bi-directional real-time connections.','🔃')),
+        ])),
+        e('Edge compute execution', dec('edge-complexity','Execution complexity & memory?',[
+          e('Lightweight rewrites, <1ms', svc('cff','CloudFront Functions','Lightweight JS at 400+ edge locations — header/URL rewrites in sub-ms.','⚡')),
+          e('Full execution, network calls', svc('lambda-edge','Lambda@Edge','Full Lambda execution at edge locations, Node.js/Python, up to 10s runtime.','🌍')),
+        ])),
+      ]),
+    ])),
+
+    e('Need big data / analytics', dom('analytics','Analytics & Big Data','How should large-scale data get queried & processed?','📈',[
+      dec('data-engine','Data engine & query type?',[
+        e('Ad-hoc SQL directly on S3', svc('athena','Amazon Athena','Serverless SQL directly on S3 data lakes — pay only per TB scanned.','🔍')),
+        e('Enterprise MPP data warehouse', svc('redshift-an','Amazon Redshift','Petabyte-scale OLAP warehouse for complex analytical queries.','📊')),
+        e('Hadoop / Spark / Hive processing', svc('emr','Amazon EMR','Managed Hadoop/Spark/Hive clusters for large-scale big-data processing.','🐘')),
+        e('ETL jobs & data cataloging', svc('glue','AWS Glue','Serverless Spark ETL + Data Catalog for cleaning & cataloging raw data.','🧩')),
+        e('Search & log analytics engine', svc('opensearch','Amazon OpenSearch','Managed search & log analytics engine with visualization dashboards.','🔎')),
+        e('Transactional email sending', svc('ses','Amazon SES','Transactional & marketing email sending at scale.','✉️')),
+      ]),
+    ])),
+  ],
+};
+
+/* ============================ BUILD TREE ============================ */
+// assign parents, ids-map, domain color propagation
+const nodeMap = new Map();
+function prepare(node, parent, domainKey){
+  node.parent = parent || null;
+  node.collapsed = false;
+  const dk = node.type === 'domain' ? node.domainKey : domainKey;
+  node.domainKey = dk;
+  node.color = dk ? DOMAIN_COLORS[dk] : '#475569';
+  nodeMap.set(node.id, node);
+  (node.children||[]).forEach(c => prepare(c, node, dk));
+}
+prepare(root, null, null);
+root.children.forEach(d => { d.collapsed = true; }); // start collapsed: glance all 10 domains at once
+
+/* ============================ LAYOUT ============================ */
+const SLOT = 116, X_SPACING = 410, PAD_X = 60, PAD_Y = 40;
+const SIZE = {
+  root:    {w:280, h:104},
+  domain:  {w:250, h:82},
+  decision:{w:236, h:82},
+  service: {w:268, h:96},
+};
+function sizeOf(node){ return SIZE[node.type]; }
+
+function computeWeight(node){
+  if(node.collapsed || !node.children || node.children.length===0){ node._weight = 1; return 1; }
+  let w = 0;
+  for(const c of node.children) w += computeWeight(c);
+  node._weight = w;
+  return w;
+}
+let visibleNodes = [];
+function layout(node, depth, y0, y1){
+  const sz = sizeOf(node);
+  node.width = sz.w; node.height = sz.h;
+  node.x = PAD_X + depth * X_SPACING + (node._offX||0);
+  node.cy = (y0 + y1) / 2 + (node._offY||0);
+  node.y = node.cy - node.height/2;
+  visibleNodes.push(node);
+  if(!node.collapsed && node.children && node.children.length){
+    let cursor = y0;
+    const total = node._weight;
+    for(const c of node.children){
+      const h = (c._weight/total) * (y1-y0);
+      layout(c, depth+1, cursor, cursor+h);
+      cursor += h;
+    }
+  }
+}
+let bounds = {minX:0,minY:0,maxX:0,maxY:0};
+function rebuildLayout(){
+  visibleNodes = [];
+  computeWeight(root);
+  layout(root, 0, 0, root._weight*SLOT);
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  for(const n of visibleNodes){
+    minX = Math.min(minX, n.x); minY = Math.min(minY, n.y);
+    maxX = Math.max(maxX, n.x+n.width); maxY = Math.max(maxY, n.y+n.height);
+  }
+  bounds = {minX:minX-PAD_Y, minY:minY-PAD_Y, maxX:maxX+PAD_Y, maxY:maxY+PAD_Y};
+}
+rebuildLayout();
+
+/* ============================ CANVAS ENGINE ============================ */
+const canvas = document.getElementById('main');
+const ctx = canvas.getContext('2d');
+const wrap = document.querySelector('.canvas-wrap');
+let dpr = window.devicePixelRatio || 1;
+
+let view = { x:0, y:0, zoom:1 }; // pan offset (screen px at zoom=1 baseline) & zoom
+let displayW=0, displayH=0;
+
+function resize(){
+  displayW = wrap.clientWidth;
+  displayH = wrap.clientHeight;
+  dpr = window.devicePixelRatio || 1;
+  canvas.width = displayW*dpr;
+  canvas.height = displayH*dpr;
+  canvas.style.width = displayW+'px';
+  canvas.style.height = displayH+'px';
+  render();
+}
+window.addEventListener('resize', resize);
+
+function worldToScreen(wx, wy){
+  return { x:(wx+view.x)*view.zoom, y:(wy+view.y)*view.zoom };
+}
+function screenToWorld(sx, sy){
+  return { x: sx/view.zoom - view.x, y: sy/view.zoom - view.y };
+}
+
+function roundRect(c,x,y,w,h,r){
+  c.beginPath();
+  c.moveTo(x+r,y);
+  c.arcTo(x+w,y,x+w,y+h,r);
+  c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r);
+  c.arcTo(x,y,x+w,y,r);
+  c.closePath();
+}
+
+function hexToRgba(hex, alpha){
+  const v = hex.replace('#','');
+  const r = parseInt(v.substring(0,2),16), g=parseInt(v.substring(2,4),16), b=parseInt(v.substring(4,6),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+let hoveredNode = null, pinnedNode = null;
+
+function wrapLines(text, maxWidth, font){
+  ctx.font = font;
+  const words = text.split(' ');
+  const lines = [];
+  let line = '';
+  for(const w of words){
+    const test = line ? line+' '+w : w;
+    if(ctx.measureText(test).width > maxWidth && line){
+      lines.push(line); line = w;
+    } else line = test;
+  }
+  if(line) lines.push(line);
+  return lines;
+}
+
+function drawDotGrid(){
+  const step = 42;
+  const {x:x0,y:y0} = screenToWorld(0,0);
+  const {x:x1,y:y1} = screenToWorld(displayW,displayH);
+  ctx.fillStyle = 'rgba(148,163,184,0.10)';
+  const startX = Math.floor(x0/step)*step, startY = Math.floor(y0/step)*step;
+  for(let gx=startX; gx<x1; gx+=step){
+    for(let gy=startY; gy<y1; gy+=step){
+      const p = worldToScreen(gx,gy);
+      ctx.beginPath(); ctx.arc(p.x,p.y,1.4*Math.min(view.zoom,1.6),0,Math.PI*2); ctx.fill();
+    }
+  }
+}
+
+function bezierMid(x1,y1,x2,y2){
+  const cx = (x1+x2)/2;
+  return { x: cx, y: (y1+y2)/2 };
+}
+
+function draw(){
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  const g = ctx.createLinearGradient(0,0,0,displayH);
+  g.addColorStop(0,'#0b1120'); g.addColorStop(1,'#0f172a');
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,displayW,displayH);
+
+  drawDotGrid();
+
+  ctx.save();
+  ctx.translate(view.x*view.zoom, view.y*view.zoom);
+  ctx.scale(view.zoom, view.zoom);
+
+  // edges first
+  for(const n of visibleNodes){
+    if(!n.parent) continue;
+    const p = n.parent;
+    const x1 = p.x+p.width, y1 = p.cy, x2 = n.x, y2 = n.cy;
+    const dx = Math.max(60,(x2-x1)*0.5);
+    const isHighlight = highlightPath.has(n) && highlightPath.has(p);
+    ctx.beginPath();
+    ctx.moveTo(x1,y1);
+    ctx.bezierCurveTo(x1+dx,y1, x2-dx,y2, x2,y2);
+    ctx.strokeStyle = isHighlight ? n.color : hexToRgba(n.color,0.38);
+    ctx.lineWidth = isHighlight ? 3 : 1.6;
+    ctx.stroke();
+
+    if(n.edgeFromParent){
+      const mid = bezierMid(x1,y1,x2,y2);
+      const gap = Math.max(50, x2-x1);
+      const maxPillWidth = Math.min(155, gap-14);
+      const fontSize = isHighlight ? 10.5 : 9.5;
+      const padX=7, padY=4;
+      ctx.font = `600 ${fontSize}px Inter, system-ui, sans-serif`;
+      let lines = wrapLines(n.edgeFromParent, maxPillWidth-padX*2, ctx.font);
+      if(lines.length > 2){
+        let last = lines[1];
+        while(last.length>1 && ctx.measureText(last+'…').width > maxPillWidth-padX*2) last = last.slice(0,-1);
+        lines = [lines[0], last+'…'];
+      }
+      const lineH = fontSize+3;
+      const tw = Math.max(...lines.map(l=>ctx.measureText(l).width));
+      const bw = Math.min(maxPillWidth, tw+padX*2), bh = lines.length*lineH+padY*2;
+      roundRect(ctx, mid.x-bw/2, mid.y-bh/2, bw, bh, 7);
+      ctx.fillStyle = isHighlight ? '#fff' : 'rgba(15,23,42,0.92)';
+      ctx.fill();
+      ctx.strokeStyle = isHighlight ? n.color : 'rgba(148,163,184,0.35)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.fillStyle = isHighlight ? n.color : '#cbd5e1';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      const startY = mid.y - (lines.length-1)*lineH/2;
+      lines.forEach((l,i)=> ctx.fillText(l, mid.x, startY+i*lineH+0.5));
+    }
+  }
+
+  // nodes
+  for(const n of visibleNodes){
+    drawNode(n);
+  }
+
+  ctx.restore();
+  drawMinimap();
+}
+
+function drawNode(n){
+  const isHover = n===hoveredNode, isPinned = n===pinnedNode;
+  const isHighlight = highlightPath.has(n);
+  const {x,y,width:w,height:h,color} = n;
+
+  ctx.save();
+  if(isHover || isPinned){
+    ctx.shadowColor = hexToRgba(color,0.55);
+    ctx.shadowBlur = 22;
+    ctx.shadowOffsetY = 4;
+  } else {
+    ctx.shadowColor = 'rgba(0,0,0,0.35)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetY = 3;
+  }
+
+  // card background
+  roundRect(ctx,x,y,w,h,14);
+  if(n.type==='root'){
+    const gg = ctx.createLinearGradient(x,y,x+w,y+h);
+    gg.addColorStop(0,'#1e293b'); gg.addColorStop(1,'#312e81');
+    ctx.fillStyle = gg;
+  } else if(n.type==='domain'){
+    ctx.fillStyle = hexToRgba(color,0.16);
+  } else {
+    ctx.fillStyle = '#101828';
+  }
+  ctx.fill();
+  ctx.shadowBlur=0; ctx.shadowOffsetY=0;
+
+  // border
+  if(n.type==='decision'){
+    ctx.setLineDash([5,4]);
+    ctx.strokeStyle = hexToRgba(color,0.85);
+    ctx.lineWidth = 1.6;
+  } else if(n.type==='root'){
+    ctx.setLineDash([]);
+    ctx.strokeStyle = '#818cf8';
+    ctx.lineWidth = 2;
+  } else if(n.type==='domain'){
+    ctx.setLineDash([]);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+  } else {
+    ctx.setLineDash([]);
+    ctx.strokeStyle = isHighlight ? color : hexToRgba(color,0.55);
+    ctx.lineWidth = isHighlight ? 2.4 : 1.4;
+  }
+  roundRect(ctx,x,y,w,h,14);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // service left accent bar
+  if(n.type==='service'){
+    roundRect(ctx,x,y,6,h,3);
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+  if(n.type==='domain'){
+    roundRect(ctx,x,y,w,34,14);
+    ctx.fillStyle = hexToRgba(color,0.9);
+    ctx.fill();
+    ctx.fillRect(x,y+20,w,14);
+  }
+
+  // pin ring
+  if(isPinned){
+    roundRect(ctx,x-3,y-3,w+6,h+6,17);
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  const padX = n.type==='service' ? 16 : 14;
+  ctx.textAlign='left'; ctx.textBaseline='top';
+
+  if(n.type==='root'){
+    ctx.font = '26px system-ui'; ctx.fillText(n.icon, x+padX, y+16);
+    ctx.font='700 14.5px Inter, system-ui'; ctx.fillStyle='#fff';
+    wrapLines(n.label, w-padX*2-34, ctx.font).forEach((l,i)=>ctx.fillText(l, x+padX+38, y+18+i*17));
+    ctx.font='400 10.5px Inter'; ctx.fillStyle='#c7d2fe';
+    wrapLines(n.purpose, w-padX*2, ctx.font).slice(0,2).forEach((l,i)=>ctx.fillText(l, x+padX, y+62+i*13));
+  } else if(n.type==='domain'){
+    ctx.font='18px system-ui'; ctx.fillText(n.icon, x+padX, y+7);
+    ctx.font='700 13px Inter'; ctx.fillStyle='#fff';
+    ctx.fillText(n.label, x+padX+26, y+9);
+    ctx.font='400 10px Inter'; ctx.fillStyle=hexToRgba('#ffffff',0.9);
+    wrapLines(n.purpose, w-padX*2, ctx.font).slice(0,2).forEach((l,i)=>ctx.fillText(l, x+padX, y+40+i*13));
+  } else if(n.type==='decision'){
+    ctx.font='16px system-ui'; ctx.fillText('◈', x+padX, y+10);
+    ctx.font='italic 600 12px Inter'; ctx.fillStyle='#e2e8f0';
+    wrapLines(n.label, w-padX*2, ctx.font).slice(0,3).forEach((l,i)=>ctx.fillText(l, x+padX, y+30+i*15));
+  } else { // service
+    ctx.font='20px system-ui'; ctx.fillText(n.icon, x+padX+8, y+14);
+    ctx.font='700 12.5px Inter'; ctx.fillStyle='#f8fafc';
+    wrapLines(n.label, w-padX-38, ctx.font).slice(0,2).forEach((l,i)=>ctx.fillText(l, x+padX+38, y+15+i*14));
+    ctx.font='400 10px Inter'; ctx.fillStyle='#94a3b8';
+    const purposeY = y + 15 + Math.min(2, wrapLines(n.label, w-padX-38, ctx.font).length)*14 + 6;
+    wrapLines(n.purpose, w-padX-8, ctx.font).slice(0,3).forEach((l,i)=>ctx.fillText(l, x+padX, purposeY+i*12));
+  }
+
+  // collapse badge
+  if(n.children && n.children.length && (n.type==='decision'||n.type==='domain')){
+    const bx = x+w-16, by = y+h-16;
+    ctx.beginPath(); ctx.arc(bx,by,10,0,Math.PI*2);
+    ctx.fillStyle = n.collapsed ? color : 'rgba(255,255,255,0.15)';
+    ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=1; ctx.stroke();
+    ctx.fillStyle='#fff'; ctx.font='bold 12px Inter'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(n.collapsed ? '+' : '−', bx, by+0.5);
+    ctx.textAlign='left'; ctx.textBaseline='top';
+  }
+
+  ctx.restore();
+}
+
+/* ============================ MINIMAP ============================ */
+const mini = document.getElementById('minimap');
+const mctx = mini.getContext('2d');
+function drawMinimap(){
+  mctx.clearRect(0,0,mini.width,mini.height);
+  const bw = bounds.maxX-bounds.minX, bh = bounds.maxY-bounds.minY;
+  const scale = Math.min((mini.width-8)/bw, (mini.height-8)/bh);
+  const ox = 4-bounds.minX*scale, oy = 4-bounds.minY*scale;
+
+  mctx.fillStyle='rgba(255,255,255,0.03)';
+  mctx.fillRect(0,0,mini.width,mini.height);
+
+  for(const n of visibleNodes){
+    mctx.fillStyle = n.type==='service' ? n.color : hexToRgba(n.color||'#64748b',0.6);
+    mctx.fillRect(n.x*scale+ox, n.cy*scale+oy-1, Math.max(2,n.width*scale*0.15), 2);
+  }
+  // viewport rect
+  const vx0 = -view.x, vy0 = -view.y;
+  const vx1 = vx0 + displayW/view.zoom, vy1 = vy0 + displayH/view.zoom;
+  mctx.strokeStyle = '#818cf8'; mctx.lineWidth=1.5;
+  mctx.strokeRect(vx0*scale+ox, vy0*scale+oy, (vx1-vx0)*scale, (vy1-vy0)*scale);
+  mini._scale = scale; mini._ox = ox; mini._oy = oy;
+}
+mini.addEventListener('click', (ev)=>{
+  const rect = mini.getBoundingClientRect();
+  const mx = ev.clientX-rect.left, my = ev.clientY-rect.top;
+  const wx = (mx-mini._ox)/mini._scale, wy = (my-mini._oy)/mini._scale;
+  animateTo(-wx + displayW/(2*view.zoom), -wy + displayH/(2*view.zoom), view.zoom);
+});
+
+/* ============================ INTERACTION ============================ */
+function hitTest(sx, sy){
+  const {x:wx, y:wy} = screenToWorld(sx, sy);
+  for(let i=visibleNodes.length-1;i>=0;i--){
+    const n = visibleNodes[i];
+    if(wx>=n.x && wx<=n.x+n.width && wy>=n.y && wy<=n.y+n.height) return n;
+  }
+  return null;
+}
+
+let dragging=false, dragStartSX=0, dragStartSY=0, dragStartVX=0, dragStartVY=0, dragMoved=false;
+let draggingNode=null, dragNodeLastWorld=null;
+canvas.addEventListener('mousedown', (ev)=>{
+  const rect = canvas.getBoundingClientRect();
+  const sx = ev.clientX-rect.left, sy = ev.clientY-rect.top;
+  const n = hitTest(sx,sy);
+  dragMoved=false;
+  if(n){
+    draggingNode = n;
+    dragNodeLastWorld = screenToWorld(sx,sy);
+  } else {
+    dragging=true;
+    dragStartSX=ev.clientX; dragStartSY=ev.clientY;
+    dragStartVX=view.x; dragStartVY=view.y;
+  }
+});
+window.addEventListener('mousemove', (ev)=>{
+  const rect = canvas.getBoundingClientRect();
+  const sx = ev.clientX-rect.left, sy = ev.clientY-rect.top;
+  if(draggingNode){
+    const w = screenToWorld(sx,sy);
+    const ddx = w.x-dragNodeLastWorld.x, ddy = w.y-dragNodeLastWorld.y;
+    if(Math.abs(ddx)>0.5||Math.abs(ddy)>0.5) dragMoved=true;
+    draggingNode.x += ddx;
+    draggingNode.cy += ddy;
+    draggingNode.y = draggingNode.cy - draggingNode.height/2;
+    draggingNode._offX = (draggingNode._offX||0) + ddx;
+    draggingNode._offY = (draggingNode._offY||0) + ddy;
+    dragNodeLastWorld = w;
+    canvas.style.cursor = 'grabbing';
+    render();
+  } else if(dragging){
+    const ddx = ev.clientX-dragStartSX, ddy = ev.clientY-dragStartSY;
+    if(Math.abs(ddx)>3||Math.abs(ddy)>3) dragMoved=true;
+    view.x = dragStartVX + ddx/view.zoom;
+    view.y = dragStartVY + ddy/view.zoom;
+    render();
+  } else {
+    const n = hitTest(sx,sy);
+    if(n!==hoveredNode){
+      hoveredNode = n;
+      canvas.style.cursor = n ? 'grab' : 'grab';
+      updateInspector(n || pinnedNode, n===null);
+      render();
+    }
+  }
+});
+window.addEventListener('mouseup', (ev)=>{
+  if(draggingNode){
+    if(!dragMoved){
+      const n = draggingNode;
+      if(n.type==='decision' || n.type==='domain'){
+        n.collapsed = !n.collapsed;
+        rebuildLayout();
+      } else if(n.type==='service'){
+        pinnedNode = (pinnedNode===n) ? null : n;
+        updateInspector(pinnedNode, false);
+      }
+    }
+    canvas.style.cursor = 'grab';
+    draggingNode = null;
+    render();
+  }
+  dragging=false;
+});
+canvas.addEventListener('dblclick', (ev)=>{
+  const rect = canvas.getBoundingClientRect();
+  const n = hitTest(ev.clientX-rect.left, ev.clientY-rect.top);
+  if(n && (n._offX||n._offY)){
+    n._offX = 0; n._offY = 0;
+    rebuildLayout();
+    render();
+  }
+});
+canvas.addEventListener('wheel', (ev)=>{
+  ev.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  const sx = ev.clientX-rect.left, sy = ev.clientY-rect.top;
+  const before = screenToWorld(sx,sy);
+  const factor = ev.deltaY<0 ? 1.12 : 1/1.12;
+  view.zoom = Math.max(0.03, Math.min(3, view.zoom*factor));
+  const after = screenToWorld(sx,sy);
+  view.x += (after.x-before.x);
+  view.y += (after.y-before.y);
+  document.getElementById('zoomLevel').textContent = Math.round(view.zoom*100)+'%';
+  render();
+}, {passive:false});
+
+function render(){ draw(); }
+
+/* smooth animation */
+function animateTo(targetX, targetY, targetZoom, duration=550){
+  const sx=view.x, sy=view.y, sz=view.zoom;
+  const start = performance.now();
+  function step(t){
+    const p = Math.min(1,(t-start)/duration);
+    const ease = p<0.5 ? 2*p*p : 1-Math.pow(-2*p+2,2)/2;
+    view.x = sx+(targetX-sx)*ease;
+    view.y = sy+(targetY-sy)*ease;
+    view.zoom = sz+(targetZoom-sz)*ease;
+    document.getElementById('zoomLevel').textContent = Math.round(view.zoom*100)+'%';
+    render();
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function fitAll(nodesSubset){
+  const list = nodesSubset || visibleNodes;
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  for(const n of list){
+    minX=Math.min(minX,n.x); minY=Math.min(minY,n.y);
+    maxX=Math.max(maxX,n.x+n.width); maxY=Math.max(maxY,n.y+n.height);
+  }
+  minX-=50; minY-=50; maxX+=50; maxY+=50;
+  const bw=maxX-minX, bh=maxY-minY;
+  const zoom = Math.max(0.03,Math.min(1.4, Math.min(displayW/bw, displayH/bh)));
+  const cx = (minX+maxX)/2, cy=(minY+maxY)/2;
+  animateTo(displayW/(2*zoom)-cx, displayH/(2*zoom)-cy, zoom);
+}
+
+/* ============================ PATH INSPECTOR ============================ */
+let highlightPath = new Set();
+function getPathNodes(node){
+  const path=[]; let n=node;
+  while(n){ path.unshift(n); n=n.parent; }
+  return path;
+}
+function updateInspector(node, isLeavingHover){
+  const crumbsEl = document.getElementById('crumbs');
+  const purposeEl = document.getElementById('purposeText');
+  const target = node || pinnedNode;
+  if(!target){
+    crumbsEl.innerHTML = '<span class="placeholder">Hover or click any node to see its full decision path here…</span>';
+    purposeEl.style.display='none';
+    highlightPath = new Set();
+    return;
+  }
+  const path = getPathNodes(target);
+  highlightPath = new Set(path);
+  crumbsEl.innerHTML = path.map((n,i)=>{
+    const isLeaf = n.type==='service';
+    const style = isLeaf ? `style="background:${n.color}"` : '';
+    let html = `<span class="crumb ${isLeaf?'leaf':''}" ${style}>${n.icon?n.icon+' ':''}${n.label}</span>`;
+    if(i<path.length-1){
+      const next = path[i+1];
+      if(next.edgeFromParent){
+        html += `<span class="cond">→ <span class="chip">${next.edgeFromParent}</span> →</span>`;
+      } else {
+        html += `<span class="cond">→</span>`;
+      }
+    }
+    return html;
+  }).join('');
+  if(target.purpose){
+    purposeEl.style.display='block';
+    purposeEl.innerHTML = `<b>${target.icon||''} ${target.label}</b><br>${target.purpose}`;
+  } else {
+    purposeEl.style.display='none';
+  }
+}
+
+/* ============================ SEARCH ============================ */
+const searchInput = document.getElementById('search');
+searchInput.addEventListener('input', ()=>{
+  const q = searchInput.value.trim().toLowerCase();
+  if(!q){ return; }
+  let match = null;
+  for(const n of nodeMap.values()){
+    if(n.type==='service' && n.label.toLowerCase().includes(q)){ match=n; break; }
+  }
+  if(match){
+    // expand collapsed ancestors
+    let p = match.parent;
+    let changed=false;
+    while(p){ if(p.collapsed){ p.collapsed=false; changed=true; } p=p.parent; }
+    if(changed) rebuildLayout();
+    pinnedNode = match;
+    updateInspector(match,false);
+    const cx = match.x+match.width/2, cy = match.cy;
+    const zoom = 1.1;
+    animateTo(displayW/(2*zoom)-cx, displayH/(2*zoom)-cy, zoom);
+  }
+});
+
+/* ============================ BUTTONS ============================ */
+document.getElementById('fitBtn').addEventListener('click', ()=>fitAll());
+document.getElementById('zoomInBtn').addEventListener('click', ()=>{
+  view.zoom = Math.min(3, view.zoom*1.2);
+  document.getElementById('zoomLevel').textContent = Math.round(view.zoom*100)+'%';
+  render();
+});
+document.getElementById('zoomOutBtn').addEventListener('click', ()=>{
+  view.zoom = Math.max(0.03, view.zoom/1.2);
+  document.getElementById('zoomLevel').textContent = Math.round(view.zoom*100)+'%';
+  render();
+});
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  view = {x:0,y:0,zoom:1};
+  document.getElementById('zoomLevel').textContent='100%';
+  fitAll();
+});
+document.getElementById('downloadBtn').addEventListener('click', ()=>{
+  const link = document.createElement('a');
+  link.href = canvas.toDataURL('image/png');
+  link.download = 'aws-service-decision-tree.png';
+  link.click();
+});
+
+/* ============================ LEGEND ============================ */
+const legendEl = document.getElementById('legend');
+Object.keys(DOMAIN_COLORS).forEach(key=>{
+  const item = document.createElement('div');
+  item.className='legend-item';
+  item.innerHTML = `<span class="dot" style="background:${DOMAIN_COLORS[key]}"></span>${DOMAIN_NAMES[key]}`;
+  item.addEventListener('click', ()=>{
+    const subset = visibleNodes.filter(n=>n.domainKey===key);
+    if(subset.length) fitAll(subset);
+  });
+  legendEl.appendChild(item);
+});
+const shapeLegend = document.createElement('div');
+shapeLegend.className='shape-legend';
+shapeLegend.innerHTML = `
+  <div class="legend-item"><span class="shape-sample dashed"></span>Decision (question)</div>
+  <div class="legend-item"><span class="shape-sample solid"></span>Service (final answer)</div>
+`;
+legendEl.appendChild(shapeLegend);
+
+/* ============================ INIT ============================ */
+resize();
+fitAll();
+</script>
+</body>
+</html>
