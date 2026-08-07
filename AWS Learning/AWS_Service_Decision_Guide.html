@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Services Explained — A Beginner's Path Guide</title>
+<style>
+  :root{
+    --bg:#0b1120; --panel:#101828; --ink:#0f172a; --muted:#94a3b8; --line:#1e293b;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;min-height:100%;font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:#e2e8f0;}
+
+  /* Header */
+  .header{
+    background:linear-gradient(135deg,#0f172a 0%,#1e293b 55%,#312e81 100%);
+    color:#fff;padding:18px 24px;position:sticky;top:0;z-index:30;
+    box-shadow:0 2px 12px rgba(0,0,0,.35);
+  }
+  .header.hidden{display:none;}
+  .header-close{
+    position:absolute;top:14px;right:16px;background:rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.22);color:#fff;width:28px;height:28px;border-radius:8px;
+    cursor:pointer;font-size:14px;line-height:1;
+  }
+  .header-close:hover{background:rgba(255,255,255,.24);}
+  .header-restore{
+    position:sticky;top:0;z-index:30;display:none;align-items:center;gap:8px;
+    background:#1e293b;border-bottom:1px solid rgba(255,255,255,.12);color:#c7d2fe;
+    font-size:12px;font-weight:600;padding:6px 16px;cursor:pointer;
+  }
+  .header-restore:hover{background:#26314a;}
+  .header h1{font-size:20px;font-weight:700;margin:0 0 4px;}
+  .header p{font-size:12.5px;color:#93a3c7;margin:0 0 12px;}
+  .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .search-box{
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+    border-radius:8px;padding:8px 12px;color:#fff;font-size:13px;width:260px;outline:none;
+  }
+  .search-box::placeholder{color:#93a3c7;}
+  .btn{
+    background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.22);color:#fff;
+    padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:600;
+  }
+  .btn:hover{background:rgba(255,255,255,.22);}
+  .no-match{font-size:12px;color:#fca5a5;margin-left:4px;}
+
+  /* Legend */
+  .legend-bar{
+    display:flex;gap:18px;flex-wrap:wrap;font-size:11.5px;color:#93a3c7;margin-top:10px;
+    border-top:1px solid rgba(255,255,255,.12);padding-top:10px;
+  }
+  .legend-bar span{display:flex;align-items:center;gap:6px;}
+  .legend-bar b{color:#fff;}
+
+  /* Main content */
+  .wrap{max-width:920px;margin:0 auto;padding:24px 16px 80px;}
+  .intro-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:18px 20px;margin-bottom:20px;
+  }
+  .intro-card h2{margin:0 0 8px;font-size:16px;color:#fff;}
+  .intro-card p{margin:0;font-size:13.5px;line-height:1.6;color:#cbd5e1;}
+
+  /* Branch = one fork's worth of "pick this if" + what it leads to */
+  .branch{
+    border-left:2px solid rgba(255,255,255,.12);
+    margin:10px 0 10px 4px;
+    padding:2px 0 2px 16px;
+  }
+  .pickif{
+    font-size:12.5px;color:#e2e8f0;margin-bottom:8px;line-height:1.5;
+  }
+  .pickif .pickif-label{
+    color:#facc15;font-weight:700;text-transform:uppercase;font-size:10.5px;letter-spacing:.4px;margin-right:4px;
+  }
+
+  /* details/summary nodes */
+  details.node{
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    margin:8px 0; overflow:hidden;
+  }
+  details.node > summary{
+    cursor:pointer;list-style:none;padding:12px 14px;display:flex;align-items:center;gap:10px;
+    font-weight:700;font-size:13.5px;color:#fff;
+  }
+  details.node > summary::-webkit-details-marker{display:none;}
+  details.node > summary::before{
+    content:'▸'; color:var(--muted); font-size:11px; transition:transform .15s;
+    flex-shrink:0;
+  }
+  details.node[open] > summary::before{transform:rotate(90deg);}
+  details.node > summary .icon{font-size:17px;}
+  details.node > .body{padding:2px 16px 14px 40px;}
+
+  details.domain{border-width:1.5px;}
+  details.domain > summary{font-size:14.5px;}
+  .plain{
+    font-size:13px;line-height:1.65;color:#cbd5e1;background:rgba(255,255,255,.03);
+    border-radius:8px;padding:10px 12px;margin:4px 0 12px;
+  }
+  .plain b{color:#fff;}
+  .section-label{
+    font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);
+    font-weight:700;margin:10px 0 4px;
+  }
+
+  details.decision > summary{font-style:normal;}
+  details.decision > summary .ask{color:#fbbf24;}
+  .decision-q{font-size:13px;color:#fde68a;font-weight:600;}
+
+  /* Service leaf card */
+  .card.service{
+    border-radius:10px;padding:12px 14px;margin:4px 0;
+    background:#0c1424;border:1px solid rgba(255,255,255,.08);border-left-width:4px;border-left-style:solid;
+  }
+  .card.service .head{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+  .card.service .head .icon{font-size:18px;}
+  .card.service .head .label{font-weight:700;font-size:13.5px;color:#fff;}
+  .card.service .head .final{
+    margin-left:auto;font-size:9.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);
+    border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:2px 8px;
+  }
+  .card.service .why{font-size:13px;line-height:1.55;color:#e2e8f0;margin:0 0 6px;}
+  .card.service .analogy{font-size:12px;line-height:1.5;color:#a5b4fc;font-style:italic;margin:0 0 6px;}
+  .card.service .extra{font-size:11.5px;line-height:1.5;color:var(--muted);margin:0;}
+  .card.service .strategies{margin-top:8px;padding-top:8px;border-top:1px dashed rgba(255,255,255,.12);}
+  .strategy-item{font-size:12px;color:#cbd5e1;margin:4px 0;line-height:1.5;}
+  .strategy-item b{color:#fff;}
+
+  .leadsto{
+    font-size:11px;color:var(--muted);margin:2px 0 8px;
+  }
+  .leadsto b{color:#fff;}
+
+  mark{background:#facc15;color:#111;border-radius:3px;padding:0 2px;}
+  .highlight-flash{animation:flash 1.4s ease;}
+  @keyframes flash{ 0%{box-shadow:0 0 0 3px #facc15;} 100%{box-shadow:0 0 0 0 rgba(250,204,21,0);} }
+
+  @media (max-width:600px){
+    details.node > .body{padding-left:20px;}
+    .search-box{width:100%;}
+  }
+</style>
+</head>
+<body>
+  <div class="header" id="header">
+    <button class="header-close" id="headerClose" title="Hide header" aria-label="Hide header">✕</button>
+    <h1>🧭 AWS Services Explained — A Beginner's Path Guide</h1>
+    <p>Stand on each step and read what's ahead. No prior AWS knowledge assumed — every technical term is explained in plain language first.</p>
+    <div class="controls">
+      <input class="search-box" id="search" placeholder="🔍 Search for a service (e.g. Lambda, S3, RDS)…" />
+      <button class="btn" id="expandAll">⬇ Expand all</button>
+      <button class="btn" id="collapseAll">⬆ Collapse all</button>
+      <span class="no-match" id="noMatch" style="display:none;">No service found with that name.</span>
+    </div>
+    <div class="legend-bar">
+      <span>❓ <b>Yellow question</b> = a decision point — ask yourself this</span>
+      <span>👉 <b>Pick this if</b> = a relatable scenario, not a spec sheet</span>
+      <span>🟩 <b>Colored card</b> = a final AWS service (the destination)</span>
+      <span>▸ Click any row to expand/collapse it</span>
+    </div>
+  </div>
+  <div class="header-restore" id="headerRestore">☰ Show header (title, search &amp; legend)</div>
+
+  <div class="wrap">
+    <div class="intro-card">
+      <h2>🌐 Start here: what are you trying to do?</h2>
+      <p id="rootIntro"></p>
+    </div>
+    <div id="tree"></div>
+  </div>
+
+<script>
+/* ============================= DOMAIN COLORS ============================= */
+const DOMAIN_COLORS = {
+  compute:'#6366f1', storage:'#f59e0b', database:'#10b981', networking:'#3b82f6',
+  messaging:'#ec4899', security:'#ef4444', monitoring:'#14b8a6', devops:'#8b5cf6',
+  api:'#06b6d4', analytics:'#f97316',
+};
+
+/* ============================= DATA HELPERS ============================= */
+function svc(id,label,icon,why,analogy,extra,strategies){
+  return {id,type:'service',label,icon,why,analogy,extra:extra||null,strategies:strategies||[]};
+}
+function dec(id,label,ask,children){ return {id,type:'decision',label,ask,children}; }
+function dom(id,label,icon,plain,children){ return {id,type:'domain',domainKey:id,label,icon,plain,children}; }
+function e(edge,pickIf,node){ node.edgeFromParent=edge; node.pickIf=pickIf; return node; }
+
+/* ============================= DATA TREE ============================= */
+const root = {
+  type:'root',
+  intro:"Every AWS project starts with a simple question — not \"which service?\" but \"what am I actually trying to do?\" Pick the situation below that sounds most like yours, and follow it. Each step will explain what you're looking at in plain English before showing you what comes next.",
+  children: [
+    e('Need to run code/apps','You have some code or an application and need somewhere for it to actually execute.',
+      dom('compute','Compute & Containers','🖥️',
+        "This is all about deciding <b>where your code actually runs</b>. Think of it like choosing between renting a fully-serviced desk, managing your own office, or paying someone only for the exact minutes they work. Every option here runs your code — they just differ in how much setup and control you want.",
+        [
+          dec('compute-duration','Execution duration & workload pattern','Does your code just react to occasional events and finish quickly, or does it need to run continuously, all day, every day?',[
+            e('<15 min · event-driven','Your code just responds to things — a file gets uploaded, a button gets clicked, a schedule fires — and finishes within 15 minutes.',
+              svc('lambda','AWS Lambda','⚡',
+                "AWS Lambda runs your code only when something triggers it, then stops. You're billed only for the exact milliseconds it runs — never for idle time.",
+                "Like hiring a contractor for a single task instead of a full-time employee — you only pay when there's work to do.",
+                "Scales automatically from zero to thousands of simultaneous runs. If a single run needs more than 15 minutes or a fixed IP address, look at Fargate instead."
+              )),
+            e('Long-running / continuous','Your app needs to be always-on — a website, an API backend, a service that never really \"finishes.\"',
+              dec('container-choice','Containerized application?','Is your application packaged as a Docker container, or is it a traditional app that isn\'t containerized?',[
+                e('No: monolith / legacy','You have a traditional application — not packaged in Docker — that you just need to run somewhere.',
+                  dec('control-level','Level of server control needed','Do you want full control over the operating system and server, or would you rather just hand AWS your code and let it handle the rest?',[
+                    e('High: custom OS/kernel','You need to install custom software, tune the operating system, or manage networking/drivers yourself.',
+                      svc('ec2','Amazon EC2','🖥️',
+                        "Amazon EC2 gives you a virtual computer in the cloud — like renting a physical server, except it's virtual and billed by the hour or second.",
+                        "It's like renting an empty apartment: you get full control, but you're responsible for furnishing and maintaining it.",
+                        "Full root/admin access, custom OS images, complete networking control."
+                      )),
+                    e('Low: PaaS, code only','You just want to upload your code and have AWS deal with servers, scaling, and load balancing automatically.',
+                      svc('beanstalk','Elastic Beanstalk','🌱',
+                        "Elastic Beanstalk takes your code and automatically handles the servers, load balancing, and scaling behind it.",
+                        "Like a serviced apartment — you move your stuff in, and building management (AWS) handles the maintenance.",
+                        "Good for teams who want EC2's flexibility without managing the infrastructure by hand."
+                      )),
+                  ])),
+                e('Yes: Docker containers','Your app is already packaged into Docker containers.',
+                  dec('orch-pref','Orchestration preference','Do you already know Kubernetes and want to use standard kubectl/Helm tooling, or would you rather use AWS\'s own simpler container system?',[
+                    e('Kubernetes APIs (kubectl/Helm)','Your team already knows Kubernetes and wants to keep using familiar tools like kubectl and Helm.',
+                      svc('eks','Amazon EKS','☸️',
+                        "Amazon EKS is a managed Kubernetes service — AWS runs the complicated Kubernetes control plane for you, but you still use standard Kubernetes commands.",
+                        null,
+                        "Best if you're migrating an existing Kubernetes setup or your team already has Kubernetes expertise."
+                      )),
+                    e('Managed ECS framework','You want a simpler, AWS-native way to run containers without needing to learn Kubernetes.',
+                      dec('ecs-launch','Manage the underlying servers?','Do you want to manage the EC2 instances your containers run on yourself, or should AWS handle that too?',[
+                        e('No: serverless containers','You don\'t want to think about servers at all — just run the containers.',
+                          svc('fargate','AWS Fargate','🚀',
+                            "AWS Fargate runs your containers without you ever provisioning or patching a server — it's \"serverless\" for containers.",
+                            "Like ordering food delivery instead of cooking — you get the meal without touching the kitchen."
+                          )),
+                        e('Yes: full cluster control','You want to manage the EC2 instances your containers run on yourself, for cost or control reasons.',
+                          svc('ecs-ec2','Amazon ECS on EC2','📦',
+                            "Amazon ECS on EC2 runs your containers on EC2 instances that you manage yourself, giving you more control over the underlying hardware."
+                          )),
+                      ])),
+                  ])),
+              ])),
+          ]),
+          dec('ec2-purchasing','EC2 purchasing strategy','If you\'re using EC2, how predictable and interruption-tolerant is your workload? This affects how you pay for it.',[
+            e('Predictable & steady-state','You know roughly how much computing power you\'ll need, consistently, over time.',
+              dec('commit-term','Commitment duration','Are you willing to commit to using AWS for 1–3 years in exchange for a discount?',[
+                e('1–3 yr commitment','You\'re confident about your usage and want to save money long-term.',
+                  svc('savings-plan','Savings Plans / Reserved Instances','💰',
+                    "These give you up to 72% off in exchange for committing to a certain amount of usage for 1–3 years.",
+                    "Like a phone contract — cheaper per month, but you're locked in."
+                  )),
+                e('No commitment / spiky','Your usage varies and you don\'t want to commit to anything.',
+                  svc('on-demand','On-Demand Instances','🕐',
+                    "On-Demand lets you pay standard rates with zero commitment — perfect for short-term or unpredictable usage.",
+                    "Like paying full price for a hotel room by the night instead of signing a lease."
+                  )),
+              ])),
+            e('Fault-tolerant / batch / stateless','Your job can be paused or restarted without breaking anything — like processing a big batch of files overnight.',
+              svc('spot','Spot Instances','🎯',
+                "Spot Instances let you use AWS's spare capacity at up to 90% off — but AWS can reclaim it with little notice.",
+                "Like standby airline tickets: very cheap, but you might get bumped."
+              )),
+            e('Compliance / licensing / BYOL','You have licensing rules (like \"bring your own license\") or compliance requirements tied to specific hardware.',
+              dec('dedicated-hw','Dedicated hardware required?','Do you need access to the physical server itself for per-core licensing, or just guaranteed single-tenant isolation?',[
+                e('Physical server, BYOL cores','Your software license is tied to physical CPU cores or sockets.',
+                  svc('dedicated-host','Dedicated Hosts','🏠',
+                    "Dedicated Hosts give you an entire physical server, which matters when a license is tied to hardware."
+                  )),
+                e('Isolated single-tenant','You need guaranteed isolation from other customers\' workloads, without needing direct physical server access.',
+                  svc('dedicated-instance','Dedicated Instances','🔒',
+                    "Dedicated Instances run on hardware reserved just for you, without giving you direct physical server access."
+                  )),
+              ])),
+          ]),
+        ])),
+
+    e('Need to store data','You need somewhere for your files or data to physically live, and a way to read/write to it.',
+      dom('storage','Storage & Files','💾',
+        "This category is about <b>where your files and data live</b>, and how things read/write to them. Think of it like choosing between a filing cabinet only one desk can open, a shared cabinet the whole office can access, or an infinite online storage locker.",
+        [
+          dec('storage-protocol','Access protocol & structure','How does your application need to access this storage — as a drive attached to one server, a shared folder across many servers, or as objects fetched over the internet?',[
+            e('Block · single EC2','You just need a hard drive for one EC2 server — like a boot disk or a database\'s storage volume.',
+              svc('ebs','Amazon EBS','💽',
+                "Amazon EBS is a virtual hard drive that attaches to exactly one EC2 instance at a time.",
+                "Like an external hard drive plugged into one computer."
+              )),
+            e('Shared FS · multi-instance','Multiple servers need to read and write the same files at the same time, like a shared network drive.',
+              dec('shared-fs','OS protocol needed','What operating system and use case are you working with — Linux, Windows, or high-performance computing?',[
+                e('Linux · NFSv4','You\'re running Linux servers that need to share files (NFS is the standard Linux file-sharing protocol).',
+                  svc('efs','Amazon EFS','📁',
+                    "Amazon EFS is a shared drive that thousands of Linux servers can read from and write to at once, across multiple data centers."
+                  )),
+                e('Windows · SMB/CIFS','You\'re running Windows servers that need shared file storage (SMB is the standard Windows file-sharing protocol).',
+                  svc('fsx-windows','FSx for Windows','🪟',
+                    "FSx for Windows gives you a fully managed, Windows-style shared drive."
+                  )),
+                e('HPC · Lustre','You\'re running heavy scientific or machine-learning workloads that need extremely fast, high-throughput shared storage.',
+                  svc('fsx-lustre','FSx for Lustre','⚙️',
+                    "FSx for Lustre is built for supercomputing-style workloads that need to read huge amounts of data very fast."
+                  )),
+              ])),
+            e('Object storage · HTTP API','You just want to store files (images, backups, videos, logs) and fetch them over a simple web request.',
+              svc('s3','Amazon S3','🪣',
+                "Amazon S3 stores files as \"objects\" you access over the internet — extremely durable and nearly unlimited in size.",
+                "Like an infinitely large online storage locker with a web address for every item inside it."
+              )),
+            e('Ultra-low latency scratch','You need the fastest possible temporary storage and don\'t mind losing the data when the server stops.',
+              svc('instance-store','EC2 Instance Store','⚡',
+                "Instance Store is physical SSD storage built into the server — extremely fast, but wiped when the instance stops.",
+                "Like RAM for storage: blazing fast, but temporary."
+              )),
+          ]),
+          dec('s3-lifecycle','S3 object access pattern','Once you\'re storing files in S3, how often will you actually access them, and how fast do you need them back when you do?',[
+            e('Frequent / unknown pattern','You access this data often, or you\'re not sure how often it\'ll be accessed.',
+              dec('s3-dynamic','Predictable access pattern?','Do you know your access pattern, or is it unpredictable?',[
+                e('Unpredictable, auto-save','You don\'t know how often this data will be accessed and want AWS to figure out the cheapest tier automatically.',
+                  svc('s3-intelligent','S3 Intelligent-Tiering','🧠',
+                    "This automatically moves your files between cheaper and pricier tiers based on real usage, with no extra retrieval fees."
+                  )),
+                e('Active, daily access','This data is accessed regularly, like images on a live website.',
+                  svc('s3-standard','S3 Standard','📗',
+                    "The default, general-purpose tier — highly available and built for data you use all the time."
+                  )),
+                e('Single-AZ, low-cost cache','You need extremely fast access within a single location and can accept the small risk of a single-location outage, for a caching layer.',
+                  svc('s3-express','S3 Express One Zone','🚄',
+                    "Offers millisecond-level speed for high-performance caching, stored in just one data center."
+                  )),
+              ])),
+            e('Infrequent <1×/month','You rarely access this data — maybe once a month or less — but need to keep it around.',
+              dec('s3-multiaz','Multi-location redundancy needed?','Do you need this data protected across multiple data centers, or is one location acceptable?',[
+                e('Yes: multi-AZ','You want the safety of multiple data centers even for rarely-used data.',
+                  svc('s3-sia','S3 Standard-IA','📙',
+                    "Cheaper storage for data you don't access often, still spread across multiple locations, with a small fee when you retrieve it. (\"IA\" = Infrequent Access.)"
+                  )),
+                e('No: single-AZ cheaper','You\'re fine with a single data center to save more money.',
+                  svc('s3-oia','S3 One Zone-IA','📘',
+                    "The cheapest infrequent-access tier, but only stored in one data center."
+                  )),
+              ])),
+            e('Archive > 90 days','This is long-term archival data you almost never touch, like compliance records or old backups.',
+              dec('s3-arch','Retrieval time allowed?','If you ever need this data back, how quickly do you need it — instantly, within hours, or is a slow retrieval fine?',[
+                e('Instant · milliseconds','You rarely need this data, but when you do, you need it immediately.',
+                  svc('s3-gir','Glacier Instant Retrieval','🧊',
+                    "Keeps archive-priced data available in milliseconds if you suddenly need it."
+                  )),
+                e('Minutes to hours','You can wait a few minutes to a few hours if you ever need this data back.',
+                  svc('s3-gfr','Glacier Flexible Retrieval','🧊',
+                    "Cheaper archival storage where retrieval takes minutes to hours."
+                  )),
+                e('Hours · lowest cost','This is data you almost certainly will never need again, like 7–10 year compliance records, and you want the lowest cost possible.',
+                  svc('s3-gda','Glacier Deep Archive','🧊',
+                    "AWS's cheapest storage option — retrieval takes about 12 hours, meant for data you're only keeping for compliance."
+                  )),
+              ])),
+          ]),
+        ])),
+
+    e('Need to persist/query data','You need an engine to reliably store and search structured data — like user records, orders, or transactions.',
+      dom('database','Databases & Caching','🗄️',
+        "This is about choosing an engine to store and search your data. Different apps need different kinds of databases — some need strict tables and relationships (like a spreadsheet with strict rules), others need flexible documents, and others need lightning-fast lookups.",
+        [
+          dec('db-model','Data model & schema structure','What shape is your data, and how strict do the rules around it need to be?',[
+            e('Relational · SQL · ACID','Your data fits neatly into tables with relationships between them (like customers, orders, and products), and you need strong consistency guarantees. (\"ACID\" just means the database guarantees your transactions complete reliably, without half-finished updates.)',
+              dec('rel-scale','Scale & managed level','Do you need a database that scales automatically and serverlessly, or is a standard managed database enough?',[
+                e('Serverless / high-scale MySQL & Postgres','You want a MySQL/Postgres-compatible database with more performance and less manual scaling work.',
+                  svc('aurora','Amazon Aurora','🐬',
+                    "AWS's own high-performance version of MySQL/Postgres — faster, and able to scale automatically."
+                  )),
+                e('Standard managed RDBMS','You want a well-known relational database (MySQL, Postgres, Oracle, SQL Server) without managing the server yourself.',
+                  svc('rds','Amazon RDS','🗄️',
+                    "Handles backups, patching, and maintenance for standard relational databases, so you just use the database."
+                  )),
+              ])),
+            e('Key-value / document NoSQL','Your data doesn\'t need strict table relationships — more like flexible records/documents that can change shape.',
+              dec('nosql-scale','Request pattern & scale','Do you need extremely fast, unpredictable-scale lookups, or are you looking for something MongoDB-compatible?',[
+                e('Unpredictable, serverless, <ms','You need very fast lookups (like a shopping cart or user session) at any scale, without managing servers.',
+                  svc('dynamodb','Amazon DynamoDB','⚡',
+                    "A serverless database that responds in single-digit milliseconds no matter how much traffic you throw at it."
+                  )),
+                e('MongoDB-compatible','Your app already uses MongoDB, or your team is familiar with it.',
+                  svc('documentdb','Amazon DocumentDB','📄',
+                    "Behaves like MongoDB but is managed by AWS."
+                  )),
+              ])),
+            e('In-memory cache · sub-ms','You want to speed up an existing database by keeping frequently-used data in memory.',
+              dec('cache-engine','In-memory engine needed','Do you need rich features like pub/sub messaging, or just simple, fast key-value caching?',[
+                e('Rich data structures, pub/sub','You need more than basic caching — like lists, sets, or publish/subscribe messaging.',
+                  svc('redis','ElastiCache for Redis','🔴',
+                    "An in-memory data store with advanced features beyond simple caching, including multi-AZ failover and persistence."
+                  )),
+                e('Simple key-value, multithreaded','You just need straightforward, fast caching without extra features.',
+                  svc('memcached','ElastiCache for Memcached','🔵',
+                    "A simple, fast, multithreaded in-memory cache."
+                  )),
+                e('In front of DynamoDB','You\'re using DynamoDB and want to make repeated reads even faster, without changing your code.',
+                  svc('dax','DynamoDB Accelerator (DAX)','🚄',
+                    "Sits in front of DynamoDB and caches reads automatically — no code changes required."
+                  )),
+              ])),
+            e('Graph / social network data','Your data is mostly about relationships between things — like a social network or a recommendation engine.',
+              svc('neptune','Amazon Neptune','🕸️',
+                "Built specifically for graph data — relationships and connections, not tables."
+              )),
+            e('Petabyte analytics warehouse','You need to run complex analytical queries across massive amounts of historical data.',
+              svc('redshift-db','Amazon Redshift','📊',
+                "A data warehouse built for large-scale analytics — think \"answering big business questions,\" not everyday app transactions."
+              )),
+          ]),
+        ])),
+
+    e('Need routing / delivery','You need to control how traffic travels — from users to your servers, between networks, or across the globe.',
+      dom('networking','Networking & CDN','🌐',
+        "This category is about how traffic gets from users to your application — routing, load balancing, and connecting different parts of your network. Think of it as the roads and traffic signals of your cloud infrastructure.",
+        [
+          dec('lb-choice','Load balancing & routing type','How should incoming traffic be distributed across your servers, and what kind of traffic is it?',[
+            e('L7 · HTTP/HTTPS web routing','You\'re routing regular web traffic (HTTP/HTTPS) and want smart routing based on URL paths or domains.',
+              svc('alb','Application Load Balancer','🔀',
+                "Understands web traffic and can route requests based on the URL — ideal for websites and APIs. (\"L7\" means it operates at the application layer, the level that understands web requests.)"
+              )),
+            e('L4 · TCP/UDP high throughput','You need to handle massive amounts of raw network traffic as fast as possible, like a gaming server.',
+              svc('nlb','Network Load Balancer','⚖️',
+                "Handles millions of requests per second at the raw network level, with ultra-low latency."
+              )),
+            e('L3 · inline appliance traffic','You need to route traffic through security appliances, like firewalls or intrusion detection systems.',
+              svc('gwlb','Gateway Load Balancer','🛡️',
+                "Routes traffic through third-party security tools before it reaches your app."
+              )),
+            e('DNS routing & health checks','You want to control which server or region users get directed to at the DNS (domain name) level.',
+              dec('r53-policy','Route 53 routing policy','What\'s the goal of your DNS routing — failover protection, lowest latency, geography, or splitting traffic for testing?',[
+                e('Active-passive','You want a backup server that only kicks in if your main server fails.',
+                  svc('r53-fail','Failover Routing Policy','🔁',
+                    "Sends traffic to a backup server only when your primary fails a health check."
+                  )),
+                e('Lowest latency region','You have servers in multiple regions and want each user routed to whichever is fastest for them.',
+                  svc('r53-lat','Latency-Based Routing Policy','📶',
+                    "Sends each user to the AWS region that responds fastest for them."
+                  )),
+                e('User geographic location','You want to route users based on their physical location, for legal or content reasons.',
+                  svc('r53-geo','Geolocation Routing Policy','📍',
+                    "Routes traffic based on where the request is coming from."
+                  )),
+                e('Split traffic %','You want to gradually roll out a new version to a percentage of users, like a 10% test group.',
+                  svc('r53-weight','Weighted Routing Policy','⚖️',
+                    "Splits traffic by a percentage you assign — useful for gradual rollouts or A/B testing."
+                  )),
+              ])),
+            e('Global edge CDN caching','You want your content (images, videos, pages) to load fast for users everywhere in the world.',
+              svc('cloudfront','Amazon CloudFront','🌍',
+                "Caches your content at edge locations around the world, so users load it from somewhere nearby instead of your origin server.",
+                "Like keeping copies of a popular book at every local library instead of everyone traveling to one central library."
+              )),
+          ]),
+          dec('vpc-connectivity','VPC connectivity destination','What are you trying to connect — outbound internet access, other AWS services, other private networks, or your own office network?',[
+            e('Outbound internet, private subnet','Your servers are in a private network but still need to reach the internet, e.g. to download updates.',
+              dec('nat-arch','NAT architecture','Do you want a fully-managed solution, or are you optimizing for the lowest cost at small scale?',[
+                e('Fully managed, HA','You want AWS to manage this reliably without you thinking about it.',
+                  svc('nat-gateway','NAT Gateway','🔁',
+                    "A managed service that lets private servers reach the internet, without exposing them to inbound traffic."
+                  )),
+                e('Low cost, small scale','You\'re cost-sensitive and running a small setup.',
+                  svc('nat-instance','NAT Instance','🔁',
+                    "A self-managed EC2 server doing the same job as a NAT Gateway — cheaper, but requiring your own upkeep."
+                  )),
+              ])),
+            e('Private link to AWS services','You want your private servers to reach AWS services (like S3) without going over the public internet.',
+              dec('vpc-endpoint','VPC endpoint type','Are you connecting to S3/DynamoDB specifically, or to other AWS services?',[
+                e('S3 & DynamoDB only, free','You only need private access to S3 or DynamoDB.',
+                  svc('gateway-endpoint','Gateway Endpoint','🚪',
+                    "Free, private routing to S3/DynamoDB without extra hardware."
+                  )),
+                e('Other services / PrivateLink','You need private access to other AWS services beyond S3/DynamoDB.',
+                  svc('interface-endpoint','Interface Endpoint','🔌',
+                    "Gives you a private IP address inside your network for reaching other AWS services."
+                  )),
+              ])),
+            e('Connect exactly 2 VPCs','You need to connect exactly two separate virtual private networks together.',
+              svc('vpc-peering','VPC Peering','🔗',
+                "Creates a direct, private connection between two VPCs."
+              )),
+            e('Connect 10+ VPCs + on-prem hub','You have many VPCs (and maybe on-premises networks) that all need to talk to each other.',
+              svc('transit-gateway','AWS Transit Gateway','🕸️',
+                "Acts as a central hub connecting many VPCs and on-premises networks, instead of pairing each one individually."
+              )),
+            e('On-premises hybrid link','You need to connect your own physical office or data center to AWS.',
+              dec('hybrid-link','Speed & reliability needed','Is a secure internet-based connection good enough, or do you need a dedicated private line?',[
+                e('Encrypted, public internet','You want a quick, cost-effective way to connect, and going over the encrypted public internet is fine.',
+                  svc('vpn','Site-to-Site VPN','🔐',
+                    "Creates an encrypted tunnel between your network and AWS over the regular internet."
+                  )),
+                e('Dedicated private fiber','You need consistent, high-bandwidth, private connectivity — not sharing the public internet.',
+                  svc('direct-connect','AWS Direct Connect','🔌',
+                    "A dedicated physical fiber line straight from your building to AWS."
+                  )),
+              ])),
+          ]),
+        ])),
+
+    e('Need async communication','You have different parts of your system that need to talk to each other without waiting on one another directly.',
+      dom('messaging','Messaging & Events','📬',
+        "This category is about how different parts of your application talk to each other without being directly connected — so if one part is slow or down, the rest keeps working. Think of it like leaving notes in a mailbox instead of requiring a live phone call.",
+        [
+          dec('msg-pattern','Communication pattern','How do the pieces of your system need to communicate — one-to-one, one-to-many, streaming, or as a multi-step workflow?',[
+            e('Point-to-point decoupling','You want one part of your system to hand off work to another part without waiting for it directly.',
+              dec('sqs-ordering','Ordering strictness required','Does the order that messages get processed in actually matter?',[
+                e('Best-effort, max throughput','Order doesn\'t matter much, and you want maximum speed.',
+                  svc('sqs-standard','SQS Standard Queue','📬',
+                    "Delivers messages with best-effort ordering and virtually unlimited throughput."
+                  )),
+                e('Strict FIFO, exactly-once','Messages must be processed in exact order, exactly once — like processing financial transactions.',
+                  svc('sqs-fifo','SQS FIFO Queue','📥',
+                    "Guarantees strict order and that each message is processed exactly once. (\"FIFO\" = First In, First Out.)"
+                  )),
+              ])),
+            e('1-to-many fan-out push','One event needs to notify many different subscribers at the same time.',
+              svc('sns','Amazon SNS','📢',
+                "A pub/sub system — one message gets pushed out to many subscribers simultaneously."
+              )),
+            e('Real-time big data streaming','You have a continuous, high-volume stream of data (like clickstreams or sensor data) to process.',
+              dec('kinesis-target','Streaming target & processing','Do you need custom real-time processing with the ability to replay data, or just to load it somewhere like S3?',[
+                e('Custom processing, multi-day replay','You need to write custom logic to process the stream and might need to replay old data.',
+                  svc('kinesis-ds','Kinesis Data Streams','🌊',
+                    "Lets you build custom real-time processing, with up to 365 days of replay."
+                  )),
+                e('Near real-time load to S3/Redshift','You just want the stream automatically delivered into storage or a data warehouse, no custom code.',
+                  svc('kinesis-df','Kinesis Data Firehose','🚰',
+                    "Automatically delivers streaming data into S3 or Redshift, with no code required."
+                  )),
+              ])),
+            e('Multi-step workflow orchestration','You have a multi-step process (like an order fulfillment pipeline) that needs coordination, retries, and error handling.',
+              svc('step-functions','AWS Step Functions','🔄',
+                "A visual workflow tool that coordinates multiple steps, with built-in retry logic."
+              )),
+            e('Event-driven SaaS / AWS event bus','You want to route events between AWS services and third-party SaaS apps based on rules.',
+              svc('eventbridge','Amazon EventBridge','🎫',
+                "An event bus that connects AWS services and outside apps together using routing rules."
+              )),
+          ]),
+        ])),
+
+    e('Need identity / secrets','You need to manage who\'s allowed to do what, or keep sensitive information like passwords and keys safe.',
+      dom('security','Security & Identity','🔐',
+        "This category covers how you manage who's allowed to do what, and how you protect sensitive information like passwords and encryption keys. Think of it as the locks, keys, and ID badges of your AWS account.",
+        [
+          dec('sec-category','Requirement category','What kind of security need do you have — user login, storing secrets, or managing encryption keys?',[
+            e('User auth & directory','You need to manage user accounts — sign-up, sign-in, and permissions — for an app.',
+              dec('auth-target','Target user base','Are these end customers using your app, or do you need to convert a login into temporary AWS permissions?',[
+                e('Customer web/mobile app users','You need a user directory for people signing up and logging into your app.',
+                  svc('cognito-up','Cognito User Pools','👤',
+                    "Manages sign-up, sign-in, and multi-factor authentication for your app's users."
+                  )),
+                e('OAuth → temporary AWS creds','You need to let a logged-in user (or third-party identity) temporarily access specific AWS resources.',
+                  svc('cognito-ip','Cognito Identity Pools','🪪',
+                    "Exchanges a login (from Cognito or another provider) for temporary AWS credentials."
+                  )),
+              ])),
+            e('Secrets & parameter storage','You need somewhere safe to store things like database passwords or API keys.',
+              dec('secrets-rotation','Auto-rotation needed?','Do these secrets need to automatically rotate on a schedule, or are they simple configuration values?',[
+                e('Yes: DB passwords, OAuth keys','You\'re storing something sensitive that should automatically rotate, like a database password.',
+                  svc('secrets-manager','AWS Secrets Manager','🔑',
+                    "Stores sensitive secrets and can automatically rotate them on a schedule."
+                  )),
+                e('No: standard config params','You just need to store configuration values that don\'t need automatic rotation.',
+                  svc('ssm-param','SSM Parameter Store','⚙️',
+                    "A free place to keep configuration values, encrypted, without automatic rotation."
+                  )),
+              ])),
+            e('Encryption key management','You need to manage encryption keys for protecting your data.',
+              dec('key-owner','Key owner & multi-region','Is a standard managed key enough, or do you need dedicated, single-tenant hardware for regulatory reasons?',[
+                e('AWS/customer managed keys','A standard managed encryption key is enough for your needs.',
+                  svc('kms','AWS KMS','🔐',
+                    "Manages the encryption keys used to protect data in S3, EBS, RDS, and more."
+                  )),
+                e('Dedicated hardware module','Regulations require you to use a dedicated, single-tenant hardware device for your keys.',
+                  svc('cloudhsm','AWS CloudHSM','🔒',
+                    "Gives you a dedicated hardware security module just for your account, meeting strict compliance standards (FIPS 140-2 Level 3)."
+                  )),
+              ])),
+          ]),
+        ])),
+
+    e('Need observability','You want to know what\'s happening inside your system — is it healthy, is it slow, and who did what.',
+      dom('monitoring','Monitoring & Audit','📊',
+        "This category is about knowing what's happening inside your system — is it healthy, is it slow, who did what, and can you catch problems before they become disasters. Think of it as the dashboards and security cameras of your application.",
+        [
+          dec('obs-goal','Primary data type & objective','What do you want to observe — everyday metrics and logs, request tracing across services, or an audit trail of API activity?',[
+            e('Metrics, logs & alarms','You want basic health monitoring — CPU usage, error logs, and alerts when something looks wrong.',
+              dec('cw-component','CloudWatch component','Which specific piece do you need — the numeric metrics, the text logs, or the alerting rules?',[
+                e('Infra & app metrics','You want numeric performance data, like CPU usage or request counts.',
+                  svc('cw-metrics','CloudWatch Metrics','📈',
+                    "Tracks numeric performance data for your infrastructure and apps, at 1–60 second resolution."
+                  )),
+                e('Centralized app logs','You want all your application\'s text logs collected in one searchable place.',
+                  svc('cw-logs','CloudWatch Logs','📝',
+                    "Centralizes and lets you search logs from across your services."
+                  )),
+                e('Threshold notifications','You want to be notified automatically when a metric crosses a threshold.',
+                  svc('cw-alarms','CloudWatch Alarms','🚨',
+                    "Triggers notifications or automatic actions when a metric crosses a threshold you set."
+                  )),
+              ])),
+            e('Distributed tracing / latency','You have multiple services calling each other and need to find out where slowdowns are happening.',
+              svc('xray','AWS X-Ray','🔬',
+                "Traces a single request as it travels across multiple services, showing you exactly where time is being spent."
+              )),
+            e('Account API audit & governance','You need to know exactly who did what in your AWS account, for security or compliance.',
+              dec('audit-objective','Audit objective','Do you need a complete record of every action, or do you want AWS to flag suspicious activity automatically?',[
+                e('Track every API call','You need a complete, unchangeable record of every action taken in your account.',
+                  svc('cloudtrail','AWS CloudTrail','📜',
+                    "Logs every API call made in your account — who did what, and when."
+                  )),
+                e('Detect anomalous activity','You want AWS to automatically flag activity that looks unusual.',
+                  svc('cloudtrail-insights','CloudTrail Insights','🔍',
+                    "Uses machine learning to spot unusual patterns in your account's API activity."
+                  )),
+              ])),
+          ]),
+        ])),
+
+    e('Need to ship code/infra','You want to build, test, and deploy your infrastructure and application code reliably, without doing it by hand every time.',
+      dom('devops','DevOps & CI/CD','🔧',
+        "This category is about how your infrastructure and code get built, tested, and shipped to production reliably — without someone manually clicking buttons every time. Think of it as your assembly line.",
+        [
+          dec('devops-task','Task type','Are you trying to define your infrastructure as code, or automate the build/test/deploy pipeline for your application?',[
+            e('Infrastructure as Code','You want to define your AWS resources (servers, databases, networks) as reusable, version-controlled code instead of clicking around the console.',
+              dec('iac-lang','Language & framework','Do you prefer writing configuration files (declarative), or actual programming code?',[
+                e('Declarative JSON/YAML','You\'re comfortable writing configuration templates in JSON or YAML.',
+                  svc('cloudformation','AWS CloudFormation','📋',
+                    "Lets you describe your infrastructure in JSON/YAML templates, and AWS builds exactly what you described."
+                  )),
+                e('Imperative TS/Python/Java','You\'d rather write real code (TypeScript, Python, Java) than configuration files.',
+                  svc('cdk','AWS CDK','💻',
+                    "Lets you define infrastructure using real programming languages, which then compiles down to CloudFormation."
+                  )),
+                e('Serverless-app focused','You\'re specifically building a serverless application and want a simpler, purpose-built tool.',
+                  svc('sam','AWS SAM','⚡',
+                    "A simplified framework purpose-built for defining serverless applications."
+                  )),
+              ])),
+            e('CI/CD automation pipeline','You want to automate how code moves from being written to being deployed.',
+              dec('cicd-phase','Pipeline phase','Which part of the pipeline are you focused on — storing code, building/testing it, deploying it, or orchestrating the whole thing?',[
+                e('Source control (Git)','You need a place to store and version your code.',
+                  svc('codecommit','AWS CodeCommit','📚',
+                    "A private, managed Git source-control repository."
+                  )),
+                e('Build & test engine','You need somewhere to automatically compile and test your code.',
+                  svc('codebuild','AWS CodeBuild','🔨',
+                    "A managed service that builds and tests your code."
+                  )),
+                e('Deployment orchestration','You need to actually push new code out to your servers, with a strategy for rolling it out safely.',
+                  svc('codedeploy','AWS CodeDeploy','🚢',
+                    "Automates deploying your app to EC2, Lambda, or ECS, and supports rollback if something goes wrong.",
+                    null, null,
+                    [
+                      {label:'All-at-Once', text:'Deploy everywhere at once. Pick this if: it\'s a dev/test environment and speed matters more than avoiding downtime. Downtime: yes. Rollback: slow.'},
+                      {label:'In-Place (Rolling)', text:'Update servers a few at a time. Pick this if: it\'s production but you don\'t want to pay for extra capacity during deployment. Downtime: no. Rollback: medium.'},
+                      {label:'Blue/Green', text:'Stand up a whole new set of servers, then switch traffic over. Pick this if: this is mission-critical and you need instant rollback. Needs double the capacity temporarily. Downtime: zero.'},
+                      {label:'Canary', text:'Send a small slice of real traffic to the new version first. Pick this if: you want to validate a release on 5–10% of real users before going all-in. Downtime: zero.'},
+                    ]
+                  )),
+                e('Workflow automation','You want to connect all the pipeline steps together into one automated flow.',
+                  svc('codepipeline','AWS CodePipeline','🔧',
+                    "Orchestrates your entire release process end-to-end, from code change to deployment."
+                  )),
+              ])),
+          ]),
+        ])),
+
+    e('Need to expose an API','You need clients (web, mobile, other services) to call into your application over the network.',
+      dom('api','API & Edge Compute','⚡',
+        "This category is about how the outside world calls into your application — via APIs — and how you can run tiny bits of logic right at the network edge, close to users, for speed.",
+        [
+          dec('api-type','Traffic type & edge logic','Do you need to expose a traditional API, or run logic at edge locations close to users?',[
+            e('RESTful / HTTP endpoints','You need to expose an API that clients call over HTTP.',
+              dec('gateway-feature','API feature requirements','Do you need advanced features like API keys and usage plans, just a fast/cheap endpoint, or a persistent two-way connection?',[
+                e('Cost-optimized, low latency','You want a simple, cheap, fast API without a lot of extra features.',
+                  svc('http-api','API Gateway HTTP API','🌐',
+                    "A cost-optimized option — up to 71% cheaper and lower latency than the full REST API."
+                  )),
+                e('Usage plans, keys, WAF','You need advanced features like API keys, usage plans, or firewall protection.',
+                  svc('rest-api','API Gateway REST API','🔌',
+                    "The full-featured option, with usage plans, API keys, WAF integration, and request validation."
+                  )),
+                e('Real-time bi-directional','You need a persistent, two-way connection, like a live chat app.',
+                  svc('websocket-api','API Gateway WebSocket API','🔃',
+                    "Keeps a connection open for real-time, two-way communication."
+                  )),
+              ])),
+            e('Edge compute execution','You want to run small pieces of logic physically close to your users, for speed.',
+              dec('edge-complexity','Execution complexity & memory','Is this a simple rewrite (like changing a URL or header), or does it need real logic and network calls?',[
+                e('Lightweight rewrites, <1ms','You just need to do something simple and extremely fast, like rewriting a URL.',
+                  svc('cff','CloudFront Functions','⚡',
+                    "Runs tiny bits of JavaScript at 400+ edge locations in sub-millisecond time."
+                  )),
+                e('Full execution, network calls','You need to run more complex logic, possibly making network calls, at the edge.',
+                  svc('lambda-edge','Lambda@Edge','🌍',
+                    "Runs full Lambda functions at edge locations, in Node.js/Python, for up to 10 seconds of runtime."
+                  )),
+              ])),
+          ]),
+        ])),
+
+    e('Need big data / analytics','You have large amounts of data and need to query it, process it, or turn it into insights.',
+      dom('analytics','Analytics & Big Data','📈',
+        "This category is about making sense of large amounts of data — querying it, processing it, and turning it into insights. Think of it as the tools for asking big questions about all the data you've collected.",
+        [
+          dec('data-engine','Data engine & query type','How do you want to query or process your large-scale data?',[
+            e('Ad-hoc SQL directly on S3','Your data already sits in S3 as files, and you just want to run SQL queries on it occasionally.',
+              svc('athena','Amazon Athena','🔍',
+                "Lets you run SQL queries directly on data sitting in S3 — you pay only for the data scanned, no server needed."
+              )),
+            e('Enterprise MPP data warehouse','You need to run complex, large-scale analytical queries constantly, like a business intelligence system.',
+              svc('redshift-an','Amazon Redshift','📊',
+                "A full data warehouse built for heavy, ongoing analytical workloads. (\"MPP\" = Massively Parallel Processing — it splits big queries across many machines at once.)"
+              )),
+            e('Hadoop / Spark / Hive processing','You need to process massive datasets using big-data frameworks like Spark or Hadoop.',
+              svc('emr','Amazon EMR','🐘',
+                "Runs managed Hadoop/Spark/Hive clusters for large-scale data processing."
+              )),
+            e('ETL jobs & data cataloging','You need to clean, transform, and catalog raw data before it\'s usable.',
+              svc('glue','AWS Glue','🧩',
+                "A serverless ETL (extract, transform, load) service that also catalogs your data so it's easy to find. (ETL just means moving and reshaping data from one place to another.)"
+              )),
+            e('Search & log analytics engine','You need to search through large volumes of text or logs and visualize the results.',
+              svc('opensearch','Amazon OpenSearch','🔎',
+                "A managed search and log analytics engine with built-in visualization dashboards."
+              )),
+            e('Transactional email sending','You need to send emails at scale, like receipts or marketing campaigns.',
+              svc('ses','Amazon SES','✉️',
+                "Sends transactional and marketing emails at scale."
+              )),
+          ]),
+        ])),
+  ],
+};
+
+/* ============================= RENDERING ============================= */
+const treeEl = document.getElementById('tree');
+document.getElementById('rootIntro').textContent = root.intro;
+
+const serviceIndex = []; // {label, id, el}
+
+function renderServiceCard(node){
+  const card = document.createElement('div');
+  card.className = 'card service';
+  card.style.borderLeftColor = node._color || '#475569';
+  card.dataset.id = node.id;
+
+  const head = document.createElement('div');
+  head.className = 'head';
+  head.innerHTML = `<span class="icon">${node.icon}</span><span class="label">${node.label}</span><span class="final">Final answer</span>`;
+  card.appendChild(head);
+
+  const why = document.createElement('p');
+  why.className = 'why';
+  why.textContent = node.why;
+  card.appendChild(why);
+
+  if(node.analogy){
+    const an = document.createElement('p');
+    an.className = 'analogy';
+    an.textContent = '💡 ' + node.analogy;
+    card.appendChild(an);
+  }
+  if(node.extra){
+    const ex = document.createElement('p');
+    ex.className = 'extra';
+    ex.textContent = node.extra;
+    card.appendChild(ex);
+  }
+  if(node.strategies && node.strategies.length){
+    const wrap = document.createElement('div');
+    wrap.className = 'strategies';
+    const label = document.createElement('div');
+    label.className = 'section-label';
+    label.textContent = 'Strategies to choose from';
+    wrap.appendChild(label);
+    node.strategies.forEach(s=>{
+      const p = document.createElement('div');
+      p.className = 'strategy-item';
+      p.innerHTML = `<b>${s.label}</b> — ${s.text}`;
+      wrap.appendChild(p);
+    });
+    card.appendChild(wrap);
+  }
+
+  serviceIndex.push({label: node.label, el: card});
+  return card;
+}
+
+function renderDecisionDetails(node){
+  const det = document.createElement('details');
+  det.className = 'node decision';
+  det.dataset.id = node.id;
+  const sum = document.createElement('summary');
+  sum.innerHTML = `<span class="icon">❓</span><span class="decision-q">${node.ask}</span>`;
+  det.appendChild(sum);
+  const body = document.createElement('div');
+  body.className = 'body';
+  renderBranchList(node.children, body);
+  det.appendChild(body);
+  return det;
+}
+
+function renderDomainDetails(node){
+  const color = DOMAIN_COLORS[node.domainKey] || '#475569';
+  const det = document.createElement('details');
+  det.className = 'node domain';
+  det.dataset.id = node.id;
+  det.style.borderColor = color;
+  const sum = document.createElement('summary');
+  sum.innerHTML = `<span class="icon">${node.icon}</span><span>${node.label}</span>`;
+  det.appendChild(sum);
+  const body = document.createElement('div');
+  body.className = 'body';
+  const plain = document.createElement('div');
+  plain.className = 'plain';
+  plain.innerHTML = node.plain;
+  body.appendChild(plain);
+
+  const label = document.createElement('div');
+  label.className = 'section-label';
+  label.textContent = 'Decisions you might face here';
+  body.appendChild(label);
+
+  node.children.forEach(child=>{
+    tagColors(child, color);
+    body.appendChild(renderDecisionDetails(child));
+  });
+  det.appendChild(body);
+  return det;
+}
+
+function tagColors(node, color){
+  node._color = color;
+  (node.children||[]).forEach(c=>tagColors(c, color));
+}
+
+function renderTarget(node){
+  if(node.type==='service') return renderServiceCard(node);
+  if(node.type==='decision') return renderDecisionDetails(node);
+  if(node.type==='domain') return renderDomainDetails(node);
+}
+
+function renderBranchList(children, container){
+  children.forEach(child=>{
+    const branch = document.createElement('div');
+    branch.className = 'branch';
+    const pickif = document.createElement('div');
+    pickif.className = 'pickif';
+    pickif.innerHTML = `<span class="pickif-label">Pick this if</span>${child.pickIf}`;
+    branch.appendChild(pickif);
+
+    const leadsTo = document.createElement('div');
+    leadsTo.className = 'leadsto';
+    leadsTo.innerHTML = `→ leads to: <b>${child.icon||''} ${child.label}</b>`;
+    branch.appendChild(leadsTo);
+
+    branch.appendChild(renderTarget(child));
+    container.appendChild(branch);
+  });
+}
+
+// Render root -> domains as top-level branch list
+renderBranchList(root.children, treeEl);
+
+/* ============================= HEADER CLOSE / RESTORE ============================= */
+const headerEl = document.getElementById('header');
+const headerRestoreEl = document.getElementById('headerRestore');
+document.getElementById('headerClose').addEventListener('click', ()=>{
+  headerEl.classList.add('hidden');
+  headerRestoreEl.style.display = 'flex';
+});
+headerRestoreEl.addEventListener('click', ()=>{
+  headerEl.classList.remove('hidden');
+  headerRestoreEl.style.display = 'none';
+});
+
+/* ============================= EXPAND / COLLAPSE ALL ============================= */
+document.getElementById('expandAll').addEventListener('click', ()=>{
+  document.querySelectorAll('details.node').forEach(d=>d.open=true);
+});
+document.getElementById('collapseAll').addEventListener('click', ()=>{
+  document.querySelectorAll('details.node').forEach(d=>d.open=false);
+});
+
+/* ============================= SEARCH ============================= */
+const searchInput = document.getElementById('search');
+const noMatch = document.getElementById('noMatch');
+searchInput.addEventListener('keydown', (ev)=>{
+  if(ev.key !== 'Enter') return;
+  const q = searchInput.value.trim().toLowerCase();
+  noMatch.style.display = 'none';
+  if(!q) return;
+  const match = serviceIndex.find(s => s.label.toLowerCase().includes(q));
+  if(!match){ noMatch.style.display='inline'; return; }
+  let el = match.el;
+  let p = el.parentElement;
+  while(p){
+    if(p.tagName === 'DETAILS') p.open = true;
+    p = p.parentElement;
+  }
+  match.el.scrollIntoView({behavior:'smooth', block:'center'});
+  match.el.classList.add('highlight-flash');
+  setTimeout(()=>match.el.classList.remove('highlight-flash'), 1500);
+});
+</script>
+</body>
+</html>
