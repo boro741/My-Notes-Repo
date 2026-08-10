@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script id="dark-theme-init">
+(function() {
+  var saved = localStorage.getItem('aws-notes-theme');
+  if (saved === 'dark' || (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark-mode');
+  }
+})();
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 14 — Amazon S3 Security (Blog Edition)</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --card: #f9fafb;
+    --accent: #d97706;
+    --accent-dark: #b45309;
+    --blue: #2563eb;
+    --green: #059669;
+    --purple: #7c3aed;
+    --red: #dc2626;
+    --code-bg: #f3f4f6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+  }
+  header.page-header {
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  header.page-header h1 {
+    margin: 0 0 6px 0;
+    font-size: 28px;
+    color: var(--accent-dark);
+  }
+  header.page-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14.5px;
+  }
+
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+  }
+  nav.toc h2 {
+    margin-top: 0;
+    font-size: 16px;
+    color: var(--accent-dark);
+  }
+  nav.toc ol {
+    margin: 0;
+    padding-left: 20px;
+    columns: 2;
+  }
+  nav.toc li { margin-bottom: 6px; font-size: 14px; }
+  nav.toc a { color: var(--blue); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  section.lecture {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 26px;
+    margin-bottom: 26px;
+    background: #fff;
+    scroll-margin-top: 16px;
+  }
+  section.lecture h2 {
+    margin-top: 0;
+    font-size: 20px;
+    color: #111827;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 8px;
+  }
+  .lecture-num {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 2px 8px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  h3 { color: var(--accent-dark); font-size: 16.5px; margin-bottom: 8px; margin-top: 26px; }
+
+  p { margin: 0 0 14px; }
+
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: #fffbeb;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 15px;
+  }
+  .callout.tip { border-left-color: var(--green); background: #ecfdf5; }
+  .callout.warning { border-left-color: var(--red); background: #fef2f2; }
+  .callout.define { border-left-color: var(--blue); background: #eff6ff; }
+  .callout.production { border-left-color: var(--purple); background: #f5f3ff; }
+  .callout strong { color: inherit; }
+  .callout-label {
+    display: block;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    margin-bottom: 4px;
+    opacity: 0.75;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th { background: var(--card); color: var(--accent-dark); }
+  tr:nth-child(even) td { background: #fcfcfd; }
+
+  code {
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 16px 0;
+  }
+  pre code { background: none; padding: 0; }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  .diagram {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 18px 0;
+    text-align: center;
+    overflow-x: auto;
+  }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram-caption { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  .top-link { font-size: 12px; text-align: right; }
+  .top-link a { color: var(--muted); text-decoration: none; }
+  .top-link a:hover { text-decoration: underline; }
+
+  hr.section-break { border: none; border-top: 2px dashed var(--border); margin: 36px 0; }
+
+  .summary-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 14px;
+  }
+  .summary-box h3 { color: var(--green); margin-top: 0; }
+
+  @media (max-width: 1024px) {
+    .container { padding-left: 20px; padding-right: 20px; }
+    nav.toc ol { columns: 2; }
+  }
+  @media (max-width: 860px) {
+    .container { padding: 20px 18px 60px; }
+    header.page-header h1 { font-size: 22px; }
+    nav.toc ol { columns: 1; }
+    section.lecture { padding: 18px 20px; }
+    table { font-size: 13px; }
+    th, td { padding: 7px 9px; }
+  }
+  @media (max-width: 480px) {
+    .container { padding: 16px 14px 50px; }
+    header.page-header h1 { font-size: 19px; line-height: 1.3; }
+    header.page-header p { font-size: 13px; }
+    nav.toc { padding: 14px 16px; border-radius: 10px; }
+    nav.toc ol { columns: 1; padding-left: 16px; }
+    nav.toc li { font-size: 14px; margin-bottom: 8px; }
+    section.lecture { padding: 16px 16px; border-radius: 10px; margin-bottom: 16px; }
+    section.lecture h2 { font-size: 17px; line-height: 1.3; }
+    h3 { font-size: 15px; }
+    table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; font-size: 13px; white-space: nowrap; }
+    th, td { padding: 7px 10px; }
+    code { font-size: 12.5px; word-break: break-all; }
+    ul, ol { padding-left: 18px; }
+    li { font-size: 14.5px; margin-bottom: 8px; }
+    .callout, .summary-box { padding: 10px 13px; font-size: 14px; }
+    .top-link { font-size: 13px; }
+  }
+  @media (max-width: 360px) {
+    .container { padding: 12px 12px 40px; }
+    section.lecture h2 { font-size: 16px; }
+  }
+
+  /* Tips popup for assumed AWS terms and prerequisite concepts */
+  .tips-trigger {
+    position: fixed; right: 18px; bottom: 18px; z-index: 999;
+    display: inline-flex; align-items: center; gap: 8px;
+    min-height: 44px; padding: 10px 14px;
+    border: 1px solid #f59e0b; border-radius: 999px;
+    background: #fffbeb; color: #92400e;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+    cursor: pointer; font: inherit; font-weight: 700;
+  }
+  .tips-trigger:hover { background: #fef3c7; }
+  .tips-trigger .tips-icon { font-size: 1.2rem; line-height: 1; }
+  .tips-overlay {
+    position: fixed; inset: 0; z-index: 1000; display: none;
+    align-items: center; justify-content: center; padding: 18px;
+    background: rgba(17, 24, 39, 0.46);
+  }
+  .tips-overlay.open { display: flex; }
+  .tips-panel {
+    width: min(760px, 100%); max-height: min(76vh, 720px); overflow: auto;
+    background: #ffffff; color: var(--text, #1f2937);
+    border: 1px solid #fcd34d; border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  }
+  .tips-header {
+    position: sticky; top: 0; display: flex; align-items: center;
+    justify-content: space-between; gap: 12px; padding: 16px 18px;
+    background: #fffbeb; border-bottom: 1px solid #fde68a;
+  }
+  .tips-header h2 { margin: 0; color: #92400e; font-size: 1.1rem; }
+  .tips-close {
+    border: 1px solid #f59e0b; border-radius: 8px; background: #ffffff;
+    color: #92400e; cursor: pointer; font: inherit; font-weight: 700;
+    line-height: 1; padding: 7px 10px;
+  }
+  .tips-body { padding: 16px 18px 18px; }
+  .tips-intro { margin: 0 0 12px; color: var(--muted, #6b7280); font-size: 0.95rem; }
+  .tips-list {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px; margin: 0; padding: 0; list-style: none;
+  }
+  .tips-list li { margin: 0; padding: 10px 12px; border: 1px solid #fde68a; border-radius: 8px; background: #fffdf5; }
+  .tips-list strong { display: block; margin-bottom: 3px; color: #92400e; }
+  @media (max-width: 480px) {
+    .tips-trigger { right: 12px; bottom: 12px; padding: 10px 12px; }
+    .tips-trigger span:not(.tips-icon) { display: none; }
+    .tips-overlay { padding: 10px; }
+    .tips-panel { max-height: 82vh; }
+    .tips-list { grid-template-columns: 1fr; }
+  }
+</style>
+<style id="dark-theme-styles">
+  html.dark-mode, body.dark-mode {
+    --bg: #181926; --card-bg: #222436; --card: #222436; --border: #33384f;
+    --text: #c0caf5; --text-muted: #94a3b8; --muted: #94a3b8; --code-bg: #13141f;
+    --accent: #f59e0b; --accent-dark: #fbbf24; --green: #34d399; --red: #f87171;
+    --purple: #c084fc; --blue: #60a5fa;
+    background-color: #181926 !important; color: #c0caf5 !important;
+  }
+  body.dark-mode { background-color: #181926 !important; color: #c0caf5 !important; }
+  body.dark-mode header.page-header h1 { color: #fbbf24 !important; }
+  body.dark-mode header.page-header p { color: #94a3b8 !important; }
+  body.dark-mode h2, body.dark-mode h3 { color: #f59e0b !important; }
+  body.dark-mode a { color: #60a5fa; }
+  body.dark-mode nav.toc { background: #1f2335 !important; border-color: #33384f !important; }
+  body.dark-mode nav.toc h2 { color: #fbbf24 !important; }
+  body.dark-mode nav.toc a { color: #60a5fa !important; }
+  body.dark-mode section.lecture { background: #222436 !important; border-color: #33384f !important; color: #c0caf5 !important; }
+  body.dark-mode section.lecture h2 { color: #e2e8f0 !important; border-bottom-color: #33384f !important; }
+  body.dark-mode table { border-color: #33384f !important; }
+  body.dark-mode th, body.dark-mode td { border-color: #33384f !important; }
+  body.dark-mode th { background: #1f2335 !important; color: #fbbf24 !important; }
+  body.dark-mode td { color: #cbd5e1 !important; }
+  body.dark-mode tr:nth-child(even) td { background: #1a1d2d !important; }
+  body.dark-mode code { background: #13141f !important; color: #e2e8f0 !important; border: 1px solid #2e324a !important; }
+  body.dark-mode pre { background: #13141f !important; color: #e2e8f0 !important; border-color: #2e324a !important; }
+  body.dark-mode .callout { background: #25231c !important; border-left-color: #f59e0b !important; color: #fef3c7 !important; }
+  body.dark-mode .callout.tip { background: #142921 !important; border-left-color: #34d399 !important; color: #d1fae5 !important; }
+  body.dark-mode .callout.warning { background: #2f1b1e !important; border-left-color: #f87171 !important; color: #fee2e2 !important; }
+  body.dark-mode .callout.define { background: #1d2038 !important; border-left-color: #60a5fa !important; color: #dbeafe !important; }
+  body.dark-mode .callout.production { background: #221c35 !important; border-left-color: #c084fc !important; color: #ede9fe !important; }
+  body.dark-mode .summary-box { background: #142921 !important; border-color: #059669 !important; color: #d1fae5 !important; }
+  body.dark-mode .summary-box h3 { color: #34d399 !important; }
+  body.dark-mode .diagram { background: #ffffff !important; border: 1px solid #cbd5e1 !important; border-radius: 12px !important; padding: 16px !important; box-shadow: 0 4px 14px rgba(0,0,0,0.3) !important; }
+  body.dark-mode .diagram-caption { color: #475569 !important; font-weight: 500 !important; }
+  .theme-toggle-btn {
+    position: fixed; top: 16px; right: 20px; z-index: 10000;
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;
+    border-radius: 20px; background: #ffffff; color: #1f2937; border: 1px solid #cbd5e1;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.25s ease; user-select: none;
+  }
+  .theme-toggle-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
+  body.dark-mode .theme-toggle-btn { background: #24273a !important; color: #e2e8f0 !important; border-color: #363a4f !important; box-shadow: 0 2px 10px rgba(0,0,0,0.4) !important; }
+  @media (max-width: 480px) {
+    .theme-toggle-btn { top: 12px; right: 12px; padding: 6px 10px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="container" id="top">
+
+  <header class="page-header">
+    <h1>Section 14 — Amazon S3 Security</h1>
+    <p>How to protect data inside S3 buckets. Every encryption option explained, CORS demystified, and the security controls every AWS team actually uses in production — with no fluff.</p>
+  </header>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#l1">1. S3 Encryption Overview</a></li>
+      <li><a href="#l2">2. S3 Encryption Hands-On</a></li>
+      <li><a href="#l3">3. Default Encryption vs Bucket Policies</a></li>
+      <li><a href="#l4">4. S3 CORS — Cross-Origin Resource Sharing</a></li>
+      <li><a href="#l5">5. CORS Hands-On</a></li>
+      <li><a href="#l6">6. MFA Delete — The Nuclear Option</a></li>
+      <li><a href="#l7">7. S3 Access Logs</a></li>
+      <li><a href="#l8">8. Pre-signed URLs</a></li>
+      <li><a href="#l9">9. S3 Access Points</a></li>
+      <li><a href="#l10">10. S3 Object Lambda</a></li>
+      <li><a href="#lsummary">Cheat Sheet</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <section class="lecture" id="l1">
+    <h2><span class="lecture-num">1</span>S3 Encryption Overview</h2>
+
+    <p>Every day, companies store credit card numbers, medical records, and trade secrets inside S3 buckets. If someone unauthorized gets a copy of that data, the damage is immediate and often permanent. Encryption solves this by scrambling data into unreadable code, so even if someone steals the stored bytes, they have nothing useful.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Encryption at Rest</strong> means data is scrambled while sitting on physical disks inside AWS data centers. It protects stored files, database records, backups — anything that isn't currently traveling over the network.
+    </div>
+
+    <p>Amazon S3 gives you four main ways to encrypt objects at rest. Which one you pick depends on who holds the encryption key and who manages it.</p>
+
+    <table>
+      <tr><th>Encryption Method</th><th>Who Manages the Key</th><th>HTTP Header</th><th>When to Use</th></tr>
+      <tr><td><code>SSE-S3</code></td><td>AWS manages it completely</td><td><code>x-amz-server-side-encryption: AES256</code></td><td>Default for all new buckets. Military-grade AES-256, automatic, free.</td></tr>
+      <tr><td><code>SSE-KMS</code></td><td>You manage via AWS KMS</td><td><code>x-amz-server-side-encryption: aws:kms</code></td><td>When you need to audit who accessed the encryption key. CloudTrail logs every key use.</td></tr>
+      <tr><td><code>SSE-C</code></td><td>You manage outside AWS</td><td>Key in HTTP headers</td><td>You provide the key on every request. AWS never stores it. HTTPS only.</td></tr>
+      <tr><td>Client-Side Encryption</td><td>You manage locally</td><td>None (data already encrypted)</td><td>Encrypt before uploading. AWS only sees scrambled bytes.</td></tr>
+    </table>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Server-Side Encryption (SSE)</strong> means S3 itself does the encrypting after receiving your file. You send plain data, S3 encrypts it at rest using either its own keys or yours via KMS.
+    </div>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>KMS</strong> (Key Management Service) is AWS's encryption key vault. It stores your keys, controls who can use them, and logs every single access in CloudTrail for compliance auditing.
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 210" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#6b7280"/>
+          </marker>
+        </defs>
+        <rect x="20" y="10" width="130" height="40" rx="6" fill="#fff" stroke="#c8917a" stroke-width="1.5"/>
+        <text x="85" y="34" text-anchor="middle" font-size="11" fill="#2b2a28">User uploads file</text>
+        <path d="M150,30 L280,30" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+        <rect x="280" y="10" width="140" height="40" rx="6" fill="#fff4e2" stroke="#d97706" stroke-width="1.5"/>
+        <text x="350" y="34" text-anchor="middle" font-size="10" fill="#2b2a28">Amazon S3</text>
+        <text x="600" y="20" text-anchor="middle" font-size="10" fill="#6b7280">SSE-S3: AWS key</text>
+
+        <rect x="20" y="65" width="130" height="40" rx="6" fill="#fff" stroke="#c8917a" stroke-width="1.5"/>
+        <text x="85" y="89" text-anchor="middle" font-size="11" fill="#2b2a28">User uploads file</text>
+        <path d="M150,85 L280,85" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+        <rect x="280" y="65" width="140" height="40" rx="6" fill="#fff4e2" stroke="#d97706" stroke-width="1.5"/>
+        <text x="350" y="89" text-anchor="middle" font-size="10" fill="#2b2a28">Amazon S3</text>
+        <path d="M420,80 L520,80" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+        <rect x="520" y="65" width="120" height="40" rx="6" fill="#fff4e2" stroke="#d97706" stroke-width="1.5"/>
+        <text x="580" y="89" text-anchor="middle" font-size="10" fill="#2b2a28">AWS KMS key</text>
+        <text x="600" y="60" text-anchor="middle" font-size="10" fill="#6b7280">SSE-KMS: your key</text>
+
+        <rect x="20" y="120" width="130" height="40" rx="6" fill="#fff" stroke="#c8917a" stroke-width="1.5"/>
+        <text x="85" y="144" text-anchor="middle" font-size="10" fill="#2b2a28">User + own key</text>
+        <path d="M150,140 L280,140" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+        <rect x="280" y="120" width="140" height="40" rx="6" fill="#fff4e2" stroke="#d97706" stroke-width="1.5"/>
+        <text x="350" y="144" text-anchor="middle" font-size="10" fill="#2b2a28">Amazon S3</text>
+        <text x="600" y="115" text-anchor="middle" font-size="10" fill="#6b7280">SSE-C: key sent per-request</text>
+
+        <rect x="20" y="175" width="130" height="30" rx="6" fill="#fff" stroke="#c8917a" stroke-width="1.5"/>
+        <text x="85" y="194" text-anchor="middle" font-size="10" fill="#2b2a28">User encrypts locally</text>
+        <path d="M150,190 L280,190" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+        <rect x="280" y="175" width="140" height="30" rx="6" fill="#fff4e2" stroke="#d97706" stroke-width="1.5"/>
+        <text x="350" y="194" text-anchor="middle" font-size="10" fill="#2b2a28">S3 (stores as-is)</text>
+      </svg>
+      <div class="diagram-caption">Four encryption paths differ by who manages the key and where encryption happens — AWS, you, or your local app.</div>
+    </div>
+
+    <h3>Encryption in Transit (HTTPS)</h3>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Encryption in Transit</strong> means data is scrambled while traveling over the internet between your client and S3. S3 uses HTTPS (TLS protocol) to protect this path.
+    </div>
+
+    <p>S3 provides both unencrypted HTTP and encrypted HTTPS endpoints. For maximum safety, force HTTPS-only by attaching an S3 bucket policy that denies any request where <code>aws:SecureTransport</code> is false. SSE-C absolutely requires HTTPS — AWS refuses unencrypted requests with SSE-C headers.</p>
+
+    <div class="callout warning">
+      <span class="callout-label">⚠️ Common Mistake</span>
+      Using <strong>SSE-KMS</strong> at massive scale can hit throttling limits. Every read and write triggers a call to KMS (to generate or decrypt data keys), which counts toward regional limits of 5,000 to 30,000 requests per second. High-volume applications can exceed this. A mitigation is enabling <strong>S3 Bucket Key</strong> (available since 2021), which reduces KMS API calls and cuts costs up to 99%.
+    </div>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Public S3 bucket misconfigurations have caused dozens of documented data breaches, exposing millions of customer records. Organizations now use encryption (especially KMS) as a baseline control, not just a "nice to have." Compliance standards like HIPAA, PCI-DSS, and SOC 2 require audit trails of who accessed encryption keys — which is exactly what CloudTrail provides when you use KMS.
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="lecture" id="l2">
+    <h2><span class="lecture-num">2</span>S3 Encryption Hands-On</h2>
+
+    <p>Setting up encryption in S3 takes just a few clicks.</p>
+
+    <ul>
+      <li>When creating a bucket, you choose default encryption: <strong>SSE-S3</strong> or <strong>SSE-KMS</strong>. Every uploaded object automatically inherits that setting.</li>
+      <li>Inspect any object's encryption under <strong>Properties → Server-side encryption settings</strong>. You'll see which method and which key was used.</li>
+      <li>If you change an object's encryption (say from SSE-S3 to SSE-KMS), and Versioning is enabled, a new version is created. The old version keeps its original encryption.</li>
+      <li>For SSE-KMS, you can either use AWS's managed <code>aws/s3</code> key, or bring your own Customer Managed Key (CMK) for full control.</li>
+      <li>Enable the <strong>S3 Bucket Key</strong> setting for SSE-KMS to dramatically cut KMS API calls and reduce costs.</li>
+    </ul>
+
+    <div class="callout warning">
+      <span class="callout-label">⚠️ Console Limitation</span>
+      <strong>SSE-C cannot be configured in the AWS Management Console</strong> — it's CLI or SDK only. The same applies to client-side encryption. These are advanced workflows handled entirely in code.
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="lecture" id="l3">
+    <h2><span class="lecture-num">3</span>Default Encryption vs Bucket Policies</h2>
+
+    <p>S3 has two overlapping concepts that sometimes confuse teams: default encryption settings and bucket policies.</p>
+
+    <p>Every bucket automatically applies <strong>SSE-S3</strong> to newly uploaded objects unless you configure otherwise. This is the safest default AWS could pick. But if you need to enforce a stricter rule — say, "only allow SSE-KMS uploads, never SSE-S3" — you attach an S3 Bucket Policy that denies any <code>s3:PutObject</code> request lacking the right encryption headers.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>S3 Bucket Policy</strong> is a JSON document (similar to IAM policies) that controls what actions are allowed or denied on a bucket. It's evaluated at the bucket level, not individual objects.
+    </div>
+
+    <div class="callout warning">
+      <span class="callout-label">⚠️ Exam Trap</span>
+      <strong>Bucket Policies are evaluated BEFORE default encryption settings.</strong> If an incoming upload violates a policy's encryption condition, S3 denies it immediately. Default encryption never gets a chance to run.
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="lecture" id="l4">
+    <h2><span class="lecture-num">4</span>S3 CORS — Cross-Origin Resource Sharing</h2>
+
+    <p>Imagine you host a website on S3 that loads images from a second S3 bucket. You'd expect it to work seamlessly. Instead, the browser throws an error and refuses the cross-bucket request. Why? Browsers have a built-in security rule called CORS that blocks this by default.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>CORS</strong> (Cross-Origin Resource Sharing) is a web security rule that prevents a browser from loading resources from a different domain origin unless the server explicitly permits it with special HTTP headers.
+    </div>
+
+    <p>An <strong>origin</strong> is made of three parts: scheme (like <code>https</code>), domain (like <code>www.example.com</code>), and port (like 443). If any part differs, the browser sees it as a different origin. So <code>https://www.example.com:443</code> and <code>https://www.other-domain.com:443</code> are different origins. When your frontend code tries to fetch assets from the second origin, the browser sends an HTTP <code>OPTIONS</code> preflight request first. If the response headers include <code>Access-Control-Allow-Origin</code> matching your domain, the browser allows the real request. Otherwise, it blocks it silently.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 190" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="70" width="140" height="45" rx="6" fill="#fff" stroke="#c8917a" stroke-width="1.5"/>
+        <text x="90" y="97" text-anchor="middle" font-size="11" fill="#2b2a28">Web Browser</text>
+
+        <path d="M160,80 L300,40" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+        <rect x="300" y="15" width="200" height="45" rx="6" fill="#fff4e2" stroke="#d97706" stroke-width="1.5"/>
+        <text x="400" y="42" text-anchor="middle" font-size="10" fill="#2b2a28">Origin: www.example.com</text>
+
+        <path d="M160,100 L300,140" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+        <text x="230" y="130" text-anchor="middle" font-size="9" fill="#6b7280">1. preflight OPTIONS</text>
+        <rect x="300" y="120" width="200" height="45" rx="6" fill="#fff4e2" stroke="#d97706" stroke-width="1.5"/>
+        <text x="400" y="147" text-anchor="middle" font-size="10" fill="#2b2a28">Cross-Origin: www.other.com</text>
+
+        <path d="M500,140 Q 600,90 160,90" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+        <text x="600" y="105" text-anchor="middle" font-size="9" fill="#6b7280">2. CORS headers returned</text>
+
+        <text x="400" y="180" text-anchor="middle" font-size="9" fill="#6b7280">If allowed, browser makes the real GET/PUT/DELETE request</text>
+      </svg>
+      <div class="diagram-caption">Before loading cross-origin resources, the browser checks CORS headers. If denied, the request never happens.</div>
+    </div>
+
+    <p>For S3, if your website on Bucket A fetches images from Bucket B, you must configure Bucket B's CORS settings to allow Bucket A's origin. Without it, every fetch fails silently in the browser console as a blocked cross-origin request.</p>
+
+    <div class="callout warning">
+      <span class="callout-label">⚠️ Exam Trap</span>
+      Exam questions often show: "Website on Bucket A can't load images from Bucket B. Browser console shows CORS error." The answer is always "Configure CORS on Bucket B to allow Bucket A's origin." This is one of the most tested S3 security concepts.
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="lecture" id="l5">
+    <h2><span class="lecture-num">5</span>CORS Hands-On</h2>
+
+    <p>Let's walk through the real scenario.</p>
+
+    <p>You host a static website on Bucket A. It includes JavaScript code that fetches <code>extra-page.html</code> from the same bucket — this works fine because both are the same origin. You then move <code>extra-page.html</code> to Bucket B. Now the fetch fails, and the browser developer console shows a cross-origin error.</p>
+
+    <p>To fix it, navigate to Bucket B's <strong>Permissions → CORS</strong> and add a CORS configuration. Here's what it looks like:</p>
+
+    <pre><code>[
+  {
+    "AllowedHeaders": ["*"],
+    "AllowedMethods": ["GET", "PUT", "POST"],
+    "AllowedOrigins": [
+      "http://bucket-a.s3-website.us-east-1.amazonaws.com"
+    ],
+    "ExposeHeaders": []
+  }
+]</code></pre>
+
+    <p>Save it, refresh Bucket A's website, and the fetch now succeeds. Bucket B's response includes <code>Access-Control-Allow-Origin</code> matching Bucket A's URL, so the browser permits the request.</p>
+
+    <div class="callout tip">
+      <span class="callout-label">💡 Tip</span>
+      You can use <code>*</code> for AllowedOrigins to allow requests from any domain, but this is rarely the right choice for production. Be specific about which origins you trust.
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="lecture" id="l6">
+    <h2><span class="lecture-num">6</span>MFA Delete — The Nuclear Option</h2>
+
+    <p>Imagine an attacker gains access to an S3 bucket through a leaked AWS credential. The first thing they do is delete all the files to sabotage your system. Standard S3 permissions can't stop this — they just check if you're allowed to delete, not whether you're having a good day.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>MFA Delete</strong> requires entering a 6-digit code from an authenticator device before performing destructive operations on an S3 bucket. It adds a physical barrier to prevent accidental or malicious deletion.
+    </div>
+
+    <p>MFA Delete protects two specific actions: permanently deleting an object version (not just marking it deleted), and suspending versioning on the bucket. Regular object deletion still works normally — it just adds a soft delete marker, letting you restore the file later if needed.</p>
+
+    <div class="callout warning">
+      <span class="callout-label">⚠️ Major Constraint</span>
+      Three huge limitations: (1) S3 Versioning must be enabled first. (2) Only the <strong>Root Account owner</strong> can enable or disable MFA Delete. (3) It can <strong>ONLY be configured via AWS CLI</strong>, not the console. This is intentional — AWS makes it hard to enable to prevent accidental lockout.
+    </div>
+
+    <p>To set it up, first enable MFA on your Root Account and generate temporary root access keys (delete them immediately after setup). Then run this AWS CLI command with a live MFA code from your authenticator:</p>
+
+    <pre><code>aws s3api put-bucket-versioning \
+  --bucket my-bucket \
+  --versioning-configuration Status=Enabled,MFADelete=Enabled \
+  --mfa "arn:aws:iam::123456789:mfa/root-device 123456"</code></pre>
+
+    <p>Once active, standard object deletion (marking as deleted) works without MFA. But permanently removing a specific version ID requires a valid root MFA code. This turns your bucket into a write-once-read-many (WORM) archive, which is exactly what heavily-audited organizations need for compliance logs and financial records.</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      MFA Delete is rare in development but common in highly-regulated industries. Financial institutions use it to lock down audit logs so even a data breach can't erase the evidence. Some government agencies mandate it for any bucket holding classified data.
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="lecture" id="l7">
+    <h2><span class="lecture-num">7</span>S3 Access Logs</h2>
+
+    <p>For compliance and security investigation, you need a record of everything that happened to your S3 bucket: who accessed it, what they did, whether they succeeded or got access denied. S3 Server Access Logging records exactly this.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>S3 Access Logs</strong> are detailed records of every request to your bucket — successful reads, writes, failures, across any AWS account. S3 delivers these logs as text files to a target bucket you specify.
+    </div>
+
+    <p>Enable logging on your bucket, point it to a target bucket in the same AWS Region, and S3 automatically starts writing log files. There's a delay (typically 1 to 2 hours) before the first logs appear, but eventually you have a complete audit trail. You can then query these logs using Amazon Athena (a SQL service) to answer questions like "Who accessed this object in the last week?" or "Which IPs tried to access non-existent keys?"</p>
+
+    <div class="callout warning">
+      <span class="callout-label">⚠️ Critical Warning</span>
+      <strong>NEVER set a bucket's logging destination to itself.</strong> Writing a log file triggers a new request event, which writes another log file, which triggers another event — an infinite loop that fills your bucket with logs until it runs out of storage and racks up enormous bills. Always use a separate target bucket.
+    </div>
+
+    <p>The target logging bucket must live in the same Region as the source bucket you're monitoring. S3 automatically updates the target bucket's policy to grant its logging service write access, so you don't need to manually add permissions.</p>
+  </section>
+
+  <!-- 8 -->
+  <section class="lecture" id="l8">
+    <h2><span class="lecture-num">8</span>Pre-signed URLs</h2>
+
+    <p>You have a private S3 file that a customer needs to download. You don't want to make the bucket public, and you don't want to hand out your AWS credentials. A pre-signed URL solves this perfectly.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Pre-signed URL</strong> is a temporary, cryptographically signed link that grants time-limited access to a specific private S3 object. Whoever holds the link inherits the permissions of the user who generated it.
+    </div>
+
+    <p>Generate a pre-signed URL using your credentials, set an expiration time (anywhere from seconds to hours), and share the URL with external users. When they click it, S3 verifies the signature and serves the file. After the link expires, it stops working — nobody needs to manually revoke it.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 140" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="45" width="140" height="45" rx="6" fill="#fff" stroke="#c8917a" stroke-width="1.5"/>
+        <text x="90" y="72" text-anchor="middle" font-size="11" fill="#2b2a28">Bucket owner</text>
+        <path d="M160,60 L300,60" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+        <text x="230" y="50" text-anchor="middle" font-size="9" fill="#6b7280">generates pre-signed URL</text>
+        <rect x="300" y="45" width="150" height="45" rx="6" fill="#fff4e2" stroke="#d97706" stroke-width="1.5"/>
+        <text x="375" y="72" text-anchor="middle" font-size="10" fill="#2b2a28">Private S3 object</text>
+        <path d="M160,85 L620,105" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+        <text x="400" y="120" text-anchor="middle" font-size="9" fill="#6b7280">shares URL with external user (valid for limited time)</text>
+        <rect x="620" y="80" width="140" height="45" rx="6" fill="#fff" stroke="#c8917a" stroke-width="1.5"/>
+        <text x="690" y="107" text-anchor="middle" font-size="11" fill="#2b2a28">External user</text>
+      </svg>
+      <div class="diagram-caption">The bucket owner generates a time-limited link carrying their AWS credentials. External users access the file by clicking the link.</div>
+    </div>
+
+    <p>The console lets you generate pre-signed URLs up to 12 hours. The CLI and SDKs allow up to 7 days (168 hours). This difference exists because the console uses your current credentials, while CLI/SDK code can use temporary STS credentials.</p>
+
+    <p>Common real uses: premium website subscribers downloading private video files, temporary file uploads from partners, or letting mobile apps request time-bound access to user-specific S3 data without storing AWS credentials inside the app.</p>
+
+    <div class="callout tip">
+      <span class="callout-label">💡 Tip</span>
+      Pre-signed URLs are perfect for file sharing — they inherit the creator's permissions, so if you don't have write access, the pre-signed URL can't grant it either. This is the principle of least privilege at work.
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section class="lecture" id="l9">
+    <h2><span class="lecture-num">9</span>S3 Access Points</h2>
+
+    <p>Large organizations often have one massive S3 bucket shared by multiple teams. Finance needs to access files in <code>finance/</code>, Sales needs <code>sales/</code>, and Analytics needs to read both. Managing this with a single bucket policy becomes a nightmare — the policy gets so complex that changes start breaking things.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>S3 Access Points</strong> create dedicated access gateways into a shared bucket, each with its own DNS name and permissions policy. Instead of one complex bucket policy, you have multiple simple access point policies.
+    </div>
+
+    <p>Each access point gets its own unique DNS name (like <code>arn:aws:s3:us-east-1:123456789:accesspoint/finance</code>) and its own attached policy restricted to specific folder prefixes and actions. Finance team accesses data through the Finance access point, Sales through the Sales access point. If you need to change Finance's permissions, you update only that access point's policy without affecting Sales.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 210" xmlns="http://www.w3.org/2000/svg">
+        <rect x="300" y="10" width="180" height="45" rx="6" fill="#fff4e2" stroke="#d97706" stroke-width="1.5"/>
+        <text x="390" y="37" text-anchor="middle" font-size="11" fill="#2b2a28">S3 Bucket (finance/, sales/)</text>
+
+        <path d="M340,55 L120,110" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+        <rect x="20" y="110" width="180" height="40" rx="6" fill="#fff" stroke="#c8917a" stroke-width="1.5"/>
+        <text x="110" y="134" text-anchor="middle" font-size="10" fill="#2b2a28">Finance access point</text>
+        <text x="110" y="170" text-anchor="middle" font-size="9" fill="#6b7280">Finance users (read/write)</text>
+
+        <path d="M390,55 L390,110" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+        <rect x="300" y="110" width="180" height="40" rx="6" fill="#fff" stroke="#c8917a" stroke-width="1.5"/>
+        <text x="390" y="134" text-anchor="middle" font-size="10" fill="#2b2a28">Sales access point</text>
+        <text x="390" y="170" text-anchor="middle" font-size="9" fill="#6b7280">Sales users (read/write)</text>
+
+        <path d="M440,55 L660,110" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+        <rect x="580" y="110" width="190" height="40" rx="6" fill="#fff" stroke="#c8917a" stroke-width="1.5"/>
+        <text x="675" y="134" text-anchor="middle" font-size="10" fill="#2b2a28">Analytics access point</text>
+        <text x="675" y="170" text-anchor="middle" font-size="9" fill="#6b7280">Analytics users (read-only, both prefixes)</text>
+      </svg>
+      <div class="diagram-caption">One bucket, three access points. Each has its own DNS name and policy, simplifying multi-team permission management.</div>
+    </div>
+
+    <p>Access Points can be internet-facing (accessible from anywhere) or restricted to a private VPC. If you want EC2 instances inside a private subnet to reach S3 without traversing the public internet, you combine an access point with an <strong>S3 Interface VPC Endpoint</strong>. This keeps your traffic inside AWS's private network.</p>
+
+    <div class="callout tip">
+      <span class="callout-label">💡 Tip</span>
+      Access Points are especially valuable in enterprises with multiple teams and compliance requirements. They keep your bucket policy clean and make it obvious which team accesses what data.
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section class="lecture" id="l10">
+    <h2><span class="lecture-num">10</span>S3 Object Lambda</h2>
+
+    <p>Suppose you have a single S3 bucket holding customer data. Your e-commerce app needs the raw data as-is. Your analytics team needs the same data but with personally identifiable information (PII) like email and phone numbers redacted. Your marketing team wants it enriched with extra computed fields. Without Object Lambda, you'd need three separate copies of the data — wasteful, hard to keep in sync, and prone to errors.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>S3 Object Lambda</strong> automatically transforms S3 objects on the fly during retrieval using AWS Lambda functions. Different apps get different versions of the same underlying file without storing duplicates.
+    </div>
+
+    <p>Here's how it works: You create an Object Lambda Access Point that points to your original S3 bucket. When an app requests a file through this access point, Object Lambda triggers a Lambda function you've written. The function fetches the original object, runs your custom code (redacting PII, converting formats, resizing images), and returns the transformed result to the app. The original file in S3 remains unchanged.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 220" xmlns="http://www.w3.org/2000/svg">
+        <rect x="300" y="90" width="180" height="45" rx="6" fill="#fff4e2" stroke="#d97706" stroke-width="1.5"/>
+        <text x="390" y="117" text-anchor="middle" font-size="11" fill="#2b2a28">S3 Bucket (original objects)</text>
+
+        <rect x="20" y="10" width="170" height="40" rx="6" fill="#fff" stroke="#c8917a" stroke-width="1.5"/>
+        <text x="105" y="34" text-anchor="middle" font-size="10" fill="#2b2a28">E-commerce app</text>
+        <path d="M190,30 L300,100" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+        <text x="230" y="55" text-anchor="middle" font-size="9" fill="#6b7280">direct access — original</text>
+
+        <rect x="590" y="10" width="180" height="40" rx="6" fill="#fff" stroke="#c8917a" stroke-width="1.5"/>
+        <text x="680" y="34" text-anchor="middle" font-size="10" fill="#2b2a28">Analytics app</text>
+        <path d="M680,50 L680,90" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+        <rect x="590" y="90" width="180" height="40" rx="6" fill="#fff" stroke="#c8917a" stroke-width="1.5"/>
+        <text x="680" y="114" text-anchor="middle" font-size="9" fill="#2b2a28">Object Lambda access point</text>
+        <path d="M590,110 L480,112" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+        <text x="680" y="150" text-anchor="middle" font-size="9" fill="#6b7280">→ Lambda redacts PII → gets redacted</text>
+
+        <rect x="20" y="170" width="180" height="40" rx="6" fill="#fff" stroke="#c8917a" stroke-width="1.5"/>
+        <text x="110" y="194" text-anchor="middle" font-size="10" fill="#2b2a28">Marketing app</text>
+        <path d="M110,170 L110,150" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+        <rect x="20" y="115" width="180" height="40" rx="6" fill="#fff" stroke="#c8917a" stroke-width="1.5"/>
+        <text x="110" y="139" text-anchor="middle" font-size="9" fill="#2b2a28">Object Lambda access point</text>
+        <path d="M200,135 L300,120" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+        <text x="110" y="215" text-anchor="middle" font-size="9" fill="#6b7280">→ Lambda enriches → gets enriched</text>
+      </svg>
+      <div class="diagram-caption">Single bucket, multiple transformation endpoints. Lambda handles custom logic without creating file duplicates.</div>
+    </div>
+
+    <p>Common uses include redacting PII for analytics and testing, converting file formats (XML to JSON), resizing images based on device type, and adding dynamic watermarks based on the requester's identity. It's powerful for data governance — your single source of truth stays in S3, but different consumers get purpose-built views without manual sync work.</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Financial firms use Object Lambda to redact account numbers from reports visible to junior analysts. Healthcare companies redact patient names and IDs for training datasets. This keeps compliance teams happy because the audit trail shows exactly who accessed what version of the data.
+    </div>
+  </section>
+
+  <hr class="section-break">
+
+  <!-- Final Summary -->
+  <section class="lecture" id="lsummary">
+    <h2>📋 Cheat Sheet</h2>
+
+    <div class="summary-box">
+      <h3>The Four Encryption Methods</h3>
+      <ul>
+        <li><strong>SSE-S3:</strong> AWS manages keys. Default for all buckets. No extra cost. Use unless you need audit trails.</li>
+        <li><strong>SSE-KMS:</strong> You control keys via AWS KMS. CloudTrail logs every access. Watch API throttling at scale (enable S3 Bucket Key to mitigate).</li>
+        <li><strong>SSE-C:</strong> You provide keys per-request over HTTPS. AWS never stores them. CLI/SDK only, not in console.</li>
+        <li><strong>Client-Side:</strong> Encrypt locally before uploading. Your app handles everything. AWS sees only scrambled bytes.</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>Key Security Controls</h3>
+      <ul>
+        <li><strong>Encryption in Transit:</strong> Force HTTPS with bucket policies. SSE-C requires HTTPS.</li>
+        <li><strong>Default Encryption:</strong> Set to SSE-S3 or SSE-KMS. Applied to new uploads unless overridden.</li>
+        <li><strong>Bucket Policies:</strong> Enforce encryption rules at the bucket level. Evaluated before default encryption.</li>
+        <li><strong>CORS:</strong> Allow cross-bucket web requests by configuring AllowedOrigins on the target bucket.</li>
+        <li><strong>MFA Delete:</strong> Requires Root Account + MFA code to permanently delete object versions. CLI only. Enables WORM archives.</li>
+        <li><strong>Access Logs:</strong> Record all bucket requests to a separate target bucket. Query with Athena. Never log to itself.</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>Advanced Access Patterns</h3>
+      <ul>
+        <li><strong>Pre-signed URLs:</strong> Time-limited links for temporary access. Console max 12 hours, CLI/SDK max 7 days. Inherit creator permissions.</li>
+        <li><strong>Access Points:</strong> Separate DNS endpoints for different teams on one bucket. Each has its own policy. Simplifies multi-team management.</li>
+        <li><strong>Object Lambda:</strong> Transform objects on-the-fly using Lambda functions. Redact PII, convert formats, enrich data. Single source of truth.</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>Decision Guide: When to Use What</h3>
+      <table>
+        <tr><th>Need</th><th>Solution</th></tr>
+        <tr><td>Default, automatic encryption at rest</td><td>SSE-S3 (enabled by default)</td></tr>
+        <tr><td>Auditable encryption with compliance trail</td><td>SSE-KMS (CloudTrail logs every access)</td></tr>
+        <tr><td>Custom keys without storing in AWS</td><td>SSE-C (HTTPS / CLI only)</td></tr>
+        <tr><td>Website cross-bucket image loading</td><td>Configure CORS on target bucket</td></tr>
+        <tr><td>Prevent accidental or malicious deletion</td><td>MFA Delete (Root + CLI only)</td></tr>
+        <tr><td>Audit all read/write activity</td><td>S3 Access Logs → Athena</td></tr>
+        <tr><td>Temporary access without bucket policy changes</td><td>Pre-signed URLs</td></tr>
+        <tr><td>Complex multi-team bucket permissions</td><td>S3 Access Points</td></tr>
+        <tr><td>Transform data per-consumer without duplicates</td><td>S3 Object Lambda</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <div class="top-link"><a href="#top">↑ Back to top</a></div>
+
+</div>
+
+<script>
+(function () {
+  if (document.querySelector('.tips-trigger')) return;
+
+  const glossary = [
+    ['access key', 'Long-term credential pair for programmatic access: Access Key ID plus Secret Access Key. Treat it like a password.'],
+    ['Access Point', 'Dedicated endpoint into an S3 bucket with its own DNS name and permissions policy. Used for multi-team access management.'],
+    ['ARN', 'Amazon Resource Name — unique identifier for an AWS resource, like a specific bucket or role.'],
+    ['Athena', 'SQL query service for analyzing data in S3, including S3 access logs.'],
+    ['Bucket Policy', 'JSON document controlling what actions are allowed or denied on an S3 bucket.'],
+    ['CLI', 'Command Line Interface. For AWS, this means running AWS operations from terminal commands.'],
+    ['CloudTrail', 'AWS service that logs all API calls for audit and compliance. Essential for tracking KMS key usage.'],
+    ['CORS', 'Cross-Origin Resource Sharing. Browser security rule that controls which domains can request resources from each other.'],
+    ['Encryption at Rest', 'Data is scrambled while stored on disk, in databases, backups, or object storage.'],
+    ['Encryption in Transit', 'Data is scrambled while moving over the network, usually with TLS/HTTPS.'],
+    ['Fernet', 'A symmetric encryption algorithm used by Python libraries; not directly used by S3.'],
+    ['HTTPS', 'Secure HTTP, encrypted over TLS. S3 supports both HTTP and HTTPS endpoints.'],
+    ['IAM', 'Identity and Access Management. Controls who can do what in AWS.'],
+    ['KMS', 'Key Management Service. AWS service that stores, manages, and audits encryption keys.'],
+    ['Lambda', 'Serverless compute service for short-running functions triggered by events.'],
+    ['least privilege', 'Security principle: grant only the permissions needed, nothing extra.'],
+    ['MFA', 'Multi-factor authentication. Requires password plus a second factor like an authenticator app.'],
+    ['MFA Delete', 'S3 feature requiring MFA code before permanently deleting object versions.'],
+    ['Object Lambda', 'S3 feature that transforms objects on-the-fly using Lambda functions during retrieval.'],
+    ['origin', 'In CORS, the combination of scheme (https), domain (www.example.com), and port number that identifies a web source.'],
+    ['Pre-signed URL', 'Time-limited, cryptographically signed URL granting temporary access to a private S3 object.'],
+    ['S3', 'Simple Storage Service. AWS object storage for files, backups, archives, and data lakes.'],
+    ['SSE-C', 'Server-Side Encryption with Customer-provided keys. AWS encrypts data with your key, never storing it.'],
+    ['SSE-KMS', 'Server-Side Encryption with KMS keys. You manage keys via AWS KMS, CloudTrail logs usage.'],
+    ['SSE-S3', 'Server-Side Encryption with S3-managed keys. AWS manages encryption keys. Default for all new buckets.'],
+    ['TLS', 'Transport Layer Security. Encryption protocol that secures data in transit (HTTPS is HTTP over TLS).'],
+    ['VPC', 'Virtual Private Cloud. Your isolated network inside AWS.'],
+    ['VPC Endpoint', 'Private connection from a VPC to an AWS service without traversing the public internet.'],
+    ['WORM', 'Write Once, Read Many. Data storage model where files cannot be modified or deleted after creation. Useful for archives and compliance.']
+  ];
+
+  const pageText = document.body.innerText.replace(/\s+/g, ' ');
+  const found = glossary.filter(([term]) => new RegExp('(^|[^A-Za-z0-9])' + escapeRegExp(term) + '([^A-Za-z0-9]|$)', 'i').test(pageText));
+  if (!found.length) return;
+
+  const button = document.createElement('button');
+  button.className = 'tips-trigger';
+  button.type = 'button';
+  button.setAttribute('aria-haspopup', 'dialog');
+  button.setAttribute('aria-expanded', 'false');
+  button.innerHTML = '<span class="tips-icon" aria-hidden="true">💡</span><span>Glossary</span>';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'tips-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'tips-title');
+  overlay.innerHTML = [
+    '<div class="tips-panel">',
+    '<div class="tips-header">',
+    '<h2 id="tips-title">💡 Every term on this page</h2>',
+    '<button class="tips-close" type="button" aria-label="Close glossary">Close</button>',
+    '</div>',
+    '<div class="tips-body">',
+    '<p class="tips-intro">A quick lookup if you lost the thread anywhere on this page.</p>',
+    '<ul class="tips-list">' + found.map(([term, tip]) => '<li><strong>' + escapeHtml(term) + '</strong>' + escapeHtml(tip) + '</li>').join('') + '</ul>',
+    '</div>',
+    '</div>'
+  ].join('');
+
+  document.body.appendChild(button);
+  document.body.appendChild(overlay);
+
+  const closeButton = overlay.querySelector('.tips-close');
+  function openTips() {
+    overlay.classList.add('open');
+    button.setAttribute('aria-expanded', 'true');
+    closeButton.focus();
+  }
+  function closeTips() {
+    overlay.classList.remove('open');
+    button.setAttribute('aria-expanded', 'false');
+    button.focus();
+  }
+
+  button.addEventListener('click', openTips);
+  closeButton.addEventListener('click', closeTips);
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) closeTips();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && overlay.classList.contains('open')) closeTips();
+  });
+
+  function escapeRegExp(value) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
+  }
+}());
+</script>
+
+<!-- Dark Theme Toggle Button -->
+<button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme" title="Toggle Light/Dark Theme">
+  <span class="theme-toggle-icon">🌙</span>
+  <span class="theme-toggle-text">Dark</span>
+</button>
+
+<script id="dark-theme-script">
+(function() {
+  function setupThemeToggle() {
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+
+    function syncUI() {
+      var isDark = document.documentElement.classList.contains('dark-mode') || document.body.classList.contains('dark-mode');
+      var icon = btn.querySelector('.theme-toggle-icon');
+      var text = btn.querySelector('.theme-toggle-text');
+      if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+      if (text) text.textContent = isDark ? 'Light' : 'Dark';
+    }
+
+    if (document.documentElement.classList.contains('dark-mode')) {
+      document.body.classList.add('dark-mode');
+    }
+    syncUI();
+
+    btn.addEventListener('click', function() {
+      var isDark = document.documentElement.classList.toggle('dark-mode');
+      document.body.classList.toggle('dark-mode', isDark);
+      localStorage.setItem('aws-notes-theme', isDark ? 'dark' : 'light');
+      syncUI();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupThemeToggle);
+  } else {
+    setupThemeToggle();
+  }
+})();
+</script>
+</body>
+</html>

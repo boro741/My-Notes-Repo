@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script id="dark-theme-init">
+(function() {
+  var saved = localStorage.getItem('aws-notes-theme');
+  if (saved === 'dark' || (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark-mode');
+  }
+})();
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 12 — AWS CLI, SDK, IAM Roles & Policies (Blog Edition)</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --card: #f9fafb;
+    --accent: #d97706;
+    --accent-dark: #b45309;
+    --blue: #2563eb;
+    --green: #059669;
+    --purple: #7c3aed;
+    --red: #dc2626;
+    --code-bg: #f3f4f6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+  }
+  header.page-header {
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  header.page-header h1 {
+    margin: 0 0 6px 0;
+    font-size: 28px;
+    color: var(--accent-dark);
+  }
+  header.page-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14.5px;
+  }
+
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+  }
+  nav.toc h2 {
+    margin-top: 0;
+    font-size: 16px;
+    color: var(--accent-dark);
+  }
+  nav.toc ol {
+    margin: 0;
+    padding-left: 20px;
+    columns: 2;
+  }
+  nav.toc li { margin-bottom: 6px; font-size: 14px; }
+  nav.toc a { color: var(--blue); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  section.lecture {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 26px;
+    margin-bottom: 26px;
+    background: #fff;
+    scroll-margin-top: 16px;
+  }
+  section.lecture h2 {
+    margin-top: 0;
+    font-size: 20px;
+    color: #111827;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 8px;
+  }
+  .lecture-num {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 2px 8px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  h3 { color: var(--accent-dark); font-size: 16.5px; margin-bottom: 8px; margin-top: 26px; }
+
+  p { margin: 0 0 14px; }
+
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: #fffbeb;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 15px;
+  }
+  .callout.tip { border-left-color: var(--green); background: #ecfdf5; }
+  .callout.warning { border-left-color: var(--red); background: #fef2f2; }
+  .callout.define { border-left-color: var(--blue); background: #eff6ff; }
+  .callout.production { border-left-color: var(--purple); background: #f5f3ff; }
+  .callout strong { color: inherit; }
+  .callout-label {
+    display: block;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    margin-bottom: 4px;
+    opacity: 0.75;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th { background: var(--card); color: var(--accent-dark); }
+  tr:nth-child(even) td { background: #fcfcfd; }
+
+  code {
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 16px 0;
+  }
+  pre code { background: none; padding: 0; }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  .diagram {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 18px 0;
+    text-align: center;
+    overflow-x: auto;
+  }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram-caption { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  .top-link { font-size: 12px; text-align: right; }
+  .top-link a { color: var(--muted); text-decoration: none; }
+  .top-link a:hover { text-decoration: underline; }
+
+  hr.section-break { border: none; border-top: 2px dashed var(--border); margin: 36px 0; }
+
+  .summary-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 14px;
+  }
+  .summary-box h3 { color: var(--green); margin-top: 0; }
+
+  @media (max-width: 1024px) {
+    .container { padding-left: 20px; padding-right: 20px; }
+    nav.toc ol { columns: 2; }
+  }
+  @media (max-width: 860px) {
+    .container { padding: 20px 18px 60px; }
+    header.page-header h1 { font-size: 22px; }
+    nav.toc ol { columns: 1; }
+    section.lecture { padding: 18px 20px; }
+    table { font-size: 13px; }
+    th, td { padding: 7px 9px; }
+  }
+  @media (max-width: 480px) {
+    .container { padding: 16px 14px 50px; }
+    header.page-header h1 { font-size: 19px; line-height: 1.3; }
+    header.page-header p { font-size: 13px; }
+    nav.toc { padding: 14px 16px; border-radius: 10px; }
+    nav.toc ol { columns: 1; padding-left: 16px; }
+    nav.toc li { font-size: 14px; margin-bottom: 8px; }
+    section.lecture { padding: 16px 16px; border-radius: 10px; margin-bottom: 16px; }
+    section.lecture h2 { font-size: 17px; line-height: 1.3; }
+    h3 { font-size: 15px; }
+    table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; font-size: 13px; white-space: nowrap; }
+    th, td { padding: 7px 10px; }
+    code { font-size: 12.5px; word-break: break-all; }
+    ul, ol { padding-left: 18px; }
+    li { font-size: 14.5px; margin-bottom: 8px; }
+    .callout, .summary-box { padding: 10px 13px; font-size: 14px; }
+    .top-link { font-size: 13px; }
+  }
+  @media (max-width: 360px) {
+    .container { padding: 12px 12px 40px; }
+    section.lecture h2 { font-size: 16px; }
+  }
+
+  /* Tips popup for assumed AWS terms and prerequisite concepts */
+  .tips-trigger {
+    position: fixed; right: 18px; bottom: 18px; z-index: 999;
+    display: inline-flex; align-items: center; gap: 8px;
+    min-height: 44px; padding: 10px 14px;
+    border: 1px solid #f59e0b; border-radius: 999px;
+    background: #fffbeb; color: #92400e;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+    cursor: pointer; font: inherit; font-weight: 700;
+  }
+  .tips-trigger:hover { background: #fef3c7; }
+  .tips-trigger .tips-icon { font-size: 1.2rem; line-height: 1; }
+  .tips-overlay {
+    position: fixed; inset: 0; z-index: 1000; display: none;
+    align-items: center; justify-content: center; padding: 18px;
+    background: rgba(17, 24, 39, 0.46);
+  }
+  .tips-overlay.open { display: flex; }
+  .tips-panel {
+    width: min(760px, 100%); max-height: min(76vh, 720px); overflow: auto;
+    background: #ffffff; color: var(--text, #1f2937);
+    border: 1px solid #fcd34d; border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  }
+  .tips-header {
+    position: sticky; top: 0; display: flex; align-items: center;
+    justify-content: space-between; gap: 12px; padding: 16px 18px;
+    background: #fffbeb; border-bottom: 1px solid #fde68a;
+  }
+  .tips-header h2 { margin: 0; color: #92400e; font-size: 1.1rem; }
+  .tips-close {
+    border: 1px solid #f59e0b; border-radius: 8px; background: #ffffff;
+    color: #92400e; cursor: pointer; font: inherit; font-weight: 700;
+    line-height: 1; padding: 7px 10px;
+  }
+  .tips-body { padding: 16px 18px 18px; }
+  .tips-intro { margin: 0 0 12px; color: var(--muted, #6b7280); font-size: 0.95rem; }
+  .tips-list {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px; margin: 0; padding: 0; list-style: none;
+  }
+  .tips-list li { margin: 0; padding: 10px 12px; border: 1px solid #fde68a; border-radius: 8px; background: #fffdf5; }
+  .tips-list strong { display: block; margin-bottom: 3px; color: #92400e; }
+  @media (max-width: 480px) {
+    .tips-trigger { right: 12px; bottom: 12px; padding: 10px 12px; }
+    .tips-trigger span:not(.tips-icon) { display: none; }
+    .tips-overlay { padding: 10px; }
+    .tips-panel { max-height: 82vh; }
+    .tips-list { grid-template-columns: 1fr; }
+  }
+</style>
+<style id="dark-theme-styles">
+  html.dark-mode, body.dark-mode {
+    --bg: #181926; --card-bg: #222436; --card: #222436; --border: #33384f;
+    --text: #c0caf5; --text-muted: #94a3b8; --muted: #94a3b8; --code-bg: #13141f;
+    --accent: #f59e0b; --accent-dark: #fbbf24; --green: #34d399; --red: #f87171;
+    --purple: #c084fc; --blue: #60a5fa;
+    background-color: #181926 !important; color: #c0caf5 !important;
+  }
+  body.dark-mode { background-color: #181926 !important; color: #c0caf5 !important; }
+  body.dark-mode header.page-header h1 { color: #fbbf24 !important; }
+  body.dark-mode header.page-header p { color: #94a3b8 !important; }
+  body.dark-mode h2, body.dark-mode h3 { color: #f59e0b !important; }
+  body.dark-mode a { color: #60a5fa; }
+  body.dark-mode nav.toc { background: #1f2335 !important; border-color: #33384f !important; }
+  body.dark-mode nav.toc h2 { color: #fbbf24 !important; }
+  body.dark-mode nav.toc a { color: #60a5fa !important; }
+  body.dark-mode section.lecture { background: #222436 !important; border-color: #33384f !important; color: #c0caf5 !important; }
+  body.dark-mode section.lecture h2 { color: #e2e8f0 !important; border-bottom-color: #33384f !important; }
+  body.dark-mode table { border-color: #33384f !important; }
+  body.dark-mode th, body.dark-mode td { border-color: #33384f !important; }
+  body.dark-mode th { background: #1f2335 !important; color: #fbbf24 !important; }
+  body.dark-mode td { color: #cbd5e1 !important; }
+  body.dark-mode tr:nth-child(even) td { background: #1a1d2d !important; }
+  body.dark-mode code { background: #13141f !important; color: #e2e8f0 !important; border: 1px solid #2e324a !important; }
+  body.dark-mode pre { background: #13141f !important; color: #e2e8f0 !important; border-color: #2e324a !important; }
+  body.dark-mode .callout { background: #25231c !important; border-left-color: #f59e0b !important; color: #fef3c7 !important; }
+  body.dark-mode .callout.tip { background: #142921 !important; border-left-color: #34d399 !important; color: #d1fae5 !important; }
+  body.dark-mode .callout.warning { background: #2f1b1e !important; border-left-color: #f87171 !important; color: #fee2e2 !important; }
+  body.dark-mode .callout.define { background: #1d2038 !important; border-left-color: #60a5fa !important; color: #dbeafe !important; }
+  body.dark-mode .callout.production { background: #221c35 !important; border-left-color: #c084fc !important; color: #ede9fe !important; }
+  body.dark-mode .summary-box { background: #142921 !important; border-color: #059669 !important; color: #d1fae5 !important; }
+  body.dark-mode .summary-box h3 { color: #34d399 !important; }
+  body.dark-mode .diagram { background: #ffffff !important; border: 1px solid #cbd5e1 !important; border-radius: 12px !important; padding: 16px !important; box-shadow: 0 4px 14px rgba(0,0,0,0.3) !important; }
+  body.dark-mode .diagram-caption { color: #475569 !important; font-weight: 500 !important; }
+  .theme-toggle-btn {
+    position: fixed; top: 16px; right: 20px; z-index: 10000;
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;
+    border-radius: 20px; background: #ffffff; color: #1f2937; border: 1px solid #cbd5e1;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.25s ease; user-select: none;
+  }
+  .theme-toggle-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
+  body.dark-mode .theme-toggle-btn { background: #24273a !important; color: #e2e8f0 !important; border-color: #363a4f !important; box-shadow: 0 2px 10px rgba(0,0,0,0.4) !important; }
+  @media (max-width: 480px) {
+    .theme-toggle-btn { top: 12px; right: 12px; padding: 6px 10px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="container" id="top">
+
+  <header class="page-header">
+    <h1>Section 12 — AWS CLI, SDK, IAM Roles &amp; Policies</h1>
+    <p>How AWS code talks to AWS services, how to manage multiple accounts, and why instance metadata matters for security. Practical techniques real teams use every day.</p>
+  </header>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#l1">1. EC2 Instance Metadata — What an Instance Knows About Itself</a></li>
+      <li><a href="#l2">2. Fetching Metadata in Practice</a></li>
+      <li><a href="#l3">3. AWS CLI Profiles — Managing Multiple Accounts</a></li>
+      <li><a href="#l4">4. Using the AWS CLI with MFA</a></li>
+      <li><a href="#l5">5. AWS SDK — Calling AWS from Your Code</a></li>
+      <li><a href="#l6">6. Handling Throttling with Exponential Backoff</a></li>
+      <li><a href="#l7">7. AWS Signature v4 — How Requests Get Signed</a></li>
+      <li><a href="#lsummary">Cheat Sheet</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <section class="lecture" id="l1">
+    <h2><span class="lecture-num">1</span>EC2 Instance Metadata — What an Instance Knows About Itself</h2>
+
+    <p>An EC2 instance is code running on a server somewhere in AWS. That code often needs to know things about itself: its own private IP address, the IAM role attached to it, temporary credentials for that role. Asking AWS over the network for that would create a chicken-and-egg problem — how would the instance prove who it is?</p>
+
+    <p>The answer is the Instance Metadata Service. Every EC2 instance can query a special local address — one that only exists inside the instance itself — to fetch information about itself without needing any credentials stored on disk.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>IMDS</strong> (EC2 Instance Metadata Service) is a service running inside every EC2 instance. The instance queries it at a link-local IP address to fetch information about itself — instance ID, private IP, IAM role, and temporary credentials.
+    </div>
+
+    <p>The address is always the same:</p>
+
+    <pre><code>http://169.254.169.254</code></pre>
+
+    <p>From this address, an instance can fetch its hostname, public IP address, private IP address, instance type, and — most importantly for security — temporary credentials for the IAM role attached to the instance.</p>
+
+    <div class="callout warning">
+      <strong>Critical detail:</strong> You cannot fetch the policy document itself from IMDS — only the temporary credentials. If you need to see what permissions an instance actually has, read the IAM role policy directly through the console or CLI.
+    </div>
+
+    <h3>IMDSv1 vs. IMDSv2 — A Security Difference</h3>
+
+    <p>IMDS has two versions, and they differ in a crucial way:</p>
+
+    <table>
+      <tr><th>Version</th><th>How It Works</th><th>Security Trade-off</th></tr>
+      <tr><td><strong>IMDSv1</strong></td><td>A simple HTTP GET to the URL directly gets metadata</td><td>Vulnerable to attack if attacker tricks instance into making the request</td></tr>
+      <tr><td><strong>IMDSv2</strong></td><td>Two-step process: PUT request to get a session token, then use that token in a GET request</td><td>Stronger; harder to exploit. Default on modern AMIs</td></tr>
+    </table>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Session token</strong> (in IMDSv2 context) is a temporary, time-bound credential that proves you are allowed to query metadata. The instance gets it via PUT request and includes it in the header of all subsequent metadata requests.
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#6b6a66"/>
+          </marker>
+        </defs>
+        <rect x="20" y="50" width="150" height="50" rx="6" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="95" y="80" text-anchor="middle" font-size="13" font-weight="bold">EC2 Instance</text>
+
+        <path d="M170,65 L290,65" stroke="#6b6a66" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+        <text x="230" y="55" text-anchor="middle" font-size="10">1. PUT request for token</text>
+
+        <rect x="290" y="30" width="200" height="90" rx="8" fill="#fecaca" stroke="#dc2626" stroke-width="2"/>
+        <text x="390" y="60" text-anchor="middle" font-weight="600" font-size="12">IMDS</text>
+        <text x="390" y="78" text-anchor="middle" font-size="10">169.254.169.254</text>
+
+        <path d="M290,95 L172,95" stroke="#6b6a66" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+        <text x="230" y="110" text-anchor="middle" font-size="10">2. Returns session token</text>
+
+        <path d="M170,130 Q 330,145 490,90" stroke="#6b6a66" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+        <text x="330" y="146" text-anchor="middle" font-size="10">3. GET metadata with token header</text>
+
+        <rect x="540" y="50" width="200" height="50" rx="6" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="640" y="72" text-anchor="middle" font-size="11">Metadata / IAM</text>
+        <text x="640" y="88" text-anchor="middle" font-size="11">Role Credentials</text>
+      </svg>
+      <div class="diagram-caption">IMDSv2 requires an instance to request a session token first, then include that token in the header for subsequent requests. This stops certain types of attacks in their tracks.</div>
+    </div>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Major cloud security incidents have exploited IMDSv1 vulnerabilities. When an attacker finds a Server-Side Request Forgery (SSRF) bug in an instance's application code, they can trick the code into querying metadata and stealing credentials. IMDSv2's token-based approach makes that exploit much harder. Modern security teams and AWS security standards now treat IMDSv1 the same way they treat unencrypted HTTP — acceptable only in specific circumstances, not as a default.
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="lecture" id="l2">
+    <h2><span class="lecture-num">2</span>Fetching Metadata in Practice</h2>
+
+    <p>When you launch an EC2 instance, you can choose which IMDS version the instance will support: both v1 and v2, or v2 only. Newer AMI images, like Amazon Linux 2023, enforce v2 only by default.</p>
+
+    <div class="callout warning">
+      <strong>Common error:</strong> If you try a direct IMDSv1 curl command on an instance that only supports v2, you'll get a 401 Unauthorized response. The instance is not broken — it's working correctly by refusing the less-secure protocol.
+    </div>
+
+    <h3>Fetching Metadata Using IMDSv2</h3>
+
+    <p>Here's the two-step process:</p>
+
+    <ol>
+      <li>Request a session token with a PUT request:
+        <pre><code>TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" \
+  -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")</code></pre>
+      </li>
+      <li>Use that token to fetch metadata by adding it as a header:
+        <pre><code>curl -H "X-aws-ec2-metadata-token: $TOKEN" \
+  http://169.254.169.254/latest/meta-data/</code></pre>
+      </li>
+      <li>Specific metadata paths include <code>/local-ipv4</code> (private IP), <code>/public-ipv4</code> (public IP), and <code>/iam/security-credentials/your-role-name</code> (temporary credentials).</li>
+    </ol>
+
+    <div class="callout tip">
+      <strong>In production:</strong> You don't need to fetch IMDS credentials manually in your code. The AWS CLI and AWS SDK automatically call IMDS in the background. Only do this by hand when troubleshooting or testing whether an instance can reach metadata.
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="lecture" id="l3">
+    <h2><span class="lecture-num">3</span>AWS CLI Profiles — Managing Multiple Accounts</h2>
+
+    <p>Most teams work across multiple AWS accounts. You might have a development account where engineers experiment freely, a staging account that mimics production, and a production account itself that real customers depend on. Switching between them manually — deleting one set of credentials and configuring another — would be tedious and error-prone.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Named profile</strong> (in AWS CLI context) is a named set of credentials and configuration settings stored locally on your laptop, so you can switch between accounts by name instead of manually reconfiguring.
+    </div>
+
+    <p>The AWS CLI stores profiles in two local files: <code>~/.aws/credentials</code> (your access keys) and <code>~/.aws/config</code> (region and output format). By default, there's always a <code>[default]</code> profile. You can create as many named profiles as you need.</p>
+
+    <h3>Setting Up and Using Profiles</h3>
+
+    <p>To create or update a profile called <code>my-dev-account</code>:</p>
+
+    <pre><code>aws configure --profile my-dev-account</code></pre>
+
+    <p>The CLI will prompt you for your Access Key ID, Secret Access Key, default region, and output format. Once saved, run any CLI command with that profile:</p>
+
+    <pre><code>aws s3 ls --profile my-dev-account</code></pre>
+
+    <p>Forget the <code>--profile</code> flag, and the CLI uses <code>[default]</code> by default. This is why it's called the default profile.</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Teams with dozens of accounts often automate profile management using wrapper scripts or tools like Leapp. Manually configuring each one is fine at first, but once you have more than three or four accounts, the overhead becomes real. The bigger pattern: avoid storing permanent access keys on your laptop at all. Use temporary credentials from a central identity system instead.
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="lecture" id="l4">
+    <h2><span class="lecture-num">4</span>Using the AWS CLI with MFA</h2>
+
+    <p>MFA (Multi-Factor Authentication) protects your login by requiring two different proofs of identity: something you know (your password) and something you have (an authenticator app or security key). To run AWS CLI commands when MFA is enabled, you need to generate temporary session credentials.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>STS (AWS Security Token Service)</strong> is the AWS service that hands out temporary, short-lived credentials instead of permanent ones. It's perfect for MFA workflows and assuming roles.
+    </div>
+
+    <p>To get temporary CLI credentials with MFA, use the STS API call <code>get-session-token</code>. You pass your MFA device ARN (Amazon Resource Name) and the current 6-digit code from your authenticator:</p>
+
+    <pre><code>aws sts get-session-token \
+  --serial-number arn:aws:iam::123456789012:mfa/your-username \
+  --token-code 123456</code></pre>
+
+    <p>AWS returns three pieces: a new Access Key ID, a new Secret Access Key, and a session token. Add these to your <code>~/.aws/credentials</code> file as a new temporary profile, and use that profile for CLI commands. The credentials expire automatically (usually in a few hours), so you'll repeat this step periodically.</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Long-lived access keys stored on developer laptops are a known risk. A lost or stolen laptop means the attacker has permanent credentials until someone manually revokes them — and that could take hours or days. By contrast, session tokens from STS expire automatically. This is why many security teams now require MFA for CLI access and cap session-token lifetime to a few hours. It's a simple rule that significantly raises the bar for credential theft.
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="lecture" id="l5">
+    <h2><span class="lecture-num">5</span>AWS SDK — Calling AWS from Your Code</h2>
+
+    <p>The AWS Console is useful for learning and making one-off changes. But real systems automate everything: deployment pipelines, data processing jobs, and background services all call AWS APIs programmatically. That's what the AWS SDK is for.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>SDK</strong> (Software Development Kit) is a language-specific library — available for Python, Java, JavaScript, Go, C++, and others — that lets your code call AWS services directly without crafting HTTP requests by hand.
+    </div>
+
+    <p>For example, Python applications use Boto3 (nicknamed "boto"), Node.js uses the AWS SDK for JavaScript, and Java uses the AWS SDK for Java. Each SDK handles authentication, retries, error handling, and all the AWS-specific conventions so you only have to write the business logic.</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      The AWS CLI itself is written in Python and built on top of Boto3. When you run <code>aws s3 sync</code>, you're really calling Boto3 under the hood. This isn't a coincidence — it means the CLI and SDK share the same underlying logic, so they behave identically. A command that works in the CLI will work the same way in your Python code.
+    </div>
+
+    <h3>A Practical Example</h3>
+
+    <p>Python code to list S3 buckets using Boto3 looks like this:</p>
+
+    <pre><code>import boto3
+
+s3 = boto3.client('s3')
+response = s3.list_buckets()
+for bucket in response['Buckets']:
+    print(bucket['Name'])</code></pre>
+
+    <p>The SDK handles authentication automatically — it will check for credentials in environment variables, then IMDS (if running on EC2), then local CLI config files. You don't hardcode keys into your code.</p>
+  </section>
+
+  <!-- 6 -->
+  <section class="lecture" id="l6">
+    <h2><span class="lecture-num">6</span>Handling Throttling with Exponential Backoff</h2>
+
+    <p>AWS enforces limits to protect shared infrastructure. There are two main types:</p>
+
+    <table>
+      <tr><th>Limit Type</th><th>What It Controls</th><th>Example</th></tr>
+      <tr><td><strong>API Rate Limits</strong></td><td>How many API requests per second to a specific service</td><td>S3 allows 5,500 GET requests per second per partition key</td></tr>
+      <tr><td><strong>Service Quotas</strong></td><td>Total resources you can run simultaneously in an account</td><td>Maximum number of EC2 instances, vCPUs, or RDS databases allowed</td></tr>
+    </table>
+
+    <p>When you exceed an API rate limit, AWS returns a throttling error (HTTP status 429, error code <code>SlowDown</code> or <code>ThrottleException</code>). A naive response is to retry immediately. A smart response is to wait a bit, then try again, and gradually increase the wait time.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Exponential backoff</strong> is a retry strategy: when a request fails due to throttling, wait a short time before retrying. If it fails again, double the wait time (e.g., 1 second → 2 seconds → 4 seconds → 8 seconds). This gives the overloaded service time to recover without overwhelming it further.
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+        <line x1="30" y1="100" x2="750" y2="100" stroke="#6b7280" stroke-width="1.5"/>
+        <rect x="30" y="80" width="30" height="20" fill="#fecaca" stroke="#dc2626" stroke-width="2"/>
+        <text x="45" y="72" text-anchor="middle" font-size="10">1s</text>
+        <rect x="120" y="70" width="30" height="30" fill="#fecaca" stroke="#dc2626" stroke-width="2"/>
+        <text x="135" y="62" text-anchor="middle" font-size="10">2s</text>
+        <rect x="250" y="55" width="30" height="45" fill="#fecaca" stroke="#dc2626" stroke-width="2"/>
+        <text x="265" y="47" text-anchor="middle" font-size="10">4s</text>
+        <rect x="430" y="35" width="30" height="65" fill="#fecaca" stroke="#dc2626" stroke-width="2"/>
+        <text x="445" y="27" text-anchor="middle" font-size="10">8s</text>
+        <rect x="680" y="10" width="30" height="90" fill="#fecaca" stroke="#dc2626" stroke-width="2"/>
+        <text x="695" y="5" text-anchor="middle" font-size="10">16s</text>
+        <text x="45" y="115" text-anchor="middle" font-size="9">Retry 1</text>
+        <text x="135" y="115" text-anchor="middle" font-size="9">Retry 2</text>
+        <text x="265" y="115" text-anchor="middle" font-size="9">Retry 3</text>
+        <text x="445" y="115" text-anchor="middle" font-size="9">Retry 4</text>
+        <text x="695" y="115" text-anchor="middle" font-size="9">Retry 5</text>
+      </svg>
+      <div class="diagram-caption">Exponential backoff: Each failed retry triggers a progressively longer wait. This gives overloaded systems breathing room instead of hammering them with requests.</div>
+    </div>
+
+    <div class="callout tip">
+      <strong>Good news:</strong> Every AWS SDK has exponential backoff built in automatically. You don't have to implement it yourself. If you're using the SDK and get throttled, it will silently retry with increasing delays. This is why the SDK is almost always the right choice for production code.
+    </div>
+
+    <div class="callout warning">
+      <strong>Exam tip:</strong> If a question says "my application is getting throttling errors," the correct answer is almost always "implement exponential backoff" or "use an SDK" (which does it for you). Raw HTTP requests without backoff are a red flag.
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="lecture" id="l7">
+    <h2><span class="lecture-num">7</span>AWS Signature v4 — How Requests Get Signed</h2>
+
+    <p>Every single request sent to an AWS API must be cryptographically signed using your secret credentials. This proves to AWS that you actually sent the request and that the request hasn't been tampered with in transit. The signing protocol is called Signature v4 or SigV4.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>SigV4 (Signature Version 4)</strong> is AWS's request-signing protocol. It uses your Secret Access Key to compute a unique signature for each request. AWS verifies the signature to confirm authenticity.
+    </div>
+
+    <p>The CLI and SDK do this signing automatically — you never see it. But under the hood, the signature can be sent in two ways:</p>
+
+    <table>
+      <tr><th>Method</th><th>How It Works</th><th>When Used</th></tr>
+      <tr><td><strong>Authorization Header</strong></td><td>The signature goes in a standard HTTP <code>Authorization</code> header</td><td>Default for CLI and SDK requests</td></tr>
+      <tr><td><strong>Query String Parameters</strong></td><td>The signature is appended directly to the URL as a parameter like <code>?X-Amz-Signature=...</code></td><td>Pre-signed URLs (e.g., temporary download links for S3 files)</td></tr>
+    </table>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="20" width="180" height="45" rx="6" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="110" y="47" text-anchor="middle" font-size="12" font-weight="bold">HTTP Request</text>
+        <line x1="200" y1="42" x2="320" y2="42" stroke="#6b7280" stroke-width="2" marker-end="url(#arrowhead)"/>
+        <rect x="320" y="20" width="200" height="45" rx="6" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="420" y="40" text-anchor="middle" font-size="11" font-weight="bold">Authorization Header</text>
+        <text x="420" y="55" text-anchor="middle" font-size="9">(CLI &amp; SDK default)</text>
+
+        <rect x="20" y="90" width="180" height="45" rx="6" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="110" y="117" text-anchor="middle" font-size="12" font-weight="bold">HTTP Request</text>
+        <line x1="200" y1="112" x2="320" y2="112" stroke="#6b7280" stroke-width="2" marker-end="url(#arrowhead)"/>
+        <rect x="320" y="90" width="200" height="45" rx="6" fill="#fecaca" stroke="#dc2626" stroke-width="2"/>
+        <text x="420" y="110" text-anchor="middle" font-size="11" font-weight="bold">Query String</text>
+        <text x="420" y="125" text-anchor="middle" font-size="9">?X-Amz-Signature=...</text>
+
+        <defs>
+          <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#6b7280"/>
+          </marker>
+        </defs>
+      </svg>
+      <div class="diagram-caption">SigV4 signatures can ride in the Authorization header (standard) or in the URL itself (pre-signed URLs).</div>
+    </div>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Pre-signed URLs (query string signatures) are commonly used to give temporary download access to private S3 files. Instead of handing out credentials, you generate a URL that includes the signature and an expiration time. Anyone with the URL can download the file until it expires. This is how CDNs, email services, and apps share protected files without exposing access keys.
+    </div>
+  </section>
+
+  <hr class="section-break">
+
+  <!-- Final Summary -->
+  <section class="lecture" id="lsummary">
+    <h2>📋 Cheat Sheet</h2>
+
+    <div class="summary-box">
+      <h3>Key Concepts at a Glance</h3>
+      <ul>
+        <li><strong>IMDS:</strong> Every EC2 instance can query <code>169.254.169.254</code> to fetch metadata and temporary IAM role credentials. Use IMDSv2 for better security.</li>
+        <li><strong>CLI Profiles:</strong> Store multiple AWS account credentials locally as named profiles. Switch accounts using <code>--profile</code> flag.</li>
+        <li><strong>MFA with CLI:</strong> Use <code>aws sts get-session-token</code> to generate temporary credentials, then configure a temporary profile in <code>~/.aws/credentials</code>.</li>
+        <li><strong>AWS SDK:</strong> Language-specific library for calling AWS from code. Available for Python (Boto3), JavaScript, Java, Go, C++, and others.</li>
+        <li><strong>Exponential Backoff:</strong> Retry failed API requests with progressively longer delays (1s, 2s, 4s, 8s...). SDKs do this automatically.</li>
+        <li><strong>SigV4:</strong> Request-signing protocol. Signature goes in either the Authorization header (default) or URL query parameters (pre-signed URLs).</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>Decision Tree</h3>
+      <ul>
+        <li>Application needs to call AWS services? → Use the SDK for your language.</li>
+        <li>Working with multiple AWS accounts? → Use CLI profiles.</li>
+        <li>Running CLI commands with MFA enabled? → Use <code>sts get-session-token</code>.</li>
+        <li>Getting 429 throttling errors? → SDKs handle exponential backoff automatically. Raw HTTP code needs to implement it manually.</li>
+        <li>Need to verify instance has correct role and credentials? → Query IMDS from inside the instance (IMDSv2 recommended).</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>One-Paragraph Mental Model</h3>
+      <p>EC2 instances use IMDS to fetch metadata and temporary role credentials securely (IMDSv2 via session tokens). Developers manage multiple AWS accounts locally with CLI profiles. When MFA is required, STS generates temporary credentials that expire automatically. The AWS SDK — available in multiple languages — handles authentication and retries (exponential backoff) automatically. All requests to AWS are signed with SigV4: either in the Authorization header (standard) or in the URL (pre-signed links). The security principle throughout: temporary credentials are better than permanent ones, and automation (via SDK/CLI) is better than manual HTTP requests.</p>
+    </div>
+  </section>
+
+  <div class="top-link"><a href="#top">↑ Back to top</a></div>
+
+</div>
+
+<script>
+(function () {
+  if (document.querySelector('.tips-trigger')) return;
+
+  const glossary = [
+    ['access key', 'Long-term credential pair: Access Key ID (username-like) plus Secret Access Key (password-like). Use with CLI and SDK.'],
+    ['API rate limit', 'Maximum number of API requests per second to a specific AWS service. Exceeding it triggers a 429 throttling error.'],
+    ['assume a role', 'Get temporary credentials for an IAM role, either as a person via the console or as a service via IMDS/STS.'],
+    ['CLI', 'Command Line Interface. Running AWS operations from terminal commands, not the console.'],
+    ['credential', 'Authentication proof: access key ID, secret access key, and optionally a session token.'],
+    ['EC2', 'Elastic Compute Cloud. AWS virtual server instances.'],
+    ['expiration', 'Time at which a temporary credential automatically stops working. Example: session tokens expire after a few hours.'],
+    ['IMDS', 'Instance Metadata Service. Built into every EC2 instance; instance queries it at 169.254.169.254 to fetch its own metadata and role credentials.'],
+    ['IMDSv1', 'Original IMDS version. Simple HTTP GET, but vulnerable to certain attacks if application has bugs.'],
+    ['IMDSv2', 'Newer IMDS version. Requires a session token via PUT request before fetching metadata. More secure.'],
+    ['least privilege', 'Security principle: grant only the permissions actually needed, nothing extra.'],
+    ['managed service', 'AWS handles the underlying infrastructure; you configure and use it. Opposite of self-managed.'],
+    ['MFA', 'Multi-Factor Authentication. Login requires password plus a second proof like an authenticator app.'],
+    ['permission boundary', 'IAM policy that caps the maximum permissions, used to safely delegate IAM administration.'],
+    ['pre-signed URL', 'URL that includes a SigV4 signature in the query string, allowing temporary access to a protected resource (like an S3 object).'],
+    ['profile', 'Named set of credentials and configuration stored in ~/.aws/credentials and ~/.aws/config.'],
+    ['query string', 'Key-value parameters appended to a URL after a question mark, like ?X-Amz-Signature=...'],
+    ['role', 'Temporary AWS identity that can be assumed by users, services, or external accounts. Comes with permissions attached.'],
+    ['SDK', 'Software Development Kit. Language-specific library for calling AWS APIs from code instead of HTTP requests.'],
+    ['session token', 'Temporary credential that proves permission to use a resource, issued by STS or IMDS.'],
+    ['SigV4', 'Signature Version 4. AWS protocol for digitally signing API requests using your secret credentials.'],
+    ['STS', 'Security Token Service. AWS service that issues temporary credentials for roles, MFA sessions, and cross-account access.'],
+    ['throttle', 'AWS refusing a request temporarily due to rate limits, signaled by HTTP 429 or throttling error codes.'],
+    ['VPC', 'Virtual Private Cloud. Your isolated AWS network.']
+  ];
+
+  const pageText = document.body.innerText.replace(/\s+/g, ' ');
+  const found = glossary.filter(([term]) => new RegExp('(^|[^A-Za-z0-9])' + escapeRegExp(term) + '([^A-Za-z0-9]|$)', 'i').test(pageText));
+  if (!found.length) return;
+
+  const button = document.createElement('button');
+  button.className = 'tips-trigger';
+  button.type = 'button';
+  button.setAttribute('aria-haspopup', 'dialog');
+  button.setAttribute('aria-expanded', 'false');
+  button.innerHTML = '<span class="tips-icon" aria-hidden="true">💡</span><span>Glossary</span>';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'tips-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'tips-title');
+  overlay.innerHTML = [
+    '<div class="tips-panel">',
+    '<div class="tips-header">',
+    '<h2 id="tips-title">💡 Every term on this page</h2>',
+    '<button class="tips-close" type="button" aria-label="Close glossary">Close</button>',
+    '</div>',
+    '<div class="tips-body">',
+    '<p class="tips-intro">A quick lookup if you lost the thread anywhere on this page.</p>',
+    '<ul class="tips-list">' + found.map(([term, tip]) => '<li><strong>' + escapeHtml(term) + '</strong>' + escapeHtml(tip) + '</li>').join('') + '</ul>',
+    '</div>',
+    '</div>'
+  ].join('');
+
+  document.body.appendChild(button);
+  document.body.appendChild(overlay);
+
+  const closeButton = overlay.querySelector('.tips-close');
+  function openTips() {
+    overlay.classList.add('open');
+    button.setAttribute('aria-expanded', 'true');
+    closeButton.focus();
+  }
+  function closeTips() {
+    overlay.classList.remove('open');
+    button.setAttribute('aria-expanded', 'false');
+    button.focus();
+  }
+
+  button.addEventListener('click', openTips);
+  closeButton.addEventListener('click', closeTips);
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) closeTips();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && overlay.classList.contains('open')) closeTips();
+  });
+
+  function escapeRegExp(value) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
+  }
+}());
+</script>
+
+<!-- Dark Theme Toggle Button -->
+<button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme" title="Toggle Light/Dark Theme">
+  <span class="theme-toggle-icon">🌙</span>
+  <span class="theme-toggle-text">Dark</span>
+</button>
+
+<script id="dark-theme-script">
+(function() {
+  function setupThemeToggle() {
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+
+    function syncUI() {
+      var isDark = document.documentElement.classList.contains('dark-mode') || document.body.classList.contains('dark-mode');
+      var icon = btn.querySelector('.theme-toggle-icon');
+      var text = btn.querySelector('.theme-toggle-text');
+      if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+      if (text) text.textContent = isDark ? 'Light' : 'Dark';
+    }
+
+    if (document.documentElement.classList.contains('dark-mode')) {
+      document.body.classList.add('dark-mode');
+    }
+    syncUI();
+
+    btn.addEventListener('click', function() {
+      var isDark = document.documentElement.classList.toggle('dark-mode');
+      document.body.classList.toggle('dark-mode', isDark);
+      localStorage.setItem('aws-notes-theme', isDark ? 'dark' : 'light');
+      syncUI();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupThemeToggle);
+  } else {
+    setupThemeToggle();
+  }
+})();
+</script>
+</body>
+</html>

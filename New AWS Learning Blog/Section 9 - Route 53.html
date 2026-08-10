@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script id="dark-theme-init">
+(function() {
+  var saved = localStorage.getItem('aws-notes-theme');
+  if (saved === 'dark' || (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark-mode');
+  }
+})();
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 9 — Route 53 (Blog Edition)</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --card: #f9fafb;
+    --accent: #d97706;
+    --accent-dark: #b45309;
+    --blue: #2563eb;
+    --green: #059669;
+    --purple: #7c3aed;
+    --red: #dc2626;
+    --code-bg: #f3f4f6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+  }
+  header.page-header {
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  header.page-header h1 {
+    margin: 0 0 6px 0;
+    font-size: 28px;
+    color: var(--accent-dark);
+  }
+  header.page-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14.5px;
+  }
+
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+  }
+  nav.toc h2 {
+    margin-top: 0;
+    font-size: 16px;
+    color: var(--accent-dark);
+  }
+  nav.toc ol {
+    margin: 0;
+    padding-left: 20px;
+    columns: 2;
+  }
+  nav.toc li { margin-bottom: 6px; font-size: 14px; }
+  nav.toc a { color: var(--blue); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  section.lecture {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 26px;
+    margin-bottom: 26px;
+    background: #fff;
+    scroll-margin-top: 16px;
+  }
+  section.lecture h2 {
+    margin-top: 0;
+    font-size: 20px;
+    color: #111827;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 8px;
+  }
+  .lecture-num {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 2px 8px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  h3 { color: var(--accent-dark); font-size: 16.5px; margin-bottom: 8px; margin-top: 26px; }
+
+  p { margin: 0 0 14px; }
+
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: #fffbeb;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 15px;
+  }
+  .callout.tip { border-left-color: var(--green); background: #ecfdf5; }
+  .callout.warning { border-left-color: var(--red); background: #fef2f2; }
+  .callout.define { border-left-color: var(--blue); background: #eff6ff; }
+  .callout.production { border-left-color: var(--purple); background: #f5f3ff; }
+  .callout strong { color: inherit; }
+  .callout-label {
+    display: block;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    margin-bottom: 4px;
+    opacity: 0.75;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th { background: var(--card); color: var(--accent-dark); }
+  tr:nth-child(even) td { background: #fcfcfd; }
+
+  code {
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 16px 0;
+  }
+  pre code { background: none; padding: 0; }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  .diagram {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 18px 0;
+    text-align: center;
+    overflow-x: auto;
+  }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram-caption { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  .top-link { font-size: 12px; text-align: right; }
+  .top-link a { color: var(--muted); text-decoration: none; }
+  .top-link a:hover { text-decoration: underline; }
+
+  hr.section-break { border: none; border-top: 2px dashed var(--border); margin: 36px 0; }
+
+  .summary-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 14px;
+  }
+  .summary-box h3 { color: var(--green); margin-top: 0; }
+
+  @media (max-width: 1024px) {
+    .container { padding-left: 20px; padding-right: 20px; }
+    nav.toc ol { columns: 2; }
+  }
+  @media (max-width: 860px) {
+    .container { padding: 20px 18px 60px; }
+    header.page-header h1 { font-size: 22px; }
+    nav.toc ol { columns: 1; }
+    section.lecture { padding: 18px 20px; }
+    table { font-size: 13px; }
+    th, td { padding: 7px 9px; }
+  }
+  @media (max-width: 480px) {
+    .container { padding: 16px 14px 50px; }
+    header.page-header h1 { font-size: 19px; line-height: 1.3; }
+    header.page-header p { font-size: 13px; }
+    nav.toc { padding: 14px 16px; border-radius: 10px; }
+    nav.toc ol { columns: 1; padding-left: 16px; }
+    nav.toc li { font-size: 14px; margin-bottom: 8px; }
+    section.lecture { padding: 16px 16px; border-radius: 10px; margin-bottom: 16px; }
+    section.lecture h2 { font-size: 17px; line-height: 1.3; }
+    h3 { font-size: 15px; }
+    table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; font-size: 13px; white-space: nowrap; }
+    th, td { padding: 7px 10px; }
+    code { font-size: 12.5px; word-break: break-all; }
+    ul, ol { padding-left: 18px; }
+    li { font-size: 14.5px; margin-bottom: 8px; }
+    .callout, .summary-box { padding: 10px 13px; font-size: 14px; }
+    .top-link { font-size: 13px; }
+  }
+  @media (max-width: 360px) {
+    .container { padding: 12px 12px 40px; }
+    section.lecture h2 { font-size: 16px; }
+  }
+
+  /* Tips popup for assumed AWS terms and prerequisite concepts */
+  .tips-trigger {
+    position: fixed; right: 18px; bottom: 18px; z-index: 999;
+    display: inline-flex; align-items: center; gap: 8px;
+    min-height: 44px; padding: 10px 14px;
+    border: 1px solid #f59e0b; border-radius: 999px;
+    background: #fffbeb; color: #92400e;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+    cursor: pointer; font: inherit; font-weight: 700;
+  }
+  .tips-trigger:hover { background: #fef3c7; }
+  .tips-trigger .tips-icon { font-size: 1.2rem; line-height: 1; }
+  .tips-overlay {
+    position: fixed; inset: 0; z-index: 1000; display: none;
+    align-items: center; justify-content: center; padding: 18px;
+    background: rgba(17, 24, 39, 0.46);
+  }
+  .tips-overlay.open { display: flex; }
+  .tips-panel {
+    width: min(760px, 100%); max-height: min(76vh, 720px); overflow: auto;
+    background: #ffffff; color: var(--text, #1f2937);
+    border: 1px solid #fcd34d; border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  }
+  .tips-header {
+    position: sticky; top: 0; display: flex; align-items: center;
+    justify-content: space-between; gap: 12px; padding: 16px 18px;
+    background: #fffbeb; border-bottom: 1px solid #fde68a;
+  }
+  .tips-header h2 { margin: 0; color: #92400e; font-size: 1.1rem; }
+  .tips-close {
+    border: 1px solid #f59e0b; border-radius: 8px; background: #ffffff;
+    color: #92400e; cursor: pointer; font: inherit; font-weight: 700;
+    line-height: 1; padding: 7px 10px;
+  }
+  .tips-body { padding: 16px 18px 18px; }
+  .tips-intro { margin: 0 0 12px; color: var(--muted, #6b7280); font-size: 0.95rem; }
+  .tips-list {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px; margin: 0; padding: 0; list-style: none;
+  }
+  .tips-list li { margin: 0; padding: 10px 12px; border: 1px solid #fde68a; border-radius: 8px; background: #fffdf5; }
+  .tips-list strong { display: block; margin-bottom: 3px; color: #92400e; }
+  @media (max-width: 480px) {
+    .tips-trigger { right: 12px; bottom: 12px; padding: 10px 12px; }
+    .tips-trigger span:not(.tips-icon) { display: none; }
+    .tips-overlay { padding: 10px; }
+    .tips-panel { max-height: 82vh; }
+    .tips-list { grid-template-columns: 1fr; }
+  }
+</style>
+<style id="dark-theme-styles">
+  html.dark-mode, body.dark-mode {
+    --bg: #181926; --card-bg: #222436; --card: #222436; --border: #33384f;
+    --text: #c0caf5; --text-muted: #94a3b8; --muted: #94a3b8; --code-bg: #13141f;
+    --accent: #f59e0b; --accent-dark: #fbbf24; --green: #34d399; --red: #f87171;
+    --purple: #c084fc; --blue: #60a5fa;
+    background-color: #181926 !important; color: #c0caf5 !important;
+  }
+  body.dark-mode { background-color: #181926 !important; color: #c0caf5 !important; }
+  body.dark-mode header.page-header h1 { color: #fbbf24 !important; }
+  body.dark-mode header.page-header p { color: #94a3b8 !important; }
+  body.dark-mode h2, body.dark-mode h3 { color: #f59e0b !important; }
+  body.dark-mode a { color: #60a5fa; }
+  body.dark-mode nav.toc { background: #1f2335 !important; border-color: #33384f !important; }
+  body.dark-mode nav.toc h2 { color: #fbbf24 !important; }
+  body.dark-mode nav.toc a { color: #60a5fa !important; }
+  body.dark-mode section.lecture { background: #222436 !important; border-color: #33384f !important; color: #c0caf5 !important; }
+  body.dark-mode section.lecture h2 { color: #e2e8f0 !important; border-bottom-color: #33384f !important; }
+  body.dark-mode table { border-color: #33384f !important; }
+  body.dark-mode th, body.dark-mode td { border-color: #33384f !important; }
+  body.dark-mode th { background: #1f2335 !important; color: #fbbf24 !important; }
+  body.dark-mode td { color: #cbd5e1 !important; }
+  body.dark-mode tr:nth-child(even) td { background: #1a1d2d !important; }
+  body.dark-mode code { background: #13141f !important; color: #e2e8f0 !important; border: 1px solid #2e324a !important; }
+  body.dark-mode pre { background: #13141f !important; color: #e2e8f0 !important; border-color: #2e324a !important; }
+  body.dark-mode .callout { background: #25231c !important; border-left-color: #f59e0b !important; color: #fef3c7 !important; }
+  body.dark-mode .callout.tip { background: #142921 !important; border-left-color: #34d399 !important; color: #d1fae5 !important; }
+  body.dark-mode .callout.warning { background: #2f1b1e !important; border-left-color: #f87171 !important; color: #fee2e2 !important; }
+  body.dark-mode .callout.define { background: #1d2038 !important; border-left-color: #60a5fa !important; color: #dbeafe !important; }
+  body.dark-mode .callout.production { background: #221c35 !important; border-left-color: #c084fc !important; color: #ede9fe !important; }
+  body.dark-mode .summary-box { background: #142921 !important; border-color: #059669 !important; color: #d1fae5 !important; }
+  body.dark-mode .summary-box h3 { color: #34d399 !important; }
+  body.dark-mode .diagram { background: #ffffff !important; border: 1px solid #cbd5e1 !important; border-radius: 12px !important; padding: 16px !important; box-shadow: 0 4px 14px rgba(0,0,0,0.3) !important; }
+  body.dark-mode .diagram-caption { color: #475569 !important; font-weight: 500 !important; }
+  .theme-toggle-btn {
+    position: fixed; top: 16px; right: 20px; z-index: 10000;
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;
+    border-radius: 20px; background: #ffffff; color: #1f2937; border: 1px solid #cbd5e1;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.25s ease; user-select: none;
+  }
+  .theme-toggle-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
+  body.dark-mode .theme-toggle-btn { background: #24273a !important; color: #e2e8f0 !important; border-color: #363a4f !important; box-shadow: 0 2px 10px rgba(0,0,0,0.4) !important; }
+  @media (max-width: 480px) {
+    .theme-toggle-btn { top: 12px; right: 12px; padding: 6px 10px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="container" id="top">
+
+  <header class="page-header">
+    <h1>Section 9 — Route 53</h1>
+    <p>How AWS answers "what server is that domain actually pointing at" — DNS basics, hosted zones, records, and all seven routing policies, grounded in how real teams actually use them.</p>
+  </header>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#dns-basics">1. What is a DNS?</a></li>
+      <li><a href="#r53-overview">2. Route 53 Overview &amp; Hosted Zones</a></li>
+      <li><a href="#register-domain">3. Registering a Domain</a></li>
+      <li><a href="#first-records">4. First Records &amp; Demo Infrastructure</a></li>
+      <li><a href="#ttl">5. TTL (Time To Live)</a></li>
+      <li><a href="#cname-alias">6. CNAME vs Alias</a></li>
+      <li><a href="#simple">7. Routing Policies &amp; Simple Routing</a></li>
+      <li><a href="#weighted">8. Routing Policy: Weighted</a></li>
+      <li><a href="#latency">9. Routing Policy: Latency-Based</a></li>
+      <li><a href="#health-checks">10. Health Checks</a></li>
+      <li><a href="#failover">11. Routing Policy: Failover</a></li>
+      <li><a href="#geolocation">12. Routing Policy: Geolocation</a></li>
+      <li><a href="#geoproximity">13. Routing Policy: Geoproximity</a></li>
+      <li><a href="#ip-based">14. Routing Policy: IP-Based</a></li>
+      <li><a href="#multivalue">15. Routing Policy: Multi-Value Answer</a></li>
+      <li><a href="#third-party">16. 3rd Party Domains &amp; Route 53</a></li>
+      <li><a href="#cheatsheet">Cheat Sheet</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <section class="lecture" id="dns-basics">
+    <h2><span class="lecture-num">1</span>What is a DNS?</h2>
+
+    <p>Type "google.com" into a browser and a page loads almost instantly. But here's the catch: computers don't actually understand words like "google.com." They only talk to each other using numbers, called IP addresses. So something has to translate the word you typed into the number a server actually uses. That something is DNS.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>DNS</strong> stands for Domain Name System. It's the system that turns a website address like <code>www.google.com</code> into the IP address a server actually uses, such as <code>142.250.190.46</code>. People often call it "the phonebook of the internet."
+    </div>
+
+    <p>Domain names are built in layers, and you read them from right to left:</p>
+    <ul>
+      <li><strong>Root</strong> — the very last, usually invisible dot at the end of every domain.</li>
+      <li><strong>TLD (Top-Level Domain)</strong> — the extension, like <code>.com</code>, <code>.org</code>, or <code>.gov</code>.</li>
+      <li><strong>Second-Level Domain</strong> — the actual brand name someone registered, like <code>example.com</code>.</li>
+      <li><strong>Subdomain</strong> — an optional prefix in front of the domain, like <code>www</code> or <code>api</code> in <code>api.example.com</code>.</li>
+      <li><strong>FQDN (Fully Qualified Domain Name)</strong> — the whole address written out in full, like <code>api.www.example.com.</code></li>
+    </ul>
+
+    <h3>The words you'll keep seeing</h3>
+    <p>A few pieces of vocabulary show up constantly once you start working with DNS:</p>
+    <ul>
+      <li><strong>DNS Record</strong> — a single mapping entry inside a domain's setup (an A record, a CNAME record, and so on).</li>
+      <li><strong>Zone File</strong> — the text file holding every DNS record configured for a domain.</li>
+      <li><strong>Name Server</strong> — a special DNS server that stores a zone file and answers questions about that domain.</li>
+    </ul>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Domain Registrar</strong> is a company approved to sell and register domain names for you — Amazon Route 53 can do it, and so can outside companies like GoDaddy or Namecheap.
+    </div>
+
+    <h3>How your browser actually finds the right server</h3>
+    <p>When you hit enter on a web address, your request doesn't go straight to the destination. It travels through a chain of servers until the exact IP address is found.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 760 260" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow1" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill="#4b5563"/>
+          </marker>
+        </defs>
+        <!-- boxes -->
+        <rect x="10" y="20" width="140" height="50" rx="8" fill="#fff7ed" stroke="#d97706"/>
+        <text x="80" y="50" text-anchor="middle" font-size="13" fill="#1f2937">Your browser</text>
+
+        <rect x="10" y="110" width="140" height="50" rx="8" fill="#fff7ed" stroke="#d97706"/>
+        <text x="80" y="140" text-anchor="middle" font-size="13" fill="#1f2937">Local DNS server</text>
+
+        <rect x="300" y="20" width="150" height="50" rx="8" fill="#f5f3ff" stroke="#7c3aed"/>
+        <text x="375" y="45" text-anchor="middle" font-size="12" fill="#1f2937">Root DNS server</text>
+        <text x="375" y="60" text-anchor="middle" font-size="10" fill="#4b5563">(ICANN)</text>
+
+        <rect x="300" y="110" width="150" height="50" rx="8" fill="#f5f3ff" stroke="#7c3aed"/>
+        <text x="375" y="135" text-anchor="middle" font-size="12" fill="#1f2937">.com TLD server</text>
+        <text x="375" y="150" text-anchor="middle" font-size="10" fill="#4b5563">(IANA)</text>
+
+        <rect x="580" y="110" width="170" height="50" rx="8" fill="#f0fdf4" stroke="#16a34a"/>
+        <text x="665" y="135" text-anchor="middle" font-size="12" fill="#1f2937">example.com server</text>
+        <text x="665" y="150" text-anchor="middle" font-size="10" fill="#4b5563">(your registrar, e.g. Route 53)</text>
+
+        <!-- arrows -->
+        <line x1="80" y1="70" x2="80" y2="110" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arrow1)"/>
+        <line x1="150" y1="130" x2="300" y2="45" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arrow1)"/>
+        <line x1="150" y1="140" x2="300" y2="135" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arrow1)"/>
+        <line x1="450" y1="135" x2="580" y2="135" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arrow1)"/>
+
+        <text x="215" y="90" font-size="10" fill="#4b5563">1. "know example.com?"</text>
+        <text x="500" y="185" font-size="10" fill="#4b5563">3. "here's the exact IP"</text>
+        <text x="30" y="200" font-size="10" fill="#4b5563">4. answer cached &amp; returned to browser</text>
+      </svg>
+      <div class="diagram-caption">Each server points to the next level down. Your local DNS resolver keeps asking down the chain, then caches the final answer.</div>
+    </div>
+
+    <p>Your computer first asks a local DNS server if it already knows the answer. If it doesn't, that server asks a Root server, which points it toward the right TLD server — for example, the one handling all <code>.com</code> domains. The TLD server then points to the exact name server that owns <code>example.com</code>, often Route 53, which finally hands back the real IP address. Once found, that answer gets cached, so the whole chain doesn't have to repeat itself for every single visitor.</p>
+
+    <div class="callout tip">
+      <strong>Why this matters:</strong> understanding this chain explains three things you'll run into constantly — DNS caching, TTL expiry, and the delay ("propagation") you sometimes see after changing a server's IP address.
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="lecture" id="r53-overview">
+    <h2><span class="lecture-num">2</span>Route 53 Overview &amp; Hosted Zones</h2>
+
+    <p>If DNS is the internet's phonebook, someone still has to run AWS's own copy of it. That's Route 53's job.</p>
+
+    <p>Amazon Route 53 is AWS's own DNS service. It's highly available, it scales automatically, and it's <strong>authoritative</strong> — meaning you have full control over exactly what records it answers with, instead of relying on someone else's copy of the data.</p>
+
+    <ul>
+      <li>It can act as your <strong>Domain Registrar</strong> — you can buy a brand-new domain directly inside Route 53.</li>
+      <li>It runs automated <strong>Health Checks</strong> against your applications, watching whether they're actually up.</li>
+      <li>It's the only AWS service that comes with a <strong>100% Availability SLA</strong> — AWS's strongest possible uptime promise.</li>
+    </ul>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>SLA</strong> (Service Level Agreement) is a formal promise from a provider about how reliable a service will be. A 100% SLA means AWS is promising Route 53 itself will never go down — a bar it doesn't set for almost anything else it offers.
+    </div>
+
+    <p>The name "Route 53" is a small in-joke: port 53 is the standard networking port reserved for DNS traffic everywhere on the internet, not just in AWS.</p>
+
+    <h3>What's actually inside a DNS record</h3>
+    <p>Every record you create in Route 53 needs the same five pieces of information:</p>
+    <ul>
+      <li><strong>Domain Name</strong> — the hostname the record applies to, like <code>example.com</code> or <code>app.example.com</code>.</li>
+      <li><strong>Record Type</strong> — what kind of mapping it is (<code>A</code>, <code>AAAA</code>, <code>CNAME</code>, and others).</li>
+      <li><strong>Value</strong> — the actual target, like an IP address or another hostname.</li>
+      <li><strong>Routing Policy</strong> — the rule Route 53 uses to decide which answer to give back.</li>
+      <li><strong>TTL</strong> — how long resolvers are allowed to cache that answer.</li>
+    </ul>
+
+    <h3>The record types you need for the exam</h3>
+    <table>
+      <tr><th>Record Type</th><th>Target Mapping</th><th>Key Characteristic</th></tr>
+      <tr><td><code>A</code></td><td>Hostname → IPv4 address</td><td>Standard IPv4 address mapping.</td></tr>
+      <tr><td><code>AAAA</code></td><td>Hostname → IPv6 address</td><td>Standard IPv6 address mapping.</td></tr>
+      <tr><td><code>CNAME</code></td><td>Hostname → Hostname</td><td>Points a domain alias to another domain name. <strong>Cannot</strong> be used at the domain apex (root domain).</td></tr>
+      <tr><td><code>NS</code></td><td>Name Servers</td><td>Specifies the authoritative name servers managing the domain.</td></tr>
+    </table>
+
+    <h3>Public vs. private hosted zones</h3>
+    <p>Before Route 53 can answer any question about your domain, it needs somewhere to keep all its records. That container is called a <strong>Hosted Zone</strong>.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Hosted Zone</strong> is a container inside Route 53 that holds all the DNS records for one domain. Every hosted zone comes in one of two flavors: public or private.
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="20" width="300" height="170" rx="10" fill="#fff7ed" stroke="#d97706"/>
+        <text x="170" y="45" text-anchor="middle" font-size="14" font-weight="bold" fill="#1f2937">Public Hosted Zone</text>
+        <text x="170" y="70" text-anchor="middle" font-size="11" fill="#4b5563">mypublicdomain.com</text>
+        <circle cx="60" cy="120" r="14" fill="#fed7aa"/>
+        <text x="60" y="124" text-anchor="middle" font-size="10">🌐</text>
+        <text x="170" y="150" text-anchor="middle" font-size="11" fill="#1f2937">Answers queries from</text>
+        <text x="170" y="165" text-anchor="middle" font-size="11" fill="#1f2937">ANY public client</text>
+
+        <rect x="380" y="20" width="300" height="170" rx="10" fill="#f5f3ff" stroke="#7c3aed"/>
+        <text x="530" y="45" text-anchor="middle" font-size="14" font-weight="bold" fill="#1f2937">Private Hosted Zone</text>
+        <text x="530" y="70" text-anchor="middle" font-size="11" fill="#4b5563">company.internal</text>
+        <rect x="490" y="105" width="80" height="30" rx="6" fill="#ddd6fe"/>
+        <text x="530" y="124" text-anchor="middle" font-size="10">your VPC</text>
+        <text x="530" y="155" text-anchor="middle" font-size="11" fill="#1f2937">Only resolvable from</text>
+        <text x="530" y="170" text-anchor="middle" font-size="11" fill="#1f2937">inside your own VPC</text>
+      </svg>
+      <div class="diagram-caption">Public hosted zones answer questions from anyone on the internet. Private hosted zones only answer questions coming from inside your own VPC.</div>
+    </div>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>VPC</strong> (Virtual Private Cloud) is your own private, isolated slice of network inside AWS. A private hosted zone only answers DNS questions coming from resources inside a VPC you've chosen — nobody on the public internet can even ask it a question.
+    </div>
+
+    <div class="callout warning">
+      <strong>Cost to remember:</strong> every hosted zone costs about $0.50 a month, and registering a new domain through Route 53 starts around $12 a year. Small per item, but it adds up if you spin up test hosted zones and forget to delete them.
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="lecture" id="register-domain">
+    <h2><span class="lecture-num">3</span>Registering a Domain (Hands-On)</h2>
+
+    <p>Buying a domain feels like it should be complicated. It mostly isn't. Ordering one through Route 53 is a short, linear process:</p>
+    <ol>
+      <li>Go to <strong>Register Domains</strong> in the Route 53 console, and search to see if the name you want is available.</li>
+      <li>Pick how many years to register it for, and decide whether to turn on <strong>auto-renew</strong>.</li>
+      <li>Enter contact details for the registrant, the admin, and the technical contact.</li>
+      <li>Turn on <strong>Privacy Protection</strong> so your personal contact details don't sit in a public WHOIS lookup.</li>
+      <li>Review everything and submit payment.</li>
+    </ol>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>WHOIS</strong> is a public lookup anyone can use to see who registered a given domain. Privacy Protection hides your real name, address, and contact details from that public record.
+    </div>
+
+    <p>The moment registration finishes, Route 53 doesn't leave you with nothing. It automatically creates a Public Hosted Zone for you, already pre-filled with a default <strong>NS</strong> record (the assigned name servers) and an <strong>SOA</strong> record (the technical record describing the zone itself).</p>
+
+    <div class="callout warning">
+      <strong>Gotcha:</strong> if you turn off auto-renew and forget to renew manually, your domain will simply expire — and someone else is free to register it the moment it does.
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="lecture" id="first-records">
+    <h2><span class="lecture-num">4</span>First Records &amp; Demo Infrastructure</h2>
+
+    <p>A record is just a mapping, but you can't practice DNS without something real to point it at. Creating a basic record uses the same handful of fields every time: give it a Record Name (like <code>test.example.com</code>), pick a Type (<code>A</code> is the usual starting point), enter a Value (the server's IP address), set a TTL, and choose a Routing Policy — <strong>Simple</strong> is the default choice for a single server.</p>
+
+    <p>To actually check what a domain resolves to, without opening a browser, you use a couple of small command-line tools:</p>
+    <ul>
+      <li><code>nslookup &lt;domain&gt;</code> — the standard lookup tool that comes with Windows.</li>
+      <li><code>dig &lt;domain&gt;</code> — a more detailed lookup tool on Mac and Linux, which also shows the TTL counting down.</li>
+    </ul>
+    <p>Neither comes pre-installed on Amazon Linux CloudShell — install it first:</p>
+    <p><code>sudo yum install -y bind-utils</code></p>
+
+    <h3>The demo setup used throughout this section</h3>
+    <p>To make every routing policy concrete, three EC2 servers were launched in three different AWS Regions, each running Amazon Linux 2 on a t2.micro instance with port 80 open, each serving a simple page announcing its own location:</p>
+    <ul>
+      <li>Server 1 — <strong>eu-central-1</strong> (Frankfurt)</li>
+      <li>Server 2 — <strong>us-east-1</strong> (N. Virginia)</li>
+      <li>Server 3 — <strong>ap-southeast-1</strong> (Singapore)</li>
+    </ul>
+    <p>An <strong>Application Load Balancer</strong> was also created in <code>eu-central-1</code>, pointed at the Frankfurt server.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>ALB</strong> (Application Load Balancer) is an AWS service that spreads incoming web traffic across multiple servers, and checks whether each one is healthy before sending it anything. Route 53 can point straight at one.
+    </div>
+
+    <div class="callout tip">
+      <strong>Worth remembering:</strong> typing an EC2 instance's raw public IP into a browser skips DNS completely. A DNS record only exists to give that IP address a friendlier, memorable name.
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="lecture" id="ttl">
+    <h2><span class="lecture-num">5</span>TTL (Time To Live)</h2>
+
+    <p>Change a server's IP address in Route 53, and some users still hit the old one for a while afterward. The reason is caching — resolvers don't ask Route 53 the same question for every single visitor. They remember the answer for a while first.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>TTL</strong> (Time To Live) tells browsers and DNS resolvers how many seconds they're allowed to remember, or "cache," an answer before they have to ask Route 53 again.
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 700 150" xmlns="http://www.w3.org/2000/svg">
+        <line x1="40" y1="75" x2="660" y2="75" stroke="#9ca3af" stroke-width="2"/>
+        <circle cx="80" cy="75" r="6" fill="#d97706"/>
+        <text x="80" y="55" text-anchor="middle" font-size="11" fill="#1f2937">Query #1 → hits Route 53</text>
+        <text x="80" y="100" text-anchor="middle" font-size="10" fill="#4b5563">answer cached locally</text>
+
+        <rect x="80" y="118" width="300" height="14" rx="7" fill="#fed7aa"/>
+        <text x="230" y="128" text-anchor="middle" font-size="9" fill="#7c2d12">cached for TTL duration (e.g. 300s)</text>
+
+        <circle cx="380" cy="75" r="6" fill="#9ca3af"/>
+        <text x="380" y="55" text-anchor="middle" font-size="11" fill="#1f2937">Repeat queries: served from cache</text>
+        <text x="380" y="95" text-anchor="middle" font-size="10" fill="#4b5563">(no hit to Route 53)</text>
+
+        <circle cx="640" cy="75" r="6" fill="#16a34a"/>
+        <text x="640" y="55" text-anchor="middle" font-size="11" fill="#1f2937">TTL expires</text>
+        <text x="640" y="100" text-anchor="middle" font-size="10" fill="#4b5563">next query asks Route 53 again</text>
+      </svg>
+      <div class="diagram-caption">While an answer is still cached, changes you make in Route 53 won't reach that client until the TTL window runs out.</div>
+    </div>
+
+    <table>
+      <tr><th>Setting</th><th>High TTL (e.g. 24 Hours)</th><th>Low TTL (e.g. 60 Seconds)</th></tr>
+      <tr><td>Query Traffic / Costs</td><td>Lower — resolvers cache answers longer, making fewer calls to Route 53.</td><td>Higher — resolvers query Route 53 frequently.</td></tr>
+      <tr><td>Change Propagation Speed</td><td>Slower — clients retain old cached IP addresses for up to 24 hours.</td><td>Faster — clients fetch updated IP addresses rapidly.</td></tr>
+    </table>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      TTL is a real lever engineering teams pull on purpose. Stable records — ones that almost never change — get a long TTL, often 24 hours or more, because that cuts down how often resolvers have to query Route 53, which lowers cost and load. Records tied to failover or an upcoming migration get a short TTL, sometimes as low as 60 seconds, specifically so that when something does change, users find out fast instead of hitting a dead server for hours.
+    </div>
+
+    <div class="callout tip">
+      <strong>Before a migration:</strong> lower the TTL ahead of time, wait out the old TTL window so old cached answers expire everywhere, then make the change. Clients pick up the new IP quickly, instead of some of them lagging behind by up to a full day.
+    </div>
+
+    <div class="callout warning">
+      <strong>Exception to remember:</strong> every record type needs a TTL you set yourself — except Alias records, which Route 53 manages automatically.
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="lecture" id="cname-alias">
+    <h2><span class="lecture-num">6</span>CNAME vs Alias</h2>
+
+    <p>You want your root domain — <code>example.com</code>, with no "www" — to point at a load balancer. A normal CNAME record can't do that. Both CNAME and Alias records map one domain name to another, but they behave very differently in ways AWS exams, and real production configs, care about a lot.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>CNAME</strong> record points a hostname at another hostname. The rule that trips people up: a CNAME record can never be placed at the <strong>apex</strong> — the bare root of a domain, like <code>example.com</code> with nothing in front of it.
+    </div>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Apex domain</strong> (also called the root domain, or "zone apex") is the domain with nothing in front of it — <code>example.com</code>, not <code>www.example.com</code>. DNS rules forbid putting a CNAME record there.
+    </div>
+
+    <p>That's exactly the gap <strong>Alias records</strong> exist to close.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Alias record</strong> is a Route 53-only record type that looks like an A or AAAA record, but points directly at an AWS resource instead of a plain IP address — and unlike CNAME, it's allowed at the domain apex.
+    </div>
+
+    <table>
+      <tr><th>Feature</th><th>CNAME Record</th><th>Alias Record</th></tr>
+      <tr><td>Target Destination</td><td>Any external domain hostname</td><td>Specific AWS resources only (ALB, CloudFront, S3 Website, etc.)</td></tr>
+      <tr><td>Apex / Root Domain Support? (e.g. <code>example.com</code>)</td><td>❌ No (Forbidden at zone apex)</td><td>✅ Yes (Supported at zone apex)</td></tr>
+      <tr><td>Pricing</td><td>Standard Route 53 query pricing</td><td><strong>Free of charge</strong> for AWS targets</td></tr>
+      <tr><td>TTL Management</td><td>Configured manually</td><td>Managed automatically by Route 53</td></tr>
+      <tr><td>Health Check Support</td><td>No native health checks</td><td>Native built-in health check awareness</td></tr>
+      <tr><td>Record Type</td><td><code>CNAME</code></td><td>Configured as <code>A</code> or <code>AAAA</code> type with Alias enabled</td></tr>
+    </table>
+
+    <div class="diagram">
+      <svg viewBox="0 0 700 190" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill="#4b5563"/>
+          </marker>
+        </defs>
+        <rect x="20" y="20" width="180" height="45" rx="8" fill="#fff7ed" stroke="#d97706"/>
+        <text x="110" y="47" text-anchor="middle" font-size="12">app.mydomain.com</text>
+        <line x1="200" y1="42" x2="290" y2="42" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arrow2)"/>
+        <text x="245" y="32" text-anchor="middle" font-size="10">CNAME</text>
+        <rect x="290" y="20" width="200" height="45" rx="8" fill="#f3f4f6" stroke="#9ca3af"/>
+        <text x="390" y="47" text-anchor="middle" font-size="12">blabla.anything.com</text>
+        <text x="20" y="90" font-size="11" fill="#dc2626">✕ can't use at mydomain.com (apex)</text>
+
+        <rect x="20" y="120" width="180" height="45" rx="8" fill="#fff7ed" stroke="#d97706"/>
+        <text x="110" y="147" text-anchor="middle" font-size="12">mydomain.com (apex)</text>
+        <line x1="200" y1="142" x2="290" y2="142" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arrow2)"/>
+        <text x="245" y="132" text-anchor="middle" font-size="10">Alias</text>
+        <rect x="290" y="120" width="200" height="45" rx="8" fill="#f0fdf4" stroke="#16a34a"/>
+        <text x="390" y="140" text-anchor="middle" font-size="11">ALB / CloudFront /</text>
+        <text x="390" y="155" text-anchor="middle" font-size="11">S3 website / API GW...</text>
+        <text x="20" y="188" font-size="11" fill="#16a34a">✓ works at the root domain, free, health-check aware</text>
+      </svg>
+      <div class="diagram-caption">Alias records solve the CNAME apex limitation by letting a root domain, like example.com, map directly to an AWS-managed resource.</div>
+    </div>
+
+    <h3>What Alias records are allowed to point at</h3>
+    <p>Alias records only work with a specific list of AWS-managed targets:</p>
+    <ul>
+      <li>Elastic Load Balancers (ALB, NLB, or the older Classic Load Balancer)</li>
+      <li>Amazon CloudFront Distributions</li>
+      <li>AWS API Gateway Endpoints</li>
+      <li>AWS Elastic Beanstalk environments</li>
+      <li>Amazon S3 Static Website Endpoints (not a raw S3 bucket name)</li>
+      <li>Amazon VPC Interface Endpoints</li>
+      <li>AWS Global Accelerator</li>
+      <li>Another Route 53 record in the same hosted zone</li>
+    </ul>
+
+    <div class="callout warning">
+      <strong>Exam trap:</strong> you cannot create an Alias record pointing straight at a raw EC2 instance's hostname. Alias records only target the AWS-managed service resources listed above.
+    </div>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      This is exactly why almost every production setup you'll see uses an Alias record, not a CNAME, to point a company's bare root domain at its load balancer or CloudFront distribution. It's also free for AWS targets, its TTL is managed for you, and it's aware of health checks — three more reasons teams default to it whenever the target supports it.
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="lecture" id="simple">
+    <h2><span class="lecture-num">7</span>Routing Policies &amp; Simple Routing</h2>
+
+    <p>Route 53 now knows which IP address belongs to your app. But what if you have three servers, on three continents — which one does it hand back? That decision is exactly what a <strong>Routing Policy</strong> controls.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Routing Policy</strong> is the rule Route 53 follows when a record could have more than one possible answer — it decides which IP (or which set of IPs) to hand back for a given query. Route 53 offers seven of them: Simple, Weighted, Latency-Based, Failover, Geolocation, Geoproximity, IP-Based, and Multi-Value Answer.
+    </div>
+
+    <div class="callout tip">
+      <strong>Worth remembering:</strong> Route 53 never actually touches your web traffic. It only answers DNS questions with an IP address. Once it hands that answer back, the client connects straight to that server itself — Route 53 is out of the conversation from that point on.
+    </div>
+
+    <h3>Simple Routing</h3>
+    <p>Simple routing is the plain, no-frills option: one record, pointing at one resource. If you list more than one IP value under a single Simple record, Route 53 just returns all of them, and the client itself picks one at random. Health checks aren't supported here at all — there's no logic to route around a failure.</p>
+  </section>
+
+  <!-- 8 -->
+  <section class="lecture" id="weighted">
+    <h2><span class="lecture-num">8</span>Routing Policy: Weighted</h2>
+
+    <p>You've built a new version of your app. You don't want to flip every user over to it at once — what if it's broken? Weighted routing splits traffic between multiple records using a percentage you set.</p>
+    <p>Route 53 works out that percentage with a simple formula: <code>Traffic % for Record A = Weight A ÷ (sum of all weights)</code>. The weights don't need to add up to 100 — Route 53 just does the division either way.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 700 170" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow3" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill="#4b5563"/>
+          </marker>
+        </defs>
+        <rect x="20" y="65" width="130" height="40" rx="8" fill="#fff7ed" stroke="#d97706"/>
+        <text x="85" y="90" text-anchor="middle" font-size="12">Route 53</text>
+
+        <rect x="400" y="10" width="180" height="40" rx="8" fill="#f0fdf4" stroke="#16a34a"/>
+        <text x="490" y="34" text-anchor="middle" font-size="12">us-east-1 — weight 70</text>
+        <rect x="400" y="65" width="180" height="40" rx="8" fill="#fff7ed" stroke="#d97706"/>
+        <text x="490" y="89" text-anchor="middle" font-size="12">eu-central-1 — weight 20</text>
+        <rect x="400" y="120" width="180" height="40" rx="8" fill="#fef2f2" stroke="#dc2626"/>
+        <text x="490" y="144" text-anchor="middle" font-size="12">ap-southeast-1 — weight 10</text>
+
+        <line x1="150" y1="85" x2="400" y2="30" stroke="#4b5563" stroke-width="3" marker-end="url(#arrow3)"/>
+        <line x1="150" y1="85" x2="400" y2="85" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arrow3)"/>
+        <line x1="150" y1="85" x2="400" y2="140" stroke="#4b5563" stroke-width="1" marker-end="url(#arrow3)"/>
+      </svg>
+      <div class="diagram-caption">Relative weights split DNS answers: 70% to us-east-1, 20% to eu-central-1, 10% to ap-southeast-1.</div>
+    </div>
+
+    <h3>What it's actually used for</h3>
+    <ul>
+      <li>Spreading load across regional data centers.</li>
+      <li><strong>Canary testing</strong> — sending a small slice of traffic, like 1%, to a brand-new version while 99% keeps hitting the stable one.</li>
+      <li>Setting a record's weight to <code>0</code> stops all traffic to it, without deleting the record.</li>
+    </ul>
+
+    <div class="callout warning">
+      <strong>Rule to remember:</strong> every record inside the same weighted set must share the exact same name and the exact same record type.
+    </div>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Weighted routing is the standard mechanism behind canary releases — the common industry practice of rolling a new version out to a tiny slice of real users first, watching for errors, then gradually raising the percentage if nothing breaks. It turns a risky "flip the switch for everyone" deploy into a slow, reversible ramp.
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section class="lecture" id="latency">
+    <h2><span class="lecture-num">9</span>Routing Policy: Latency-Based</h2>
+
+    <p>A user in Mumbai and a user in Virginia both type the same address. Should they both land on the same server? Latency-based routing says no — send each user to whichever Region actually responds fastest for them, right now. Route 53 constantly measures real network latency between AWS Regions and the wider internet, and uses that live data to decide.</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Global companies with servers running in multiple Regions commonly rely on latency-based routing for exactly this reason: a user in India gets routed to a server in Mumbai instead of one in Virginia, which can meaningfully cut page-load time. It's not about which server is closest on a map — it's about which one actually answers fastest for that specific user, which usually, but not always, turns out to be the same thing.
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section class="lecture" id="health-checks">
+    <h2><span class="lecture-num">10</span>Health Checks</h2>
+
+    <p>Weighted and latency routing both quietly assume every server is actually up. What if one of them isn't? That's where a <strong>Health Check</strong> comes in — Route 53 continuously testing a server on your behalf, so it can stop sending traffic to one that's actually broken.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Health Check</strong> is an automated, repeated test Route 53 runs against your server. If it starts failing, Route 53 can automatically stop routing traffic to it.
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 700 180" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow4" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill="#4b5563"/>
+          </marker>
+        </defs>
+        <circle cx="80" cy="40" r="18" fill="#f5f3ff" stroke="#7c3aed"/>
+        <circle cx="130" cy="60" r="18" fill="#f5f3ff" stroke="#7c3aed"/>
+        <circle cx="80" cy="90" r="18" fill="#f5f3ff" stroke="#7c3aed"/>
+        <circle cx="130" cy="120" r="18" fill="#f5f3ff" stroke="#7c3aed"/>
+        <text x="105" y="150" text-anchor="middle" font-size="11" fill="#4b5563">~15 global health checkers</text>
+
+        <line x1="150" y1="80" x2="330" y2="80" stroke="#4b5563" stroke-width="1.5" marker-end="url(#arrow4)"/>
+        <text x="240" y="70" text-anchor="middle" font-size="10">HTTP/HTTPS/TCP request</text>
+
+        <rect x="330" y="55" width="160" height="50" rx="8" fill="#fff7ed" stroke="#d97706"/>
+        <text x="410" y="85" text-anchor="middle" font-size="12">Your endpoint</text>
+
+        <text x="560" y="45" text-anchor="middle" font-size="11" fill="#16a34a">2xx / 3xx → healthy</text>
+        <text x="560" y="65" text-anchor="middle" font-size="11" fill="#dc2626">else → unhealthy</text>
+        <text x="410" y="140" text-anchor="middle" font-size="11" fill="#1f2937">Rule: if &gt;18% of checkers say "healthy" → Route 53 marks it healthy</text>
+      </svg>
+      <div class="diagram-caption">About 15 global health checkers test your endpoint on a schedule, watching for HTTP 2xx/3xx response codes.</div>
+    </div>
+
+    <h3>The knobs you can turn</h3>
+    <ul>
+      <li><strong>Check interval</strong> — every 30 seconds by default, or every 10 seconds ("Fast") for an extra cost.</li>
+      <li><strong>Supported protocols</strong> — HTTP, HTTPS, or plain TCP.</li>
+      <li><strong>Failure threshold</strong> — how many checks in a row have to fail before Route 53 calls it unhealthy (3, by default).</li>
+      <li><strong>Healthy response codes</strong> — HTTP <code>2xx</code> and <code>3xx</code> status codes count as healthy; anything else doesn't.</li>
+    </ul>
+
+    <div class="callout warning">
+      <strong>Easy-to-miss rule:</strong> Route 53's health checkers run on the public internet. Your security groups and firewalls have to explicitly allow traffic in from Route 53's published health-checker IP ranges, or every check will just look like a failure.
+    </div>
+
+    <h3>Three kinds of health check</h3>
+    <table>
+      <tr><th>Health Check Type</th><th>Monitored Target</th></tr>
+      <tr><td>Endpoint Health Check</td><td>Monitors a public IP or hostname directly over HTTP, HTTPS, or TCP.</td></tr>
+      <tr><td>Calculated Health Check</td><td>Combines multiple child health checks using AND/OR/NOT logic (up to 256 children). Useful for maintenance windows.</td></tr>
+      <tr><td>CloudWatch Alarm Health Check</td><td>Monitors a CloudWatch alarm. The primary way to health-check <strong>private VPC resources</strong> that public checkers can't reach.</td></tr>
+    </table>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Public health checkers can't reach anything living inside a private VPC — there's no public IP to test. So the standard workaround is a <strong>CloudWatch Alarm health check</strong> instead: something inside the VPC reports its own status into CloudWatch, and Route 53 watches that alarm rather than trying to reach the resource directly.
+    </div>
+  </section>
+
+  <!-- 11 -->
+  <section class="lecture" id="failover">
+    <h2><span class="lecture-num">11</span>Routing Policy: Failover</h2>
+
+    <p>Your primary Region goes down at 3am. Does someone have to wake up and manually redirect traffic — or can that happen automatically? It can happen automatically, and this is exactly what Failover routing is built for: an Active/Passive setup with one <strong>Primary</strong> resource doing all the real work, and one <strong>Secondary</strong> sitting on standby.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 700 170" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow5" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill="#4b5563"/>
+          </marker>
+        </defs>
+        <rect x="20" y="65" width="140" height="40" rx="8" fill="#fff7ed" stroke="#d97706"/>
+        <text x="90" y="90" text-anchor="middle" font-size="12">Route 53</text>
+
+        <rect x="400" y="10" width="220" height="45" rx="8" fill="#f0fdf4" stroke="#16a34a"/>
+        <text x="510" y="30" text-anchor="middle" font-size="12">Primary (healthy)</text>
+        <text x="510" y="45" text-anchor="middle" font-size="10" fill="#4b5563">has mandatory health check</text>
+
+        <rect x="400" y="115" width="220" height="45" rx="8" fill="#f3f4f6" stroke="#9ca3af"/>
+        <text x="510" y="135" text-anchor="middle" font-size="12">Secondary (standby)</text>
+        <text x="510" y="150" text-anchor="middle" font-size="10" fill="#4b5563">used only if primary fails</text>
+
+        <line x1="160" y1="85" x2="400" y2="33" stroke="#16a34a" stroke-width="2.5" marker-end="url(#arrow5)"/>
+        <line x1="160" y1="85" x2="400" y2="137" stroke="#9ca3af" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow5)"/>
+        <text x="280" y="60" font-size="10" fill="#16a34a">normal traffic</text>
+        <text x="280" y="150" font-size="10" fill="#4b5563">only if primary unhealthy</text>
+      </svg>
+      <div class="diagram-caption">A mandatory health check watches the Primary. If it fails, Route 53 automatically starts answering with the Secondary instead.</div>
+    </div>
+
+    <div class="callout warning">
+      <strong>Exam rule:</strong> a Failover set supports exactly one Primary and one Secondary record — no more. A health check on the Primary is mandatory, not optional.
+    </div>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      This is the standard, well-documented mechanism behind a lot of real disaster-recovery setups: Route 53 health checks watch the primary Region, and the moment it looks unhealthy, traffic automatically starts flowing to a backup Region instead — with no human needing to react in the middle of the night. Pairing it with a low TTL on the record (see Section 5) is what makes that failover actually fast for real users, instead of technically working but taking hours to show up.
+    </div>
+  </section>
+
+  <!-- 12 -->
+  <section class="lecture" id="geolocation">
+    <h2><span class="lecture-num">12</span>Routing Policy: Geolocation</h2>
+
+    <p>What if the rule isn't "fastest server" but "this content is only licensed for this country"? Geolocation routing answers DNS queries based on where the user actually is — by continent, by country, or even by US state. It's easy to confuse with Latency routing, but they solve different problems: Latency picks the fastest server; Geolocation picks strictly by the user's real-world location, even if a faster server exists elsewhere.</p>
+
+    <ul>
+      <li>Always create a <strong>Default Record</strong> to catch any user whose location doesn't match one of your specific rules.</li>
+      <li>Common uses: serving a page in the right local language, respecting content licensing that only allows certain countries, or splitting load by geography.</li>
+    </ul>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Media and streaming platforms are the most visible example of this pattern in the wild — many restrict certain shows or movies to specific countries for licensing reasons, and geolocation-style routing is one of the tools behind enforcing that at the DNS level, alongside other checks further up the stack.
+    </div>
+  </section>
+
+  <!-- 13 -->
+  <section class="lecture" id="geoproximity">
+    <h2><span class="lecture-num">13</span>Routing Policy: Geoproximity</h2>
+
+    <p>What if two Regions could both serve a location, and you want to shift the boundary between them without physically moving anything? Geoproximity routing sends users to the resource that's geographically closest to them, but with a twist: you can nudge the boundary between two regions using a <strong>Bias</strong> value, without touching any actual infrastructure.</p>
+
+    <ul>
+      <li><strong>Positive bias (+)</strong> — makes a Region's coverage area bigger, pulling in more traffic.</li>
+      <li><strong>Negative bias (-)</strong> — makes a Region's coverage area smaller, pushing traffic away.</li>
+      <li>Setting this up requires the <strong>Route 53 Traffic Flow</strong> policy editor — it's not available on the plain record-creation screen.</li>
+    </ul>
+
+    <div class="diagram">
+      <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+        <text x="175" y="20" text-anchor="middle" font-size="12" font-weight="bold">Bias = 0 (both regions)</text>
+        <rect x="20" y="35" width="150" height="80" fill="#fff7ed" stroke="#d97706"/>
+        <text x="95" y="80" text-anchor="middle" font-size="11">us-west-1</text>
+        <rect x="170" y="35" width="150" height="80" fill="#f0fdf4" stroke="#16a34a"/>
+        <text x="245" y="80" text-anchor="middle" font-size="11">us-east-1</text>
+        <line x1="170" y1="35" x2="170" y2="115" stroke="#1f2937" stroke-width="2" stroke-dasharray="3,3"/>
+        <text x="175" y="135" text-anchor="middle" font-size="10" fill="#4b5563">even split down the middle</text>
+
+        <text x="525" y="20" text-anchor="middle" font-size="12" font-weight="bold">us-east-1 bias = +50</text>
+        <rect x="400" y="35" width="90" height="80" fill="#fff7ed" stroke="#d97706"/>
+        <text x="445" y="80" text-anchor="middle" font-size="11">us-west-1</text>
+        <rect x="490" y="35" width="210" height="80" fill="#f0fdf4" stroke="#16a34a"/>
+        <text x="595" y="80" text-anchor="middle" font-size="11">us-east-1</text>
+        <line x1="490" y1="35" x2="490" y2="115" stroke="#1f2937" stroke-width="2" stroke-dasharray="3,3"/>
+        <text x="550" y="135" text-anchor="middle" font-size="10" fill="#4b5563">dividing line shifts left —</text>
+        <text x="550" y="150" text-anchor="middle" font-size="10" fill="#4b5563">us-east-1 now covers more ground</text>
+      </svg>
+      <div class="diagram-caption">Adjusting positive bias expands a region's geographic coverage zone, shifting user traffic toward it.</div>
+    </div>
+
+    <p>This policy is reached for far less often than Weighted or Latency routing, but it's the right tool when you specifically need to reshape geographic coverage boundaries rather than just split traffic evenly.</p>
+  </section>
+
+  <!-- 14 -->
+  <section class="lecture" id="ip-based">
+    <h2><span class="lecture-num">14</span>Routing Policy: IP-Based</h2>
+
+    <p>IP-Based routing looks at the actual IP range — the <strong>CIDR block</strong> — that a query is coming from, and routes based on that.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>CIDR</strong> block is a compact way of writing an entire range of IP addresses at once, like <code>203.0.113.0/24</code>, instead of listing every individual address.
+    </div>
+
+    <p>This makes it possible to route a specific ISP's users, or an entire corporate office's network, to a particular endpoint on purpose — useful when you know in advance exactly which network ranges certain users are coming from.</p>
+  </section>
+
+  <!-- 15 -->
+  <section class="lecture" id="multivalue">
+    <h2><span class="lecture-num">15</span>Routing Policy: Multi-Value Answer</h2>
+
+    <p>Multi-Value Answer routing returns up to <strong>8 healthy records</strong> for a single query, which gives the client a basic form of load balancing without needing a load balancer resource at all. Unlike Simple routing, it's fully aware of health checks — any unhealthy record gets filtered out of the list automatically before it's ever handed to a client.</p>
+  </section>
+
+  <!-- 16 -->
+  <section class="lecture" id="third-party">
+    <h2><span class="lecture-num">16</span>3rd Party Domains &amp; Route 53</h2>
+
+    <p>What if you already bought your domain somewhere else, years ago — do you have to move it to switch to Route 53? No. Buying a domain (the registrar's job) and managing its DNS records (the DNS host's job) are actually two separate roles, and nothing forces them to be the same company.</p>
+
+    <h3>Configuration steps</h3>
+    <ol>
+      <li>Create a <strong>Public Hosted Zone</strong> in Route 53 for your domain.</li>
+      <li>Copy the four Name Server (NS) addresses Route 53 assigns to that zone.</li>
+      <li>Log into your original registrar (GoDaddy, Namecheap, wherever you bought it) and replace its default name servers with those four Route 53 addresses.</li>
+    </ol>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      This exact pattern — a domain purchased years earlier through a general-purpose registrar, with its DNS delegated over to Route 53 — is common. Teams do it specifically to get access to Route 53's routing policies, health checks, and Alias records, without having to actually transfer ownership of the domain itself.
+    </div>
+  </section>
+
+  <hr class="section-break">
+
+  <!-- Final Summary -->
+  <section class="lecture" id="cheatsheet">
+    <h2>📋 Cheat Sheet</h2>
+
+    <div class="summary-box">
+      <h3>Core Building Blocks</h3>
+      <table>
+        <tr><th>Concept</th><th>Plain-English meaning</th></tr>
+        <tr><td>DNS</td><td>Translates human domain names into IP addresses, recursively: Root → TLD → Authoritative Name Servers.</td></tr>
+        <tr><td>Hosted Zone</td><td>Container of DNS records for one domain. Public = internet-wide. Private = only inside your VPC.</td></tr>
+        <tr><td>Record</td><td>One mapping entry: Domain Name + Type + Value + Routing Policy + TTL.</td></tr>
+        <tr><td>Alias Record</td><td>Free, apex-supported record that targets AWS resources directly (ALB, CloudFront, S3 website, etc.).</td></tr>
+        <tr><td>TTL</td><td>How long resolvers may cache an answer before asking Route 53 again.</td></tr>
+        <tr><td>Health Check</td><td>Automated repeated test of an endpoint that other routing policies can react to.</td></tr>
+      </table>
+    </div>
+
+    <div class="summary-box">
+      <h3>Routing Policy Decision Matrix</h3>
+      <table>
+        <tr><th>Policy</th><th>Best Used For...</th><th>Health Checks?</th></tr>
+        <tr><td>Simple</td><td>Single target, or a simple random pick across multiple IPs</td><td>No</td></tr>
+        <tr><td>Weighted</td><td>Percentage-based traffic split &amp; canary testing</td><td>Yes</td></tr>
+        <tr><td>Latency-based</td><td>Sending users to the fastest-responding AWS Region</td><td>Yes</td></tr>
+        <tr><td>Failover</td><td>Active/Passive disaster recovery</td><td>Yes (mandatory on Primary)</td></tr>
+        <tr><td>Geolocation</td><td>Routing by user geographic location (continent, country, state)</td><td>Yes</td></tr>
+        <tr><td>Geoproximity</td><td>Shifting regional coverage boundaries with a Bias value</td><td>Via Traffic Flow</td></tr>
+        <tr><td>IP-based</td><td>Routing based on client IP CIDR ranges (ISPs, networks)</td><td>N/A</td></tr>
+        <tr><td>Multi-Value Answer</td><td>Up to 8 healthy records for basic client-side balancing</td><td>Yes</td></tr>
+      </table>
+    </div>
+
+    <div class="summary-box">
+      <h3>Key Facts Worth Remembering</h3>
+      <ul>
+        <li>Route 53 is <strong>authoritative</strong> DNS, a domain registrar, and a health-checking service — with the only 100% Availability SLA in AWS.</li>
+        <li>Hosted zones cost <code>$0.50/month</code>; domain registration starts around <code>$12/year</code>.</li>
+        <li><code>A</code> = IPv4, <code>AAAA</code> = IPv6, <code>CNAME</code> = hostname-to-hostname (non-apex only), <code>NS</code> = name servers.</li>
+        <li>CNAME can't sit at the apex. Alias records can — and they're free, auto-TTL, and health-check aware for AWS targets. They still can't point at a raw EC2 hostname.</li>
+        <li>High TTL = fewer Route 53 queries, slower propagation. Low TTL = faster propagation, more queries — use it before a migration or for failover records.</li>
+        <li>Health checks: about 15 global checkers, &gt;18% healthy required to pass, HTTP 2xx/3xx counts as healthy. Use a CloudWatch Alarm health check for private VPC resources.</li>
+        <li>Failover needs exactly one Primary and one Secondary, and the Primary's health check is mandatory.</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>The One-Paragraph Version</h3>
+      <p>DNS turns domain names into IP addresses through a recursive chain of servers, and Route 53 is AWS's own authoritative version of that system, storing your records inside hosted zones. Every record needs a Type, a Value, a Routing Policy, and a TTL — except Alias records, which manage their own TTL and can sit at the apex where a CNAME never can. Routing policies decide which answer Route 53 gives back when more than one is possible: Simple for one target, Weighted for percentage splits and canary tests, Latency for the fastest Region, Failover for disaster recovery, Geolocation and Geoproximity for geography, IP-Based for known client ranges, and Multi-Value for a handful of healthy answers at once. Health checks are the thread tying most of these together — they're what let Route 53 notice a server is down and route around it automatically.</p>
+    </div>
+  </section>
+
+  <div class="top-link"><a href="#top">↑ Back to top</a></div>
+
+</div>
+
+<script>
+(function () {
+  if (document.querySelector('.tips-trigger')) return;
+
+  const glossary = [
+    ['ALB', 'Application Load Balancer — spreads incoming web traffic across multiple servers and checks their health.'],
+    ['alias record', 'Route 53-only record that points directly at an AWS resource. Free, apex-supported, auto-TTL, health-check aware.'],
+    ['apex domain', 'The bare root of a domain, like example.com with nothing in front of it. CNAME records cannot be placed here.'],
+    ['canary', 'Releasing a new version to a small slice of traffic first, then increasing it if nothing breaks.'],
+    ['CIDR', 'A compact way of writing a whole range of IP addresses at once, like 203.0.113.0/24.'],
+    ['CNAME', 'A DNS record that points one hostname at another hostname. Not allowed at the domain apex.'],
+    ['DNS', 'Domain Name System — translates human-friendly domain names into IP addresses.'],
+    ['domain registrar', 'An accredited company where you purchase and register domain names, like Route 53 or GoDaddy.'],
+    ['failover', 'Routing policy with one Primary and one Secondary resource, for active/passive disaster recovery.'],
+    ['geolocation', 'Routing policy that answers DNS queries based on the user’s real-world location.'],
+    ['geoproximity', 'Routing policy that routes by geographic distance, adjustable with a bias value.'],
+    ['health check', 'An automated, repeated test Route 53 runs against an endpoint to decide if it should keep receiving traffic.'],
+    ['hosted zone', 'Route 53 container that holds all the DNS records for one domain. Public or private.'],
+    ['multi-value answer', 'Routing policy that returns up to 8 healthy records per query for basic client-side load balancing.'],
+    ['NS record', 'DNS record type listing the authoritative name servers for a domain.'],
+    ['Region', 'A geographic AWS area containing multiple data centers, such as us-east-1.'],
+    ['routing policy', 'The rule Route 53 uses to decide which answer to give back when a record has more than one possible target.'],
+    ['SLA', 'Service Level Agreement — a formal promise about how reliable a service will be.'],
+    ['SOA', 'Start of Authority record — the technical record describing a DNS zone itself.'],
+    ['TTL', 'Time To Live — how long a DNS answer may be cached before asking again.'],
+    ['VPC', 'Virtual Private Cloud — your own isolated network inside AWS.'],
+    ['weighted', 'Routing policy that splits traffic across records using relative percentage weights.'],
+    ['WHOIS', 'A public lookup showing who registered a given domain, unless Privacy Protection hides it.']
+  ];
+
+  const pageText = document.body.innerText.replace(/\s+/g, ' ');
+  const found = glossary.filter(([term]) => new RegExp('(^|[^A-Za-z0-9])' + escapeRegExp(term) + '([^A-Za-z0-9]|$)', 'i').test(pageText));
+  if (!found.length) return;
+
+  const button = document.createElement('button');
+  button.className = 'tips-trigger';
+  button.type = 'button';
+  button.setAttribute('aria-haspopup', 'dialog');
+  button.setAttribute('aria-expanded', 'false');
+  button.innerHTML = '<span class="tips-icon" aria-hidden="true">💡</span><span>Glossary</span>';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'tips-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'tips-title');
+  overlay.innerHTML = [
+    '<div class="tips-panel">',
+    '<div class="tips-header">',
+    '<h2 id="tips-title">💡 Every term on this page</h2>',
+    '<button class="tips-close" type="button" aria-label="Close glossary">Close</button>',
+    '</div>',
+    '<div class="tips-body">',
+    '<p class="tips-intro">A quick lookup if you lost the thread anywhere on this page.</p>',
+    '<ul class="tips-list">' + found.map(([term, tip]) => '<li><strong>' + escapeHtml(term) + '</strong>' + escapeHtml(tip) + '</li>').join('') + '</ul>',
+    '</div>',
+    '</div>'
+  ].join('');
+
+  document.body.appendChild(button);
+  document.body.appendChild(overlay);
+
+  const closeButton = overlay.querySelector('.tips-close');
+  function openTips() {
+    overlay.classList.add('open');
+    button.setAttribute('aria-expanded', 'true');
+    closeButton.focus();
+  }
+  function closeTips() {
+    overlay.classList.remove('open');
+    button.setAttribute('aria-expanded', 'false');
+    button.focus();
+  }
+
+  button.addEventListener('click', openTips);
+  closeButton.addEventListener('click', closeTips);
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) closeTips();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && overlay.classList.contains('open')) closeTips();
+  });
+
+  function escapeRegExp(value) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
+  }
+}());
+</script>
+
+<!-- Dark Theme Toggle Button -->
+<button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme" title="Toggle Light/Dark Theme">
+  <span class="theme-toggle-icon">🌙</span>
+  <span class="theme-toggle-text">Dark</span>
+</button>
+
+<script id="dark-theme-script">
+(function() {
+  function setupThemeToggle() {
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+
+    function syncUI() {
+      var isDark = document.documentElement.classList.contains('dark-mode') || document.body.classList.contains('dark-mode');
+      var icon = btn.querySelector('.theme-toggle-icon');
+      var text = btn.querySelector('.theme-toggle-text');
+      if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+      if (text) text.textContent = isDark ? 'Light' : 'Dark';
+    }
+
+    if (document.documentElement.classList.contains('dark-mode')) {
+      document.body.classList.add('dark-mode');
+    }
+    syncUI();
+
+    btn.addEventListener('click', function() {
+      var isDark = document.documentElement.classList.toggle('dark-mode');
+      document.body.classList.toggle('dark-mode', isDark);
+      localStorage.setItem('aws-notes-theme', isDark ? 'dark' : 'light');
+      syncUI();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupThemeToggle);
+  } else {
+    setupThemeToggle();
+  }
+})();
+</script>
+</body>
+</html>

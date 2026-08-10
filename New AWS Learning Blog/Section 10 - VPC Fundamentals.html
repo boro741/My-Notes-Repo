@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script id="dark-theme-init">
+(function() {
+  var saved = localStorage.getItem('aws-notes-theme');
+  if (saved === 'dark' || (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark-mode');
+  }
+})();
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 10 — VPC Fundamentals (Blog Edition)</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --card: #f9fafb;
+    --accent: #d97706;
+    --accent-dark: #b45309;
+    --blue: #2563eb;
+    --green: #059669;
+    --purple: #7c3aed;
+    --red: #dc2626;
+    --code-bg: #f3f4f6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+  }
+  header.page-header {
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  header.page-header h1 {
+    margin: 0 0 6px 0;
+    font-size: 28px;
+    color: var(--accent-dark);
+  }
+  header.page-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14.5px;
+  }
+
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+  }
+  nav.toc h2 {
+    margin-top: 0;
+    font-size: 16px;
+    color: var(--accent-dark);
+  }
+  nav.toc ol {
+    margin: 0;
+    padding-left: 20px;
+    columns: 2;
+  }
+  nav.toc li { margin-bottom: 6px; font-size: 14px; }
+  nav.toc a { color: var(--blue); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  section.lecture {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 26px;
+    margin-bottom: 26px;
+    background: #fff;
+    scroll-margin-top: 16px;
+  }
+  section.lecture h2 {
+    margin-top: 0;
+    font-size: 20px;
+    color: #111827;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 8px;
+  }
+  .lecture-num {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 2px 8px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  h3 { color: var(--accent-dark); font-size: 16.5px; margin-bottom: 8px; margin-top: 26px; }
+
+  p { margin: 0 0 14px; }
+
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: #fffbeb;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 15px;
+  }
+  .callout.tip { border-left-color: var(--green); background: #ecfdf5; }
+  .callout.warning { border-left-color: var(--red); background: #fef2f2; }
+  .callout.define { border-left-color: var(--blue); background: #eff6ff; }
+  .callout.production { border-left-color: var(--purple); background: #f5f3ff; }
+  .callout strong { color: inherit; }
+  .callout-label {
+    display: block;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    margin-bottom: 4px;
+    opacity: 0.75;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th { background: var(--card); color: var(--accent-dark); }
+  tr:nth-child(even) td { background: #fcfcfd; }
+
+  code {
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 16px 0;
+  }
+  pre code { background: none; padding: 0; }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  .diagram {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 18px 0;
+    text-align: center;
+    overflow-x: auto;
+  }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram-caption { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  .top-link { font-size: 12px; text-align: right; }
+  .top-link a { color: var(--muted); text-decoration: none; }
+  .top-link a:hover { text-decoration: underline; }
+
+  hr.section-break { border: none; border-top: 2px dashed var(--border); margin: 36px 0; }
+
+  .summary-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 14px;
+  }
+  .summary-box h3 { color: var(--green); margin-top: 0; }
+
+  @media (max-width: 1024px) {
+    .container { padding-left: 20px; padding-right: 20px; }
+    nav.toc ol { columns: 2; }
+  }
+  @media (max-width: 860px) {
+    .container { padding: 20px 18px 60px; }
+    header.page-header h1 { font-size: 22px; }
+    nav.toc ol { columns: 1; }
+    section.lecture { padding: 18px 20px; }
+    table { font-size: 13px; }
+    th, td { padding: 7px 9px; }
+  }
+  @media (max-width: 480px) {
+    .container { padding: 16px 14px 50px; }
+    header.page-header h1 { font-size: 19px; line-height: 1.3; }
+    header.page-header p { font-size: 13px; }
+    nav.toc { padding: 14px 16px; border-radius: 10px; }
+    nav.toc ol { columns: 1; padding-left: 16px; }
+    nav.toc li { font-size: 14px; margin-bottom: 8px; }
+    section.lecture { padding: 16px 16px; border-radius: 10px; margin-bottom: 16px; }
+    section.lecture h2 { font-size: 17px; line-height: 1.3; }
+    h3 { font-size: 15px; }
+    table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; font-size: 13px; white-space: nowrap; }
+    th, td { padding: 7px 10px; }
+    code { font-size: 12.5px; word-break: break-all; }
+    ul, ol { padding-left: 18px; }
+    li { font-size: 14.5px; margin-bottom: 8px; }
+    .callout, .summary-box { padding: 10px 13px; font-size: 14px; }
+    .top-link { font-size: 13px; }
+  }
+  @media (max-width: 360px) {
+    .container { padding: 12px 12px 40px; }
+    section.lecture h2 { font-size: 16px; }
+  }
+
+  /* Tips popup for assumed AWS terms and prerequisite concepts */
+  .tips-trigger {
+    position: fixed; right: 18px; bottom: 18px; z-index: 999;
+    display: inline-flex; align-items: center; gap: 8px;
+    min-height: 44px; padding: 10px 14px;
+    border: 1px solid #f59e0b; border-radius: 999px;
+    background: #fffbeb; color: #92400e;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+    cursor: pointer; font: inherit; font-weight: 700;
+  }
+  .tips-trigger:hover { background: #fef3c7; }
+  .tips-trigger .tips-icon { font-size: 1.2rem; line-height: 1; }
+  .tips-overlay {
+    position: fixed; inset: 0; z-index: 1000; display: none;
+    align-items: center; justify-content: center; padding: 18px;
+    background: rgba(17, 24, 39, 0.46);
+  }
+  .tips-overlay.open { display: flex; }
+  .tips-panel {
+    width: min(760px, 100%); max-height: min(76vh, 720px); overflow: auto;
+    background: #ffffff; color: var(--text, #1f2937);
+    border: 1px solid #fcd34d; border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  }
+  .tips-header {
+    position: sticky; top: 0; display: flex; align-items: center;
+    justify-content: space-between; gap: 12px; padding: 16px 18px;
+    background: #fffbeb; border-bottom: 1px solid #fde68a;
+  }
+  .tips-header h2 { margin: 0; color: #92400e; font-size: 1.1rem; }
+  .tips-close {
+    border: 1px solid #f59e0b; border-radius: 8px; background: #ffffff;
+    color: #92400e; cursor: pointer; font: inherit; font-weight: 700;
+    line-height: 1; padding: 7px 10px;
+  }
+  .tips-body { padding: 16px 18px 18px; }
+  .tips-intro { margin: 0 0 12px; color: var(--muted, #6b7280); font-size: 0.95rem; }
+  .tips-list {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px; margin: 0; padding: 0; list-style: none;
+  }
+  .tips-list li { margin: 0; padding: 10px 12px; border: 1px solid #fde68a; border-radius: 8px; background: #fffdf5; }
+  .tips-list strong { display: block; margin-bottom: 3px; color: #92400e; }
+  @media (max-width: 480px) {
+    .tips-trigger { right: 12px; bottom: 12px; padding: 10px 12px; }
+    .tips-trigger span:not(.tips-icon) { display: none; }
+    .tips-overlay { padding: 10px; }
+    .tips-panel { max-height: 82vh; }
+    .tips-list { grid-template-columns: 1fr; }
+  }
+</style>
+<style id="dark-theme-styles">
+  html.dark-mode, body.dark-mode {
+    --bg: #181926; --card-bg: #222436; --card: #222436; --border: #33384f;
+    --text: #c0caf5; --text-muted: #94a3b8; --muted: #94a3b8; --code-bg: #13141f;
+    --accent: #f59e0b; --accent-dark: #fbbf24; --green: #34d399; --red: #f87171;
+    --purple: #c084fc; --blue: #60a5fa;
+    background-color: #181926 !important; color: #c0caf5 !important;
+  }
+  body.dark-mode { background-color: #181926 !important; color: #c0caf5 !important; }
+  body.dark-mode header.page-header h1 { color: #fbbf24 !important; }
+  body.dark-mode header.page-header p { color: #94a3b8 !important; }
+  body.dark-mode h2, body.dark-mode h3 { color: #f59e0b !important; }
+  body.dark-mode a { color: #60a5fa; }
+  body.dark-mode nav.toc { background: #1f2335 !important; border-color: #33384f !important; }
+  body.dark-mode nav.toc h2 { color: #fbbf24 !important; }
+  body.dark-mode nav.toc a { color: #60a5fa !important; }
+  body.dark-mode section.lecture { background: #222436 !important; border-color: #33384f !important; color: #c0caf5 !important; }
+  body.dark-mode section.lecture h2 { color: #e2e8f0 !important; border-bottom-color: #33384f !important; }
+  body.dark-mode table { border-color: #33384f !important; }
+  body.dark-mode th, body.dark-mode td { border-color: #33384f !important; }
+  body.dark-mode th { background: #1f2335 !important; color: #fbbf24 !important; }
+  body.dark-mode td { color: #cbd5e1 !important; }
+  body.dark-mode tr:nth-child(even) td { background: #1a1d2d !important; }
+  body.dark-mode code { background: #13141f !important; color: #e2e8f0 !important; border: 1px solid #2e324a !important; }
+  body.dark-mode pre { background: #13141f !important; color: #e2e8f0 !important; border-color: #2e324a !important; }
+  body.dark-mode .callout { background: #25231c !important; border-left-color: #f59e0b !important; color: #fef3c7 !important; }
+  body.dark-mode .callout.tip { background: #142921 !important; border-left-color: #34d399 !important; color: #d1fae5 !important; }
+  body.dark-mode .callout.warning { background: #2f1b1e !important; border-left-color: #f87171 !important; color: #fee2e2 !important; }
+  body.dark-mode .callout.define { background: #1d2038 !important; border-left-color: #60a5fa !important; color: #dbeafe !important; }
+  body.dark-mode .callout.production { background: #221c35 !important; border-left-color: #c084fc !important; color: #ede9fe !important; }
+  body.dark-mode .summary-box { background: #142921 !important; border-color: #059669 !important; color: #d1fae5 !important; }
+  body.dark-mode .summary-box h3 { color: #34d399 !important; }
+  body.dark-mode .diagram { background: #ffffff !important; border: 1px solid #cbd5e1 !important; border-radius: 12px !important; padding: 16px !important; box-shadow: 0 4px 14px rgba(0,0,0,0.3) !important; }
+  body.dark-mode .diagram-caption { color: #475569 !important; font-weight: 500 !important; }
+  .theme-toggle-btn {
+    position: fixed; top: 16px; right: 20px; z-index: 10000;
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;
+    border-radius: 20px; background: #ffffff; color: #1f2937; border: 1px solid #cbd5e1;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.25s ease; user-select: none;
+  }
+  .theme-toggle-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
+  body.dark-mode .theme-toggle-btn { background: #24273a !important; color: #e2e8f0 !important; border-color: #363a4f !important; box-shadow: 0 2px 10px rgba(0,0,0,0.4) !important; }
+  @media (max-width: 480px) {
+    .theme-toggle-btn { top: 12px; right: 12px; padding: 6px 10px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="container" id="top">
+
+  <header class="page-header">
+    <h1>Section 10 — VPC Fundamentals</h1>
+    <p>How real companies design their AWS network so the right servers are reachable — and the wrong ones never are. Plain English, real production reasoning, and every new term explained the moment it shows up.</p>
+  </header>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#l107">107. Section Introduction</a></li>
+      <li><a href="#l108">108. VPC, Subnets, Internet Gateways &amp; NAT Gateways</a></li>
+      <li><a href="#l109">109. Security Groups, NACLs &amp; VPC Flow Logs</a></li>
+      <li><a href="#l110">110. VPC Peering, VPC Endpoints, VPN &amp; Direct Connect</a></li>
+      <li><a href="#l111">111. VPC Terms, All in One Table</a></li>
+      <li><a href="#l112">112. Putting It Together: Three-Tier Architecture</a></li>
+      <li><a href="#lsummary">Cheat Sheet</a></li>
+    </ol>
+  </nav>
+
+  <!-- 107 -->
+  <section class="lecture" id="l107">
+    <h2><span class="lecture-num">107</span>Section Introduction: Why Networking Matters</h2>
+
+    <p>Every server you launch on AWS has to live inside a network. Up to now in this course, AWS quietly gave you one for free, without asking. But a real production system can't run on autopilot defaults forever — sooner or later you need to control exactly which servers the internet can reach, and which ones must stay completely hidden. That's the whole job of this section.</p>
+
+    <p>This section covers <strong>VPC (Virtual Private Cloud)</strong>, AWS's networking service, at a beginner level. If you're studying for the AWS Solutions Architect or SysOps exams, VPC is a huge, deep topic on its own. For the AWS Certified Developer Associate exam, you only need the big picture — usually just one to three questions touch this topic at all.</p>
+
+    <p>By the end of this section, you'll understand subnets, Internet Gateways, NAT Gateways, security groups, network ACLs, VPC Flow Logs, VPC Peering, VPC Endpoints, Site-to-Site VPN, and Direct Connect — and how real engineering teams wire all of it together into one working design.</p>
+
+    <div class="callout tip">
+      <strong>Relax and take it slow:</strong> focus on understanding what each piece does and why it exists. Nobody expects you to memorize exact configuration steps at this stage.
+    </div>
+  </section>
+
+  <!-- 108 -->
+  <section class="lecture" id="l108">
+    <h2><span class="lecture-num">108</span>VPC, Subnets, Internet Gateways &amp; NAT Gateways</h2>
+
+    <p>Say your company runs a web server and a database on AWS. The web server needs to be reachable by customers on the internet. The database absolutely must not be. If both sit on one open network with no rules between them, a single misconfigured setting is all it takes for a stranger to reach your customer data directly. A VPC is how AWS lets you draw a hard line between "reachable from outside" and "hidden inside."</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>VPC</strong> stands for Virtual Private Cloud. It's your own private, isolated network inside AWS, where you decide exactly which servers can be reached from outside and which ones stay hidden.
+    </div>
+
+    <p>A VPC always belongs to one AWS Region — a physical geographic area where AWS runs data centers, like Mumbai or Singapore. A VPC you build in Mumbai and a VPC you build in Singapore are two completely separate networks. They never overlap or share anything automatically.</p>
+
+    <p>Inside a VPC, you carve out smaller network sections called subnets. Each subnet must live inside exactly one Availability Zone — one specific, physically separate data center location within that Region.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Availability Zone (AZ)</strong> is one physically isolated data center location inside an AWS Region. Most Regions have three or more AZs, so a failure in one doesn't automatically take down the others.
+    </div>
+
+    <p>Subnets come in two flavors, and the difference is exactly the reachability problem from a moment ago. A <strong>public subnet</strong> can be reached from the internet. A <strong>private subnet</strong> cannot — nobody outside your VPC can dial straight into it. Web servers usually sit in a public subnet. Databases almost always sit in a private one.</p>
+
+    <p>What actually decides whether a subnet counts as "public" or "private" isn't a checkbox somewhere — it's the <strong>route table</strong> attached to it.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Route table</strong> is a set of rules attached to a subnet that says where network traffic should go next, based on where it's headed. A subnet only becomes public if its route table sends internet-bound traffic to an Internet Gateway.
+    </div>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>CIDR</strong> (Classless Inter-Domain Routing) is just the notation AWS uses to write an IP address range, like <code>10.0.0.0/16</code>. A VPC and every subnet inside it each get their own CIDR range, and those ranges can't overlap with each other.
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 680 260" xmlns="http://www.w3.org/2000/svg">
+        <rect x="10" y="10" width="660" height="240" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="2" stroke-dasharray="6"/>
+        <text x="340" y="32" text-anchor="middle" font-size="12" font-weight="bold" fill="#2563eb">VPC (CIDR IP range, e.g. 10.0.0.0/16) — One per Region</text>
+
+        <rect x="30" y="50" width="300" height="180" rx="8" fill="#fff" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="4"/>
+        <text x="180" y="70" text-anchor="middle" font-size="11" font-weight="bold" fill="#374151">Availability Zone A</text>
+        <rect x="50" y="90" width="120" height="50" rx="6" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="110" y="112" text-anchor="middle" font-size="10" font-weight="bold">Public Subnet</text>
+        <text x="110" y="128" text-anchor="middle" font-size="9">EC2 (Web Server)</text>
+        <rect x="190" y="90" width="120" height="50" rx="6" fill="#fecaca" stroke="#dc2626" stroke-width="2"/>
+        <text x="250" y="112" text-anchor="middle" font-size="10" font-weight="bold">Private Subnet</text>
+        <text x="250" y="128" text-anchor="middle" font-size="9">EC2 (App/Database)</text>
+
+        <rect x="350" y="50" width="300" height="180" rx="8" fill="#fff" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="4"/>
+        <text x="500" y="70" text-anchor="middle" font-size="11" font-weight="bold" fill="#374151">Availability Zone B</text>
+        <rect x="370" y="90" width="120" height="50" rx="6" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="430" y="112" text-anchor="middle" font-size="10" font-weight="bold">Public Subnet</text>
+        <text x="430" y="128" text-anchor="middle" font-size="9">EC2 (Web Server)</text>
+        <rect x="510" y="90" width="120" height="50" rx="6" fill="#fecaca" stroke="#dc2626" stroke-width="2"/>
+        <text x="570" y="112" text-anchor="middle" font-size="10" font-weight="bold">Private Subnet</text>
+        <text x="570" y="128" text-anchor="middle" font-size="9">EC2 (App/Database)</text>
+      </svg>
+      <div class="diagram-caption">A VPC covers a whole AWS Region. Subnets sit inside specific Availability Zones and are marked as public or private.</div>
+    </div>
+
+    <div class="callout warning">
+      <strong>Gotcha:</strong> AWS creates a default VPC automatically in every Region, and every subnet inside that default VPC is public. That's exactly why the EC2 instances you may have launched earlier in this course were reachable from the internet without you configuring anything at all.
+    </div>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Production teams almost never keep using AWS's default VPC once a project gets serious. They build a custom VPC instead — usually through infrastructure-as-code tools like Terraform or AWS CloudFormation — with a deliberate mix of public and private subnets spread across multiple Availability Zones, so the network layout is documented, repeatable, and reviewed like any other code change, not just clicked together once and forgotten.
+    </div>
+
+    <h3>Internet Gateway: The Door to the Internet</h3>
+    <p>Something has to physically connect your VPC to the internet at all — that's the job of the <strong>Internet Gateway</strong>.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Internet Gateway (IGW)</strong> is the component you attach to a VPC to let traffic flow between that VPC and the public internet. Without one attached, nothing inside your VPC can reach the internet, no matter what else you configure.
+    </div>
+
+    <p>A subnet only becomes "public" once its route table sends internet-bound traffic to the IGW. Both steps matter: attach the IGW to the VPC, then point a specific subnet's route table at it.</p>
+
+    <h3>NAT Gateway: Outbound Access Without Being Reachable</h3>
+    <p>Now here's the harder problem. Your database sits in a private subnet on purpose — nobody outside should reach it directly. But that same database server still needs to download security patches and software updates from the internet sometimes. How does a server get outbound internet access without ever becoming reachable from the outside?</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>NAT Gateway</strong> (NAT stands for Network Address Translation) is an AWS-managed component that lets servers in a private subnet start connections out to the internet, while blocking anyone on the internet from starting a connection back in.
+    </div>
+
+    <p>Traffic only ever flows one way through a NAT Gateway: out, and the reply that comes back — never a fresh connection started from the internet's side. A NAT Gateway itself actually sits inside a public subnet, and every private subnet's route table is pointed at it.</p>
+
+    <table>
+      <tr><th>Feature</th><th>NAT Gateway</th><th>NAT Instance</th></tr>
+      <tr><td>Managed by</td><td>AWS handles everything (fully managed)</td><td>You handle it (you manage an EC2 instance)</td></tr>
+      <tr><td>Scaling</td><td>Scales automatically</td><td>You must upgrade or scale manually</td></tr>
+      <tr><td>Main Purpose</td><td colspan="2">Allows private subnet servers to download updates from the internet while keeping them safe from incoming internet attacks</td></tr>
+    </table>
+
+    <p>AWS also offers an older option called a <strong>NAT Instance</strong> — a regular EC2 (Elastic Compute Cloud) server configured to do the same job by hand. Almost nobody chooses this anymore; a NAT Gateway is fully managed by AWS, scales on its own, and never needs patching. NAT Instances mostly show up in exams as "the old way," so it's worth recognizing the term if you see it.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 660 240" xmlns="http://www.w3.org/2000/svg">
+        <rect x="150" y="60" width="140" height="50" rx="8" fill="#fcd34d" stroke="#d97706" stroke-width="2"/>
+        <rect x="340" y="40" width="180" height="60" rx="8" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <rect x="340" y="150" width="180" height="60" rx="8" fill="#fecaca" stroke="#dc2626" stroke-width="2"/>
+
+        <line x1="70" y1="90" x2="150" y2="90" stroke="#9ca3af" stroke-width="2"/>
+        <line x1="290" y1="75" x2="340" y2="65" stroke="#9ca3af" stroke-width="2"/>
+        <line x1="430" y1="100" x2="430" y2="150" stroke="#9ca3af" stroke-width="2"/>
+
+        <circle cx="50" cy="90" r="20" fill="#93c5fd"/>
+        <text x="50" y="95" text-anchor="middle" font-size="10">Internet</text>
+        <text x="220" y="86" text-anchor="middle" font-size="11" font-weight="bold">Internet Gateway</text>
+        <text x="430" y="65" text-anchor="middle" font-size="11" font-weight="bold">Public Subnet</text>
+        <text x="430" y="82" text-anchor="middle" font-size="10">NAT Gateway</text>
+        <text x="430" y="175" text-anchor="middle" font-size="11" font-weight="bold">Private Subnet</text>
+        <text x="430" y="192" text-anchor="middle" font-size="10">EC2 Instance</text>
+        <text x="450" y="130" font-size="9" fill="#6b7280">route via NAT</text>
+      </svg>
+      <div class="diagram-caption">Traffic flow: Private Subnet → NAT Gateway (placed in Public Subnet) → Internet Gateway → Internet. Only outbound traffic is allowed.</div>
+    </div>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      NAT Gateways are the standard real-world mechanism that lets private-subnet servers reach the internet for software updates, without ever being directly reachable from it. Most production VPC designs that include private subnets also include one NAT Gateway per Availability Zone, so a single zone going down doesn't take away every private server's internet access at once.
+    </div>
+  </section>
+
+  <!-- 109 -->
+  <section class="lecture" id="l109">
+    <h2><span class="lecture-num">109</span>Security Groups, NACLs &amp; VPC Flow Logs</h2>
+
+    <p>Putting a database in a private subnet blocks direct access from the internet. But inside your own VPC, servers can normally still talk to each other freely by default — and that's not always what you want either. AWS gives you two more layers of filtering to control exactly who can talk to what: the Network ACL and the Security Group.</p>
+
+    <p>Any traffic reaching an EC2 instance has to pass through both layers, in order: the Network ACL first, guarding the whole subnet, and then the Security Group, guarding that one specific instance.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 640 160" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="80" r="18" fill="#93c5fd"/><text x="40" y="85" text-anchor="middle" font-size="10">Internet</text>
+
+        <line x1="58" y1="80" x2="170" y2="80" stroke="#9ca3af" stroke-width="2"/>
+        <rect x="170" y="50" width="150" height="60" rx="8" fill="#fed7aa" stroke="#ea580c" stroke-width="2"/>
+        <text x="245" y="75" text-anchor="middle" font-size="11" font-weight="bold">Network ACL</text>
+        <text x="245" y="92" text-anchor="middle" font-size="10">(subnet level)</text>
+
+        <line x1="320" y1="80" x2="420" y2="80" stroke="#9ca3af" stroke-width="2"/>
+        <rect x="420" y="50" width="150" height="60" rx="8" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="495" y="75" text-anchor="middle" font-size="11" font-weight="bold">Security Group</text>
+        <text x="495" y="92" text-anchor="middle" font-size="10">(instance level)</text>
+
+        <line x1="570" y1="80" x2="610" y2="80" stroke="#9ca3af" stroke-width="2"/>
+        <text x="615" y="85" font-size="10" fill="#6b7280">EC2</text>
+      </svg>
+      <div class="diagram-caption">Incoming traffic must pass through the Network ACL (subnet level) first, and then the Security Group (instance level) before hitting your EC2 server.</div>
+    </div>
+
+    <h3>Network ACL: Filtering at the Subnet Level</h3>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>NACL</strong> (Network Access Control List) is a firewall attached to an entire subnet. Every server inside that subnet is affected by the same NACL rules.
+    </div>
+
+    <p>A NACL can do something a Security Group can't: it supports both <strong>Allow</strong> rules and explicit <strong>Deny</strong> rules. That matters if you ever need to block one specific troublesome IP address outright, instead of just leaving it out of an allow list.</p>
+
+    <p>NACL rules only look at IP addresses, and — this is the part that trips people up — a NACL is <strong>stateless</strong>. An allowed inbound request does not automatically get an allowed outbound response. You have to write separate rules for traffic going in and traffic going out.</p>
+
+    <div class="callout warning">
+      <strong>Gotcha:</strong> the default NACL that ships with every VPC allows all inbound and outbound traffic by default. If you've never had to touch NACLs directly in this course so far, that's why — your Security Groups were doing all the actual filtering the whole time.
+    </div>
+
+    <h3>Security Group: Filtering at the Instance Level</h3>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Security Group</strong> is a firewall attached directly to an EC2 instance — technically to its network card, called an <strong>ENI</strong> (Elastic Network Interface). It controls exactly what traffic can reach that one server.
+    </div>
+
+    <p>Unlike a NACL, a Security Group supports <strong>Allow rules only</strong> — there's no explicit deny. Anything not allowed is simply blocked by default. It can filter by IP address, or by pointing at another Security Group entirely, which is handy when you want "anything running in my application tier" to reach "my database," without hardcoding IP addresses that might change later.</p>
+
+    <p>A Security Group is also <strong>stateful</strong>: if you allow a request in, the reply is automatically allowed back out. You don't have to write a matching outbound rule for every inbound one.</p>
+
+    <table>
+      <tr><th>Feature</th><th>Security Group</th><th>Network ACL (NACL)</th></tr>
+      <tr><td>Where it works</td><td>Instance / Network Interface (ENI) level</td><td>Subnet level</td></tr>
+      <tr><td>Rule types allowed</td><td>Allow rules only</td><td>Both Allow and Deny rules</td></tr>
+      <tr><td>State memory</td><td><strong>Stateful</strong> (reply traffic is auto-approved)</td><td><strong>Stateless</strong> (must configure inbound and outbound separately)</td></tr>
+      <tr><td>Rules can target</td><td>IP addresses or other Security Groups</td><td>IP addresses only</td></tr>
+    </table>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 Why this matters — a real incident</span>
+      Section 4 of this course covered the 2019 Capital One data breach from the IAM (Identity and Access Management) angle: an AWS role with far more access than it needed. This is the network-layer side of that same story. The attacker reached Capital One's internal systems through a misconfigured web application firewall running on an EC2 instance, using a technique called <strong>SSRF (Server-Side Request Forgery)</strong> to trick that server into fetching its own role's temporary credentials from AWS's internal metadata service. Tight Security Groups and properly segmented private subnets don't make an application bug impossible — but they shrink how much damage one compromised server can do, which is exactly the point of network segmentation.
+    </div>
+
+    <h3>VPC Flow Logs: Recording Every Connection</h3>
+
+    <p>Say a request is mysteriously failing, and you can't tell whether it's being blocked by a Security Group, a NACL, or something else entirely. You need a record of what actually happened on the wire. That's what <strong>VPC Flow Logs</strong> are for.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>VPC Flow Logs</strong> record metadata about every bit of network traffic moving through your VPC, a specific subnet, or one network interface — where it came from, where it went, and whether it was accepted or rejected.
+    </div>
+
+    <p>You can enable Flow Logs for AWS services too, not only plain EC2 instances — things like load balancers, RDS (Amazon Relational Database Service) databases, and ElastiCache (a managed in-memory caching service) all support them. The logs themselves can be sent to Amazon S3 (Simple Storage Service), CloudWatch Logs, or Kinesis Data Firehose for further processing.</p>
+
+    <div class="callout warning">
+      <strong>Exam tip:</strong> whenever a question describes debugging a network block, or explaining why traffic was denied, the answer is VPC Flow Logs.
+    </div>
+  </section>
+
+  <!-- 110 -->
+  <section class="lecture" id="l110">
+    <h2><span class="lecture-num">110</span>VPC Peering, VPC Endpoints, VPN &amp; Direct Connect</h2>
+
+    <h3>VPC Peering: Connecting Two VPCs Privately</h3>
+
+    <p>Say your company has one VPC for a shared internal analytics platform, and a separate VPC for a product team's application. The application team wants to send data to analytics, but nobody wants that traffic to leave AWS's private network and touch the public internet at all. <strong>VPC Peering</strong> solves exactly this.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>VPC Peering</strong> is a private connection between two VPCs that lets servers in each one talk to the other directly, over AWS's own internal network, as if they were on the same network.
+    </div>
+
+    <p>Two rules matter here. First, the two VPCs being peered can't have overlapping CIDR ranges — AWS can't route traffic correctly if both networks claim the same IP addresses. Second, and easy to miss: <strong>peering is not transitive.</strong> If VPC A is peered with VPC B, and VPC B is peered with VPC C, that does not mean A can reach C. A and C would need their own separate, direct peering connection.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 520 240" xmlns="http://www.w3.org/2000/svg">
+        <path d="M 108 95 Q 260 15 412 95" fill="none" stroke="#059669" stroke-width="2.5"/>
+        <line x1="128" y1="130" x2="222" y2="130" stroke="#9ca3af" stroke-width="2" stroke-dasharray="4"/>
+        <line x1="298" y1="130" x2="392" y2="130" stroke="#9ca3af" stroke-width="2" stroke-dasharray="4"/>
+
+        <circle cx="90" cy="130" r="38" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <circle cx="260" cy="130" r="38" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <circle cx="430" cy="130" r="38" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+
+        <text x="90" y="135" text-anchor="middle" font-size="12" font-weight="bold">VPC A</text>
+        <text x="260" y="135" text-anchor="middle" font-size="12" font-weight="bold">VPC B</text>
+        <text x="430" y="135" text-anchor="middle" font-size="12" font-weight="bold">VPC C</text>
+
+        <text x="260" y="35" text-anchor="middle" font-size="10" fill="#059669" font-weight="bold">Peering connection exists between A and C</text>
+        <text x="175" y="175" text-anchor="middle" font-size="9" fill="#dc2626">No peering between A and B</text>
+        <text x="345" y="175" text-anchor="middle" font-size="9" fill="#dc2626">No peering between B and C</text>
+
+        <text x="260" y="215" text-anchor="middle" font-size="11" fill="#374151">Peering is non-transitive: B cannot talk to A or C through B.</text>
+      </svg>
+      <div class="diagram-caption">VPC Peering is non-transitive. To connect every VPC together, each pair needs its own separate peering setup.</div>
+    </div>
+
+    <div class="callout warning">
+      <strong>Gotcha:</strong> non-transitive peering catches people constantly. Peering connections don't chain together automatically — every pair of VPCs that needs to talk to each other needs its own direct peering connection.
+    </div>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Companies that split work across many AWS accounts — one per team, or one per environment — end up needing a lot of these direct connections fast. Once that gets unwieldy, most move to a separate AWS service called Transit Gateway, which acts as a central hub, so every VPC only needs one connection — to the hub — instead of one connection per peer. That's a more advanced topic for later, but it exists specifically because plain VPC Peering doesn't scale past a handful of VPCs.
+    </div>
+
+    <h3>VPC Endpoints: Reaching AWS Services Without the Public Internet</h3>
+
+    <p>Your private-subnet server needs to read a file from Amazon S3. Normally, calling S3 means the request leaves your VPC, crosses the public internet, and comes back — even though both your server and S3 are already inside AWS. A <strong>VPC Endpoint</strong> skips that trip entirely.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>VPC Endpoint</strong> is a private connection from your VPC straight to an AWS service, staying entirely inside AWS's own network instead of going out over the public internet.
+    </div>
+
+    <p>There are two kinds, and which one you need depends on the service:</p>
+
+    <table>
+      <tr><th>Endpoint Type</th><th>Supported AWS Services</th><th>How it attaches</th></tr>
+      <tr><td><strong>Gateway Endpoint</strong></td><td>Amazon S3 and DynamoDB only</td><td>Added directly to your route table</td></tr>
+      <tr><td><strong>Interface Endpoint</strong></td><td>Most other AWS services (like CloudWatch, EC2 API)</td><td>Uses a private network card (ENI) inside your subnet</td></tr>
+    </table>
+
+    <p>A Gateway Endpoint gets added straight into your route table, since S3 and DynamoDB are old enough AWS services to support that simpler mechanism. Everything else uses an Interface Endpoint, which shows up as its own network interface — that same ENI concept from Security Groups — sitting inside your subnet.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 620 160" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="50" width="150" height="60" rx="8" fill="#fecaca" stroke="#dc2626" stroke-width="2"/>
+        <text x="95" y="75" text-anchor="middle" font-size="11" font-weight="bold">Private Subnet</text>
+        <text x="95" y="92" text-anchor="middle" font-size="10">EC2 Instance</text>
+
+        <line x1="170" y1="80" x2="270" y2="80" stroke="#9ca3af" stroke-width="2"/>
+        <rect x="270" y="50" width="140" height="60" rx="8" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+        <text x="340" y="75" text-anchor="middle" font-size="11" font-weight="bold">VPC Endpoint</text>
+        <text x="340" y="92" text-anchor="middle" font-size="10">(Private AWS route)</text>
+
+        <line x1="410" y1="80" x2="500" y2="80" stroke="#9ca3af" stroke-width="2"/>
+        <rect x="500" y="50" width="100" height="60" rx="8" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="550" y="75" text-anchor="middle" font-size="11" font-weight="bold">S3 /</text>
+        <text x="550" y="92" text-anchor="middle" font-size="10">DynamoDB</text>
+
+        <text x="340" y="135" text-anchor="middle" font-size="10" fill="#6b7280">Traffic stays 100% inside AWS private network</text>
+      </svg>
+      <div class="diagram-caption">With a VPC Endpoint, your private EC2 instance accesses AWS services safely without going over the public internet.</div>
+    </div>
+
+    <div class="callout warning">
+      <strong>Exam tip:</strong> if a question asks how to reach an AWS service from a private subnet without touching the public internet, the answer is a VPC Endpoint.
+    </div>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      This isn't just a security nicety — it's also a cost decision. Traffic routed out through a NAT Gateway is billed per gigabyte processed. Traffic to S3 or DynamoDB through a Gateway Endpoint is not. Teams moving meaningful volumes of data to S3 from private subnets often add Gateway Endpoints specifically to cut their NAT Gateway bill, on top of the security benefit.
+    </div>
+
+    <h3>Connecting Your Own Data Center to AWS</h3>
+
+    <p>Not every server lives in AWS. Plenty of companies still run real hardware in their own office or data center, and need it to talk to their AWS VPC securely. There are two standard ways to do that.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Site-to-Site VPN</strong> (Virtual Private Network) creates an encrypted tunnel between your on-premises network and your AWS VPC, running over the ordinary public internet.
+    </div>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Direct Connect</strong> is a dedicated, private physical cable connection between your data center and AWS that never touches the public internet at all.
+    </div>
+
+    <table>
+      <tr><th>Feature</th><th>Site-to-Site VPN</th><th>AWS Direct Connect (DX)</th></tr>
+      <tr><td>Network Path</td><td>Runs over the <strong>public internet</strong> using encryption</td><td><strong>Dedicated private physical cable line</strong></td></tr>
+      <tr><td>Setup Time</td><td>Takes just a few minutes</td><td>Takes about 1 month to set up physically</td></tr>
+      <tr><td>Security Level</td><td>Encrypted tunnel over the internet</td><td>Private cable line (never touches the public internet)</td></tr>
+      <tr><td>Best Used For</td><td>Quick setup, short-term needs, lower cost</td><td>High-speed, reliable production connections with stable speed</td></tr>
+    </table>
+
+    <div class="diagram">
+      <svg viewBox="0 0 640 170" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="60" width="150" height="50" rx="8" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+        <rect x="470" y="60" width="150" height="50" rx="8" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+
+        <line x1="170" y1="75" x2="470" y2="75" stroke="#059669" stroke-width="2" stroke-dasharray="5"/>
+        <line x1="170" y1="100" x2="470" y2="100" stroke="#7c3aed" stroke-width="3"/>
+
+        <text x="90" y="90" text-anchor="middle" font-size="11" font-weight="bold">On-Premises Office</text>
+        <text x="545" y="90" text-anchor="middle" font-size="11" font-weight="bold">Your AWS VPC</text>
+        <text x="320" y="65" text-anchor="middle" font-size="10" fill="#059669">Site-to-Site VPN (Encrypted internet link, fast to setup)</text>
+        <text x="320" y="120" text-anchor="middle" font-size="10" fill="#7c3aed">Direct Connect (Dedicated physical line, ~1 month setup)</text>
+      </svg>
+      <div class="diagram-caption">VPN provides quick encrypted access over the internet. Direct Connect gives a private physical cable for maximum performance.</div>
+    </div>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      The trade-off is speed of setup versus long-term stability. A Site-to-Site VPN can be running within minutes, and is the standard starting point or a solid choice for lighter, less critical traffic. Direct Connect takes roughly a month to physically provision the cable, so companies typically only invest in it once they have a steady, heavy, latency-sensitive flow of data between their own data center and AWS — a large enterprise migrating a big on-premises system gradually, for example — where a stable dedicated line pays for itself over time.
+    </div>
+  </section>
+
+  <!-- 111 -->
+  <section class="lecture" id="l111">
+    <h2><span class="lecture-num">111</span>VPC Terms, All in One Table</h2>
+
+    <p>Before moving on to how all these pieces fit together in a real design, here's every term from this section in one place.</p>
+
+    <table>
+      <tr><th>VPC Term</th><th>Simple Explanation</th></tr>
+      <tr><td>VPC</td><td>Virtual Private Cloud — your private isolated network in AWS (one default VPC per Region).</td></tr>
+      <tr><td>Subnets</td><td>Sub-sections of your VPC, each created inside a single Availability Zone.</td></tr>
+      <tr><td>Internet Gateway (IGW)</td><td>The main entry/exit door connecting public subnets to the internet.</td></tr>
+      <tr><td>NAT Gateway / Instance</td><td>Allows private subnets to send outbound requests to the internet safely.</td></tr>
+      <tr><td>NACL</td><td>Stateless subnet-level firewall with Allow and Deny rules.</td></tr>
+      <tr><td>Security Group</td><td>Stateful instance-level firewall with Allow-only rules.</td></tr>
+      <tr><td>VPC Peering</td><td>Private connection between two VPCs (non-transitive).</td></tr>
+      <tr><td>VPC Endpoints</td><td>Private access from your VPC to AWS services like S3, without using the internet.</td></tr>
+      <tr><td>VPC Flow Logs</td><td>Detailed logs of network traffic, used for debugging blockages.</td></tr>
+      <tr><td>Site-to-Site VPN</td><td>Encrypted link connecting your office to AWS over the public internet.</td></tr>
+      <tr><td>Direct Connect</td><td>Dedicated private physical cable connecting your office to AWS.</td></tr>
+    </table>
+  </section>
+
+  <!-- 112 -->
+  <section class="lecture" id="l112">
+    <h2><span class="lecture-num">112</span>Putting It Together: Three-Tier Architecture</h2>
+
+    <p>Everything in this section — public and private subnets, Internet Gateways, NAT Gateways, security groups — exists to build one standard shape. It's called the <strong>three-tier architecture</strong>, and it's one of the most well-documented, widely used network designs in the entire tech industry, not just on AWS.</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      This exact three-tier pattern — a public subnet for load balancers, a private subnet for application servers, and a further-isolated private subnet for the database — is the default secure network layout taught and used across the industry. If you understand this one diagram, you understand the reasoning behind almost every VPC design you'll come across.
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 680 320" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="40" r="16" fill="#93c5fd"/><text x="40" y="45" text-anchor="middle" font-size="9">User</text>
+        <line x1="56" y1="40" x2="170" y2="40" stroke="#9ca3af" stroke-width="2"/>
+        <text x="110" y="30" text-anchor="middle" font-size="9" fill="#6b7280">Route 53 (DNS)</text>
+
+        <rect x="170" y="20" width="150" height="40" rx="8" fill="#fcd34d" stroke="#d97706" stroke-width="2"/>
+        <text x="245" y="45" text-anchor="middle" font-size="11" font-weight="bold">ELB (Public Subnet)</text>
+
+        <line x1="245" y1="60" x2="245" y2="100" stroke="#9ca3af" stroke-width="2"/>
+        <text x="245" y="90" text-anchor="middle" font-size="9" fill="#6b7280">Tier 1: Web / Load Balancer</text>
+
+        <rect x="40" y="110" width="180" height="60" rx="8" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="130" y="135" text-anchor="middle" font-size="11" font-weight="bold">Auto Scaling Group</text>
+        <text x="130" y="152" text-anchor="middle" font-size="9">EC2 (Private Subnet)</text>
+
+        <rect x="250" y="110" width="180" height="60" rx="8" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="340" y="135" text-anchor="middle" font-size="11" font-weight="bold">Auto Scaling Group</text>
+        <text x="340" y="152" text-anchor="middle" font-size="9">EC2 (Private Subnet)</text>
+
+        <rect x="460" y="110" width="180" height="60" rx="8" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="550" y="135" text-anchor="middle" font-size="11" font-weight="bold">Auto Scaling Group</text>
+        <text x="550" y="152" text-anchor="middle" font-size="9">EC2 (Private Subnet)</text>
+        <text x="340" y="192" text-anchor="middle" font-size="9" fill="#6b7280">Tier 2: Application Servers (across 3 AZs)</text>
+
+        <line x1="130" y1="170" x2="220" y2="230" stroke="#9ca3af" stroke-width="2"/>
+        <line x1="340" y1="170" x2="290" y2="230" stroke="#9ca3af" stroke-width="2"/>
+        <line x1="550" y1="170" x2="360" y2="230" stroke="#9ca3af" stroke-width="2"/>
+
+        <rect x="180" y="230" width="150" height="50" rx="8" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+        <text x="255" y="252" text-anchor="middle" font-size="11" font-weight="bold">Amazon RDS</text>
+        <text x="255" y="268" text-anchor="middle" font-size="9">(Private Data Subnet)</text>
+
+        <rect x="350" y="230" width="150" height="50" rx="8" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+        <text x="425" y="252" text-anchor="middle" font-size="11" font-weight="bold">ElastiCache</text>
+        <text x="425" y="268" text-anchor="middle" font-size="9">(Private Data Subnet)</text>
+
+        <text x="340" y="305" text-anchor="middle" font-size="9" fill="#6b7280">Tier 3: Database &amp; Cache (Deep Private Layer)</text>
+      </svg>
+      <div class="diagram-caption">3-Tier Design: Public Load Balancer → Private Application Servers → Private Database &amp; Cache Layer.</div>
+    </div>
+
+    <p>Here's how a request actually flows through it, tier by tier.</p>
+
+    <ol>
+      <li><strong>Tier 1 — Web tier:</strong> a user's request goes through Route 53, AWS's <strong>DNS</strong> (Domain Name System) service — essentially the internet's phonebook, turning a web address into a real network location. Route 53 points to an <strong>Elastic Load Balancer (ELB)</strong> sitting in a public subnet, spread across multiple Availability Zones.</li>
+      <li><strong>Tier 2 — Application tier:</strong> the load balancer spreads incoming requests across a group of EC2 servers, managed by an <strong>Auto Scaling Group</strong> that adds or removes servers automatically as demand changes. These servers sit in private subnets — nobody from the internet can reach them directly.</li>
+      <li><strong>Tier 3 — Data tier:</strong> a separate, even more isolated private subnet holds the actual data — an <strong>Amazon RDS</strong> database, often with an <strong>ElastiCache</strong> in-memory cache in front of it to serve frequent reads faster.</li>
+    </ol>
+
+    <div class="callout warning">
+      <strong>Exam tip:</strong> "public load balancer → private application servers → private database subnet" is the single most common architecture shown in scenario-based exam questions. Recognize this shape instantly.
+    </div>
+
+    <h3>A Concrete Example: The LAMP Stack</h3>
+
+    <p>One classic way to build the application tier is the <strong>LAMP stack</strong> — a set of technologies that have been running production web apps since long before AWS even existed.</p>
+
+    <table>
+      <tr><th>Letter</th><th>Technology</th><th>Role</th></tr>
+      <tr><td>L</td><td>Linux</td><td>Operating system running on the EC2 server</td></tr>
+      <tr><td>A</td><td>Apache</td><td>Web server handling HTTP requests</td></tr>
+      <tr><td>M</td><td>MySQL</td><td>Database for app data (e.g. running on Amazon RDS)</td></tr>
+      <tr><td>P</td><td>PHP</td><td>Programming language for application code</td></tr>
+    </table>
+
+    <p>You can drop ElastiCache in front of the database to cache frequently requested data, and attach <strong>EBS</strong> (Elastic Block Store) volumes to each EC2 instance for local storage.</p>
+
+    <h3>A Real Complication: WordPress on AWS</h3>
+
+    <p>WordPress follows this same app-tier-plus-database-tier shape, with one added wrinkle: once you run more than one WordPress server for redundancy, they all need to share the same uploaded images and media files. If each server only kept its own local copy, a photo uploaded through one server would simply be missing on the others.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Amazon EFS</strong> (Elastic File System) is a shared network file system that multiple EC2 instances can mount and read from at the same time, across different Availability Zones.
+    </div>
+
+    <p>That's exactly what solves the WordPress problem: every WordPress server mounts the same EFS file system, so uploaded media is visible to all of them immediately, no matter which server originally received the upload.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 620 190" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="40" r="14" fill="#93c5fd"/><text x="40" y="45" text-anchor="middle" font-size="9">User</text>
+        <line x1="54" y1="40" x2="150" y2="40" stroke="#9ca3af" stroke-width="2"/>
+        <rect x="150" y="20" width="120" height="40" rx="8" fill="#fcd34d" stroke="#d97706" stroke-width="2"/>
+        <text x="210" y="45" text-anchor="middle" font-size="10" font-weight="bold">Load Balancer</text>
+
+        <line x1="210" y1="60" x2="150" y2="100" stroke="#9ca3af" stroke-width="2"/>
+        <line x1="210" y1="60" x2="270" y2="100" stroke="#9ca3af" stroke-width="2"/>
+        <rect x="90" y="100" width="120" height="40" rx="8" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="150" y="125" text-anchor="middle" font-size="10" font-weight="bold">EC2 — WordPress</text>
+        <rect x="210" y="100" width="120" height="40" rx="8" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="270" y="125" text-anchor="middle" font-size="10" font-weight="bold">EC2 — WordPress</text>
+
+        <line x1="150" y1="140" x2="420" y2="165" stroke="#9ca3af" stroke-width="2"/>
+        <line x1="270" y1="140" x2="420" y2="150" stroke="#9ca3af" stroke-width="2"/>
+        <rect x="420" y="130" width="150" height="50" rx="8" fill="#fed7aa" stroke="#ea580c" stroke-width="2"/>
+        <text x="495" y="152" text-anchor="middle" font-size="10" font-weight="bold">Amazon EFS</text>
+        <text x="495" y="168" text-anchor="middle" font-size="9">Shared storage for media files</text>
+      </svg>
+      <div class="diagram-caption">All WordPress EC2 servers share uploaded images from a central Amazon EFS file system.</div>
+    </div>
+  </section>
+
+  <hr class="section-break">
+
+  <!-- Final Summary -->
+  <section class="lecture" id="lsummary">
+    <h2>📋 Cheat Sheet</h2>
+
+    <div class="summary-box">
+      <h3>Core Building Blocks</h3>
+      <table>
+        <tr><th>Concept</th><th>Plain-English meaning</th></tr>
+        <tr><td>VPC</td><td>Your own private network inside AWS, scoped to one Region.</td></tr>
+        <tr><td>Subnet</td><td>A slice of a VPC's IP range, living inside exactly one Availability Zone. Public or private.</td></tr>
+        <tr><td>Internet Gateway</td><td>Connects a VPC to the public internet. Required before any subnet can be public.</td></tr>
+        <tr><td>NAT Gateway</td><td>Lets private-subnet servers reach the internet outbound, without being reachable from it.</td></tr>
+        <tr><td>Route Table</td><td>Rules deciding where a subnet's traffic goes next.</td></tr>
+        <tr><td>Security Group</td><td>Instance-level firewall. Allow rules only. Stateful.</td></tr>
+        <tr><td>NACL</td><td>Subnet-level firewall. Allow and Deny rules. Stateless.</td></tr>
+        <tr><td>VPC Peering</td><td>Private link between two VPCs. Not transitive.</td></tr>
+        <tr><td>VPC Endpoint</td><td>Private route from your VPC to an AWS service, skipping the public internet.</td></tr>
+        <tr><td>Site-to-Site VPN / Direct Connect</td><td>Two ways to link an on-premises data center to AWS — encrypted-over-internet, or a dedicated private cable.</td></tr>
+      </table>
+    </div>
+
+    <div class="summary-box">
+      <h3>Key Facts Worth Remembering</h3>
+      <ul>
+        <li>A VPC spans a whole Region. A subnet lives inside exactly one Availability Zone.</li>
+        <li>The default VPC in every Region contains only public subnets.</li>
+        <li>Security Groups are stateful (reply traffic is auto-allowed). NACLs are stateless (inbound and outbound must both be configured).</li>
+        <li>Security Groups support Allow rules only. NACLs support both Allow and Deny.</li>
+        <li>VPC Peering is never transitive — every pair that needs to talk needs its own direct connection.</li>
+        <li>Gateway Endpoints only work for S3 and DynamoDB. Everything else uses an Interface Endpoint.</li>
+        <li>VPC Flow Logs are the answer whenever a question is about debugging blocked network traffic.</li>
+        <li>Site-to-Site VPN sets up in minutes over the internet. Direct Connect takes about a month to lay a private physical line.</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>The One-Paragraph Version</h3>
+      <p>A VPC is your private network inside one AWS Region, divided into public and private subnets across Availability Zones. An Internet Gateway lets public subnets reach the internet; a NAT Gateway lets private subnets reach out without being reachable from outside. Security Groups filter traffic per instance and remember state; NACLs filter per subnet, allow explicit denies, and forget state between requests. VPC Flow Logs record what actually happened on the wire. VPC Peering and VPC Endpoints connect VPCs and AWS services privately, while Site-to-Site VPN and Direct Connect connect your own data center to AWS. Put together with public load balancers, private application servers, and a further-isolated private database subnet, that's the three-tier architecture — the standard shape behind most production AWS networks.</p>
+    </div>
+  </section>
+
+  <div class="top-link"><a href="#top">↑ Back to top</a></div>
+
+</div>
+
+<script>
+(function () {
+  if (document.querySelector('.tips-trigger')) return;
+
+  const glossary = [
+    ['Auto Scaling Group', 'A group that keeps a desired number of EC2 instances running and scales capacity up or down automatically.'],
+    ['Availability Zone', 'One physically isolated data center location inside an AWS Region.'],
+    ['CIDR', 'IP range notation such as 10.0.0.0/16, used to define a VPC or subnet’s address space.'],
+    ['Direct Connect', 'A dedicated private physical cable connection between your data center and AWS.'],
+    ['DNS', 'Domain Name System. Translates web addresses into the network locations they point to.'],
+    ['EBS', 'Elastic Block Store. Attachable storage volumes for EC2 instances.'],
+    ['EC2', 'Elastic Compute Cloud. AWS’s virtual server service.'],
+    ['EFS', 'Elastic File System. A shared network file system multiple EC2 instances can mount at once.'],
+    ['ELB', 'Elastic Load Balancer. Distributes incoming traffic across multiple servers.'],
+    ['ENI', 'Elastic Network Interface. The virtual network card attached to an EC2 instance.'],
+    ['Internet Gateway', 'VPC component that lets public subnet resources communicate with the internet.'],
+    ['NACL', 'Network Access Control List. A stateless, subnet-level firewall with Allow and Deny rules.'],
+    ['NAT Gateway', 'Lets private subnet resources start outbound internet connections without being directly reachable from the internet.'],
+    ['Region', 'A geographic AWS area containing multiple Availability Zones, such as us-east-1.'],
+    ['RDS', 'Relational Database Service. AWS’s managed relational database service.'],
+    ['route table', 'Rules attached to a subnet that decide where its network traffic goes next.'],
+    ['Security Group', 'Stateful firewall attached to an instance’s network interface. Allow rules only.'],
+    ['Site-to-Site VPN', 'An encrypted tunnel connecting an on-premises network to a VPC over the public internet.'],
+    ['SSRF', 'Server-Side Request Forgery. An attack that tricks a server into making requests on the attacker’s behalf.'],
+    ['VPC', 'Virtual Private Cloud. Your isolated network boundary inside AWS.'],
+    ['VPC Endpoint', 'A private connection from a VPC to a supported AWS service, without using the public internet.'],
+    ['VPC Flow Logs', 'Records of network traffic through a VPC, subnet, or network interface, used for debugging and auditing.'],
+    ['VPC Peering', 'A private, non-transitive connection between two VPCs.']
+  ];
+
+  const pageText = document.body.innerText.replace(/\s+/g, ' ');
+  const found = glossary.filter(([term]) => new RegExp('(^|[^A-Za-z0-9])' + escapeRegExp(term) + '([^A-Za-z0-9]|$)', 'i').test(pageText));
+  if (!found.length) return;
+
+  const button = document.createElement('button');
+  button.className = 'tips-trigger';
+  button.type = 'button';
+  button.setAttribute('aria-haspopup', 'dialog');
+  button.setAttribute('aria-expanded', 'false');
+  button.innerHTML = '<span class="tips-icon" aria-hidden="true">💡</span><span>Glossary</span>';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'tips-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'tips-title');
+  overlay.innerHTML = [
+    '<div class="tips-panel">',
+    '<div class="tips-header">',
+    '<h2 id="tips-title">💡 Every term on this page</h2>',
+    '<button class="tips-close" type="button" aria-label="Close glossary">Close</button>',
+    '</div>',
+    '<div class="tips-body">',
+    '<p class="tips-intro">A quick lookup if you lost the thread anywhere on this page.</p>',
+    '<ul class="tips-list">' + found.map(([term, tip]) => '<li><strong>' + escapeHtml(term) + '</strong>' + escapeHtml(tip) + '</li>').join('') + '</ul>',
+    '</div>',
+    '</div>'
+  ].join('');
+
+  document.body.appendChild(button);
+  document.body.appendChild(overlay);
+
+  const closeButton = overlay.querySelector('.tips-close');
+  function openTips() {
+    overlay.classList.add('open');
+    button.setAttribute('aria-expanded', 'true');
+    closeButton.focus();
+  }
+  function closeTips() {
+    overlay.classList.remove('open');
+    button.setAttribute('aria-expanded', 'false');
+    button.focus();
+  }
+
+  button.addEventListener('click', openTips);
+  closeButton.addEventListener('click', closeTips);
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) closeTips();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && overlay.classList.contains('open')) closeTips();
+  });
+
+  function escapeRegExp(value) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
+  }
+}());
+</script>
+
+<!-- Dark Theme Toggle Button -->
+<button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme" title="Toggle Light/Dark Theme">
+  <span class="theme-toggle-icon">🌙</span>
+  <span class="theme-toggle-text">Dark</span>
+</button>
+
+<script id="dark-theme-script">
+(function() {
+  function setupThemeToggle() {
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+
+    function syncUI() {
+      var isDark = document.documentElement.classList.contains('dark-mode') || document.body.classList.contains('dark-mode');
+      var icon = btn.querySelector('.theme-toggle-icon');
+      var text = btn.querySelector('.theme-toggle-text');
+      if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+      if (text) text.textContent = isDark ? 'Light' : 'Dark';
+    }
+
+    if (document.documentElement.classList.contains('dark-mode')) {
+      document.body.classList.add('dark-mode');
+    }
+    syncUI();
+
+    btn.addEventListener('click', function() {
+      var isDark = document.documentElement.classList.toggle('dark-mode');
+      document.body.classList.toggle('dark-mode', isDark);
+      localStorage.setItem('aws-notes-theme', isDark ? 'dark' : 'light');
+      syncUI();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupThemeToggle);
+  } else {
+    setupThemeToggle();
+  }
+})();
+</script>
+</body>
+</html>

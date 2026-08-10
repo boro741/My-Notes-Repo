@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script id="dark-theme-init">
+(function() {
+  var saved = localStorage.getItem('aws-notes-theme');
+  if (saved === 'dark' || (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark-mode');
+  }
+})();
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 13 — Advanced Amazon S3 (Blog Edition)</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --card: #f9fafb;
+    --accent: #d97706;
+    --accent-dark: #b45309;
+    --blue: #2563eb;
+    --green: #059669;
+    --purple: #7c3aed;
+    --red: #dc2626;
+    --code-bg: #f3f4f6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+  }
+  header.page-header {
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  header.page-header h1 {
+    margin: 0 0 6px 0;
+    font-size: 28px;
+    color: var(--accent-dark);
+  }
+  header.page-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14.5px;
+  }
+
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+  }
+  nav.toc h2 {
+    margin-top: 0;
+    font-size: 16px;
+    color: var(--accent-dark);
+  }
+  nav.toc ol {
+    margin: 0;
+    padding-left: 20px;
+    columns: 2;
+  }
+  nav.toc li { margin-bottom: 6px; font-size: 14px; }
+  nav.toc a { color: var(--blue); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  section.lecture {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 26px;
+    margin-bottom: 26px;
+    background: #fff;
+    scroll-margin-top: 16px;
+  }
+  section.lecture h2 {
+    margin-top: 0;
+    font-size: 20px;
+    color: #111827;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 8px;
+  }
+  .lecture-num {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 2px 8px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  h3 { color: var(--accent-dark); font-size: 16.5px; margin-bottom: 8px; margin-top: 26px; }
+
+  p { margin: 0 0 14px; }
+
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: #fffbeb;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 15px;
+  }
+  .callout.tip { border-left-color: var(--green); background: #ecfdf5; }
+  .callout.warning { border-left-color: var(--red); background: #fef2f2; }
+  .callout.define { border-left-color: var(--blue); background: #eff6ff; }
+  .callout.production { border-left-color: var(--purple); background: #f5f3ff; }
+  .callout strong { color: inherit; }
+  .callout-label {
+    display: block;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    margin-bottom: 4px;
+    opacity: 0.75;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th { background: var(--card); color: var(--accent-dark); }
+  tr:nth-child(even) td { background: #fcfcfd; }
+
+  code {
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 16px 0;
+  }
+  pre code { background: none; padding: 0; }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  .diagram {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 18px 0;
+    text-align: center;
+    overflow-x: auto;
+  }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram-caption { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  .top-link { font-size: 12px; text-align: right; }
+  .top-link a { color: var(--muted); text-decoration: none; }
+  .top-link a:hover { text-decoration: underline; }
+
+  hr.section-break { border: none; border-top: 2px dashed var(--border); margin: 36px 0; }
+
+  .summary-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 14px;
+  }
+  .summary-box h3 { color: var(--green); margin-top: 0; }
+
+  @media (max-width: 1024px) {
+    .container { padding-left: 20px; padding-right: 20px; }
+    nav.toc ol { columns: 2; }
+  }
+  @media (max-width: 860px) {
+    .container { padding: 20px 18px 60px; }
+    header.page-header h1 { font-size: 22px; }
+    nav.toc ol { columns: 1; }
+    section.lecture { padding: 18px 20px; }
+    table { font-size: 13px; }
+    th, td { padding: 7px 9px; }
+  }
+  @media (max-width: 480px) {
+    .container { padding: 16px 14px 50px; }
+    header.page-header h1 { font-size: 19px; line-height: 1.3; }
+    header.page-header p { font-size: 13px; }
+    nav.toc { padding: 14px 16px; border-radius: 10px; }
+    nav.toc ol { columns: 1; padding-left: 16px; }
+    nav.toc li { font-size: 14px; margin-bottom: 8px; }
+    section.lecture { padding: 16px 16px; border-radius: 10px; margin-bottom: 16px; }
+    section.lecture h2 { font-size: 17px; line-height: 1.3; }
+    h3 { font-size: 15px; }
+    table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; font-size: 13px; white-space: nowrap; }
+    th, td { padding: 7px 10px; }
+    code { font-size: 12.5px; word-break: break-all; }
+    ul, ol { padding-left: 18px; }
+    li { font-size: 14.5px; margin-bottom: 8px; }
+    .callout, .summary-box { padding: 10px 13px; font-size: 14px; }
+    .top-link { font-size: 13px; }
+  }
+  @media (max-width: 360px) {
+    .container { padding: 12px 12px 40px; }
+    section.lecture h2 { font-size: 16px; }
+  }
+
+  .tips-trigger {
+    position: fixed; right: 18px; bottom: 18px; z-index: 999;
+    display: inline-flex; align-items: center; gap: 8px;
+    min-height: 44px; padding: 10px 14px;
+    border: 1px solid #f59e0b; border-radius: 999px;
+    background: #fffbeb; color: #92400e;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+    cursor: pointer; font: inherit; font-weight: 700;
+  }
+  .tips-trigger:hover { background: #fef3c7; }
+  .tips-trigger .tips-icon { font-size: 1.2rem; line-height: 1; }
+  .tips-overlay {
+    position: fixed; inset: 0; z-index: 1000; display: none;
+    align-items: center; justify-content: center; padding: 18px;
+    background: rgba(17, 24, 39, 0.46);
+  }
+  .tips-overlay.open { display: flex; }
+  .tips-panel {
+    width: min(760px, 100%); max-height: min(76vh, 720px); overflow: auto;
+    background: #ffffff; color: var(--text, #1f2937);
+    border: 1px solid #fcd34d; border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  }
+  .tips-header {
+    position: sticky; top: 0; display: flex; align-items: center;
+    justify-content: space-between; gap: 12px; padding: 16px 18px;
+    background: #fffbeb; border-bottom: 1px solid #fde68a;
+  }
+  .tips-header h2 { margin: 0; color: #92400e; font-size: 1.1rem; }
+  .tips-close {
+    border: 1px solid #f59e0b; border-radius: 8px; background: #ffffff;
+    color: #92400e; cursor: pointer; font: inherit; font-weight: 700;
+    line-height: 1; padding: 7px 10px;
+  }
+  .tips-body { padding: 16px 18px 18px; }
+  .tips-intro { margin: 0 0 12px; color: var(--muted, #6b7280); font-size: 0.95rem; }
+  .tips-list {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px; margin: 0; padding: 0; list-style: none;
+  }
+  .tips-list li { margin: 0; padding: 10px 12px; border: 1px solid #fde68a; border-radius: 8px; background: #fffdf5; }
+  .tips-list strong { display: block; margin-bottom: 3px; color: #92400e; }
+  @media (max-width: 480px) {
+    .tips-trigger { right: 12px; bottom: 12px; padding: 10px 12px; }
+    .tips-trigger span:not(.tips-icon) { display: none; }
+    .tips-overlay { padding: 10px; }
+    .tips-panel { max-height: 82vh; }
+    .tips-list { grid-template-columns: 1fr; }
+  }
+</style>
+<style id="dark-theme-styles">
+  html.dark-mode, body.dark-mode {
+    --bg: #181926; --card-bg: #222436; --card: #222436; --border: #33384f;
+    --text: #c0caf5; --text-muted: #94a3b8; --muted: #94a3b8; --code-bg: #13141f;
+    --accent: #f59e0b; --accent-dark: #fbbf24; --green: #34d399; --red: #f87171;
+    --purple: #c084fc; --blue: #60a5fa;
+    background-color: #181926 !important; color: #c0caf5 !important;
+  }
+  body.dark-mode { background-color: #181926 !important; color: #c0caf5 !important; }
+  body.dark-mode header.page-header h1 { color: #fbbf24 !important; }
+  body.dark-mode header.page-header p { color: #94a3b8 !important; }
+  body.dark-mode h2, body.dark-mode h3 { color: #f59e0b !important; }
+  body.dark-mode a { color: #60a5fa; }
+  body.dark-mode nav.toc { background: #1f2335 !important; border-color: #33384f !important; }
+  body.dark-mode nav.toc h2 { color: #fbbf24 !important; }
+  body.dark-mode nav.toc a { color: #60a5fa !important; }
+  body.dark-mode section.lecture { background: #222436 !important; border-color: #33384f !important; color: #c0caf5 !important; }
+  body.dark-mode section.lecture h2 { color: #e2e8f0 !important; border-bottom-color: #33384f !important; }
+  body.dark-mode table { border-color: #33384f !important; }
+  body.dark-mode th, body.dark-mode td { border-color: #33384f !important; }
+  body.dark-mode th { background: #1f2335 !important; color: #fbbf24 !important; }
+  body.dark-mode td { color: #cbd5e1 !important; }
+  body.dark-mode tr:nth-child(even) td { background: #1a1d2d !important; }
+  body.dark-mode code { background: #13141f !important; color: #e2e8f0 !important; border: 1px solid #2e324a !important; }
+  body.dark-mode pre { background: #13141f !important; color: #e2e8f0 !important; border-color: #2e324a !important; }
+  body.dark-mode .callout { background: #25231c !important; border-left-color: #f59e0b !important; color: #fef3c7 !important; }
+  body.dark-mode .callout.tip { background: #142921 !important; border-left-color: #34d399 !important; color: #d1fae5 !important; }
+  body.dark-mode .callout.warning { background: #2f1b1e !important; border-left-color: #f87171 !important; color: #fee2e2 !important; }
+  body.dark-mode .callout.define { background: #1d2038 !important; border-left-color: #60a5fa !important; color: #dbeafe !important; }
+  body.dark-mode .callout.production { background: #221c35 !important; border-left-color: #c084fc !important; color: #ede9fe !important; }
+  body.dark-mode .summary-box { background: #142921 !important; border-color: #059669 !important; color: #d1fae5 !important; }
+  body.dark-mode .summary-box h3 { color: #34d399 !important; }
+  body.dark-mode .diagram { background: #ffffff !important; border: 1px solid #cbd5e1 !important; border-radius: 12px !important; padding: 16px !important; box-shadow: 0 4px 14px rgba(0,0,0,0.3) !important; }
+  body.dark-mode .diagram-caption { color: #475569 !important; font-weight: 500 !important; }
+  .theme-toggle-btn {
+    position: fixed; top: 16px; right: 20px; z-index: 10000;
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;
+    border-radius: 20px; background: #ffffff; color: #1f2937; border: 1px solid #cbd5e1;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.25s ease; user-select: none;
+  }
+  .theme-toggle-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
+  body.dark-mode .theme-toggle-btn { background: #24273a !important; color: #e2e8f0 !important; border-color: #363a4f !important; box-shadow: 0 2px 10px rgba(0,0,0,0.4) !important; }
+  @media (max-width: 480px) {
+    .theme-toggle-btn { top: 12px; right: 12px; padding: 6px 10px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="container" id="top">
+
+  <header class="page-header">
+    <h1>Section 13 — Advanced Amazon S3</h1>
+    <p>Automating file lifecycle, triggering actions on uploads, speeding up transfers, and organizing objects with tags. Everything you need to manage S3 at scale.</p>
+  </header>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#l1">1. S3 Lifecycle Rules & S3 Analytics</a></li>
+      <li><a href="#l2">2. S3 Lifecycle Rules Hands-On</a></li>
+      <li><a href="#l3">3. S3 Event Notifications</a></li>
+      <li><a href="#l4">4. S3 Event Notifications Hands-On</a></li>
+      <li><a href="#l5">5. S3 Performance</a></li>
+      <li><a href="#l6">6. S3 Object Tags & Metadata</a></li>
+      <li><a href="#lsummary">Cheat Sheet</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <section class="lecture" id="l1">
+    <h2><span class="lecture-num">1</span>S3 Lifecycle Rules & S3 Analytics</h2>
+
+    <p>Files sitting in Amazon S3 get older. And older files are accessed less. If you keep everything in the fastest (and most expensive) storage class forever, your bill climbs unnecessarily. Lifecycle rules let you move files between storage tiers automatically on a schedule, or delete them when they're no longer needed.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Lifecycle rule</strong> — an AWS policy that automatically transitions objects to cheaper storage classes after a certain number of days, or deletes them entirely. It works without you lifting a finger after you set it up.
+    </div>
+
+    <h3>The Storage-Tier Staircase</h3>
+
+    <p>S3 offers multiple storage classes, each trading speed for cost. A typical journey looks like this: when a file is brand new, store it in <strong>Standard</strong> (instant access, highest price). After 60 days, move it to <strong>Standard-IA</strong> (slower access, cheaper). After 180 days, move it to <strong>Glacier Instant Retrieval</strong> (much slower, much cheaper). After a year, archive it to <strong>Deep Archive</strong> (extremely slow, lowest price).</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 170" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#6b7280"/>
+          </marker>
+        </defs>
+        <rect x="20" y="65" width="120" height="45" rx="6" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+        <text x="80" y="92" text-anchor="middle" font-size="11" font-weight="600">Standard</text>
+        <path d="M140,87 L230,87" stroke="#6b7280" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+        <rect x="230" y="65" width="120" height="45" rx="6" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="290" y="92" text-anchor="middle" font-size="11">Standard-IA</text>
+        <path d="M350,87 L440,87" stroke="#6b7280" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+        <rect x="440" y="65" width="140" height="45" rx="6" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="510" y="92" text-anchor="middle" font-size="11">Glacier Instant</text>
+        <path d="M580,87 L670,87" stroke="#6b7280" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+        <rect x="670" y="65" width="100" height="45" rx="6" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+        <text x="720" y="92" text-anchor="middle" font-size="10">Deep Archive</text>
+      </svg>
+    </div>
+    <p class="diagram-caption">Lifecycle rules move objects rightward through cheaper tiers as they age. Cost drops at each step.</p>
+
+    <h3>What a Lifecycle Rule Can Do</h3>
+
+    <p>Every lifecycle rule contains two types of actions, which you can combine:</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Transition action</strong> — moves an object from one storage class to a cheaper one after N days. The object stays; only its tier changes.
+    </div>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Expiration action</strong> — deletes an object permanently after N days, or cleans up incomplete multi-part uploads. This saves space entirely.
+    </div>
+
+    <p>Rules can target the entire bucket, a specific folder path (called a <strong>prefix</strong>), or only objects with particular <strong>tags</strong>.</p>
+
+    <h3>Real-World Example 1: Thumbnails and Source Photos</h3>
+
+    <p>An app uploads user profile photos and auto-generates thumbnails. Thumbnails can be remade from the original photo if needed, so they're cheap to delete. Original photos need instant access for 60 days (users might edit their profile), then can take up to 6 hours to retrieve (cold storage is fine for old photos users rarely request).</p>
+
+    <p><strong>Solution:</strong> Store original photos in Standard. Create one lifecycle rule to transition them to Glacier Instant after 60 days. Store thumbnails in a separate folder, keep them in One-Zone-IA (cheaper than Standard-IA, but accepts the risk of single-zone failure), and expire them after 60 days.</p>
+
+    <h3>Real-World Example 2: Compliance and Deletion Holds</h3>
+
+    <p>Your company's compliance rule: deleted files must be recoverable for 30 days, but only on request (so Standard-IA speed is acceptable). After 365 days total, delete them permanently.</p>
+
+    <p><strong>Solution:</strong> Enable S3 Versioning so that deleting a file just marks it deleted but keeps old versions. Then add a lifecycle rule: move non-current (old) versions to Standard-IA after 30 days, move them to Deep Archive after 180 days, and permanently delete all versions after 365 days.</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Lifecycle rules are the standard way production teams manage logs and backups. A logging system writes gigabytes of logs per day to S3. Without lifecycle rules, your bill is catastrophic. With them, logs roll through Standard (live queries), then Standard-IA (past-week analysis), then Glacier (compliance archive). After a year, delete them. This is so common that many companies automate it with a standard lifecycle policy applied to all new buckets.
+    </div>
+
+    <h3>Using S3 Analytics to Find the Right Timing</h3>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>S3 Analytics</strong> — a tool that watches your bucket's real usage patterns and recommends when to transition files to cheaper tiers. It generates daily CSV reports.
+    </div>
+
+    <p>If you're unsure whether to transition files after 30, 60, or 90 days, enable S3 Analytics. It tracks how often files of each age are accessed and suggests the right timing. Fair warning: it only works for Standard and Standard-IA transitions (not for Glacier or Deep Archive). And it takes 24 to 48 hours after you enable it to start showing meaningful data.</p>
+
+  </section>
+
+  <!-- 2 -->
+  <section class="lecture" id="l2">
+    <h2><span class="lecture-num">2</span>S3 Lifecycle Rules Hands-On</h2>
+
+    <p>Create a lifecycle rule inside your bucket's <strong>Management</strong> tab. After naming it and choosing its scope (all objects, or a specific prefix/tag), you select from five core actions:</p>
+
+    <table>
+      <tr><th>Action</th><th>What It Does</th></tr>
+      <tr><td>Transition current versions</td><td>Moves the active version of files through tiers. Example: Standard → Standard-IA after 30 days, then Glacier Instant after 90 days, then Deep Archive after 365 days.</td></tr>
+      <tr><td>Transition non-current versions</td><td>Moves old, replaced versions (only matters if Versioning is on). Example: move to Glacier Flexible Retrieval after 90 days since they're rarely accessed.</td></tr>
+      <tr><td>Expire current versions</td><td>Delete the active version after N days. Example: delete active logs after 700 days.</td></tr>
+      <tr><td>Expire non-current versions</td><td>Permanently remove old versions after N days to free space. Example: delete non-current versions after 700 days.</td></tr>
+      <tr><td>Delete expired delete markers & incomplete uploads</td><td>Housekeeping. Removes leftover temporary data and ghost markers from deleted files.</td></tr>
+    </table>
+
+    <p>The AWS Console shows a timeline preview before you save, so you can see exactly when each file version gets moved or deleted. You can chain multiple transitions in one rule — Standard → Standard-IA → Glacier → Deep Archive — all in a single policy.</p>
+
+  </section>
+
+  <!-- 3 -->
+  <section class="lecture" id="l3">
+    <h2><span class="lecture-num">3</span>S3 Event Notifications</h2>
+
+    <p>S3 can watch for specific events inside a bucket — file uploaded, file deleted, file restored from archive, replication completed — and send an alert message to another AWS service. You can filter by file type too (e.g., trigger only for <code>.jpg</code> files).</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>S3 Event Notification</strong> — S3 sends a message describing what happened in the bucket to a destination service (SNS, SQS, Lambda, or EventBridge). The destination then reacts: processes the file, logs the event, triggers a workflow, etc.
+    </div>
+
+    <h3>Destinations: Three Direct Paths, Plus EventBridge</h3>
+
+    <p>You can send notifications directly to <strong>SNS</strong> (Simple Notification Service — a pub/sub messaging system), <strong>SQS</strong> (Simple Queue Service — a message queue), or <strong>Lambda</strong> (serverless code execution). All three paths require a resource-based policy on the destination that grants S3 permission to deliver messages.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="80" width="140" height="50" rx="6" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+        <text x="90" y="110" text-anchor="middle" font-weight="600">S3 Bucket</text>
+        <path d="M160,90 L300,40" stroke="#9ca3af" stroke-width="2" fill="none"/>
+        <rect x="300" y="15" width="130" height="45" rx="6" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="365" y="42" text-anchor="middle" font-size="11">SNS Topic</text>
+        <path d="M160,105 L300,105" stroke="#9ca3af" stroke-width="2" fill="none"/>
+        <rect x="300" y="82" width="130" height="45" rx="6" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="365" y="109" text-anchor="middle" font-size="11">SQS Queue</text>
+        <path d="M160,120 L300,165" stroke="#9ca3af" stroke-width="2" fill="none"/>
+        <rect x="300" y="145" width="130" height="45" rx="6" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+        <text x="365" y="172" text-anchor="middle" font-size="11">Lambda Function</text>
+        <path d="M160,95 L560,60" stroke="#9ca3af" stroke-width="2" fill="none"/>
+        <rect x="560" y="35" width="180" height="50" rx="6" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+        <text x="650" y="58" text-anchor="middle" font-size="11" font-weight="600">Amazon EventBridge</text>
+        <text x="650" y="75" text-anchor="middle" font-size="9" fill="#6b7280">→ 18+ destinations</text>
+      </svg>
+    </div>
+    <p class="diagram-caption">S3 notifications can go directly to SNS, SQS, or Lambda. Or send everything to EventBridge for advanced routing and filtering.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>EventBridge</strong> — an event routing service that can receive S3 notifications and forward them to 18+ AWS destinations, with advanced filtering and transformation rules. It's more flexible than the direct SNS/SQS/Lambda paths.
+    </div>
+
+    <h3>How to Grant Permission</h3>
+
+    <p>S3 does not use an IAM Role to send event notifications. Instead, the <strong>destination resource</strong> (SNS topic, SQS queue, or Lambda function) must have its own resource-based policy that explicitly allows S3 to deliver to it. Think of it like a lock on the receiving end.</p>
+
+    <div class="callout warning">
+      <strong>Common exam trap:</strong> Many people mistakenly think S3 needs an IAM Role to send notifications. It doesn't. The destination needs the permission, not S3 itself. If your SNS topic, SQS queue, or Lambda function doesn't have a policy allowing S3 to send messages, the notification will fail silently or throw an error when you try to configure it.
+    </div>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Image upload workflows are the textbook use case. User uploads a photo to S3. S3 sends an event to an SQS queue. A background worker listening to that queue picks up the message, resizes the photo into thumbnail and medium versions, and writes them back to S3 — all automatically. Without event notifications, you'd have to poll S3 constantly asking "did anything change?" With them, S3 pushes the change to you.
+    </div>
+
+  </section>
+
+  <!-- 4 -->
+  <section class="lecture" id="l4">
+    <h2><span class="lecture-num">4</span>S3 Event Notifications Hands-On</h2>
+
+    <p>Open your bucket's <strong>Properties → Event notifications</strong> tab. You can either create a direct notification to SNS/SQS/Lambda, or enable the EventBridge integration toggle to stream all events to EventBridge instead.</p>
+
+    <h3>Step-by-Step: Send a Notification to SQS When Files Are Uploaded</h3>
+
+    <ol>
+      <li>Create an SQS queue first (e.g., <code>DemoS3Notifications</code>).</li>
+      <li>In your S3 bucket, create an event notification with event type <strong>All object create events</strong>, and select your SQS queue as the destination.</li>
+      <li>Before saving, edit the SQS queue's <strong>Access Policy</strong> to allow S3 to send messages. The policy should permit <code>sqs:SendMessage</code> from the S3 service principal.</li>
+      <li>Save the notification. AWS will send a test message to confirm the queue is reachable.</li>
+    </ol>
+
+    <p>Upload a real file to the bucket. Within seconds, a message arrives in the SQS queue describing the upload event, including the object key and timestamp. Your application can now consume that message and react — resize an image, index the filename in a database, whatever you need.</p>
+
+    <div class="callout warning">
+      <strong>Important:</strong> If the SQS queue policy is not set correctly, S3 will reject the notification configuration with an error. AWS validates that S3 has permission before it saves your settings.
+    </div>
+
+  </section>
+
+  <!-- 5 -->
+  <section class="lecture" id="l5">
+    <h2><span class="lecture-num">5</span>S3 Performance</h2>
+
+    <h3>Understanding Baseline Limits</h3>
+
+    <p>S3 is designed to handle massive scale. But it has per-prefix limits on request rates. A prefix is the folder path in the object key.</p>
+
+    <p><strong>Baseline request rates per prefix:</strong></p>
+
+    <ul>
+      <li>3,500 PUT / COPY / POST / DELETE requests per second, per prefix</li>
+      <li>5,500 GET / HEAD requests per second, per prefix</li>
+    </ul>
+
+    <p>Here's the key insight: there is no limit on how many prefixes you can create. So if you need 10,000 GET requests per second, create two prefixes and balance traffic across them. Problem solved.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Prefix</strong> — the folder path part of an S3 object key. In the key <code>my-app/logs/2024-01-15/file.log</code>, the prefix is <code>my-app/logs/2024-01-15/</code>. Each prefix gets its own request rate quota.
+    </div>
+
+    <h3>Speeding Up Large Uploads: Multi-Part Upload</h3>
+
+    <p>Uploading a 5 GB file over a standard internet connection is slow. Multi-part upload splits the file into smaller chunks and uploads them in parallel.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Multi-part upload</strong> — S3 feature that breaks a large file into smaller parts, uploads them simultaneously over multiple connections, and reassembles them on the server side. Recommended for files over 100 MB, required for files over 5 GB.
+    </div>
+
+    <p><strong>Why it matters:</strong> Your laptop might upload one part at a time over a single connection. If that connection drops after uploading 50% of the file, you restart from zero. With multi-part upload, you only re-upload the failed part. Plus, multiple parts upload in parallel, so your effective bandwidth is higher.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 700 150" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="55" width="100" height="40" rx="6" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+        <text x="70" y="80" text-anchor="middle" font-size="11" font-weight="600">Large File</text>
+        <path d="M120,60 L230,25" stroke="#9ca3af" stroke-width="2" fill="none"/>
+        <path d="M120,75 L230,75" stroke="#9ca3af" stroke-width="2" fill="none"/>
+        <path d="M120,90 L230,125" stroke="#9ca3af" stroke-width="2" fill="none"/>
+        <rect x="230" y="8" width="90" height="34" rx="5" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="275" y="29" text-anchor="middle" font-size="10">Part 1</text>
+        <rect x="230" y="58" width="90" height="34" rx="5" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="275" y="79" text-anchor="middle" font-size="10">Part 2</text>
+        <rect x="230" y="108" width="90" height="34" rx="5" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="275" y="129" text-anchor="middle" font-size="10">Part 3</text>
+        <path d="M320,25 L470,75" stroke="#9ca3af" stroke-width="2" fill="none"/>
+        <path d="M320,75 L470,75" stroke="#9ca3af" stroke-width="2" fill="none"/>
+        <path d="M320,125 L470,75" stroke="#9ca3af" stroke-width="2" fill="none"/>
+        <rect x="470" y="55" width="150" height="40" rx="6" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+        <text x="545" y="80" text-anchor="middle" font-size="11" font-weight="600">S3 (reassembled)</text>
+      </svg>
+    </div>
+    <p class="diagram-caption">Multi-part upload splits one large file into parts, uploads them in parallel, and S3 stitches them back together.</p>
+
+    <h3>Speeding Up Long-Distance Transfers: S3 Transfer Acceleration</h3>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>S3 Transfer Acceleration</strong> — routes your upload or download through the nearest AWS Edge Location using CloudFront's global network, then over AWS's private high-speed backbone to the bucket. Faster for geographically distant uploads.
+    </div>
+
+    <p>Imagine you're uploading files from Mumbai to an S3 bucket in Northern Virginia. Standard upload goes over the public internet. Transfer Acceleration routes you through the Mumbai edge location (nearby), then uses AWS's fiber-optic private network (extremely fast) to reach Virginia. Result: much faster transfer, especially for large files.</p>
+
+    <p>Transfer Acceleration works with multi-part upload for maximum speed on huge files.</p>
+
+    <h3>Speeding Up Large Downloads: S3 Byte-Range Fetches</h3>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>S3 Byte-range fetch</strong> — requests specific byte ranges of a file (e.g., bytes 0-999, 1000-1999) in parallel GET requests. Downloads specific chunks simultaneously instead of downloading the entire file sequentially.
+    </div>
+
+    <p><strong>Real uses:</strong> Download a 10 GB video file by requesting bytes 0-1GB, 1GB-2GB, etc. in parallel. Download only the first 100 bytes of a file to read its header without fetching the rest. If a single byte-range request fails, retry only that chunk instead of the entire file.</p>
+
+  </section>
+
+  <!-- 6 -->
+  <section class="lecture" id="l6">
+    <h2><span class="lecture-num">6</span>S3 Object Tags & Metadata</h2>
+
+    <h3>Two Ways to Label Objects</h3>
+
+    <h4>User-Defined Metadata</h4>
+
+    <p>Custom key-value pairs you assign to an object during upload. Metadata keys must start with the prefix <code>x-amz-meta-</code> to distinguish them from AWS system metadata (like <code>Content-Length</code> or <code>Content-Type</code>).</p>
+
+    <p><strong>Example:</strong> <code>x-amz-meta-source: mobile-app</code> or <code>x-amz-meta-user-id: 12345</code>.</p>
+
+    <h4>Object Tags</h4>
+
+    <p>Key-value pairs attached to objects independently. Tags are useful for organizing objects, controlling access via IAM policies, and tracking costs.</p>
+
+    <p><strong>Example:</strong> <code>Project: AlphaRelease</code>, <code>Confidential: True</code>, <code>CostCenter: Engineering</code>.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Object tags</strong> — AWS-managed key-value labels on S3 objects used for fine-grained IAM access control, lifecycle rule targeting, and cost allocation. They're different from user-defined metadata.
+    </div>
+
+    <h3>A Critical Limitation: No Built-In Search</h3>
+
+    <div class="callout warning">
+      <strong>Important:</strong> S3 cannot search objects by metadata or tag values. There is no built-in "find all objects with Department=Finance" query in S3.
+    </div>
+
+    <p>If you need to search objects by tags or metadata, build an external searchable index in a database like Amazon DynamoDB. When uploading a file to S3, also write its key, tags, and metadata to DynamoDB. Your application then queries DynamoDB (which is fast and searchable), gets back matching object keys, and fetches those objects from S3.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 700 130" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="45" width="150" height="45" rx="6" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+        <text x="95" y="72" text-anchor="middle" font-size="11">User Search Query</text>
+        <path d="M170,67 L280,67" stroke="#9ca3af" stroke-width="2" fill="none"/>
+        <rect x="280" y="45" width="160" height="45" rx="6" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="360" y="72" text-anchor="middle" font-size="11">DynamoDB Index</text>
+        <path d="M440,67 L560,67" stroke="#9ca3af" stroke-width="2" fill="none"/>
+        <rect x="560" y="45" width="130" height="45" rx="6" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+        <text x="625" y="72" text-anchor="middle" font-size="11">S3 Objects</text>
+      </svg>
+    </div>
+    <p class="diagram-caption">S3 itself can't search metadata. Build a separate index in DynamoDB, query it to find matching object keys, then fetch from S3.</p>
+
+  </section>
+
+  <hr class="section-break">
+
+  <!-- Final Summary -->
+  <section class="lecture" id="lsummary">
+    <h2>📋 Cheat Sheet</h2>
+
+    <div class="summary-box">
+      <h3>Core Concepts</h3>
+      <table>
+        <tr><th>Feature</th><th>What It Does</th></tr>
+        <tr><td>Lifecycle Rules</td><td>Automatically transition objects to cheaper storage tiers or delete them after a set number of days.</td></tr>
+        <tr><td>S3 Analytics</td><td>Analyzes usage patterns and recommends optimal transition timings (Standard ↔ Standard-IA only).</td></tr>
+        <tr><td>Event Notifications</td><td>S3 sends an alert to SNS, SQS, Lambda, or EventBridge when specific events occur (upload, delete, restore).</td></tr>
+        <tr><td>Multi-Part Upload</td><td>Split large files into chunks and upload them in parallel for speed and resume-on-failure resilience.</td></tr>
+        <tr><td>Transfer Acceleration</td><td>Route transfers through AWS Edge Locations and private backbone for faster long-distance uploads/downloads.</td></tr>
+        <tr><td>Byte-Range Fetches</td><td>Request specific byte ranges of a file in parallel to speed up downloads or fetch partial file headers.</td></tr>
+        <tr><td>Object Tags</td><td>Key-value labels for access control, lifecycle targeting, and cost reporting. Not searchable directly in S3.</td></tr>
+      </table>
+    </div>
+
+    <div class="summary-box">
+      <h3>Key Facts</h3>
+      <ul>
+        <li>Lifecycle rules move objects through tiers to reduce cost: Standard → Standard-IA → Glacier Instant → Deep Archive.</li>
+        <li>S3 Analytics generates recommendations but only for Standard ↔ Standard-IA transitions. Takes 24-48 hours to start providing data.</li>
+        <li>Event Notification destinations (SNS, SQS, Lambda) require resource-based policies allowing S3 to deliver messages. S3 itself doesn't need an IAM Role.</li>
+        <li>Performance baseline: 3,500 PUT/COPY/POST/DELETE and 5,500 GET/HEAD requests per second, per prefix. No limit on prefix count.</li>
+        <li>Multi-part upload is recommended for files over 100 MB, required for files over 5 GB.</li>
+        <li>Transfer Acceleration speeds up transfers to buckets in distant regions via Edge Locations.</li>
+        <li>S3 metadata and tags cannot be searched directly. Build an external DynamoDB index to enable searching.</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>When to Use Each Feature</h3>
+      <ul>
+        <li><strong>Lifecycle Rules:</strong> Managing logs, backups, or any files that get older and cheaper to access over time.</li>
+        <li><strong>Event Notifications:</strong> Triggering automated workflows (image resizing, indexing, notifications) when objects are uploaded or deleted.</li>
+        <li><strong>Multi-Part Upload:</strong> Uploading files larger than 100 MB where speed and resume capability matter.</li>
+        <li><strong>Transfer Acceleration:</strong> Uploading or downloading from geographically distant regions where public internet speed is a bottleneck.</li>
+        <li><strong>Byte-Range Fetches:</strong> Downloading large files where parallel chunks and partial header reads save time.</li>
+        <li><strong>Object Tags:</strong> Fine-grained access control via IAM, organizing objects, and cost tracking by business unit.</li>
+      </ul>
+    </div>
+
+  </section>
+
+  <div class="top-link"><a href="#top">↑ Back to top</a></div>
+
+</div>
+
+<script>
+(function () {
+  if (document.querySelector('.tips-trigger')) return;
+
+  const glossary = [
+    ['access key', 'Long-term credential pair for programmatic access: Access Key ID plus Secret Access Key. Treat it like a password.'],
+    ['ARN', 'Amazon Resource Name — the unique ID AWS gives every resource so a policy can target exactly one thing.'],
+    ['byte-range fetch', 'S3 feature that requests specific byte ranges of a file in parallel for faster downloads and partial file reads.'],
+    ['CloudFront', 'AWS content delivery network that caches content at edge locations worldwide to speed up downloads.'],
+    ['EventBridge', 'Event routing service that receives events from AWS services and forwards them to 18+ destinations with filtering.'],
+    ['lifecycle rule', 'AWS policy that automatically transitions S3 objects to cheaper storage tiers or deletes them after a set number of days.'],
+    ['metadata', 'Custom key-value pairs (prefixed with x-amz-meta-) attached to S3 objects during upload.'],
+    ['multi-part upload', 'S3 feature that splits a large file into chunks, uploads them in parallel, and reassembles them server-side.'],
+    ['object tag', 'Key-value label attached to S3 objects for access control, lifecycle targeting, and cost tracking.'],
+    ['prefix', 'The folder path part of an S3 object key. Each prefix has its own request rate quota for performance.'],
+    ['S3 Analytics', 'Tool that analyzes S3 bucket usage and recommends optimal storage transition timings.'],
+    ['storage class', 'The tier at which an S3 object is stored (Standard, Standard-IA, Glacier, Deep Archive, etc.). Each has different cost and access speed.'],
+    ['transfer acceleration', 'S3 feature that routes uploads/downloads through AWS Edge Locations and private backbone for faster long-distance transfers.'],
+    ['transition action', 'A lifecycle rule action that moves an object from one storage class to a cheaper one after N days.'],
+    ['expiration action', 'A lifecycle rule action that permanently deletes an object or older versions after N days.'],
+    ['SNS', 'Simple Notification Service — pub/sub messaging service that can receive S3 event notifications and fan them out to subscribers.'],
+    ['SQS', 'Simple Queue Service — message queue that can receive S3 event notifications for background processing.'],
+    ['Lambda', 'Serverless compute service that can be triggered by S3 event notifications to run code in response.'],
+    ['CLI', 'Command Line Interface. For AWS, this means running AWS operations from terminal commands.'],
+    ['DynamoDB', 'Serverless NoSQL database useful for building searchable indexes of S3 object metadata and tags.'],
+    ['region', 'Geographic AWS area containing multiple Availability Zones, such as us-east-1 or eu-west-1.'],
+    ['versioning', 'S3 feature that keeps all versions of an object (old and new) so deletions don't lose data immediately.']
+  ];
+
+  const pageText = document.body.innerText.replace(/\s+/g, ' ');
+  const found = glossary.filter(([term]) => new RegExp('(^|[^A-Za-z0-9])' + escapeRegExp(term) + '([^A-Za-z0-9]|$)', 'i').test(pageText));
+  if (!found.length) return;
+
+  const button = document.createElement('button');
+  button.className = 'tips-trigger';
+  button.type = 'button';
+  button.setAttribute('aria-haspopup', 'dialog');
+  button.setAttribute('aria-expanded', 'false');
+  button.innerHTML = '<span class="tips-icon" aria-hidden="true">💡</span><span>Glossary</span>';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'tips-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'tips-title');
+  overlay.innerHTML = [
+    '<div class="tips-panel">',
+    '<div class="tips-header">',
+    '<h2 id="tips-title">💡 Every term on this page</h2>',
+    '<button class="tips-close" type="button" aria-label="Close glossary">Close</button>',
+    '</div>',
+    '<div class="tips-body">',
+    '<p class="tips-intro">A quick lookup if you lost the thread anywhere on this page.</p>',
+    '<ul class="tips-list">' + found.map(([term, tip]) => '<li><strong>' + escapeHtml(term) + '</strong>' + escapeHtml(tip) + '</li>').join('') + '</ul>',
+    '</div>',
+    '</div>'
+  ].join('');
+
+  document.body.appendChild(button);
+  document.body.appendChild(overlay);
+
+  const closeButton = overlay.querySelector('.tips-close');
+  function openTips() {
+    overlay.classList.add('open');
+    button.setAttribute('aria-expanded', 'true');
+    closeButton.focus();
+  }
+  function closeTips() {
+    overlay.classList.remove('open');
+    button.setAttribute('aria-expanded', 'false');
+    button.focus();
+  }
+
+  button.addEventListener('click', openTips);
+  closeButton.addEventListener('click', closeTips);
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) closeTips();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && overlay.classList.contains('open')) closeTips();
+  });
+
+  function escapeRegExp(value) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
+  }
+}());
+</script>
+
+<!-- Dark Theme Toggle Button -->
+<button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme" title="Toggle Light/Dark Theme">
+  <span class="theme-toggle-icon">🌙</span>
+  <span class="theme-toggle-text">Dark</span>
+</button>
+
+<script id="dark-theme-script">
+(function() {
+  function setupThemeToggle() {
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+
+    function syncUI() {
+      var isDark = document.documentElement.classList.contains('dark-mode') || document.body.classList.contains('dark-mode');
+      var icon = btn.querySelector('.theme-toggle-icon');
+      var text = btn.querySelector('.theme-toggle-text');
+      if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+      if (text) text.textContent = isDark ? 'Light' : 'Dark';
+    }
+
+    if (document.documentElement.classList.contains('dark-mode')) {
+      document.body.classList.add('dark-mode');
+    }
+    syncUI();
+
+    btn.addEventListener('click', function() {
+      var isDark = document.documentElement.classList.toggle('dark-mode');
+      document.body.classList.toggle('dark-mode', isDark);
+      localStorage.setItem('aws-notes-theme', isDark ? 'dark' : 'light');
+      syncUI();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupThemeToggle);
+  } else {
+    setupThemeToggle();
+  }
+})();
+</script>
+</body>
+</html>

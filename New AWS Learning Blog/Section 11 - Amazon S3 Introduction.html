@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script id="dark-theme-init">
+(function() {
+  var saved = localStorage.getItem('aws-notes-theme');
+  if (saved === 'dark' || (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark-mode');
+  }
+})();
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 11 — Amazon S3 Introduction (Blog Edition)</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --card: #f9fafb;
+    --accent: #d97706;
+    --accent-dark: #b45309;
+    --blue: #2563eb;
+    --green: #059669;
+    --purple: #7c3aed;
+    --red: #dc2626;
+    --code-bg: #f3f4f6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+  }
+  header.page-header {
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  header.page-header h1 {
+    margin: 0 0 6px 0;
+    font-size: 28px;
+    color: var(--accent-dark);
+  }
+  header.page-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14.5px;
+  }
+
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+  }
+  nav.toc h2 {
+    margin-top: 0;
+    font-size: 16px;
+    color: var(--accent-dark);
+  }
+  nav.toc ol {
+    margin: 0;
+    padding-left: 20px;
+    columns: 2;
+  }
+  nav.toc li { margin-bottom: 6px; font-size: 14px; }
+  nav.toc a { color: var(--blue); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  section.lecture {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 26px;
+    margin-bottom: 26px;
+    background: #fff;
+    scroll-margin-top: 16px;
+  }
+  section.lecture h2 {
+    margin-top: 0;
+    font-size: 20px;
+    color: #111827;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 8px;
+  }
+  .lecture-num {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 2px 8px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  h3 { color: var(--accent-dark); font-size: 16.5px; margin-bottom: 8px; margin-top: 26px; }
+
+  p { margin: 0 0 14px; }
+
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: #fffbeb;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 15px;
+  }
+  .callout.tip { border-left-color: var(--green); background: #ecfdf5; }
+  .callout.warning { border-left-color: var(--red); background: #fef2f2; }
+  .callout.define { border-left-color: var(--blue); background: #eff6ff; }
+  .callout.production { border-left-color: var(--purple); background: #f5f3ff; }
+  .callout strong { color: inherit; }
+  .callout-label {
+    display: block;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    margin-bottom: 4px;
+    opacity: 0.75;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th { background: var(--card); color: var(--accent-dark); }
+  tr:nth-child(even) td { background: #fcfcfd; }
+
+  code {
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 16px 0;
+  }
+  pre code { background: none; padding: 0; }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  .diagram {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 18px 0;
+    text-align: center;
+    overflow-x: auto;
+  }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram-caption { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  .top-link { font-size: 12px; text-align: right; }
+  .top-link a { color: var(--muted); text-decoration: none; }
+  .top-link a:hover { text-decoration: underline; }
+
+  hr.section-break { border: none; border-top: 2px dashed var(--border); margin: 36px 0; }
+
+  .summary-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 14px;
+  }
+  .summary-box h3 { color: var(--green); margin-top: 0; }
+
+  @media (max-width: 1024px) {
+    .container { padding-left: 20px; padding-right: 20px; }
+    nav.toc ol { columns: 2; }
+  }
+  @media (max-width: 860px) {
+    .container { padding: 20px 18px 60px; }
+    header.page-header h1 { font-size: 22px; }
+    nav.toc ol { columns: 1; }
+    section.lecture { padding: 18px 20px; }
+    table { font-size: 13px; }
+    th, td { padding: 7px 9px; }
+  }
+  @media (max-width: 480px) {
+    .container { padding: 16px 14px 50px; }
+    header.page-header h1 { font-size: 19px; line-height: 1.3; }
+    header.page-header p { font-size: 13px; }
+    nav.toc { padding: 14px 16px; border-radius: 10px; }
+    nav.toc ol { columns: 1; padding-left: 16px; }
+    nav.toc li { font-size: 14px; margin-bottom: 8px; }
+    section.lecture { padding: 16px 16px; border-radius: 10px; margin-bottom: 16px; }
+    section.lecture h2 { font-size: 17px; line-height: 1.3; }
+    h3 { font-size: 15px; }
+    table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; font-size: 13px; white-space: nowrap; }
+    th, td { padding: 7px 10px; }
+    code { font-size: 12.5px; word-break: break-all; }
+    ul, ol { padding-left: 18px; }
+    li { font-size: 14.5px; margin-bottom: 8px; }
+    .callout, .summary-box { padding: 10px 13px; font-size: 14px; }
+    .top-link { font-size: 13px; }
+  }
+  @media (max-width: 360px) {
+    .container { padding: 12px 12px 40px; }
+    section.lecture h2 { font-size: 16px; }
+  }
+
+  /* Tips popup for assumed AWS terms and prerequisite concepts */
+  .tips-trigger {
+    position: fixed; right: 18px; bottom: 18px; z-index: 999;
+    display: inline-flex; align-items: center; gap: 8px;
+    min-height: 44px; padding: 10px 14px;
+    border: 1px solid #f59e0b; border-radius: 999px;
+    background: #fffbeb; color: #92400e;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+    cursor: pointer; font: inherit; font-weight: 700;
+  }
+  .tips-trigger:hover { background: #fef3c7; }
+  .tips-trigger .tips-icon { font-size: 1.2rem; line-height: 1; }
+  .tips-overlay {
+    position: fixed; inset: 0; z-index: 1000; display: none;
+    align-items: center; justify-content: center; padding: 18px;
+    background: rgba(17, 24, 39, 0.46);
+  }
+  .tips-overlay.open { display: flex; }
+  .tips-panel {
+    width: min(760px, 100%); max-height: min(76vh, 720px); overflow: auto;
+    background: #ffffff; color: var(--text, #1f2937);
+    border: 1px solid #fcd34d; border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  }
+  .tips-header {
+    position: sticky; top: 0; display: flex; align-items: center;
+    justify-content: space-between; gap: 12px; padding: 16px 18px;
+    background: #fffbeb; border-bottom: 1px solid #fde68a;
+  }
+  .tips-header h2 { margin: 0; color: #92400e; font-size: 1.1rem; }
+  .tips-close {
+    border: 1px solid #f59e0b; border-radius: 8px; background: #ffffff;
+    color: #92400e; cursor: pointer; font: inherit; font-weight: 700;
+    line-height: 1; padding: 7px 10px;
+  }
+  .tips-body { padding: 16px 18px 18px; }
+  .tips-intro { margin: 0 0 12px; color: var(--muted, #6b7280); font-size: 0.95rem; }
+  .tips-list {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px; margin: 0; padding: 0; list-style: none;
+  }
+  .tips-list li { margin: 0; padding: 10px 12px; border: 1px solid #fde68a; border-radius: 8px; background: #fffdf5; }
+  .tips-list strong { display: block; margin-bottom: 3px; color: #92400e; }
+  @media (max-width: 480px) {
+    .tips-trigger { right: 12px; bottom: 12px; padding: 10px 12px; }
+    .tips-trigger span:not(.tips-icon) { display: none; }
+    .tips-overlay { padding: 10px; }
+    .tips-panel { max-height: 82vh; }
+    .tips-list { grid-template-columns: 1fr; }
+  }
+</style>
+<style id="dark-theme-styles">
+  html.dark-mode, body.dark-mode {
+    --bg: #181926; --card-bg: #222436; --card: #222436; --border: #33384f;
+    --text: #c0caf5; --text-muted: #94a3b8; --muted: #94a3b8; --code-bg: #13141f;
+    --accent: #f59e0b; --accent-dark: #fbbf24; --green: #34d399; --red: #f87171;
+    --purple: #c084fc; --blue: #60a5fa;
+    background-color: #181926 !important; color: #c0caf5 !important;
+  }
+  body.dark-mode { background-color: #181926 !important; color: #c0caf5 !important; }
+  body.dark-mode header.page-header h1 { color: #fbbf24 !important; }
+  body.dark-mode header.page-header p { color: #94a3b8 !important; }
+  body.dark-mode h2, body.dark-mode h3 { color: #f59e0b !important; }
+  body.dark-mode a { color: #60a5fa; }
+  body.dark-mode nav.toc { background: #1f2335 !important; border-color: #33384f !important; }
+  body.dark-mode nav.toc h2 { color: #fbbf24 !important; }
+  body.dark-mode nav.toc a { color: #60a5fa !important; }
+  body.dark-mode section.lecture { background: #222436 !important; border-color: #33384f !important; color: #c0caf5 !important; }
+  body.dark-mode section.lecture h2 { color: #e2e8f0 !important; border-bottom-color: #33384f !important; }
+  body.dark-mode table { border-color: #33384f !important; }
+  body.dark-mode th, body.dark-mode td { border-color: #33384f !important; }
+  body.dark-mode th { background: #1f2335 !important; color: #fbbf24 !important; }
+  body.dark-mode td { color: #cbd5e1 !important; }
+  body.dark-mode tr:nth-child(even) td { background: #1a1d2d !important; }
+  body.dark-mode code { background: #13141f !important; color: #e2e8f0 !important; border: 1px solid #2e324a !important; }
+  body.dark-mode pre { background: #13141f !important; color: #e2e8f0 !important; border-color: #2e324a !important; }
+  body.dark-mode .callout { background: #25231c !important; border-left-color: #f59e0b !important; color: #fef3c7 !important; }
+  body.dark-mode .callout.tip { background: #142921 !important; border-left-color: #34d399 !important; color: #d1fae5 !important; }
+  body.dark-mode .callout.warning { background: #2f1b1e !important; border-left-color: #f87171 !important; color: #fee2e2 !important; }
+  body.dark-mode .callout.define { background: #1d2038 !important; border-left-color: #60a5fa !important; color: #dbeafe !important; }
+  body.dark-mode .callout.production { background: #221c35 !important; border-left-color: #c084fc !important; color: #ede9fe !important; }
+  body.dark-mode .summary-box { background: #142921 !important; border-color: #059669 !important; color: #d1fae5 !important; }
+  body.dark-mode .summary-box h3 { color: #34d399 !important; }
+  body.dark-mode .diagram { background: #ffffff !important; border: 1px solid #cbd5e1 !important; border-radius: 12px !important; padding: 16px !important; box-shadow: 0 4px 14px rgba(0,0,0,0.3) !important; }
+  body.dark-mode .diagram-caption { color: #475569 !important; font-weight: 500 !important; }
+  .theme-toggle-btn {
+    position: fixed; top: 16px; right: 20px; z-index: 10000;
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;
+    border-radius: 20px; background: #ffffff; color: #1f2937; border: 1px solid #cbd5e1;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.25s ease; user-select: none;
+  }
+  .theme-toggle-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
+  body.dark-mode .theme-toggle-btn { background: #24273a !important; color: #e2e8f0 !important; border-color: #363a4f !important; box-shadow: 0 2px 10px rgba(0,0,0,0.4) !important; }
+  @media (max-width: 480px) {
+    .theme-toggle-btn { top: 12px; right: 12px; padding: 6px 10px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="container" id="top">
+
+  <header class="page-header">
+    <h1>Section 11 — Amazon S3 Introduction</h1>
+    <p>Infinitely scalable file storage that powers nearly every modern application. Learn buckets, access control, versioning, and why S3 is the go-to choice for backup and data that needs to stay safe.</p>
+  </header>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#l1">1. What S3 Does (And Why It Matters)</a></li>
+      <li><a href="#l2">2. Buckets and Objects</a></li>
+      <li><a href="#l3">3. Creating and Uploading — Hands-On</a></li>
+      <li><a href="#l4">4. Making Files Public with Bucket Policies</a></li>
+      <li><a href="#l5">5. Static Website Hosting</a></li>
+      <li><a href="#l6">6. Versioning — Never Lose a File Again</a></li>
+      <li><a href="#l7">7. Replication — Backup Across Regions</a></li>
+      <li><a href="#l8">8. Storage Classes — Balancing Cost and Speed</a></li>
+      <li><a href="#lsummary">Cheat Sheet</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <section class="lecture" id="l1">
+    <h2><span class="lecture-num">1</span>What S3 Does (And Why It Matters)</h2>
+
+    <p>Most applications need somewhere safe to store files that doesn't disappear when a server restarts. S3 solves this problem at planetary scale — from tiny startup projects to companies storing exabytes of data.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>S3</strong> stands for Simple Storage Service. It is AWS's infinitely scalable, durable file storage system that you can reach from anywhere in the world, and it secures your data with nearly unbreakable durability.
+    </div>
+
+    <h3>Why companies use S3</h3>
+    <p>Database backups that need to survive a data center failure. Videos and images that serve millions of users. Archives of old records that must legally exist forever. Log files from thousands of servers. Website static files (HTML, CSS, images) served directly without a web server running. All of these live in S3.</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Netflix streams movies by pulling video files from S3. Shopify stores product images there. Millions of databases back up to S3 every night. If S3 went down, a significant portion of the internet would notice within hours. This is why AWS invests enormous engineering effort into making it bulletproof.
+    </div>
+
+    <h3>The core guarantee: 11 Nines durability</h3>
+    <p>S3 promises that over a year, you have a 99.999999999% chance your data stays intact. That sounds like marketing math, but it means AWS expects to lose one object per million billion objects stored per year. Real companies bet their compliance, their customer data, and their legal requirements on this number.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Durability</strong> is the probability that a piece of data will not be lost due to disk failures, bit rot, or other hardware disasters. S3's 11 Nines durability means AWS stores your data across multiple physical disks and facilities automatically, so one failing hard drive never touches your files.
+    </div>
+
+    <h3>Three things every S3 setup needs</h3>
+    <p>First, you need a place to store files — that is a bucket. Second, you need to decide who can read or change those files — that is access control. Third, you need to know whether you are choosing between regular fast access, or cheaper cold storage for files you rarely touch. The rest is just details.</p>
+  </section>
+
+  <!-- 2 -->
+  <section class="lecture" id="l2">
+    <h2><span class="lecture-num">2</span>Buckets and Objects</h2>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Bucket</strong> is a top-level container in S3, kind of like a folder at the root level of a hard drive. Every file you store lives inside exactly one bucket. Bucket names must be globally unique across all AWS accounts worldwide.
+    </div>
+
+    <p>When you create a bucket, you pick an AWS Region — a physical geography where AWS has data centers, like Mumbai (<code>ap-south-1</code>) or Northern Virginia (<code>us-east-1</code>). Your bucket physically lives there, but the AWS console shows all your buckets together no matter which region each one sits in.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Region</strong> is a geographic area where AWS runs data centers. S3 buckets are created in one region, and replication can send copies to a different region for disaster recovery.
+    </div>
+
+    <h3>Bucket naming</h3>
+    <p>Names must use only lowercase letters, numbers, and hyphens. No uppercase, no underscores, and the name cannot look like an IP address. Pick something clear and descriptive like <code>my-company-backups-prod</code> or <code>project-alpha-assets-2024</code>. Names are globally unique, so if someone else already took it, you need a different one.</p>
+
+    <h3>Objects — the actual files</h3>
+    <p>An object is simply a file stored inside a bucket. Unlike folders on your computer, S3 does not actually have nested directories — it is a flat key-value store. But the console shows slashes as if they were folders, so you can organize visually.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Object</strong> is a file stored in S3. Every object has a unique <strong>Key</strong>, which is its full path name (e.g., <code>images/2024/vacation.jpg</code>). The Key consists of a <strong>Prefix</strong> (the path part, like <code>images/2024</code>) and an <strong>Object Name</strong> (the filename, like <code>vacation.jpg</code>).
+    </div>
+
+    <h3>Object size limits and metadata</h3>
+    <p>A single S3 object can be up to 50 terabytes. Files larger than 5 GB must use Multi-part Upload, which splits them into chunks and uploads them in parallel — much faster than uploading one giant file at once.</p>
+
+    <p>Each object can also carry metadata (key-value pairs describing what the file is), up to 10 tags (labels you can use for security rules or cost tracking), and a Version ID if you enable versioning on the bucket.</p>
+
+    <div class="callout tip">
+      <strong>Best practice:</strong> Use descriptive object keys and tags from day one. They make it far easier to find, organize, and apply security rules to files months later when your bucket has thousands of objects.
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="lecture" id="l3">
+    <h2><span class="lecture-num">3</span>Creating and Uploading — Hands-On</h2>
+
+    <h3>Step 1: Create a bucket</h3>
+    <ol>
+      <li>Open the AWS Management Console and go to S3.</li>
+      <li>Click <strong>Create bucket</strong> and give it a globally unique name.</li>
+      <li>Choose your Region (e.g., <code>eu-west-1</code> for Ireland).</li>
+      <li>Leave <strong>Block Public Access</strong> enabled — this is the default safe choice.</li>
+      <li>AWS automatically encrypts objects at rest using keys it manages, so encryption is already on.</li>
+      <li>Click <strong>Create</strong>.</li>
+    </ol>
+
+    <h3>Step 2: Upload a file</h3>
+    <ol>
+      <li>Inside your bucket, click <strong>Upload</strong>.</li>
+      <li>Select a file from your computer (like <code>photo.jpg</code>).</li>
+      <li>Click <strong>Upload</strong> and the file appears in your bucket as an object.</li>
+    </ol>
+
+    <h3>Viewing and downloading</h3>
+    <p>Click any object in the console to see its details, including its Object URL (the address where it lives on S3). Copying that URL into a browser and opening it gives an error — <code>AccessDenied</code> — because S3 buckets are private by default. Only users or services with permission can access files.</p>
+
+    <p>The console's <strong>Open</strong> button works because AWS generates a temporary signed URL just for you. This is a time-limited pass that lets you view the file without changing bucket permissions.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Pre-signed URL</strong> is a temporary, time-limited link that AWS generates to let someone view or download a private S3 file without needing permanent access. They expire after a set time (default is 15 minutes) and are perfect for sharing files securely.
+    </div>
+
+    <div class="callout warning">
+      <strong>Common mistake:</strong> Copying the raw Object URL and sharing it does not work because the bucket is private. Use pre-signed URLs for temporary sharing, or change the bucket policy if the file needs to be permanently public.
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="lecture" id="l4">
+    <h2><span class="lecture-num">4</span>Making Files Public with Bucket Policies</h2>
+
+    <p>By default, your S3 bucket is locked down tight — nobody can see or download anything without explicit permission. Sometimes you need to flip that. A website's logo, a public dataset, a photo gallery. That is where bucket policies come in.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Bucket Policy</strong> is a JSON permission document attached directly to a bucket. It controls who can do what to any object inside — read, write, delete, etc. It is the same JSON format you saw in the IAM section, but it lives on the bucket itself, not on a user.
+    </div>
+
+    <h3>How bucket policies work</h3>
+    <p>A bucket policy has the same basic structure as an IAM policy: an Effect (Allow or Deny), a Principal (who this applies to — often <code>*</code> for the entire public internet), an Action (which S3 operations), and a Resource (which objects or buckets).</p>
+
+    <pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::my-bucket/*"
+    }
+  ]
+}</code></pre>
+
+    <p>This policy says: anyone, anywhere, can read (GetObject) any file inside <code>my-bucket</code>. That is how you make a bucket public.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>ARN</strong> (Amazon Resource Name) is AWS's way of naming every single resource uniquely. For S3, <code>arn:aws:s3:::my-bucket/*</code> means "all objects in my-bucket". ARNs let policies target exactly what they need to, nothing more.
+    </div>
+
+    <h3>Steps to make files public</h3>
+    <ol>
+      <li>Go to your bucket and click the <strong>Permissions</strong> tab.</li>
+      <li>Scroll down to <strong>Block Public Access</strong> and click <strong>Edit</strong>.</li>
+      <li>Uncheck <strong>Block all public access</strong> and confirm the warning. (This is scary on purpose — AWS wants you to be intentional.)</li>
+      <li>Go to <strong>Bucket Policy</strong> and paste a policy that allows public read access, or use the AWS Policy Generator tool to build one with checkboxes.</li>
+      <li>Save, and now the raw Object URL works in any browser.</li>
+    </ol>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Publicly readable S3 buckets are a leading cause of data breaches — not because S3 is broken, but because someone forgets to set up the policy correctly and accidentally exposes millions of documents. Every major cloud provider has horror stories. The solution: use bucket policies carefully, audit them regularly, and keep Block Public Access on until you truly need to turn it off.
+    </div>
+
+    <div class="callout warning">
+      <strong>Gotcha:</strong> An IAM user can access an S3 object if either their IAM policy allows it OR the bucket policy allows it — unless there is an explicit Deny somewhere. Combining IAM policies, bucket policies, and the Block Public Access setting can get confusing fast. When in doubt, test the access from a browser in incognito mode as if you were a stranger.
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="lecture" id="l5">
+    <h2><span class="lecture-num">5</span>Static Website Hosting</h2>
+
+    <p>You do not need a web server to run a website. If your site is just HTML, CSS, JavaScript, and images — no backend code that changes on each request — S3 can host it directly.</p>
+
+    <h3>How it works</h3>
+    <p>You upload your website files (<code>index.html</code>, styles, images) to S3. Then you tell S3 which file to serve when someone visits the bucket's website endpoint. S3 generates a special website URL, and anyone who visits gets your pages. No servers to patch, no uptime to worry about, no EC2 instances to pay for.</p>
+
+    <h3>Steps to enable static hosting</h3>
+    <ol>
+      <li>Upload your website files to a bucket (at least an <code>index.html</code>).</li>
+      <li>Go to the bucket, click <strong>Properties</strong>, and scroll to <strong>Static website hosting</strong>.</li>
+      <li>Click <strong>Edit</strong>, select <strong>Enable</strong>, and type <code>index.html</code> as the index document.</li>
+      <li>Optionally, set an error page (usually <code>error.html</code>) for 404s.</li>
+      <li>Save. AWS gives you a unique website endpoint URL like <code>my-bucket.s3-website-eu-west-1.amazonaws.com</code>.</li>
+    </ol>
+
+    <h3>Public read permissions</h3>
+    <p>The bucket must have a public read policy (or at least allow the public to GetObject on all files). Otherwise, visitors get a 403 Forbidden error.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Public bucket</strong> means the bucket policy (or an ACL) allows anyone on the internet to read objects without signing in. Opposite of private, which is the default.
+    </div>
+
+    <div class="callout tip">
+      <strong>Production pattern:</strong> Many companies use S3 static hosting for their main marketing site, then use CloudFront (a content delivery network) in front of it to cache files globally and add HTTPS. This keeps bandwidth costs low and makes the site lightning-fast worldwide.
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="lecture" id="l6">
+    <h2><span class="lecture-num">6</span>Versioning — Never Lose a File Again</h2>
+
+    <p>You upload a file called <code>report.pdf</code>. A week later, you upload a new version by accident. The old one is gone. Or someone deletes a critical file and nobody notices for three weeks. Versioning prevents both nightmares.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Versioning</strong> in S3 keeps every old copy of a file whenever it is re-uploaded or changed. You can see the history, restore old versions, or permanently delete specific versions. It is turned off by default and must be enabled on the bucket.
+    </div>
+
+    <h3>How versioning works</h3>
+    <p>Once enabled, every file upload creates a new Version ID. S3 stores all of them. When you delete a file, S3 does not actually remove it — instead, it adds a Delete Marker on top, like stacking a sticky note saying "Hidden" on a document. The old file is still there; it just looks deleted in the console.</p>
+
+    <p>If you remove the Delete Marker, the file appears again. But if you delete a specific Version ID, that version is gone for good — permanent removal, no recovery.</p>
+
+    <div class="callout warning">
+      <strong>Important:</strong> Versioning increases storage costs because every version takes up space. If you have a large file that you update weekly, enabling versioning means you are paying for every copy. Plan accordingly.
+    </div>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 Best practice in production</span>
+      Most production systems enable versioning on any bucket that holds critical data — databases, backups, compliance records. It costs a bit extra in storage, but it turns accidental deletions from disasters into recoverable mistakes. When a developer accidentally runs <code>rm -rf /</code> on a production backup in S3, versioning is what saves the day.
+    </div>
+
+    <h3>Enabling versioning</h3>
+    <ol>
+      <li>Go to the bucket, click <strong>Properties</strong>, scroll to <strong>Versioning</strong>.</li>
+      <li>Click <strong>Edit</strong> and select <strong>Enable</strong>.</li>
+      <li>Save. Versioning is now on for all future uploads.</li>
+    </ol>
+
+    <div class="callout tip">
+      <strong>Good news:</strong> Versioning can only be enabled or suspended, never turned off (because AWS wants to preserve history). If you suspend it, new uploads stop getting version IDs, but old versions stay.
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="lecture" id="l7">
+    <h2><span class="lecture-num">7</span>Replication — Backup Across Regions</h2>
+
+    <p>Your bucket is in Mumbai, and Mumbai's entire data center goes offline. If you have not replicated your data anywhere else, you are in trouble. S3 Replication automatically copies new files to another bucket, letting you survive disasters.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Replication</strong> in S3 is automatic copying of objects from a source bucket to a destination bucket. It happens asynchronously (in the background) and requires versioning to be enabled on both buckets.
+    </div>
+
+    <h3>Two types</h3>
+    <p><strong>Cross-Region Replication (CRR)</strong> copies files to a bucket in a different Region — say, Mumbai to Northern Virginia. This survives regional disasters and lets users in different parts of the world access files from a bucket closer to them.</p>
+
+    <p><strong>Same-Region Replication (SRR)</strong> copies files to a bucket in the same Region, usually in a different account. This is useful for log aggregation or testing — replicating live production data to a staging account so you can safely practice disaster recovery.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>CRR</strong> (Cross-Region Replication) copies files across AWS Regions automatically. <strong>SRR</strong> (Same-Region Replication) copies them within the same Region. Both require versioning enabled.
+    </div>
+
+    <h3>Critical replication rules</h3>
+    <p>Only newly uploaded objects replicate automatically. If you have 1 million existing files in the source bucket, they do not instantly appear in the destination — you must run S3 Batch Replication separately.</p>
+
+    <p>When you delete a specific version ID (permanent deletion), it does not replicate. This is on purpose — AWS does not want a mistake in one region to cascade and delete the backup too.</p>
+
+    <p>Replication does not chain. If Bucket A replicates to Bucket B, and Bucket B replicates to Bucket C, files from Bucket A do not automatically reach Bucket C. You need to set up replication from A to C separately.</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 Real-world pattern</span>
+      Netflix uses Cross-Region Replication to ensure video files are available in multiple regions globally. If one region fails, playback continues from the replica. Companies backing up databases to S3 often replicate to a different region daily — so even if AWS loses an entire region (extremely rare, but it has happened), backups survive.
+    </div>
+
+    <h3>Enabling replication</h3>
+    <ol>
+      <li>Ensure versioning is on in both source and destination buckets.</li>
+      <li>In the source bucket, go to <strong>Management</strong> → <strong>Replication rules</strong>.</li>
+      <li>Click <strong>Create replication rule</strong>, give it a name, and choose which objects to replicate (usually all).</li>
+      <li>Pick the destination bucket and region.</li>
+      <li>Create an IAM role that allows S3 to replicate (AWS creates a default one).</li>
+      <li>Save. Replication is now active for new uploads.</li>
+    </ol>
+  </section>
+
+  <!-- 8 -->
+  <section class="lecture" id="l8">
+    <h2><span class="lecture-num">8</span>Storage Classes — Balancing Cost and Speed</h2>
+
+    <p>You do not pay the same price for every file in S3. Files you access daily are stored on fast, expensive drives. Files you touch once a year can move to cheap cold storage. S3 Storage Classes let you choose the trade-off that fits your workload.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Storage Class</strong> is S3's tier system for balancing cost, retrieval speed, and availability. Standard is fast but pricier. Glacier is cheap but slow to retrieve.
+    </div>
+
+    <h3>All classes share the same 11-Nines durability</h3>
+    <p>The critical point: whether you choose Standard or Glacier, your data will not be lost. Durability is identical. The differences are in how fast you can access it and how much it costs.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 680 320" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="20" width="320" height="40" rx="6" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="180" y="46" text-anchor="middle" font-size="13" font-weight="bold">Fast Access (High Cost)</text>
+
+        <rect x="20" y="80" width="320" height="50" rx="6" fill="#e0f2fe" stroke="#0284c7"/>
+        <text x="180" y="103" text-anchor="middle" font-size="12" font-weight="bold">S3 Standard</text>
+        <text x="180" y="120" text-anchor="middle" font-size="11">Active data, immediate retrieval</text>
+
+        <rect x="20" y="150" width="320" height="50" rx="6" fill="#f0f9ff" stroke="#0ea5e9"/>
+        <text x="180" y="173" text-anchor="middle" font-size="12" font-weight="bold">S3 Standard-IA (Infrequent Access)</text>
+        <text x="180" y="190" text-anchor="middle" font-size="11">Backups, log files, rapid retrieval when needed</text>
+
+        <rect x="360" y="20" width="300" height="40" rx="6" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+        <text x="510" y="46" text-anchor="middle" font-size="13" font-weight="bold">Cold Storage (Low Cost)</text>
+
+        <rect x="360" y="80" width="300" height="50" rx="6" fill="#fef3c7" stroke="#f59e0b"/>
+        <text x="510" y="103" text-anchor="middle" font-size="12" font-weight="bold">S3 Glacier Instant Retrieval</text>
+        <text x="510" y="120" text-anchor="middle" font-size="11">Archive accessed quarterly, milliseconds</text>
+
+        <rect x="360" y="150" width="300" height="50" rx="6" fill="#fef9e7" stroke="#fbbf24"/>
+        <text x="510" y="173" text-anchor="middle" font-size="12" font-weight="bold">S3 Glacier Deep Archive</text>
+        <text x="510" y="190" text-anchor="middle" font-size="11">Compliance records, 12-48 hr retrieval</text>
+
+        <text x="180" y="250" text-anchor="middle" font-size="12" fill="#475569">All tiers: 99.999999999% durability</text>
+      </svg>
+    </div>
+
+    <h3>The main options</h3>
+
+    <table>
+      <tr><th>Storage Class</th><th>Best Used For</th><th>Retrieval Time</th></tr>
+      <tr><td>S3 Standard</td><td>Files accessed daily or weekly. Websites, active backups, operational data.</td><td>Instant</td></tr>
+      <tr><td>S3 Standard-IA</td><td>Backups accessed monthly. Older log files. Cost drops 50% vs. Standard.</td><td>Instant</td></tr>
+      <tr><td>S3 One Zone-IA</td><td>Recreatable backups stored in one zone only. Even cheaper, lower availability.</td><td>Instant</td></tr>
+      <tr><td>S3 Glacier Instant</td><td>Archive data accessed a few times per year. Compliance archives.</td><td>Milliseconds</td></tr>
+      <tr><td>S3 Glacier Flexible</td><td>Archive data with flexible retrieval: Standard (3-5 hrs), Expedited (1-5 min), Bulk (5-12 hrs).</td><td>1 min to 12 hrs</td></tr>
+      <tr><td>S3 Glacier Deep Archive</td><td>Long-term compliance, lowest cost tier. Retrieval takes 12-48 hours.</td><td>12-48 hrs</td></tr>
+      <tr><td>S3 Intelligent-Tiering</td><td>Unknown access patterns. Automatically moves files between tiers, no manual work.</td><td>Varies</td></tr>
+    </table>
+
+    <h3>Choosing the right class</h3>
+    <p>If you access a file daily, S3 Standard. If it is a weekly backup, Standard-IA. If it is a compliance record you might need in a few years but hope you never do, Glacier Deep Archive. When you are not sure how often you will access something, use Intelligent-Tiering — it watches your access patterns and moves files between tiers automatically.</p>
+
+    <div class="callout definition">
+      <span class="callout-label">💡 New word</span>
+      <strong>Glacier</strong> is S3's ultra-cheap archive tier. Files take hours to retrieve. Use it for backups, compliance records, and data you legally must keep but hope never to access again.
+    </div>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 Real cost example</span>
+      A 1 TB database backup in S3 Standard costs about $23 per month. In Standard-IA, around $12. In Glacier Deep Archive, around $4. If you keep one year of daily backups (365 TB), the difference between Standard and Glacier is the cost of a small car. Many companies run lifecycle policies that automatically move backups older than 90 days to Glacier, saving thousands per year.
+    </div>
+
+    <h3>Lifecycle policies</h3>
+    <p>You can tell S3 to automatically move files to cheaper tiers as they age. For example: new uploads stay in Standard for 30 days, then move to Standard-IA for the next 90 days, then move to Glacier after that. You set it once and stop thinking about it.</p>
+  </section>
+
+  <hr class="section-break">
+
+  <!-- Final Summary -->
+  <section class="lecture" id="lsummary">
+    <h2>📋 Cheat Sheet</h2>
+
+    <div class="summary-box">
+      <h3>Core Building Blocks</h3>
+      <table>
+        <tr><th>Concept</th><th>Plain-English meaning</th></tr>
+        <tr><td>Bucket</td><td>Top-level container for S3 files. Created in one Region. Names globally unique.</td></tr>
+        <tr><td>Object</td><td>A file stored in S3, identified by a Key (prefix + filename).</td></tr>
+        <tr><td>Key</td><td>The unique path name of an S3 object (e.g., <code>images/2024/photo.jpg</code>).</td></tr>
+        <tr><td>Pre-signed URL</td><td>Temporary link allowing someone to view a private S3 file without permanent access.</td></tr>
+        <tr><td>Bucket Policy</td><td>JSON permission document controlling who can do what to objects in the bucket.</td></tr>
+        <tr><td>Versioning</td><td>Feature that keeps historical copies of files; delete only adds a marker, not permanent removal.</td></tr>
+        <tr><td>Replication</td><td>Automatic copying of new objects to another bucket (same or different region).</td></tr>
+      </table>
+    </div>
+
+    <div class="summary-box">
+      <h3>Key Facts Worth Remembering</h3>
+      <ul>
+        <li>All S3 storage classes share the same 11-Nines durability. You will not lose your data.</li>
+        <li>S3 buckets are private by default. You must add a bucket policy or IAM permissions to make files public.</li>
+        <li>Objects can be up to 50 TB; files larger than 5 GB should use Multi-part Upload.</li>
+        <li>Normal delete adds a Delete Marker (restorable if versioning is on). Deleting a specific Version ID is permanent.</li>
+        <li>Replication requires versioning on both source and destination buckets. Only new objects replicate automatically.</li>
+        <li>Choose Standard for frequent access, Standard-IA for monthly backups, Glacier for archives. Use Intelligent-Tiering when unsure.</li>
+        <li>Lifecycle policies can auto-move files to cheaper tiers as they age, cutting costs significantly.</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>The One-Paragraph Version</h3>
+      <p>S3 is infinitely scalable file storage that powers backup, archival, and web hosting globally. You create a bucket (a container for files), upload objects (files with Keys like folder paths), and control access with bucket policies or IAM permissions. Private by default. Versioning keeps file history so deletes become recoveries. Replication copies new files to other buckets for disaster recovery. Durability is guaranteed at 11 Nines across all storage classes. Choose Standard for active data, Standard-IA for backups you might need, and Glacier for compliance records you hope never to touch. Lifecycle policies automatically move aging files to cheaper tiers, slashing storage costs on data you rarely access.</p>
+    </div>
+  </section>
+
+  <div class="top-link"><a href="#top">↑ Back to top</a></div>
+
+</div>
+
+<script>
+(function () {
+  if (document.querySelector('.tips-trigger')) return;
+
+  const glossary = [
+    ['Access Control List', 'Legacy method for controlling who can access S3 objects. Largely replaced by bucket policies and IAM.'],
+    ['ARN', 'Amazon Resource Name — unique identifier for AWS resources like S3 buckets, used in policies to target exactly what you mean.'],
+    ['Availability', 'How reliably a service is accessible and working. S3 availability varies per storage class (e.g., 99.99% for Standard).'],
+    ['Availability Zone', 'One isolated data center within a Region. Multi-AZ designs survive one zone failure.'],
+    ['Backup', 'Copy of data stored separately so you can recover from loss, disaster, or accidental deletion.'],
+    ['Bucket', 'Top-level container in S3 for storing files. Named globally unique. Created in one Region.'],
+    ['Bucket Policy', 'JSON permission document attached to an S3 bucket controlling access to its objects.'],
+    ['CRR', 'Cross-Region Replication — automatic copying of S3 objects to a bucket in a different Region.'],
+    ['Deep Archive', 'S3 Glacier tier offering lowest cost long-term storage with 12-48 hour retrieval times.'],
+    ['Durability', 'Probability that stored data will not be lost due to hardware failure. S3 offers 11 Nines (99.999999999%).'],
+    ['Encryption at rest', 'Data is encrypted while stored on disk or in object storage, preventing unauthorized viewing.'],
+    ['Encryption in transit', 'Data is encrypted while moving over the network, usually with HTTPS/TLS.'],
+    ['Glacier', 'S3 archive storage tier offering very low cost in exchange for slower retrieval times.'],
+    ['IAM Policy', 'Permission document attached to an IAM user or role defining what AWS actions they can perform.'],
+    ['Infrequent Access', 'S3 Standard-IA storage class for data accessed less often, with rapid retrieval and lower cost.'],
+    ['Key', 'Unique identifier for an S3 object, consisting of prefix (folder path) plus object name (filename).'],
+    ['Lifecycle Policy', 'Automated rule that moves S3 objects between storage classes or deletes them as they age.'],
+    ['Multi-part Upload', 'Uploading large files (>5 GB) as multiple chunks in parallel, faster and more reliable than single upload.'],
+    ['Object', 'A file stored in S3, identified by its Key and optionally tagged with metadata.'],
+    ['Pre-signed URL', 'Temporary, time-limited link allowing access to a private S3 file without permanent credentials.'],
+    ['Public Bucket', 'S3 bucket whose policy allows anyone on the internet to read or download objects.'],
+    ['Region', 'Geographic area where AWS operates data centers. S3 buckets are created in one Region.'],
+    ['Replication', 'Automatic copying of S3 objects to another bucket for backup or disaster recovery.'],
+    ['S3', 'Simple Storage Service — AWS infinitely scalable file storage with exceptional durability.'],
+    ['SRR', 'Same-Region Replication — automatic copying of S3 objects to another bucket in the same Region.'],
+    ['Standard', 'S3 default storage class for frequently accessed data with instant retrieval.'],
+    ['Storage Class', 'S3 tier system (Standard, Infrequent Access, Glacier) balancing cost, speed, and durability.'],
+    ['Versioning', 'S3 feature keeping historical copies of files. Delete adds a marker; specific versions are permanent.']
+  ];
+
+  const pageText = document.body.innerText.replace(/\s+/g, ' ');
+  const found = glossary.filter(([term]) => new RegExp('(^|[^A-Za-z0-9])' + escapeRegExp(term) + '([^A-Za-z0-9]|$)', 'i').test(pageText));
+  if (!found.length) return;
+
+  const button = document.createElement('button');
+  button.className = 'tips-trigger';
+  button.type = 'button';
+  button.setAttribute('aria-haspopup', 'dialog');
+  button.setAttribute('aria-expanded', 'false');
+  button.innerHTML = '<span class="tips-icon" aria-hidden="true">💡</span><span>Glossary</span>';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'tips-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'tips-title');
+  overlay.innerHTML = [
+    '<div class="tips-panel">',
+    '<div class="tips-header">',
+    '<h2 id="tips-title">💡 Every term on this page</h2>',
+    '<button class="tips-close" type="button" aria-label="Close glossary">Close</button>',
+    '</div>',
+    '<div class="tips-body">',
+    '<p class="tips-intro">A quick lookup if you lost the thread anywhere on this page.</p>',
+    '<ul class="tips-list">' + found.map(([term, tip]) => '<li><strong>' + escapeHtml(term) + '</strong>' + escapeHtml(tip) + '</li>').join('') + '</ul>',
+    '</div>',
+    '</div>'
+  ].join('');
+
+  document.body.appendChild(button);
+  document.body.appendChild(overlay);
+
+  const closeButton = overlay.querySelector('.tips-close');
+  function openTips() {
+    overlay.classList.add('open');
+    button.setAttribute('aria-expanded', 'true');
+    closeButton.focus();
+  }
+  function closeTips() {
+    overlay.classList.remove('open');
+    button.setAttribute('aria-expanded', 'false');
+    button.focus();
+  }
+
+  button.addEventListener('click', openTips);
+  closeButton.addEventListener('click', closeTips);
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) closeTips();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && overlay.classList.contains('open')) closeTips();
+  });
+
+  function escapeRegExp(value) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
+  }
+}());
+</script>
+
+<!-- Dark Theme Toggle Button -->
+<button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme" title="Toggle Light/Dark Theme">
+  <span class="theme-toggle-icon">🌙</span>
+  <span class="theme-toggle-text">Dark</span>
+</button>
+
+<script id="dark-theme-script">
+(function() {
+  function setupThemeToggle() {
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+
+    function syncUI() {
+      var isDark = document.documentElement.classList.contains('dark-mode') || document.body.classList.contains('dark-mode');
+      var icon = btn.querySelector('.theme-toggle-icon');
+      var text = btn.querySelector('.theme-toggle-text');
+      if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+      if (text) text.textContent = isDark ? 'Light' : 'Dark';
+    }
+
+    if (document.documentElement.classList.contains('dark-mode')) {
+      document.body.classList.add('dark-mode');
+    }
+    syncUI();
+
+    btn.addEventListener('click', function() {
+      var isDark = document.documentElement.classList.toggle('dark-mode');
+      document.body.classList.toggle('dark-mode', isDark);
+      localStorage.setItem('aws-notes-theme', isDark ? 'dark' : 'light');
+      syncUI();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupThemeToggle);
+  } else {
+    setupThemeToggle();
+  }
+})();
+</script>
+</body>
+</html>

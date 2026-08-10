@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script id="dark-theme-init">
+(function() {
+  var saved = localStorage.getItem('aws-notes-theme');
+  if (saved === 'dark' || (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark-mode');
+  }
+})();
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 16 — ECS, ECR & Fargate (Blog Edition)</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --card: #f9fafb;
+    --accent: #d97706;
+    --accent-dark: #b45309;
+    --blue: #2563eb;
+    --green: #059669;
+    --purple: #7c3aed;
+    --red: #dc2626;
+    --code-bg: #f3f4f6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+  }
+  header.page-header {
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  header.page-header h1 {
+    margin: 0 0 6px 0;
+    font-size: 28px;
+    color: var(--accent-dark);
+  }
+  header.page-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14.5px;
+  }
+
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+  }
+  nav.toc h2 {
+    margin-top: 0;
+    font-size: 16px;
+    color: var(--accent-dark);
+  }
+  nav.toc ol {
+    margin: 0;
+    padding-left: 20px;
+    columns: 2;
+  }
+  nav.toc li { margin-bottom: 6px; font-size: 14px; }
+  nav.toc a { color: var(--blue); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  section.lecture {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 26px;
+    margin-bottom: 26px;
+    background: #fff;
+    scroll-margin-top: 16px;
+  }
+  section.lecture h2 {
+    margin-top: 0;
+    font-size: 20px;
+    color: #111827;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 8px;
+  }
+  .lecture-num {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 2px 8px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  h3 { color: var(--accent-dark); font-size: 16.5px; margin-bottom: 8px; margin-top: 26px; }
+
+  p { margin: 0 0 14px; }
+
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: #fffbeb;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 15px;
+  }
+  .callout.tip { border-left-color: var(--green); background: #ecfdf5; }
+  .callout.warning { border-left-color: var(--red); background: #fef2f2; }
+  .callout.define { border-left-color: var(--blue); background: #eff6ff; }
+  .callout.production { border-left-color: var(--purple); background: #f5f3ff; }
+  .callout strong { color: inherit; }
+  .callout-label {
+    display: block;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    margin-bottom: 4px;
+    opacity: 0.75;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th { background: var(--card); color: var(--accent-dark); }
+  tr:nth-child(even) td { background: #fcfcfd; }
+
+  code {
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 16px 0;
+  }
+  pre code { background: none; padding: 0; }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  .diagram {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 18px 0;
+    text-align: center;
+    overflow-x: auto;
+  }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram-caption { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  .top-link { font-size: 12px; text-align: right; }
+  .top-link a { color: var(--muted); text-decoration: none; }
+  .top-link a:hover { text-decoration: underline; }
+
+  hr.section-break { border: none; border-top: 2px dashed var(--border); margin: 36px 0; }
+
+  .summary-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 14px;
+  }
+  .summary-box h3 { color: var(--green); margin-top: 0; }
+
+  @media (max-width: 1024px) {
+    .container { padding-left: 20px; padding-right: 20px; }
+    nav.toc ol { columns: 2; }
+  }
+  @media (max-width: 860px) {
+    .container { padding: 20px 18px 60px; }
+    header.page-header h1 { font-size: 22px; }
+    nav.toc ol { columns: 1; }
+    section.lecture { padding: 18px 20px; }
+    table { font-size: 13px; }
+    th, td { padding: 7px 9px; }
+  }
+  @media (max-width: 480px) {
+    .container { padding: 16px 14px 50px; }
+    header.page-header h1 { font-size: 19px; line-height: 1.3; }
+    header.page-header p { font-size: 13px; }
+    nav.toc { padding: 14px 16px; border-radius: 10px; }
+    nav.toc ol { columns: 1; padding-left: 16px; }
+    nav.toc li { font-size: 14px; margin-bottom: 8px; }
+    section.lecture { padding: 16px 16px; border-radius: 10px; margin-bottom: 16px; }
+    section.lecture h2 { font-size: 17px; line-height: 1.3; }
+    h3 { font-size: 15px; }
+    table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; font-size: 13px; white-space: nowrap; }
+    th, td { padding: 7px 10px; }
+    code { font-size: 12.5px; word-break: break-all; }
+    ul, ol { padding-left: 18px; }
+    li { font-size: 14.5px; margin-bottom: 8px; }
+    .callout, .summary-box { padding: 10px 13px; font-size: 14px; }
+    .top-link { font-size: 13px; }
+  }
+  @media (max-width: 360px) {
+    .container { padding: 12px 12px 40px; }
+    section.lecture h2 { font-size: 16px; }
+  }
+
+  /* Tips popup for assumed AWS terms and prerequisite concepts */
+  .tips-trigger {
+    position: fixed; right: 18px; bottom: 18px; z-index: 999;
+    display: inline-flex; align-items: center; gap: 8px;
+    min-height: 44px; padding: 10px 14px;
+    border: 1px solid #f59e0b; border-radius: 999px;
+    background: #fffbeb; color: #92400e;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+    cursor: pointer; font: inherit; font-weight: 700;
+  }
+  .tips-trigger:hover { background: #fef3c7; }
+  .tips-trigger .tips-icon { font-size: 1.2rem; line-height: 1; }
+  .tips-overlay {
+    position: fixed; inset: 0; z-index: 1000; display: none;
+    align-items: center; justify-content: center; padding: 18px;
+    background: rgba(17, 24, 39, 0.46);
+  }
+  .tips-overlay.open { display: flex; }
+  .tips-panel {
+    width: min(760px, 100%); max-height: min(76vh, 720px); overflow: auto;
+    background: #ffffff; color: var(--text, #1f2937);
+    border: 1px solid #fcd34d; border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  }
+  .tips-header {
+    position: sticky; top: 0; display: flex; align-items: center;
+    justify-content: space-between; gap: 12px; padding: 16px 18px;
+    background: #fffbeb; border-bottom: 1px solid #fde68a;
+  }
+  .tips-header h2 { margin: 0; color: #92400e; font-size: 1.1rem; }
+  .tips-close {
+    border: 1px solid #f59e0b; border-radius: 8px; background: #ffffff;
+    color: #92400e; cursor: pointer; font: inherit; font-weight: 700;
+    line-height: 1; padding: 7px 10px;
+  }
+  .tips-body { padding: 16px 18px 18px; }
+  .tips-intro { margin: 0 0 12px; color: var(--muted, #6b7280); font-size: 0.95rem; }
+  .tips-list {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px; margin: 0; padding: 0; list-style: none;
+  }
+  .tips-list li { margin: 0; padding: 10px 12px; border: 1px solid #fde68a; border-radius: 8px; background: #fffdf5; }
+  .tips-list strong { display: block; margin-bottom: 3px; color: #92400e; }
+  @media (max-width: 480px) {
+    .tips-trigger { right: 12px; bottom: 12px; padding: 10px 12px; }
+    .tips-trigger span:not(.tips-icon) { display: none; }
+    .tips-overlay { padding: 10px; }
+    .tips-panel { max-height: 82vh; }
+    .tips-list { grid-template-columns: 1fr; }
+  }
+</style>
+<style id="dark-theme-styles">
+  html.dark-mode, body.dark-mode {
+    --bg: #181926; --card-bg: #222436; --card: #222436; --border: #33384f;
+    --text: #c0caf5; --text-muted: #94a3b8; --muted: #94a3b8; --code-bg: #13141f;
+    --accent: #f59e0b; --accent-dark: #fbbf24; --green: #34d399; --red: #f87171;
+    --purple: #c084fc; --blue: #60a5fa;
+    background-color: #181926 !important; color: #c0caf5 !important;
+  }
+  body.dark-mode { background-color: #181926 !important; color: #c0caf5 !important; }
+  body.dark-mode header.page-header h1 { color: #fbbf24 !important; }
+  body.dark-mode header.page-header p { color: #94a3b8 !important; }
+  body.dark-mode h2, body.dark-mode h3 { color: #f59e0b !important; }
+  body.dark-mode a { color: #60a5fa; }
+  body.dark-mode nav.toc { background: #1f2335 !important; border-color: #33384f !important; }
+  body.dark-mode nav.toc h2 { color: #fbbf24 !important; }
+  body.dark-mode nav.toc a { color: #60a5fa !important; }
+  body.dark-mode section.lecture { background: #222436 !important; border-color: #33384f !important; color: #c0caf5 !important; }
+  body.dark-mode section.lecture h2 { color: #e2e8f0 !important; border-bottom-color: #33384f !important; }
+  body.dark-mode table { border-color: #33384f !important; }
+  body.dark-mode th, body.dark-mode td { border-color: #33384f !important; }
+  body.dark-mode th { background: #1f2335 !important; color: #fbbf24 !important; }
+  body.dark-mode td { color: #cbd5e1 !important; }
+  body.dark-mode tr:nth-child(even) td { background: #1a1d2d !important; }
+  body.dark-mode code { background: #13141f !important; color: #e2e8f0 !important; border: 1px solid #2e324a !important; }
+  body.dark-mode pre { background: #13141f !important; color: #e2e8f0 !important; border-color: #2e324a !important; }
+  body.dark-mode .callout { background: #25231c !important; border-left-color: #f59e0b !important; color: #fef3c7 !important; }
+  body.dark-mode .callout.tip { background: #142921 !important; border-left-color: #34d399 !important; color: #d1fae5 !important; }
+  body.dark-mode .callout.warning { background: #2f1b1e !important; border-left-color: #f87171 !important; color: #fee2e2 !important; }
+  body.dark-mode .callout.define { background: #1d2038 !important; border-left-color: #60a5fa !important; color: #dbeafe !important; }
+  body.dark-mode .callout.production { background: #221c35 !important; border-left-color: #c084fc !important; color: #ede9fe !important; }
+  body.dark-mode .summary-box { background: #142921 !important; border-color: #059669 !important; color: #d1fae5 !important; }
+  body.dark-mode .summary-box h3 { color: #34d399 !important; }
+  body.dark-mode .diagram { background: #ffffff !important; border: 1px solid #cbd5e1 !important; border-radius: 12px !important; padding: 16px !important; box-shadow: 0 4px 14px rgba(0,0,0,0.3) !important; }
+  body.dark-mode .diagram-caption { color: #475569 !important; font-weight: 500 !important; }
+  .theme-toggle-btn {
+    position: fixed; top: 16px; right: 20px; z-index: 10000;
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;
+    border-radius: 20px; background: #ffffff; color: #1f2937; border: 1px solid #cbd5e1;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.25s ease; user-select: none;
+  }
+  .theme-toggle-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
+  body.dark-mode .theme-toggle-btn { background: #24273a !important; color: #e2e8f0 !important; border-color: #363a4f !important; box-shadow: 0 2px 10px rgba(0,0,0,0.4) !important; }
+  @media (max-width: 480px) {
+    .theme-toggle-btn { top: 12px; right: 12px; padding: 6px 10px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="container" id="top">
+
+  <header class="page-header">
+    <h1>Section 16 — ECS, ECR &amp; Fargate</h1>
+    <p>Running Docker containers in AWS: how to use Elastic Container Service and Fargate to build scalable, serverless container applications. Every core concept explained as you need it — task definitions, rolling updates, scaling, private registries, and when to use Kubernetes instead.</p>
+  </header>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#l1">1. Docker Introduction</a></li>
+      <li><a href="#l2">2. Amazon ECS Overview</a></li>
+      <li><a href="#l3">3. Creating an ECS Cluster — Hands On</a></li>
+      <li><a href="#l4">4. Creating an ECS Service — Hands On</a></li>
+      <li><a href="#l5">5. ECS Service Auto Scaling</a></li>
+      <li><a href="#l6">6. ECS Rolling Updates</a></li>
+      <li><a href="#l7">7. ECS Solution Architectures</a></li>
+      <li><a href="#l8">8. ECS Task Definitions — Deep Dive</a></li>
+      <li><a href="#l9">9. ECS Task Definitions — Hands On</a></li>
+      <li><a href="#l10">10. ECS Task Placement</a></li>
+      <li><a href="#l11">11. ECS Clean Up — Hands On</a></li>
+      <li><a href="#l12">12. Amazon ECR</a></li>
+      <li><a href="#l13">13. Amazon ECR — Hands On</a></li>
+      <li><a href="#l14">14. Amazon EKS</a></li>
+      <li><a href="#lsummary">Cheat Sheet</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <section class="lecture" id="l1">
+    <h2><span class="lecture-num">1</span>Docker Introduction</h2>
+
+    <p>Picture this: you write an application that works perfectly on your laptop. You ship the code to your colleague, they try to run it, and it breaks immediately—different operating system, different library versions, missing dependencies. That's the problem Docker solves.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Docker</strong> is a platform for packaging an entire application—code, dependencies, runtime, libraries—into a self-contained unit called a <strong>container</strong>. That container runs identically on any machine with Docker installed, regardless of the underlying OS.
+    </div>
+
+    <p>Docker containers are lean and fast. Unlike a traditional virtual machine that runs an entire separate operating system (heavier, slower to boot, eats more memory), a container shares the host's OS kernel but stays isolated from everything else. You can run dozens of containers on a single server, and they all behave predictably.</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Organizations run containerized applications everywhere—building microservice architectures where each small service gets its own container, migrating legacy on-premises applications to the cloud by containerizing them first, or simply deploying and updating code without worrying about environment differences between laptops and production.
+    </div>
+
+    <h3>Docker vs Virtual Machines</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#6b6a66"/>
+          </marker>
+        </defs>
+        <rect class="svg-box" x="20" y="10" width="330" height="180" rx="8" style="fill:#fff;stroke:#c8917a;stroke-width:1.5"/>
+        <text class="svg-text" x="185" y="30" text-anchor="middle" font-weight="600" style="font-family:-apple-system,sans-serif;font-size:12px;fill:#2b2a28">Virtual Machines</text>
+        <rect class="svg-box-accent" x="40" y="45" width="290" height="25" rx="4" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-text" x="185" y="62" text-anchor="middle" font-size="10" style="font-family:-apple-system,sans-serif;fill:#2b2a28">Infrastructure</text>
+        <rect class="svg-box-accent" x="40" y="75" width="290" height="25" rx="4" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-text" x="185" y="92" text-anchor="middle" font-size="10" style="font-family:-apple-system,sans-serif;fill:#2b2a28">Host OS</text>
+        <rect class="svg-box-accent" x="40" y="105" width="290" height="25" rx="4" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-text" x="185" y="122" text-anchor="middle" font-size="10" style="font-family:-apple-system,sans-serif;fill:#2b2a28">Hypervisor</text>
+        <rect class="svg-box" x="40" y="135" width="135" height="40" rx="4" style="fill:#fff;stroke:#c8917a;stroke-width:1.5"/><text class="svg-text" x="107" y="152" text-anchor="middle" font-size="9" style="font-family:-apple-system,sans-serif;fill:#2b2a28">Guest OS</text><text class="svg-text" x="107" y="165" text-anchor="middle" font-size="9" style="font-family:-apple-system,sans-serif;fill:#2b2a28">+ App</text>
+        <rect class="svg-box" x="195" y="135" width="135" height="40" rx="4" style="fill:#fff;stroke:#c8917a;stroke-width:1.5"/><text class="svg-text" x="262" y="152" text-anchor="middle" font-size="9" style="font-family:-apple-system,sans-serif;fill:#2b2a28">Guest OS</text><text class="svg-text" x="262" y="165" text-anchor="middle" font-size="9" style="font-family:-apple-system,sans-serif;fill:#2b2a28">+ App</text>
+
+        <rect class="svg-box" x="410" y="10" width="330" height="180" rx="8" style="fill:#fff;stroke:#c8917a;stroke-width:1.5"/>
+        <text class="svg-text" x="575" y="30" text-anchor="middle" font-weight="600" style="font-family:-apple-system,sans-serif;font-size:12px;fill:#2b2a28">Docker Containers</text>
+        <rect class="svg-box-accent" x="430" y="45" width="290" height="25" rx="4" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-text" x="575" y="62" text-anchor="middle" font-size="10" style="font-family:-apple-system,sans-serif;fill:#2b2a28">Infrastructure</text>
+        <rect class="svg-box-accent" x="430" y="75" width="290" height="25" rx="4" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-text" x="575" y="92" text-anchor="middle" font-size="10" style="font-family:-apple-system,sans-serif;fill:#2b2a28">Host OS</text>
+        <rect class="svg-box-accent" x="430" y="105" width="290" height="25" rx="4" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-text" x="575" y="122" text-anchor="middle" font-size="10" style="font-family:-apple-system,sans-serif;fill:#2b2a28">Docker Daemon</text>
+        <rect class="svg-box" x="430" y="135" width="90" height="40" rx="4" style="fill:#fff;stroke:#c8917a;stroke-width:1.5"/><text class="svg-text" x="475" y="158" text-anchor="middle" font-size="9" style="font-family:-apple-system,sans-serif;fill:#2b2a28">App A</text>
+        <rect class="svg-box" x="530" y="135" width="90" height="40" rx="4" style="fill:#fff;stroke:#c8917a;stroke-width:1.5"/><text class="svg-text" x="575" y="158" text-anchor="middle" font-size="9" style="font-family:-apple-system,sans-serif;fill:#2b2a28">App B</text>
+        <rect class="svg-box" x="630" y="135" width="90" height="40" rx="4" style="fill:#fff;stroke:#c8917a;stroke-width:1.5"/><text class="svg-text" x="675" y="158" text-anchor="middle" font-size="9" style="font-family:-apple-system,sans-serif;fill:#2b2a28">App C</text>
+      </svg>
+      <div class="diagram-caption">Virtual machines each run their own complete operating system (heavy, slow startup). Docker containers share the host OS but stay isolated (lightweight, faster, more containers per server).</div>
+    </div>
+
+    <p>Virtual machines offer maximum isolation but cost in overhead. Docker offers lightweight isolation and rapid deployment—and that trade-off is why containers have become the industry standard for packaging applications.</p>
+
+    <h3>Where Docker images live</h3>
+
+    <p><strong>Docker Hub</strong> is the public repository where you find base images for popular technologies—Ubuntu, Node.js, MySQL, Python, and countless others. You build your application on top of one of these base images.</p>
+
+    <p><strong>Amazon ECR</strong> (Elastic Container Registry) is AWS's private repository service, letting you store your own proprietary images. ECR also offers a public gallery if you want to share images with the world.</p>
+
+    <h3>The Docker workflow in four steps</h3>
+
+    <p>First, you write a <strong>Dockerfile</strong>—a text file describing how to build your image, starting from a base image and adding your code and dependencies. Second, you build that Dockerfile into a <strong>Docker image</strong>—a portable snapshot. Third, you push the image to a repository (Docker Hub, ECR, or wherever). Fourth, when you're ready to run it, you pull the image down and start it as a running <strong>container</strong>.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Docker image</strong> is the immutable template—think of it as the blueprint. A <strong>Docker container</strong> is a running instance of that image—the actual thing consuming CPU and memory.
+    </div>
+
+    <h3>How to run containers on AWS</h3>
+
+    <p>AWS gives you several choices for orchestrating and running containers at scale:</p>
+
+    <table>
+      <tr><th>Service</th><th>What it does</th></tr>
+      <tr><td><strong>Amazon ECS</strong></td><td>AWS's native container orchestration platform. Simpler than Kubernetes, deeply integrated with AWS services.</td></tr>
+      <tr><td><strong>Amazon EKS</strong></td><td>AWS's managed Kubernetes. Use this if you already know Kubernetes or need multi-cloud portability.</td></tr>
+      <tr><td><strong>AWS Fargate</strong></td><td>Serverless compute layer. Works with both ECS and EKS—you define containers but don't manage the underlying servers.</td></tr>
+      <tr><td><strong>Amazon ECR</strong></td><td>Your private container image repository. Where you store the Docker images before ECS pulls and runs them.</td></tr>
+    </table>
+  </section>
+
+  <!-- 2 -->
+  <section class="lecture" id="l2">
+    <h2><span class="lecture-num">2</span>Amazon ECS Overview</h2>
+
+    <p>ECS stands for Elastic Container Service. It's AWS's orchestration platform—the brain that decides where your containers run, how many copies to keep healthy, and how to handle updates and scaling.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>ECS Task</strong> is the unit of work—a running Docker container inside ECS, configured by a task definition. <strong>ECS Cluster</strong> is the grouping of compute resources (either EC2 instances or Fargate) where tasks run. An ECS Service keeps a desired number of tasks running and replaces them if they fail.
+    </div>
+
+    <p>ECS gives you two fundamentally different ways to run tasks: EC2 launch type and Fargate launch type. The choice shapes everything about infrastructure management.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 170" xmlns="http://www.w3.org/2000/svg">
+        <rect class="svg-box" x="20" y="20" width="340" height="130" rx="8" style="fill:#fff;stroke:#c8917a;stroke-width:1.5"/>
+        <text class="svg-text" x="190" y="42" text-anchor="middle" font-weight="600" style="font-family:-apple-system,sans-serif;font-size:12px;fill:#2b2a28">EC2 Launch Type</text>
+        <text class="svg-label" x="190" y="60" text-anchor="middle" font-size="9" style="font-family:-apple-system,sans-serif;fill:#6b6a66">You provision &amp; maintain EC2 instances</text>
+        <rect class="svg-box-accent" x="40" y="75" width="90" height="55" rx="5" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-text" x="85" y="98" text-anchor="middle" font-size="9" style="font-family:-apple-system,sans-serif;fill:#2b2a28">EC2 + ECS Agent</text><text class="svg-text" x="85" y="115" text-anchor="middle" font-size="9" style="font-family:-apple-system,sans-serif;fill:#2b2a28">tasks</text>
+        <rect class="svg-box-accent" x="145" y="75" width="90" height="55" rx="5" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-text" x="190" y="98" text-anchor="middle" font-size="9" style="font-family:-apple-system,sans-serif;fill:#2b2a28">EC2 + ECS Agent</text><text class="svg-text" x="190" y="115" text-anchor="middle" font-size="9" style="font-family:-apple-system,sans-serif;fill:#2b2a28">tasks</text>
+        <rect class="svg-box-accent" x="250" y="75" width="90" height="55" rx="5" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-text" x="295" y="98" text-anchor="middle" font-size="9" style="font-family:-apple-system,sans-serif;fill:#2b2a28">EC2 + ECS Agent</text><text class="svg-text" x="295" y="115" text-anchor="middle" font-size="9" style="font-family:-apple-system,sans-serif;fill:#2b2a28">tasks</text>
+
+        <rect class="svg-box" x="410" y="20" width="350" height="130" rx="8" style="fill:#fff;stroke:#c8917a;stroke-width:1.5"/>
+        <text class="svg-text" x="585" y="42" text-anchor="middle" font-weight="600" style="font-family:-apple-system,sans-serif;font-size:12px;fill:#2b2a28">Fargate Launch Type</text>
+        <text class="svg-label" x="585" y="60" text-anchor="middle" font-size="9" style="font-family:-apple-system,sans-serif;fill:#6b6a66">Serverless — no instances to manage</text>
+        <rect class="svg-box-accent" x="440" y="80" width="90" height="45" rx="5" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-text" x="485" y="106" text-anchor="middle" font-size="9" style="font-family:-apple-system,sans-serif;fill:#2b2a28">Task</text>
+        <rect class="svg-box-accent" x="545" y="80" width="90" height="45" rx="5" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-text" x="590" y="106" text-anchor="middle" font-size="9" style="font-family:-apple-system,sans-serif;fill:#2b2a28">Task</text>
+        <rect class="svg-box-accent" x="650" y="80" width="90" height="45" rx="5" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-text" x="695" y="106" text-anchor="middle" font-size="9" style="font-family:-apple-system,sans-serif;fill:#2b2a28">Task</text>
+      </svg>
+      <div class="diagram-caption">EC2 launch type: you manage the cluster of instances. Fargate: you just say "run this task" and AWS provisions everything behind the scenes.</div>
+    </div>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Fargate</strong> is AWS's serverless container compute option. You define tasks and launch them without ever thinking about EC2 instances, auto scaling groups, or server management. AWS handles the infrastructure entirely.
+    </div>
+
+    <h3>EC2 Launch Type vs Fargate</h3>
+
+    <table>
+      <tr><th></th><th>EC2 Launch Type</th><th>Fargate Launch Type</th></tr>
+      <tr><td><strong>Infrastructure</strong></td><td>You create and manage EC2 instances. Each runs the ECS Agent software to register with the cluster.</td><td>Fully serverless. No EC2 instances to manage at all.</td></tr>
+      <tr><td><strong>Scaling</strong></td><td>You handle two layers: scaling tasks up/down, and scaling the underlying EC2 fleet up/down.</td><td>Scale tasks instantly—AWS provisions capacity automatically.</td></tr>
+      <tr><td><strong>Best for</strong></td><td>When you need fine-grained control or want to optimize costs by packing tasks onto instances.</td><td>Simpler operations, faster to get running, especially for unpredictable workloads.</td></tr>
+    </table>
+
+    <h3>IAM Roles for Container Tasks</h3>
+
+    <p>Every container running in ECS needs the right permissions to call other AWS services. That's where IAM roles come in. There are two separate roles:</p>
+
+    <p>The <strong>EC2 Instance Profile</strong> is used only on EC2 launch type. It lets the ECS Agent running on the EC2 instance make API calls back to ECS, pull images from ECR, write logs to CloudWatch, and access secrets from Parameter Store.</p>
+
+    <p>The <strong>ECS Task Role</strong> is different. Attached at the task definition level, it lets the application code inside the container call AWS services. For example, Task A might have permission to read from S3, while Task B has permission to write to DynamoDB. This is how you apply the principle of least privilege per task.</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Without a proper task role, developers would have to hardcode AWS credentials or access keys inside the container image itself—a security nightmare. Instead, the task role is assumed automatically when the container starts, providing temporary, auto-rotating credentials that expire after a few hours.
+    </div>
+
+    <h3>Load balancer choices</h3>
+
+    <p><strong>Application Load Balancer (ALB)</strong> is the default choice. It understands HTTP and HTTPS, supports dynamic host port mapping for EC2 tasks, and works seamlessly with Fargate. <strong>Network Load Balancer (NLB)</strong> is faster and handles extreme throughput—use it only if you specifically need those features or need AWS PrivateLink support. The <strong>Classic Load Balancer</strong> is older, not recommended, and doesn't support Fargate.</p>
+
+    <h3>Sharing files across tasks: EFS</h3>
+
+    <p>When you need multiple tasks to share data, mount an <strong>Amazon EFS</strong> (Elastic File System) volume into your task definition. EFS is a network file system compatible with both EC2 and Fargate launch types. Perfect for scenarios where tasks in different availability zones need to read and write the same files.</p>
+
+    <div class="callout tip">
+      The ultimate serverless, stateless combo: Fargate for compute, EFS for shared persistent storage, and ALB for load balancing. You don't manage any infrastructure.
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="lecture" id="l3">
+    <h2><span class="lecture-num">3</span>Creating an ECS Cluster — Hands On</h2>
+
+    <p>When you create an ECS cluster, you choose an infrastructure type. Fargate-only clusters are the simplest—you just give the cluster a name and you're done, AWS handles everything.</p>
+
+    <p>If you're using EC2 launch type, you can let AWS manage the instances for you (AWS-managed instances), or you can create and manage your own EC2 instances and Auto Scaling Group (self-managed instances). For most teams learning ECS, AWS-managed instances are the safer starting point because AWS handles patching and updates.</p>
+
+    <p>Behind the scenes, the cluster contains <strong>capacity providers</strong>. With Fargate, you get <code>FARGATE</code> and <code>FARGATE_SPOT</code>. With EC2 instances, you get an <strong>ASG capacity provider</strong> that wraps your Auto Scaling Group. When you increase the ASG's desired capacity, new EC2 instances spin up and automatically register themselves with the cluster as <strong>container instances</strong>, advertising their available CPU and memory.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Container instance</strong> is what an EC2 instance is called once it has the ECS Agent running and has registered with a cluster. It advertises its capacity (vCPUs, memory) so ECS knows where to place tasks.
+    </div>
+
+    <p>The key insight: for EC2 launch type, capacity planning happens at two levels. You need enough tasks to serve your users, and you need enough EC2 instances to fit those tasks. Fargate removes the second concern entirely.</p>
+  </section>
+
+  <!-- 4 -->
+  <section class="lecture" id="l4">
+    <h2><span class="lecture-num">4</span>Creating an ECS Service — Hands On</h2>
+
+    <p>Before you can run anything in ECS, you need a task definition. Think of it as a blueprint that says: "Here's my Docker image URL, here's how much CPU and memory each task should get, here are the environment variables, and here's the IAM role the container needs."</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Task definition</strong> is a JSON template describing how to run one or more Docker containers. It includes image URLs, port mappings, resource limits, environment variables, logging configuration, and IAM role references.
+    </div>
+
+    <p>Once you have a task definition, creating a service is straightforward. You pick the task definition, name the service, choose how many task copies to run initially (e.g., start with 1 or 3), and then configure networking.</p>
+
+    <p>For networking on Fargate, you select which VPC subnets the tasks land in, create a security group allowing inbound traffic on your application port, and optionally request a public IP. Then you attach an Application Load Balancer to route traffic to the tasks. The ALB automatically discovers which tasks are running and sends traffic to them.</p>
+
+    <p>Once the service is running, scaling up is as simple as updating the service's desired task count. From 1 task to 10 tasks—you just change one number, and Fargate instantly provisions the capacity. The load balancer automatically routes traffic to all healthy tasks, so users don't notice any disruption.</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      This "desired task count" is the variable that auto scaling rules automatically adjust. When CPU usage spikes, a target tracking policy increases the task count. When traffic drops, it decreases. The whole cycle—spin up new tasks, distribute traffic, shut down tasks—happens without human intervention.
+    </div>
+
+    <p>To temporarily pause a demo without deleting the service, set the desired task count to 0. The tasks stop immediately and you stop paying for compute. To wind down the cluster entirely, delete the service (which cleans up the load balancer), then delete the cluster.</p>
+  </section>
+
+  <!-- 5 -->
+  <section class="lecture" id="l5">
+    <h2><span class="lecture-num">5</span>ECS Service Auto Scaling</h2>
+
+    <p>ECS Service Auto Scaling (powered by AWS Application Auto Scaling) automatically adjusts how many tasks are running based on metrics you choose. The three main options are CPU utilization of the service, memory utilization of the service, or ALB request count per target.</p>
+
+    <p>You define a target value—for example, "keep CPU at 70%"—and ECS handles the rest. If actual CPU climbs to 80%, it spins up more tasks. If it drops to 50%, it removes some. This is called <strong>target tracking</strong> scaling and it's the easiest to set up.</p>
+
+    <div class="callout warning">
+      <span class="callout-label">⚠️ Common confusion</span>
+      Scaling your ECS service (adding more task copies) is different from scaling the underlying EC2 cluster capacity (adding more EC2 instances). Fargate removes this confusion entirely since there's no EC2 layer. But on EC2 launch type, if you run out of instance capacity, you need a second scaling policy that grows the EC2 fleet itself. Use ECS Cluster Capacity Provider—it's smarter than manually scaling the Auto Scaling Group, because it automatically spins up new instances only when tasks can't fit on existing ones.
+    </div>
+
+    <p>You can also use <strong>Scheduled Scaling</strong> for workloads with predictable patterns. For example, "scale up to 10 tasks every morning at 8 AM, then back down at 6 PM."</p>
+  </section>
+
+  <!-- 6 -->
+  <section class="lecture" id="l6">
+    <h2><span class="lecture-num">6</span>ECS Rolling Updates</h2>
+
+    <p>When you deploy a new version of your application, ECS doesn't stop all old tasks and start all new ones at once. That would cause downtime. Instead, it does a gradual rollover controlled by two settings: <strong>minimum healthy percent</strong> and <strong>maximum percent</strong>.</p>
+
+    <p>Say you have 4 running tasks and you want to update them all to a new version. Minimum healthy percent controls the lowest number of tasks that must stay running during the update. If you set it to 100%, at least 4 tasks must always be healthy. Maximum percent controls the temporary peak—if you set it to 150%, ECS allows up to 6 tasks running during the transition (4 old, 2 new, for example).</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 190" xmlns="http://www.w3.org/2000/svg">
+        <text class="svg-text" x="20" y="25" font-size="11" font-weight="600" style="font-family:-apple-system,sans-serif;fill:#2b2a28">Min 50% / Max 100% (start: 4 tasks)</text>
+        <rect class="svg-box" x="20" y="35" width="60" height="30" rx="4" style="fill:#fff;stroke:#c8917a;stroke-width:1.5"/><text class="svg-label" x="50" y="80" text-anchor="middle" font-size="9" style="font-family:-apple-system,sans-serif;fill:#6b6a66">4 old</text>
+        <line x1="90" y1="50" x2="150" y2="50" stroke="#6b6a66" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <rect class="svg-box" x="150" y="35" width="60" height="30" rx="4" style="fill:#fff;stroke:#c8917a;stroke-width:1.5"/><text class="svg-label" x="180" y="80" text-anchor="middle" font-size="9" style="font-family:-apple-system,sans-serif;fill:#6b6a66">2 old (50%)</text>
+        <line x1="220" y1="50" x2="280" y2="50" stroke="#6b6a66" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <rect class="svg-box-accent" x="280" y="35" width="90" height="30" rx="4" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-label" x="325" y="80" text-anchor="middle" font-size="9" style="font-family:-apple-system,sans-serif;fill:#6b6a66">2 old + 2 new (100%)</text>
+        <line x1="380" y1="50" x2="440" y2="50" stroke="#6b6a66" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <rect class="svg-box-accent" x="440" y="35" width="60" height="30" rx="4" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-label" x="470" y="80" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">2 new (50%)</text>
+        <line x1="510" y1="50" x2="570" y2="50" stroke="#6b6a66" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <rect class="svg-box-accent" x="570" y="35" width="90" height="30" rx="4" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-label" x="615" y="80" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">4 new (100%)</text>
+
+        <text class="svg-text" x="20" y="115" font-size="11" font-weight="600" style="font-family:-apple-system,sans-serif;fill:#2b2a28">Min 100% / Max 150% (start: 4 tasks)</text>
+        <rect class="svg-box" x="20" y="125" width="60" height="30" rx="4" style="fill:#fff;stroke:#c8917a;stroke-width:1.5"/><text class="svg-label" x="50" y="170" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">4 old (100%)</text>
+        <line x1="90" y1="140" x2="150" y2="140" stroke="#6b6a66" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <rect class="svg-box-accent" x="150" y="125" width="120" height="30" rx="4" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-label" x="210" y="170" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">4 old + 2 new (150%)</text>
+        <line x1="280" y1="140" x2="340" y2="140" stroke="#6b6a66" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <rect class="svg-box-accent" x="340" y="125" width="90" height="30" rx="4" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-label" x="385" y="170" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">2 old + 2 new (100%)</text>
+        <line x1="440" y1="140" x2="500" y2="140" stroke="#6b6a66" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <rect class="svg-box-accent" x="500" y="125" width="120" height="30" rx="4" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-label" x="560" y="170" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">2 old + 4 new (150%)</text>
+        <line x1="630" y1="140" x2="690" y2="140" stroke="#6b6a66" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <rect class="svg-box-accent" x="690" y="125" width="70" height="30" rx="4" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-label" x="725" y="170" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">4 new (100%)</text>
+      </svg>
+      <div class="diagram-caption">With minimum 50% and maximum 100%, you dip below full capacity temporarily. With minimum 100% and maximum 150%, you overprovision temporarily but never lose capacity.</div>
+    </div>
+
+    <p>With minimum healthy percent set to 50% and maximum to 100%, ECS terminates old tasks first (down to 2), then creates new tasks back up to 4. Capacity temporarily dips, which saves money but exposes you to slightly reduced redundancy. With minimum 100% and maximum 150%, ECS creates new tasks first (up to 6), then terminates old ones. Capacity never dips, ensuring zero downtime, but you temporarily pay for more tasks.</p>
+
+    <p>Choose based on what matters most: money-saving, zero-downtime updates, or a balance between the two.</p>
+  </section>
+
+  <!-- 7 -->
+  <section class="lecture" id="l7">
+    <h2><span class="lecture-num">7</span>ECS Solution Architectures</h2>
+
+    <h3>S3 event → ECS task → DynamoDB</h3>
+    <p>A user uploads a file to S3. S3 publishes an event to EventBridge. A rule in EventBridge matches the event and triggers an ECS task (or Fargate task). The task container, running with an appropriate IAM task role, processes the file and writes results to DynamoDB. Entire pipeline is serverless and event-driven.</p>
+
+    <h3>Scheduled batch processing</h3>
+    <p>EventBridge can run on a schedule—every hour, every day, whatever you set. Use it to trigger a Fargate task that processes batch data. The task pulls data from S3, processes it, and stores results back to DynamoDB or a data warehouse. No servers to manage, you pay only when the task runs.</p>
+
+    <h3>ECS + SQS with auto scaling</h3>
+    <p>Your ECS service polls an SQS queue for work. Enable auto scaling on the service so the task count grows as the queue fills up. When messages pile up during a traffic spike, the service automatically scales to process them faster. When the queue empties, tasks scale back down.</p>
+
+    <h3>Monitoring task lifecycle events</h3>
+    <p>EventBridge watches your ECS cluster and can capture events when tasks change state—starting, stopping, failing. Route those events to an SNS topic to alert your team. This is how you build monitoring and alerting around your containers without polling.</p>
+  </section>
+
+  <!-- 8 -->
+  <section class="lecture" id="l8">
+    <h2><span class="lecture-num">8</span>ECS Task Definitions — Deep Dive</h2>
+
+    <p>A task definition is JSON (though the AWS console provides a UI to build it without editing JSON directly). It describes everything ECS needs to know to launch a container: which Docker image, how much CPU and memory, which ports, environment variables, IAM role, and logging setup.</p>
+
+    <p>One task definition can describe up to 10 containers. This is useful when you need a main application container plus sidecars—a logging agent, a monitoring agent, or a proxy—all running together and sharing network namespace and storage.</p>
+
+    <h3>Port mapping: container vs host</h3>
+
+    <p>The port your application listens on inside the container is the <strong>container port</strong>. On EC2 launch type, that maps to a random port on the EC2 instance's network interface—the <strong>host port</strong>. The load balancer knows how to follow these dynamic mappings because it queries ECS constantly for the current state.</p>
+
+    <p>On Fargate, this complexity vanishes. Each task gets its own network interface (ENI) with its own private IP. There's no shared host to map ports through. The task listens on port 80 (or whatever), the load balancer routes traffic to that IP and port, and everything just works.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 190" xmlns="http://www.w3.org/2000/svg">
+        <rect class="svg-box" x="20" y="20" width="330" height="150" rx="8" style="fill:#fff;stroke:#c8917a;stroke-width:1.5"/>
+        <text class="svg-text" x="185" y="42" text-anchor="middle" font-weight="600" font-size="12" style="font-family:-apache-system,sans-serif;fill:#2b2a28">EC2 Launch Type</text>
+        <text class="svg-label" x="185" y="60" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">Dynamic port mapping</text>
+        <rect class="svg-box-accent" x="40" y="75" width="120" height="70" rx="5" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/>
+        <text class="svg-text" x="100" y="98" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#2b2a28">Task A</text>
+        <text class="svg-label" x="100" y="115" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">container:80</text>
+        <text class="svg-label" x="100" y="130" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">host: random</text>
+        <rect class="svg-box-accent" x="190" y="75" width="120" height="70" rx="5" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/>
+        <text class="svg-text" x="250" y="98" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#2b2a28">Task B</text>
+        <text class="svg-label" x="250" y="115" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">container:80</text>
+        <text class="svg-label" x="250" y="130" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">host: random</text>
+
+        <rect class="svg-box" x="410" y="20" width="350" height="150" rx="8" style="fill:#fff;stroke:#c8917a;stroke-width:1.5"/>
+        <text class="svg-text" x="585" y="42" text-anchor="middle" font-weight="600" font-size="12" style="font-family:-apache-system,sans-serif;fill:#2b2a28">Fargate Launch Type</text>
+        <text class="svg-label" x="585" y="60" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">Each task gets its own ENI + private IP</text>
+        <rect class="svg-box-accent" x="430" y="75" width="140" height="70" rx="5" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/>
+        <text class="svg-text" x="500" y="98" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#2b2a28">Task A (ENI)</text>
+        <text class="svg-label" x="500" y="115" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">container:80</text>
+        <rect class="svg-box-accent" x="590" y="75" width="140" height="70" rx="5" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/>
+        <text class="svg-text" x="660" y="98" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#2b2a28">Task B (ENI)</text>
+        <text class="svg-label" x="660" y="115" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">container:80</text>
+      </svg>
+      <div class="diagram-caption">EC2 tasks share the EC2 instance's IP and get random host ports. Fargate tasks each have their own private IP, so port numbers don't conflict.</div>
+    </div>
+
+    <div class="callout warning">
+      <span class="callout-label">⚠️ Security group gotcha</span>
+      On EC2 launch type with an Application Load Balancer, the EC2 instance's security group must allow traffic from the ALB's security group on any port (since the host port is random). On Fargate, the task's ENI security group just needs to allow the actual container port (e.g., 80) from the ALB's security group. This detail matters for troubleshooting connectivity issues.
+    </div>
+
+    <h3>IAM roles for containers</h3>
+
+    <p>Task definitions reference an IAM task role. Every container launched from that task definition assumes that role, automatically. Different task definitions can have different roles, letting you apply fine-grained permissions—one task reads S3, another writes to DynamoDB—without embedding any credentials in the image.</p>
+
+    <h3>Environment variables and secrets</h3>
+
+    <p>You can hardcode non-secret environment variables directly in the task definition. For sensitive values—API keys, database passwords—pull them from AWS Secrets Manager or Systems Manager Parameter Store. ECS resolves them and injects them at task startup time. This keeps secrets out of your images and logs.</p>
+
+    <p>You can also bulk-load environment variables from an S3 object if you have many to configure at once.</p>
+
+    <h3>Sharing data between containers</h3>
+
+    <p>A single task can run multiple containers. To let them share files, define a bind mount in the task definition. On EC2 launch type, the bind mount points to the EC2 instance's storage—tied to that instance's lifecycle. On Fargate, it uses ephemeral storage (20 GB to 200 GB depending on task size)—tied to the task's lifecycle and disappears when the task stops.</p>
+
+    <p>This is how you run a logging sidecar in the same task as your main app. Both containers write to a shared <code>/var/logs</code> directory. The logging sidecar picks up the main app's logs and ships them to CloudWatch.</p>
+  </section>
+
+  <!-- 9 -->
+  <section class="lecture" id="l9">
+    <h2><span class="lecture-num">9</span>ECS Task Definitions — Hands On</h2>
+
+    <p>This hands-on lecture walks through the console UI for creating a task definition, covering the same concepts from the previous deep dive: choosing Fargate or EC2, setting CPU and memory, defining container port bindings, configuring the task role, adding environment variables from Secrets Manager, and binding mount setup for sidecars. Refer to Section 8 for the full technical explanation of each field.</p>
+  </section>
+
+  <!-- 10 -->
+  <section class="lecture" id="l10">
+    <h2><span class="lecture-num">10</span>ECS Task Placement</h2>
+
+    <div class="callout warning">
+      <span class="callout-label">⚠️ Fargate doesn't have placement</span>
+      Task placement strategies and constraints only apply to EC2 launch type. Fargate hides the infrastructure entirely, so there's no instance to place a task onto—AWS decides for you.
+    </div>
+
+    <p>On EC2 launch type, ECS has to decide which container instance gets each new task. It does this in three steps: identify instances with enough CPU and memory for the task, filter by any placement constraints you defined, then pick the instance that best matches the placement strategy.</p>
+
+    <h3>Placement strategies</h3>
+
+    <p><strong>binpack</strong> fills one instance before moving to the next. It packs tasks tightly to minimize the number of EC2 instances in use, which saves money.</p>
+
+    <p><strong>random</strong> just picks an instance randomly with no optimization. It's simple but wasteful.</p>
+
+    <p><strong>spread</strong> distributes tasks evenly across a chosen dimension—availability zones, instance IDs, or other attributes. Use it to maximize availability so one AZ failure doesn't knock out all your tasks.</p>
+
+    <p>Strategies can be combined. For example: "spread tasks across availability zones, then within each AZ, binpack by memory." This gives you both high availability and cost efficiency.</p>
+
+    <h3>Placement constraints</h3>
+
+    <p><strong>distinctInstance</strong> ensures each task lands on a different container instance. Never two tasks on the same instance. Useful for load distribution.</p>
+
+    <p><strong>memberOf</strong> only places tasks on instances matching a specific expression—for example, only t2 instance types, or only instances in a specific availability zone. It's a filter before the strategy kicks in.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 170" xmlns="http://www.w3.org/2000/svg">
+        <text class="svg-text" x="130" y="20" text-anchor="middle" font-weight="600" font-size="12" style="font-family:-apache-system,sans-serif;fill:#2b2a28">binpack</text>
+        <rect class="svg-box-accent" x="30" y="35" width="200" height="30" rx="4" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-label" x="130" y="55" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">Instance 1: full of tasks</text>
+        <rect class="svg-box" x="30" y="75" width="200" height="30" rx="4" style="fill:#fff;stroke:#c8917a;stroke-width:1.5"/><text class="svg-label" x="130" y="95" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">Instance 2: empty</text>
+        <text class="svg-label" x="130" y="120" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">Fills one instance before using the next — minimizes instance count</text>
+
+        <text class="svg-text" x="390" y="20" text-anchor="middle" font-weight="600" font-size="12" style="font-family:-apache-system,sans-serif;fill:#2b2a28">random</text>
+        <rect class="svg-box-accent" x="290" y="35" width="90" height="30" rx="4" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-label" x="335" y="55" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">Instance 1</text>
+        <rect class="svg-box-accent" x="400" y="35" width="90" height="30" rx="4" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-label" x="445" y="55" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">Instance 2</text>
+        <text class="svg-label" x="390" y="90" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">Tasks land wherever — no optimization logic</text>
+
+        <text class="svg-text" x="650" y="20" text-anchor="middle" font-weight="600" font-size="12" style="font-family:-apache-system,sans-serif;fill:#2b2a28">spread</text>
+        <rect class="svg-box-accent" x="560" y="35" width="60" height="30" rx="4" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-label" x="590" y="55" text-anchor="middle" font-size="8" style="font-family:-apache-system,sans-serif;fill:#6b6a66">AZ-A</text>
+        <rect class="svg-box-accent" x="630" y="35" width="60" height="30" rx="4" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-label" x="660" y="55" text-anchor="middle" font-size="8" style="font-family:-apache-system,sans-serif;fill:#6b6a66">AZ-B</text>
+        <rect class="svg-box-accent" x="700" y="35" width="60" height="30" rx="4" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/><text class="svg-label" x="730" y="55" text-anchor="middle" font-size="8" style="font-family:-apache-system,sans-serif;fill:#6b6a66">AZ-C</text>
+        <text class="svg-label" x="650" y="90" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">Evenly distributed — maximizes availability</text>
+      </svg>
+      <div class="diagram-caption">binpack saves money by packing tasks tightly. spread prioritizes availability by distributing across zones. random is simple but inefficient.</div>
+    </div>
+  </section>
+
+  <!-- 11 -->
+  <section class="lecture" id="l11">
+    <h2><span class="lecture-num">11</span>ECS Clean Up — Hands On</h2>
+
+    <p>To shut down an ECS setup, follow this order: First, set the service's desired task count to 0, then delete the service itself. Confirm the deletion. Behind the scenes, CloudFormation removes the load balancer, target groups, security groups, and listeners.</p>
+
+    <p>Once the service is gone, delete the cluster. Again, CloudFormation cleans up: the capacity provider, the Auto Scaling Group (if you were on EC2 launch type), and the cluster itself.</p>
+
+    <p>Task definitions are free to leave around—they're just definitions, not running resources. But if you want to clean house, you can deregister them manually through the console.</p>
+  </section>
+
+  <!-- 12 -->
+  <section class="lecture" id="l12">
+    <h2><span class="lecture-num">12</span>Amazon ECR</h2>
+
+    <p>Now you know how to run containers in ECS. But where do the Docker images come from? That's what ECR does.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Amazon ECR</strong> (Elastic Container Registry) is AWS's managed Docker image repository. You can push your images here and pull them into ECS tasks. ECR is private by default (only your account sees your images), but you can publish images to the public ECR gallery too.
+    </div>
+
+    <p>Under the hood, ECR stores images in S3. You don't see the S3 bucket—ECR abstracts it away. Access to ECR is controlled by IAM. If an EC2 instance or Lambda function needs to pull an image from your ECR repository, it needs an IAM policy granting ECR permissions.</p>
+
+    <p>ECR also offers optional image vulnerability scanning (scanning images for known security issues before you deploy them), image versioning, and lifecycle policies to clean up old images automatically.</p>
+
+    <h3>Public vs private repositories</h3>
+
+    <p>Private repositories are the default. Only people (or services with the right IAM permissions) can see or pull your images. Use this for proprietary application code.</p>
+
+    <p>Public repositories are published to the <strong>ECR Public Gallery</strong>. Anyone on the internet can pull your image. This is useful if you want to share open-source tools or base images.</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Most organizations keep application images private in ECR. Open-source libraries and base images often live in Docker Hub or the ECR Public Gallery. When an ECS task starts, it pulls from ECR using the EC2 instance's IAM role (EC2 launch type) or the task's IAM role (Fargate), so credentials never need to be embedded anywhere.
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+        <rect class="svg-box-accent" x="20" y="45" width="160" height="45" rx="6" style="fill:#fff4e2;stroke:#d97706;stroke-width:1.5"/>
+        <text class="svg-text" x="100" y="72" text-anchor="middle" font-size="10" style="font-family:-apache-system,sans-serif;fill:#2b2a28">Amazon ECR (images)</text>
+        <line x1="180" y1="67" x2="300" y2="67" stroke="#6b6a66" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <text class="svg-label" x="240" y="55" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">pull (via IAM role)</text>
+        <rect class="svg-box" x="300" y="45" width="180" height="45" rx="6" style="fill:#fff;stroke:#c8917a;stroke-width:1.5"/>
+        <text class="svg-text" x="390" y="67" text-anchor="middle" font-size="10" style="font-family:-apache-system,sans-serif;fill:#2b2a28">EC2 instance (ECS cluster)</text>
+        <line x1="480" y1="67" x2="600" y2="67" stroke="#6b6a66" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <text class="svg-label" x="540" y="55" text-anchor="middle" font-size="9" style="font-family:-apache-system,sans-serif;fill:#6b6a66">runs</text>
+        <rect class="svg-box" x="600" y="45" width="160" height="45" rx="6" style="fill:#fff;stroke:#c8917a;stroke-width:1.5"/>
+        <text class="svg-text" x="680" y="67" text-anchor="middle" font-size="10" style="font-family:-apache-system,sans-serif;fill:#2b2a28">Running container</text>
+      </svg>
+      <div class="diagram-caption">Task definition references an image URL in ECR. ECS pulls it using the instance's IAM role. The image becomes a running container.</div>
+    </div>
+  </section>
+
+  <!-- 13 -->
+  <section class="lecture" id="l13">
+    <h2><span class="lecture-num">13</span>Amazon ECR — Hands On</h2>
+
+    <p>To push an image to ECR, first authenticate the Docker CLI to your ECR repository. Use this command:</p>
+
+    <pre><code>aws ecr get-login-password | docker login --username AWS --password-stdin [your-account-id].dkr.ecr.[region].amazonaws.com</code></pre>
+
+    <p>This works because your local AWS credentials (configured via <code>aws configure</code>) prove you're authorized. Docker stores the login token temporarily.</p>
+
+    <p>Next, create a private repository in ECR (just give it a name). Pull an existing Docker image—either from Docker Hub or from your local machine if you've built one:</p>
+
+    <pre><code>docker pull ubuntu:latest</code></pre>
+
+    <p>Now retag it to match your ECR repository. The tag format is important—it must include your ECR repository's full URI:</p>
+
+    <pre><code>docker tag ubuntu:latest [your-account-id].dkr.ecr.[region].amazonaws.com/my-repo:latest</code></pre>
+
+    <p>Push it to ECR:</p>
+
+    <pre><code>docker push [your-account-id].dkr.ecr.[region].amazonaws.com/my-repo:latest</code></pre>
+
+    <p>Docker recognizes the ECR URI in the tag name and pushes it to your repository. Now when you create an ECS task definition, you can reference this image URL.</p>
+
+    <div class="callout warning">
+      <span class="callout-label">⚠️ Common error</span>
+      Push or pull fails with an "access denied" message. This is almost always an IAM permissions issue. Check that your user or role has the right ECR permissions (ecr:GetDownloadUrlForLayer, ecr:BatchGetImage, ecr:PutImage, etc.). Fix the IAM policy, re-authenticate with <code>docker login</code>, and try again.
+    </div>
+  </section>
+
+  <!-- 14 -->
+  <section class="lecture" id="l14">
+    <h2><span class="lecture-num">14</span>Amazon EKS</h2>
+
+    <p>ECS is AWS-specific. But what if your organization already uses Kubernetes on-premises or in multiple clouds? What if you want container orchestration that isn't locked into one vendor?</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Amazon EKS</strong> (Elastic Kubernetes Service) is AWS's managed way to run Kubernetes, an open-source container orchestration system. It's cloud-agnostic—Kubernetes also runs on Azure, Google Cloud, and on-premises—so you're not vendor-locked.
+    </div>
+
+    <p>EKS follows the same Fargate serverless model as ECS. You can run worker nodes on EC2 (self-managed or AWS-managed), or go completely serverless with Fargate. The API is different (Kubernetes YAML manifests instead of ECS task definitions), but the end result is the same: containers running securely at scale.</p>
+
+    <p>In Kubernetes terminology, a "pod" is roughly equivalent to an ECS task. A pod can hold one or more containers. You define pods in YAML manifests instead of JSON task definitions. The Kubernetes control plane (which AWS manages for you in EKS) decides where to schedule pods, how many replicas to keep, and when to scale.</p>
+
+    <p>For node types on EKS, you can use AWS-managed node groups (AWS creates and manages the EC2 nodes as part of an Auto Scaling Group), self-managed nodes (you bring your own EC2 instances or use the EKS-optimized AMI), or Fargate for serverless pods.</p>
+
+    <h3>Storage on EKS</h3>
+
+    <p>Kubernetes uses StorageClass manifests to attach volumes. EKS supports Amazon EBS, Amazon EFS (the only option that works with Fargate), Amazon FSx for Lustre, and Amazon FSx for NetApp ONTAP—all via Container Storage Interface (CSI) drivers.</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 Why choose EKS over ECS?</span>
+      Use EKS if your team is already familiar with Kubernetes, if you run containers in multiple clouds, or if you need the advanced orchestration features Kubernetes provides. Otherwise, ECS is simpler and tighter integration with other AWS services usually makes it the better choice.
+    </div>
+  </section>
+
+  <hr class="section-break">
+
+  <!-- Cheat Sheet -->
+  <section class="lecture" id="lsummary">
+    <h2>📋 Cheat Sheet</h2>
+
+    <div class="summary-box">
+      <h3>Core Concepts</h3>
+      <ul>
+        <li><strong>Docker</strong> packages applications into portable containers that run identically anywhere.</li>
+        <li><strong>ECS Task</strong> is a running Docker container inside ECS. <strong>ECS Cluster</strong> groups compute resources (EC2 or Fargate) where tasks run.</li>
+        <li><strong>ECS Service</strong> keeps a desired number of tasks running and replaces failed ones.</li>
+        <li><strong>Fargate</strong> is serverless compute—you define tasks, AWS runs them without you managing servers.</li>
+        <li><strong>Task definition</strong> is a JSON blueprint describing how to run one or more containers: image URL, CPU, memory, IAM role, ports, environment variables.</li>
+        <li><strong>ECR</strong> (Elastic Container Registry) stores your Docker images privately. Backed by S3, access controlled by IAM.</li>
+        <li><strong>EKS</strong> is managed Kubernetes—use if you already know Kubernetes or need multi-cloud portability.</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>Launch Types Comparison</h3>
+      <table>
+        <tr><th></th><th>EC2 Launch Type</th><th>Fargate Launch Type</th></tr>
+        <tr><td><strong>Infrastructure</strong></td><td>You manage EC2 instances. Each runs the ECS Agent.</td><td>Fully serverless. No instances to manage.</td></tr>
+        <tr><td><strong>Scaling</strong></td><td>Scale tasks AND the instance fleet (two layers).</td><td>Scale tasks instantly—AWS provisions capacity.</td></tr>
+        <tr><td><strong>Port mapping</strong></td><td>Tasks share host IP, get random host port (ALB knows how to follow this).</td><td>Each task gets its own private IP (ENI). No port conflicts.</td></tr>
+        <tr><td><strong>Task placement</strong></td><td>Strategies like binpack, spread; constraints like distinctInstance.</td><td>AWS decides placement for you.</td></tr>
+        <tr><td><strong>Best for</strong></td><td>Full control, cost optimization, complex placement logic.</td><td>Simplicity, unpredictable workloads, rapid scaling.</td></tr>
+      </table>
+    </div>
+
+    <div class="summary-box">
+      <h3>Key Architecture Patterns</h3>
+      <ul>
+        <li><strong>EventBridge → ECS task:</strong> User uploads to S3, event triggers a Fargate task to process and write to DynamoDB. Fully serverless.</li>
+        <li><strong>ECS + SQS + auto scaling:</strong> Service polls SQS queue. Task count scales with queue depth. Handles traffic spikes automatically.</li>
+        <li><strong>Load-balanced service:</strong> ECS service with multiple tasks. ALB distributes traffic. Tasks scale based on CPU/memory/request metrics.</li>
+        <li><strong>Scheduled batch job:</strong> EventBridge schedule triggers a Fargate task hourly. Task processes data and exits. Pay only when running.</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>IAM Roles: EC2 vs Task</h3>
+      <ul>
+        <li><strong>EC2 Instance Profile:</strong> Used only on EC2 launch type. Lets the ECS Agent make API calls to ECS, pull images from ECR, write logs to CloudWatch.</li>
+        <li><strong>ECS Task Role:</strong> Used by application code inside the container. Defined at task definition level. Lets Task A read S3, Task B write to DynamoDB. Fine-grained per-task permissions.</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>Rolling Updates</h3>
+      <ul>
+        <li><strong>Minimum healthy percent:</strong> Lowest number of tasks that must stay running during update (100% = never dip below capacity).</li>
+        <li><strong>Maximum percent:</strong> Temporary peak during update (150% = temporarily run 50% more tasks than desired).</li>
+        <li><strong>Min 100% / Max 150%:</strong> Zero downtime, higher cost. Creates new tasks before terminating old ones.</li>
+        <li><strong>Min 50% / Max 100%:</strong> Saves money, brief capacity dip. Terminates old before launching new.</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>Auto Scaling Triggers</h3>
+      <ul>
+        <li>Service CPU utilization (whole service, not per-task).</li>
+        <li>Service memory utilization.</li>
+        <li>ALB request count per target.</li>
+        <li>Scheduled scaling for predictable patterns.</li>
+        <li>Note: On EC2 launch type, also scale the instance fleet using ECS Cluster Capacity Provider (not plain ASG scaling).</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>Port Mapping Rules</h3>
+      <ul>
+        <li><strong>EC2 + ALB:</strong> Dynamic host port mapping. EC2 security group must allow ANY port from ALB security group.</li>
+        <li><strong>Fargate:</strong> Each task gets its own ENI. No mapping needed. ENI security group allows container port (e.g., 80) from ALB security group.</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>Task Placement (EC2 only)</h3>
+      <ul>
+        <li><strong>binpack:</strong> Fill one instance before moving to next. Minimizes instance count (cost optimization).</li>
+        <li><strong>spread:</strong> Distribute across AZ or instance ID. Maximizes availability. One instance failure doesn't take down all tasks.</li>
+        <li><strong>random:</strong> No logic. Simple but wasteful.</li>
+        <li><strong>distinctInstance:</strong> Each task on different instance. No two tasks on same instance.</li>
+        <li><strong>memberOf:</strong> Filter to specific instances (e.g., only t2 types, or specific AZ).</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>When to Use What</h3>
+      <ul>
+        <li><strong>Simplest container hosting:</strong> ECS + Fargate.</li>
+        <li><strong>Full control over instances:</strong> ECS + EC2 launch type.</li>
+        <li><strong>Already using Kubernetes:</strong> EKS.</li>
+        <li><strong>Store private Docker images:</strong> ECR.</li>
+        <li><strong>Share files between sidecars:</strong> Bind mount in task definition.</li>
+        <li><strong>Persistent shared storage across AZs:</strong> EFS.</li>
+        <li><strong>Zero-downtime deployments:</strong> Min 100% / Max 150% rolling update.</li>
+        <li><strong>Cost optimization with EC2:</strong> binpack placement strategy + Cluster Capacity Provider.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="top-link"><a href="#top">↑ Back to top</a></div>
+
+</div>
+
+<script>
+(function () {
+  if (document.querySelector('.tips-trigger')) return;
+
+  const glossary = [
+    ['ALB', 'Application Load Balancer. Layer 7 load balancer for HTTP/HTTPS traffic.'],
+    ['API', 'Application Programming Interface. A way for software to request actions from other software or services.'],
+    ['ASG', 'Auto Scaling Group. A group that keeps a desired number of EC2 instances running.'],
+    ['AWS', 'Amazon Web Services. The cloud platform you are using to run containers.'],
+    ['base image', 'A pre-built Docker image you start from (e.g., ubuntu:latest, node:18). You add your code on top.'],
+    ['bind mount', 'A way to share a directory between containers (or between container and host) within a task.'],
+    ['canary', 'Gradual release where a small percentage of traffic gets the new version first.'],
+    ['CloudFormation', 'AWS infrastructure-as-code service. Templates create and manage stacks of resources.'],
+    ['CloudWatch', 'AWS monitoring service for logs, metrics, and alarms.'],
+    ['cluster', 'In ECS context, a grouping of compute resources (EC2 instances or Fargate capacity) where tasks run.'],
+    ['container', 'A lightweight, isolated package containing code, dependencies, and runtime. Runs consistently everywhere.'],
+    ['container instance', 'An EC2 instance that has the ECS Agent running and has registered with an ECS cluster.'],
+    ['container port', 'The port your application listens on inside the Docker container (e.g., port 80).'],
+    ['CPU', 'Central processing unit. Compute resource allocation. In ECS, specified in CPU units (256 = 0.25 vCPU).'],
+    ['EC2', 'Elastic Compute Cloud. AWS service for renting virtual machines.'],
+    ['ECR', 'Elastic Container Registry. AWS managed Docker image repository for storing private container images.'],
+    ['ECS', 'Elastic Container Service. AWS container orchestration platform.'],
+    ['EFS', 'Elastic File System. Shared network file system for persistent storage across EC2 instances or Fargate tasks.'],
+    ['EKS', 'Elastic Kubernetes Service. AWS managed Kubernetes orchestration.'],
+    ['ENI', 'Elastic Network Interface. Virtual network interface. On Fargate, each task gets its own ENI with a private IP.'],
+    ['ephemeral', 'Temporary, existing only while the resource is running. Ephemeral storage disappears when a Fargate task stops.'],
+    ['Fargate', 'Serverless compute layer. You define tasks without managing EC2 instances.'],
+    ['host port', 'The port on the EC2 instance that traffic reaches. Mapped to container port via dynamic port mapping.'],
+    ['image', 'A Docker image. Immutable template containing code, dependencies, and runtime. Instances are containers.'],
+    ['IAM', 'Identity and Access Management. AWS permissions and roles system.'],
+    ['JSON', 'JavaScript Object Notation. Structured text format used for task definitions and policies.'],
+    ['launch type', 'How you choose to run ECS tasks. Either EC2 (you manage instances) or Fargate (serverless).'],
+    ['load balancer', 'Distributes incoming traffic across multiple targets (e.g., ECS tasks). AWS offers ALB and NLB.'],
+    ['memory', 'RAM allocated to a task. Specified in MB in task definitions.'],
+    ['orchestration', 'Automatic coordination of deployment, scaling, networking, and lifecycle management of containers.'],
+    ['port mapping', 'Binding a container port to a host port so traffic reaches the right service.'],
+    ['private IP', 'An IP address not routable from the internet. Used internally within VPCs.'],
+    ['replica', 'A copy of a task. "Desired count = 3 replicas" means 3 copies of the task should be running.'],
+    ['repository', 'A storage location for Docker images. Docker Hub, ECR, etc.'],
+    ['role', 'An AWS IAM identity that can be assumed by users, services, or external accounts. Grants permissions.'],
+    ['scaling', 'Changing the number of running tasks (or EC2 instances) to meet demand.'],
+    ['sidecar', 'An additional container running in the same task as your main application. Often handles logging, monitoring, or networking.'],
+    ['STS', 'Security Token Service. AWS service that issues temporary security credentials.'],
+    ['task', 'In ECS context, a running instance of a Docker container, configured by a task definition.'],
+    ['task definition', 'JSON blueprint for running containers in ECS. Specifies image, CPU, memory, ports, IAM role, environment variables.'],
+    ['task role', 'IAM role assumed by application code inside a container. Grants permissions to AWS services.'],
+    ['target', 'In load balancing, the resource receiving traffic (e.g., an ECS task, or an EC2 instance).'],
+    ['throughput', 'Amount of data processed per second. Different from operations per second (IOPS).'],
+    ['vCPU', 'Virtual CPU. One core of compute capacity. 256 CPU units = 0.25 vCPU.'],
+    ['VPC', 'Virtual Private Cloud. Your isolated network boundary inside AWS.']
+  ];
+
+  const pageText = document.body.innerText.replace(/\s+/g, ' ');
+  const found = glossary.filter(([term]) => new RegExp('(^|[^A-Za-z0-9])' + escapeRegExp(term) + '([^A-Za-z0-9]|$)', 'i').test(pageText));
+  if (!found.length) return;
+
+  const button = document.createElement('button');
+  button.className = 'tips-trigger';
+  button.type = 'button';
+  button.setAttribute('aria-haspopup', 'dialog');
+  button.setAttribute('aria-expanded', 'false');
+  button.innerHTML = '<span class="tips-icon" aria-hidden="true">💡</span><span>Glossary</span>';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'tips-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'tips-title');
+  overlay.innerHTML = [
+    '<div class="tips-panel">',
+    '<div class="tips-header">',
+    '<h2 id="tips-title">💡 Every term on this page</h2>',
+    '<button class="tips-close" type="button" aria-label="Close glossary">Close</button>',
+    '</div>',
+    '<div class="tips-body">',
+    '<p class="tips-intro">A quick lookup if you lost the thread anywhere on this page.</p>',
+    '<ul class="tips-list">' + found.map(([term, tip]) => '<li><strong>' + escapeHtml(term) + '</strong>' + escapeHtml(tip) + '</li>').join('') + '</ul>',
+    '</div>',
+    '</div>'
+  ].join('');
+
+  document.body.appendChild(button);
+  document.body.appendChild(overlay);
+
+  const closeButton = overlay.querySelector('.tips-close');
+  function openTips() {
+    overlay.classList.add('open');
+    button.setAttribute('aria-expanded', 'true');
+    closeButton.focus();
+  }
+  function closeTips() {
+    overlay.classList.remove('open');
+    button.setAttribute('aria-expanded', 'false');
+    button.focus();
+  }
+
+  button.addEventListener('click', openTips);
+  closeButton.addEventListener('click', closeTips);
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) closeTips();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && overlay.classList.contains('open')) closeTips();
+  });
+
+  function escapeRegExp(value) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
+  }
+}());
+</script>
+
+<!-- Dark Theme Toggle Button -->
+<button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme" title="Toggle Light/Dark Theme">
+  <span class="theme-toggle-icon">🌙</span>
+  <span class="theme-toggle-text">Dark</span>
+</button>
+
+<script id="dark-theme-script">
+(function() {
+  function setupThemeToggle() {
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+
+    function syncUI() {
+      var isDark = document.documentElement.classList.contains('dark-mode') || document.body.classList.contains('dark-mode');
+      var icon = btn.querySelector('.theme-toggle-icon');
+      var text = btn.querySelector('.theme-toggle-text');
+      if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+      if (text) text.textContent = isDark ? 'Light' : 'Dark';
+    }
+
+    if (document.documentElement.classList.contains('dark-mode')) {
+      document.body.classList.add('dark-mode');
+    }
+    syncUI();
+
+    btn.addEventListener('click', function() {
+      var isDark = document.documentElement.classList.toggle('dark-mode');
+      document.body.classList.toggle('dark-mode', isDark);
+      localStorage.setItem('aws-notes-theme', isDark ? 'dark' : 'light');
+      syncUI();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupThemeToggle);
+  } else {
+    setupThemeToggle();
+  }
+})();
+</script>
+</body>
+</html>
