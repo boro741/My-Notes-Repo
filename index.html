@@ -229,15 +229,11 @@
 
     /* ── Section (folder) ── */
     .section {
-      position: relative;
-      z-index: 1;
       margin-bottom: 44px;
       animation: fadeUp 0.5s ease both;
     }
 
     .section-header {
-      position: relative;
-      z-index: 10;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -323,13 +319,10 @@
 
     /* ── Accordion Cards Container ── */
     .cards-wrapper {
-      position: relative;
-      z-index: 1;
       display: grid;
       grid-template-rows: 1fr;
       transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
       opacity: 1;
-      visibility: visible;
     }
 
     .cards-wrapper-inner {
@@ -341,7 +334,6 @@
       grid-template-rows: 0fr;
       opacity: 0;
       pointer-events: none;
-      visibility: hidden;
     }
 
     .section.collapsed .cards-wrapper-inner {
@@ -1436,26 +1428,26 @@
     });
 
     // Attach click and keyboard listeners to headers
+    // The header and cards-wrapper are siblings (not parent-child),
+    // so card clicks CANNOT bubble up to the header handler.
+    // The only clicks we need to guard against are the sub-links
+    // inside the header itself (e.g. "Open Master Visual Hub").
     document.querySelectorAll('.section-header').forEach(header => {
       header.addEventListener('click', (e) => {
-        // Allow explicit external links inside header (e.g. Master Visual Hub link) to navigate normally
-        const link = e.target.closest('a');
-        if (link && link.getAttribute('href')) {
-          return;
-        }
+        // If the click landed on or inside an <a> link inside the header, let it navigate
+        const link = e.target.closest('a[href]');
+        if (link) return;
 
-        e.preventDefault();
-        e.stopPropagation();
+        // Otherwise toggle the section
         const section = header.closest('[data-section]');
         if (section) toggleSection(section);
       });
 
       header.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
-          const link = e.target.closest('a');
-          if (link && link.getAttribute('href')) return;
+          const link = e.target.closest('a[href]');
+          if (link) return;
           e.preventDefault();
-          e.stopPropagation();
           const section = header.closest('[data-section]');
           if (section) toggleSection(section);
         }
