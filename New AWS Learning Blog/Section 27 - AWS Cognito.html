@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script id="dark-theme-init">
+(function() {
+  var saved = localStorage.getItem('aws-notes-theme');
+  if (saved === 'dark' || (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark-mode');
+  }
+})();
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 27 — AWS Cognito (Blog Edition)</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --card: #f9fafb;
+    --accent: #d97706;
+    --accent-dark: #b45309;
+    --blue: #2563eb;
+    --green: #059669;
+    --purple: #7c3aed;
+    --red: #dc2626;
+    --code-bg: #f3f4f6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+  }
+  header.page-header {
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  header.page-header h1 {
+    margin: 0 0 6px 0;
+    font-size: 28px;
+    color: var(--accent-dark);
+  }
+  header.page-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14.5px;
+  }
+
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+  }
+  nav.toc h2 {
+    margin-top: 0;
+    font-size: 16px;
+    color: var(--accent-dark);
+  }
+  nav.toc ol {
+    margin: 0;
+    padding-left: 20px;
+    columns: 2;
+  }
+  nav.toc li { margin-bottom: 6px; font-size: 14px; }
+  nav.toc a { color: var(--blue); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  section.lecture {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 26px;
+    margin-bottom: 26px;
+    background: #fff;
+    scroll-margin-top: 16px;
+  }
+  section.lecture h2 {
+    margin-top: 0;
+    font-size: 20px;
+    color: #111827;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 8px;
+  }
+  .lecture-num {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 2px 8px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  h3 { color: var(--accent-dark); font-size: 16.5px; margin-bottom: 8px; margin-top: 26px; }
+
+  p { margin: 0 0 14px; }
+
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: #fffbeb;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 15px;
+  }
+  .callout.tip { border-left-color: var(--green); background: #ecfdf5; }
+  .callout.warning { border-left-color: var(--red); background: #fef2f2; }
+  .callout.define { border-left-color: var(--blue); background: #eff6ff; }
+  .callout.production { border-left-color: var(--purple); background: #f5f3ff; }
+  .callout strong { color: inherit; }
+  .callout-label {
+    display: block;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    margin-bottom: 4px;
+    opacity: 0.75;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th { background: var(--card); color: var(--accent-dark); }
+  tr:nth-child(even) td { background: #fcfcfd; }
+
+  code {
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 16px 0;
+  }
+  pre code { background: none; padding: 0; }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  .diagram {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 18px 0;
+    text-align: center;
+    overflow-x: auto;
+  }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram-caption { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  .top-link { font-size: 12px; text-align: right; }
+  .top-link a { color: var(--muted); text-decoration: none; }
+  .top-link a:hover { text-decoration: underline; }
+
+  hr.section-break { border: none; border-top: 2px dashed var(--border); margin: 36px 0; }
+
+  .summary-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 14px;
+  }
+  .summary-box h3 { color: var(--green); margin-top: 0; }
+
+  @media (max-width: 1024px) {
+    .container { padding-left: 20px; padding-right: 20px; }
+    nav.toc ol { columns: 2; }
+  }
+  @media (max-width: 860px) {
+    .container { padding: 20px 18px 60px; }
+    header.page-header h1 { font-size: 22px; }
+    nav.toc ol { columns: 1; }
+    section.lecture { padding: 18px 20px; }
+    table { font-size: 13px; }
+    th, td { padding: 7px 9px; }
+  }
+  @media (max-width: 480px) {
+    .container { padding: 16px 14px 50px; }
+    header.page-header h1 { font-size: 19px; line-height: 1.3; }
+    header.page-header p { font-size: 13px; }
+    nav.toc { padding: 14px 16px; border-radius: 10px; }
+    nav.toc ol { columns: 1; padding-left: 16px; }
+    nav.toc li { font-size: 14px; margin-bottom: 8px; }
+    section.lecture { padding: 16px 16px; border-radius: 10px; margin-bottom: 16px; }
+    section.lecture h2 { font-size: 17px; line-height: 1.3; }
+    h3 { font-size: 15px; }
+    table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; font-size: 13px; white-space: nowrap; }
+    th, td { padding: 7px 10px; }
+    code { font-size: 12.5px; word-break: break-all; }
+    ul, ol { padding-left: 18px; }
+    li { font-size: 14.5px; margin-bottom: 8px; }
+    .callout, .summary-box { padding: 10px 13px; font-size: 14px; }
+    .top-link { font-size: 13px; }
+  }
+  @media (max-width: 360px) {
+    .container { padding: 12px 12px 40px; }
+    section.lecture h2 { font-size: 16px; }
+  }
+
+  /* Tips popup for assumed AWS terms and prerequisite concepts */
+  .tips-trigger {
+    position: fixed; right: 18px; bottom: 18px; z-index: 999;
+    display: inline-flex; align-items: center; gap: 8px;
+    min-height: 44px; padding: 10px 14px;
+    border: 1px solid #f59e0b; border-radius: 999px;
+    background: #fffbeb; color: #92400e;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+    cursor: pointer; font: inherit; font-weight: 700;
+  }
+  .tips-trigger:hover { background: #fef3c7; }
+  .tips-trigger .tips-icon { font-size: 1.2rem; line-height: 1; }
+  .tips-overlay {
+    position: fixed; inset: 0; z-index: 1000; display: none;
+    align-items: center; justify-content: center; padding: 18px;
+    background: rgba(17, 24, 39, 0.46);
+  }
+  .tips-overlay.open { display: flex; }
+  .tips-panel {
+    width: min(760px, 100%); max-height: min(76vh, 720px); overflow: auto;
+    background: #ffffff; color: var(--text, #1f2937);
+    border: 1px solid #fcd34d; border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  }
+  .tips-header {
+    position: sticky; top: 0; display: flex; align-items: center;
+    justify-content: space-between; gap: 12px; padding: 16px 18px;
+    background: #fffbeb; border-bottom: 1px solid #fde68a;
+  }
+  .tips-header h2 { margin: 0; color: #92400e; font-size: 1.1rem; }
+  .tips-close {
+    border: 1px solid #f59e0b; border-radius: 8px; background: #ffffff;
+    color: #92400e; cursor: pointer; font: inherit; font-weight: 700;
+    line-height: 1; padding: 7px 10px;
+  }
+  .tips-body { padding: 16px 18px 18px; }
+  .tips-intro { margin: 0 0 12px; color: var(--muted, #6b7280); font-size: 0.95rem; }
+  .tips-list {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px; margin: 0; padding: 0; list-style: none;
+  }
+  .tips-list li { margin: 0; padding: 10px 12px; border: 1px solid #fde68a; border-radius: 8px; background: #fffdf5; }
+  .tips-list strong { display: block; margin-bottom: 3px; color: #92400e; }
+  @media (max-width: 480px) {
+    .tips-trigger { right: 12px; bottom: 12px; padding: 10px 12px; }
+    .tips-trigger span:not(.tips-icon) { display: none; }
+    .tips-overlay { padding: 10px; }
+    .tips-panel { max-height: 82vh; }
+    .tips-list { grid-template-columns: 1fr; }
+  }
+</style>
+<style id="dark-theme-styles">
+  html.dark-mode, body.dark-mode {
+    --bg: #181926; --card-bg: #222436; --card: #222436; --border: #33384f;
+    --text: #c0caf5; --text-muted: #94a3b8; --muted: #94a3b8; --code-bg: #13141f;
+    --accent: #f59e0b; --accent-dark: #fbbf24; --green: #34d399; --red: #f87171;
+    --purple: #c084fc; --blue: #60a5fa;
+    background-color: #181926 !important; color: #c0caf5 !important;
+  }
+  body.dark-mode { background-color: #181926 !important; color: #c0caf5 !important; }
+  body.dark-mode header.page-header h1 { color: #fbbf24 !important; }
+  body.dark-mode header.page-header p { color: #94a3b8 !important; }
+  body.dark-mode h2, body.dark-mode h3 { color: #f59e0b !important; }
+  body.dark-mode a { color: #60a5fa; }
+  body.dark-mode nav.toc { background: #1f2335 !important; border-color: #33384f !important; }
+  body.dark-mode nav.toc h2 { color: #fbbf24 !important; }
+  body.dark-mode nav.toc a { color: #60a5fa !important; }
+  body.dark-mode section.lecture { background: #222436 !important; border-color: #33384f !important; color: #c0caf5 !important; }
+  body.dark-mode section.lecture h2 { color: #e2e8f0 !important; border-bottom-color: #33384f !important; }
+  body.dark-mode table { border-color: #33384f !important; }
+  body.dark-mode th, body.dark-mode td { border-color: #33384f !important; }
+  body.dark-mode th { background: #1f2335 !important; color: #fbbf24 !important; }
+  body.dark-mode td { color: #cbd5e1 !important; }
+  body.dark-mode tr:nth-child(even) td { background: #1a1d2d !important; }
+  body.dark-mode code { background: #13141f !important; color: #e2e8f0 !important; border: 1px solid #2e324a !important; }
+  body.dark-mode pre { background: #13141f !important; color: #e2e8f0 !important; border-color: #2e324a !important; }
+  body.dark-mode .callout { background: #25231c !important; border-left-color: #f59e0b !important; color: #fef3c7 !important; }
+  body.dark-mode .callout.tip { background: #142921 !important; border-left-color: #34d399 !important; color: #d1fae5 !important; }
+  body.dark-mode .callout.warning { background: #2f1b1e !important; border-left-color: #f87171 !important; color: #fee2e2 !important; }
+  body.dark-mode .callout.define { background: #1d2038 !important; border-left-color: #60a5fa !important; color: #dbeafe !important; }
+  body.dark-mode .callout.production { background: #221c35 !important; border-left-color: #c084fc !important; color: #ede9fe !important; }
+  body.dark-mode .summary-box { background: #142921 !important; border-color: #059669 !important; color: #d1fae5 !important; }
+  body.dark-mode .summary-box h3 { color: #34d399 !important; }
+  body.dark-mode .diagram { background: #ffffff !important; border: 1px solid #cbd5e1 !important; border-radius: 12px !important; padding: 16px !important; box-shadow: 0 4px 14px rgba(0,0,0,0.3) !important; }
+  body.dark-mode .diagram-caption { color: #475569 !important; font-weight: 500 !important; }
+  .theme-toggle-btn {
+    position: fixed; top: 16px; right: 20px; z-index: 10000;
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;
+    border-radius: 20px; background: #ffffff; color: #1f2937; border: 1px solid #cbd5e1;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.25s ease; user-select: none;
+  }
+  .theme-toggle-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
+  body.dark-mode .theme-toggle-btn { background: #24273a !important; color: #e2e8f0 !important; border-color: #363a4f !important; box-shadow: 0 2px 10px rgba(0,0,0,0.4) !important; }
+  @media (max-width: 480px) {
+    .theme-toggle-btn { top: 12px; right: 12px; padding: 6px 10px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="container" id="top">
+
+  <header class="page-header">
+    <h1>Section 27 — AWS Cognito</h1>
+    <p>Giving identity to users outside your AWS account — how real apps handle sign-ups, logins, and letting users safely access AWS resources. Plain English, real production patterns, and every new term explained the moment it appears.</p>
+  </header>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#l1">1. Cognito Overview: Authentication vs Authorization</a></li>
+      <li><a href="#l2">2. Cognito User Pools — Your App's Built-In Login Database</a></li>
+      <li><a href="#l3">3. User Pools Hands-On</a></li>
+      <li><a href="#l4">4. User Pools — Advanced Features</a></li>
+      <li><a href="#l5">5. Putting Cognito on Load Balancers</a></li>
+      <li><a href="#l6">6. Cognito Identity Pools — Temporary AWS Access for Users</a></li>
+      <li><a href="#l7">7. Identity Pools Hands-On</a></li>
+      <li><a href="#l8">8. User Pools vs Identity Pools — Which One?</a></li>
+      <li><a href="#lsummary">Cheat Sheet</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <section class="lecture" id="l1">
+    <h2><span class="lecture-num">1</span>Cognito Overview: Authentication vs Authorization</h2>
+
+    <p>IAM controls who can do what inside your AWS account. But what about the millions of end users of your web or mobile app? You need a different tool entirely — and that's what Cognito does.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Cognito</strong> is AWS's identity service for users outside your account — it handles sign-ups, logins, and social login federation for web and mobile apps.
+    </div>
+
+    <p>Cognito actually solves two separate problems, so it ships with two separate tools. The first handles "who are you" — authentication. The second handles "what can you do in AWS" — authorization. Many production apps use both together.</p>
+
+    <h3>The two sides of Cognito</h3>
+
+    <table>
+      <tr><th>Service</th><th>Problem it solves</th><th>Output</th></tr>
+      <tr><td><strong>User Pools</strong></td><td>Authentication — verify who your app users are, with sign-up, login, MFA, and social login.</td><td>A JWT token after login.</td></tr>
+      <tr><td><strong>Identity Pools</strong></td><td>Authorization — let verified users call AWS services directly (S3, DynamoDB) without creating an IAM user per person.</td><td>Temporary AWS credentials via STS.</td></tr>
+    </table>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Real apps almost always use both. A mobile app lets users log in with User Pools, then exchanges that login token for temporary AWS credentials via Identity Pools — so the phone can upload photos to S3 directly without talking to a backend. A web app might use User Pools alone if the backend handles all AWS calls.
+    </div>
+
+    <div class="callout warning">
+      <strong>Common mix-up on exams:</strong> Cognito is for users outside your account (customers, employees, partners). IAM is for people and systems inside your account (engineers, CI/CD pipelines, servers). Don't confuse them.
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="lecture" id="l2">
+    <h2><span class="lecture-num">2</span>Cognito User Pools — Your App's Built-In Login Database</h2>
+
+    <p>Setting up a user database from scratch means storing passwords safely, verifying emails, handling forgotten passwords, and implementing multi-factor authentication. User Pools gives you all of that, plus social login, without writing a line of authentication code.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>User Pool</strong> — a fully managed serverless user database for your app. It handles sign-up verification, login, password reset, MFA, and federation with social providers or corporate identity systems.
+    </div>
+
+    <p>On a successful login, a User Pool returns a <strong>JWT</strong> — a token your app keeps and sends with every request to prove the user is who they say they are.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>JWT</strong> (JSON Web Token) is a signed, self-contained bundle of user information. The app stores it, and the backend can verify it without asking the User Pool again.
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 680 160" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="30" width="140" height="50" rx="8" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="90" y="65" text-anchor="middle" font-size="12" font-weight="bold">App user</text>
+
+        <line x1="160" y1="55" x2="250" y2="55" stroke="#9ca3af" stroke-width="2"/>
+        <text x="205" y="48" text-anchor="middle" font-size="11" fill="#6b7280">enters credentials</text>
+
+        <rect x="250" y="20" width="160" height="70" rx="8" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+        <text x="330" y="50" text-anchor="middle" font-size="12" font-weight="bold">Cognito User Pool</text>
+        <text x="330" y="68" text-anchor="middle" font-size="11" fill="#92400e">user database</text>
+
+        <line x1="410" y1="55" x2="500" y2="55" stroke="#9ca3af" stroke-width="2"/>
+        <text x="455" y="48" text-anchor="middle" font-size="11" fill="#6b7280">sends JWT</text>
+
+        <rect x="500" y="30" width="160" height="50" rx="8" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="580" y="65" text-anchor="middle" font-size="12" font-weight="bold">App keeps JWT</text>
+
+        <text x="340" y="120" text-anchor="middle" font-size="10" fill="#6b7280">Also supports: Google, Facebook, Amazon, Apple, SAML, OIDC</text>
+      </svg>
+      <div class="diagram-caption">User Pool authenticates, returns a JWT. The app stores the JWT and includes it in future requests to prove authentication.</div>
+    </div>
+
+    <h3>Two key integrations</h3>
+
+    <p><strong>API Gateway Authorizer:</strong> Your backend API can validate the JWT without running any code — API Gateway checks it automatically before forwarding the request to your Lambda or EC2.</p>
+
+    <p><strong>Application Load Balancer:</strong> An ALB can authenticate users itself before sending requests to EC2, ECS, or Lambda backends. The backend receives the request already enriched with the user's authenticated information.</p>
+
+    <div class="callout tip">
+      <strong>Why this matters:</strong> Your application code doesn't need to know about authentication at all. The infrastructure handles it, and the app just processes requests from already-verified users.
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="lecture" id="l3">
+    <h2><span class="lecture-num">3</span>User Pools Hands-On</h2>
+
+    <p>Creating and testing a User Pool takes just a few minutes in the console. Here's the real path:</p>
+
+    <h3>Creating the pool</h3>
+    <ol>
+      <li>AWS Console → Cognito → <strong>Create user pool</strong>.</li>
+      <li>Pick your app type (traditional web app, single-page app, native mobile app, or machine-to-machine).</li>
+      <li>Choose sign-in options: email-based, phone-based, username-based, or a mix.</li>
+      <li>Set required user attributes (email, phone, name, date of birth) — all users will need to provide these during sign-up.</li>
+      <li>Configure email delivery — Cognito can send emails itself (limited to 50 per day for testing) or hand off to SES for production volume.</li>
+      <li>Set a strong password policy.</li>
+      <li>Optionally enable MFA — either required for all users or optional.</li>
+    </ol>
+
+    <h3>The console after creation</h3>
+
+    <p>Once your pool exists, you navigate it in the Cognito console. Key sections are:</p>
+    <ul>
+      <li><strong>Users</strong> — list and manually create users, or check their status (confirmed, unconfirmed, compromised).</li>
+      <li><strong>Groups</strong> — organize users; a user can belong to multiple groups.</li>
+      <li><strong>Sign-in experience</strong> — customized Managed Login (formerly "Hosted UI") page. Cognito gives you a ready-made login/signup page you can style and link from your app.</li>
+      <li><strong>Federated identity providers</strong> — set up Google, Facebook, Amazon, Apple, or SAML/OIDC login.</li>
+      <li><strong>App clients</strong> — each client (web app, mobile app, etc.) gets its own app client configuration for the pool.</li>
+      <li><strong>App integration</strong> — domain for Managed Login, allowed callback URLs after login.</li>
+    </ul>
+
+    <h3>Testing the flow</h3>
+
+    <p>Sign up with the Managed Login page → Cognito sends a verification email → user enters the code → user is now confirmed in the system. On next login, they enter credentials → Cognito returns a JWT → the app keeps that JWT and uses it for all future requests.</p>
+
+    <div class="callout warning">
+      <strong>Email note:</strong> Cognito's built-in email service is capped at 50 emails per day and is meant only for testing. Production apps must connect Amazon SES to handle verification emails at scale.
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="lecture" id="l4">
+    <h2><span class="lecture-num">4</span>User Pools — Advanced Features</h2>
+
+    <h3>Lambda triggers</h3>
+
+    <p>At several points in the authentication flow, User Pools can call a Lambda function you write. This lets you customize behavior without changing Cognito itself.</p>
+
+    <table>
+      <tr><th>Trigger point</th><th>What you can do</th></tr>
+      <tr><td>Pre sign-up</td><td>Auto-confirm users, reject sign-ups, add custom attributes.</td></tr>
+      <tr><td>Pre authentication</td><td>Custom logic before a user is allowed to sign in (e.g., check IP, deny certain users).</td></tr>
+      <tr><td>Post authentication</td><td>Log sign-ins, increment counters, send alerts.</td></tr>
+      <tr><td>Pre token generation</td><td>Add custom claims to the JWT or suppress default claims.</td></tr>
+      <tr><td>Custom message</td><td>Customize the text of verification emails or SMS messages.</td></tr>
+      <tr><td>Migrate user</td><td>For moving users from a legacy system, validate against the old database.</td></tr>
+    </table>
+
+    <h3>Adaptive authentication</h3>
+
+    <p>Every login attempt gets a <strong>risk score</strong> (low, medium, or high) based on the user's device, location, and IP address. Normal logins succeed immediately. High-risk logins can be blocked or required to complete an extra challenge (like SMS code or TOTP). You see all this in CloudWatch Logs.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Risk-based authentication</strong> — automatically requiring extra proof (MFA) for logins from unusual locations or devices, without bothering users on their normal devices.
+    </div>
+
+    <h3>Custom domains and Managed Login styling</h3>
+
+    <p>The default Managed Login page lives on a Cognito-owned domain. You can set a custom domain like <code>login.example.com</code> to make it feel like part of your brand. Cognito handles the HTTPS certificate for you.</p>
+
+    <div class="callout warning">
+      <strong>Exam trap:</strong> Custom domains for Managed Login require an ACM certificate, and that certificate must be in <strong>us-east-1</strong> — even if your User Pool lives in a different region. This is a common gotcha.
+    </div>
+
+    <h3>JWT structure and the sub claim</h3>
+
+    <p>A JWT has three parts: header, payload (claims), and signature. The payload contains user information like <code>sub</code> (the user's unique ID in the User Pool), email, phone, and custom attributes. Always verify the signature before trusting the claims.</p>
+
+    <p>To look up additional user details (beyond what's in the JWT), use the <code>sub</code> UUID to query the User Pool database directly.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>sub (subject)</strong> — a unique UUID in the JWT that identifies the user in the Cognito User Pool. Use it to look up full user records later.
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="lecture" id="l5">
+    <h2><span class="lecture-num">5</span>Putting Cognito on Load Balancers</h2>
+
+    <p>One of the smartest ways to use User Pools is to let your load balancer handle authentication entirely — your backend code never needs to know about users or tokens.</p>
+
+    <h3>ALB authentication actions</h3>
+
+    <p>An Application Load Balancer can authenticate requests before sending them to your target group (EC2, ECS, Lambda). Two options:</p>
+
+    <table>
+      <tr><th>Action</th><th>Use when</th></tr>
+      <tr><td><code>authenticate-cognito</code></td><td>You want to use a Cognito User Pool directly, including social logins or SAML federation.</td></tr>
+      <tr><td><code>authenticate-oidc</code></td><td>You want to use an external OIDC-compliant identity provider without going through Cognito.</td></tr>
+    </table>
+
+    <p>Both require the ALB listener to be HTTPS. For unauthenticated users, you can prompt for login, deny the request outright, or allow it (useful if you need the login page itself to be reachable before authentication).</p>
+
+    <h3>How it works end-to-end</h3>
+
+    <p>User hits the ALB → no valid session yet → ALB redirects to Cognito Managed Login → user signs in → Cognito redirects back to ALB with an authorization code → ALB exchanges code for ID and access tokens → ALB forwards the original request to your backend, enriched with the authenticated user's claims (name, email, groups) — your backend just processes the request, no auth code needed.</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      This pattern is how enterprises protect internal tools and legacy web apps without touching the application code at all. The ALB becomes the security layer, and the backend stays simple.
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="lecture" id="l6">
+    <h2><span class="lecture-num">6</span>Cognito Identity Pools — Temporary AWS Access for Users</h2>
+
+    <p>User Pools let your app's users prove who they are. Identity Pools let those authenticated users call AWS services directly — upload to S3, read from DynamoDB, run Lambda functions — without you creating an IAM user for every single person.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Identity Pool</strong> (also called Federated Identities) — takes a verified identity from any login source and exchanges it for temporary AWS credentials scoped to what that user is allowed to do.
+    </div>
+
+    <h3>The flow</h3>
+
+    <p>App user logs in (with User Pool, Google, Facebook, or any OIDC provider) → app gets an ID token → app exchanges that token with the Identity Pool → Identity Pool calls STS to mint temporary AWS credentials → app uses those credentials to call AWS services directly (S3, DynamoDB, Lambda).</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 680 160" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="30" width="130" height="50" rx="8" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="85" y="65" text-anchor="middle" font-size="12" font-weight="bold">Mobile app</text>
+
+        <line x1="150" y1="45" x2="230" y2="35" stroke="#9ca3af" stroke-width="2"/>
+        <text x="190" y="30" text-anchor="middle" font-size="10" fill="#6b7280">1. sign in</text>
+
+        <rect x="230" y="20" width="130" height="50" rx="8" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="295" y="50" text-anchor="middle" font-size="11" font-weight="bold">Login provider</text>
+        <text x="295" y="65" text-anchor="middle" font-size="9">(Google/Facebook/...)</text>
+
+        <line x1="360" y1="60" x2="440" y2="70" stroke="#9ca3af" stroke-width="2"/>
+        <text x="400" y="85" text-anchor="middle" font-size="10" fill="#6b7280">2. token</text>
+
+        <rect x="440" y="30" width="120" height="80" rx="8" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+        <text x="500" y="55" text-anchor="middle" font-size="11" font-weight="bold">Cognito</text>
+        <text x="500" y="72" text-anchor="middle" font-size="10" fill="#92400e">Identity Pool</text>
+
+        <line x1="560" y1="70" x2="640" y2="70" stroke="#9ca3af" stroke-width="2"/>
+        <text x="600" y="85" text-anchor="middle" font-size="10" fill="#6b7280">3. AWS creds</text>
+
+        <text x="340" y="135" text-anchor="middle" font-size="10" fill="#6b7280">Identity Pool calls STS behind the scenes</text>
+      </svg>
+      <div class="diagram-caption">Identity Pool bridges any login source to temporary AWS credentials. The app ends up with credentials it can use to call S3, DynamoDB, or any other AWS service directly.</div>
+    </div>
+
+    <h3>Login sources and IAM roles</h3>
+
+    <p>An Identity Pool can accept login tokens from almost anywhere: a Cognito User Pool, social providers (Amazon, Facebook, Google, Apple), OIDC providers, SAML providers, or a custom backend you write. It can also allow fully unauthenticated (guest) access with its own IAM role.</p>
+
+    <p>For each type of user (authenticated users from the User Pool, unauthenticated guests), you attach an IAM role that defines what AWS actions they can take. These credentials are temporary and expire in hours, not months or years.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Temporary credentials</strong> — AWS access keys that expire automatically, usually within hours. Far safer than long-lived keys because they can't be abused indefinitely if stolen.
+    </div>
+
+    <h3>Fine-grained access with policy variables</h3>
+
+    <p>You can scope an Identity Pool's IAM role to lock down access per user. For example, an S3 policy with a variable like <code>${aws:username}</code> means each user can only access objects under a prefix matching their own username. In DynamoDB, a policy variable on the partition key ensures each user can only query their own rows.</p>
+
+    <div class="callout tip">
+      <strong>This is powerful:</strong> you don't grant each user a separate role — they all assume the same role, but that role's policies use their identity to limit what they can actually touch. It's row-level security without the overhead.
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="lecture" id="l7">
+    <h2><span class="lecture-num">7</span>Identity Pools Hands-On</h2>
+
+    <p>Setting up an Identity Pool is different from a User Pool because you're not creating a user database — you're wiring up a login source and defining roles.</p>
+
+    <h3>The steps</h3>
+
+    <ol>
+      <li>Cognito → <strong>Create identity pool</strong> (the separate console from User Pools).</li>
+      <li>Choose a name.</li>
+      <li>Enable authenticated identities — pick your login source (e.g., a Cognito User Pool, Google, Facebook, SAML).</li>
+      <li>Optionally enable unauthenticated (guest) access.</li>
+      <li>Click <strong>Create role</strong> to auto-generate the authenticated and unauthenticated IAM roles.</li>
+      <li>Go to <strong>IAM → Roles</strong> and edit the two roles to attach the actual permissions (S3 bucket access, DynamoDB permissions, etc.).</li>
+    </ol>
+
+    <h3>The critical piece: IAM roles</h3>
+
+    <p>The Identity Pool itself is just a gatekeeper. The real security lives in the two IAM roles it creates. One role applies to authenticated users; one applies to guests. You attach policies to those roles to define what each group can actually do in AWS.</p>
+
+    <p>If you want different authenticated users to have different permissions (e.g., admin users can delete, regular users can only read), set up attribute-based access control: the pool can evaluate user attributes and assign different roles based on them.</p>
+
+    <div class="callout warning">
+      <strong>Common mistake:</strong> Creating an Identity Pool without actually attaching permissions to the roles. The pool exists and returns credentials, but those credentials can't do anything — the app gets a 403 error when trying to use them.
+    </div>
+  </section>
+
+  <!-- 8 -->
+  <section class="lecture" id="l8">
+    <h2><span class="lecture-num">8</span>User Pools vs Identity Pools — Which One?</h2>
+
+    <p>Both have "Cognito" and "Pool" in the name, so people mix them up constantly. Here's the clearest way to think about them.</p>
+
+    <table>
+      <tr><th></th><th>User Pools</th><th>Identity Pools</th></tr>
+      <tr><td><strong>Answers</strong></td><td>"Who is this person?"</td><td>"What can this person do in AWS?"</td></tr>
+      <tr><td><strong>Output</strong></td><td>A JWT token (proof of identity)</td><td>Temporary AWS credentials (STS issue)</td></tr>
+      <tr><td><strong>Backed by</strong></td><td>Internal user database + optional social/SAML federation</td><td>Any login source (User Pool, Google, Facebook, SAML, OIDC, custom backend)</td></tr>
+      <tr><td><strong>Best for</strong></td><td>Authentication — sign-ups, logins, password resets, MFA</td><td>Authorization — giving users direct access to AWS services</td></tr>
+      <tr><td><strong>Expiration</strong></td><td>JWTs typically valid for 1 hour</td><td>Credentials expire in hours (configurable)</td></tr>
+    </table>
+
+    <h3>Real-world scenarios</h3>
+
+    <p><strong>Scenario 1: A web app with a backend.</strong> Users sign in with a User Pool (get a JWT). The backend receives requests with the JWT, validates it, and handles all AWS calls on behalf of the user. Identity Pool: not needed.</p>
+
+    <p><strong>Scenario 2: A mobile photo app where phones upload directly to S3.</strong> Users sign in with a User Pool. The phone exchanges the User Pool token for Identity Pool credentials. The phone uses those credentials to upload directly to S3 — no backend call needed. Both pools: essential.</p>
+
+    <p><strong>Scenario 3: An internal tool for company employees.</strong> Use User Pools with SAML federation to your corporate directory (Microsoft Active Directory, Okta, etc.). Employees log in with their work credentials through the SAML provider. If they need to trigger Lambda functions or run AWS CLI commands, add Identity Pools for temporary credentials.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>SAML</strong> (Security Assertion Markup Language) — a standard protocol for federating logins between companies. Let your corporate directory (Microsoft AD, Okta) be the source of truth for employee identity, and have Cognito trust it.
+    </div>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>OIDC</strong> (OpenID Connect) — a modern protocol, simpler than SAML, for using an external identity provider. Common for SaaS tools, social logins, and modern corporate directories.
+    </div>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 The winning pattern</span>
+      Most real companies use this combo: User Pools for app authentication (with SAML federation to corporate identity if employees access it), plus Identity Pools for granting temporary AWS credentials to authorized users. This keeps long-lived keys out of applications entirely.
+    </div>
+  </section>
+
+  <hr class="section-break">
+
+  <!-- Summary -->
+  <section class="lecture" id="lsummary">
+    <h2>📋 Cheat Sheet</h2>
+
+    <div class="summary-box">
+      <h3>Core concepts</h3>
+      <ul>
+        <li><strong>User Pools</strong> — serverless user database. Sign-ups, logins, MFA, password reset, social/SAML login, and returns a JWT.</li>
+        <li><strong>Identity Pools</strong> — temporary AWS credential issuer. Takes a login token from any source (User Pool, Google, Facebook, SAML, OIDC) and exchanges it for scoped AWS credentials via STS.</li>
+        <li><strong>JWT</strong> — the signed token returned by User Pools. The app stores it and includes it in requests to prove who the user is.</li>
+        <li><strong>Managed Login</strong> — Cognito's pre-built, customizable login page. No need to build auth UI from scratch.</li>
+        <li><strong>MFA</strong> — multi-factor authentication. User Pools supports optional or mandatory MFA for logins.</li>
+        <li><strong>Adaptive authentication</strong> — risk-based: high-risk logins (unusual location, new device) can be required to complete extra challenges like SMS or TOTP.</li>
+        <li><strong>Lambda triggers</strong> — hook into auth events (pre sign-up, post authentication, pre token generation, etc.) to customize behavior.</li>
+        <li><strong>Temporary credentials</strong> — short-lived AWS keys issued by STS via Identity Pools. Much safer than long-lived keys.</li>
+        <li><strong>Policy variables</strong> — use <code>${aws:username}</code> or user attributes in IAM policies to scope access per user (e.g., each user can only see their own S3 prefix or DynamoDB rows).</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>Decision tree: which service?</h3>
+      <ul>
+        <li><strong>Need a login database for your app?</strong> → Cognito User Pools.</li>
+        <li><strong>Need users to call AWS services directly (S3, DynamoDB)?</strong> → Cognito Identity Pools.</li>
+        <li><strong>Need both authentication and direct AWS access?</strong> → User Pools for login, then exchange the token with Identity Pools for AWS credentials.</li>
+        <li><strong>Want to let the ALB handle authentication?</strong> → Use <code>authenticate-cognito</code> action on the ALB listener. No backend auth code needed.</li>
+        <li><strong>Want API Gateway to validate auth?</strong> → Cognito authorizer on the API method. API Gateway validates the JWT before routing to Lambda.</li>
+        <li><strong>Have an existing corporate directory (AD, Okta)?</strong> → User Pools with SAML or OIDC federation. Employees log in with their work credentials.</li>
+        <li><strong>Want to allow guest/unauthenticated access?</strong> → Identity Pools with a guest IAM role.</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>Production patterns</h3>
+      <ul>
+        <li>Always use a custom domain for Managed Login (makes it feel like part of your app). Remember: ACM cert must be in <strong>us-east-1</strong> even if the pool is elsewhere.</li>
+        <li>For production email, connect Amazon SES — Cognito's default 50/day limit is test-only.</li>
+        <li>Use Lambda triggers to customize auth flows without touching Cognito settings. Pre authentication can enforce IP allowlists or deny certain users; post authentication can log attempts.</li>
+        <li>Enable adaptive authentication to catch attacks. Risk scores are automatic; high-risk logins prompt for MFA or are blocked entirely.</li>
+        <li>Use policy variables in Identity Pool roles to ensure users can only access their own data. It's the most scalable approach to multi-tenant access control.</li>
+        <li>For internal tools, use SAML/OIDC federation — employees use their work identity, no separate password to manage.</li>
+        <li>Never store long-lived AWS keys in applications. Always use STS credentials from Identity Pools, which expire automatically.</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>The one-paragraph version</h3>
+      <p>Cognito has two halves that work together beautifully. User Pools is a fully managed sign-up and login system for your app — handle passwords, MFA, password reset, and social login (Google, Facebook) or enterprise federation (SAML, OIDC) without writing auth code. On successful login, the user gets a JWT. If they need to call AWS services directly (upload to S3, write to DynamoDB), exchange that JWT with an Identity Pool, which calls STS to hand out temporary, scoped credentials. Those credentials are automatically revoked in hours, and can be restricted per user using policy variables — no long-lived keys ever touch your applications. Real apps typically chain them: login with User Pools, then use that token to get AWS access from Identity Pools.</p>
+    </div>
+  </section>
+
+  <div class="top-link"><a href="#top">↑ Back to top</a></div>
+
+</div>
+
+<script>
+(function () {
+  if (document.querySelector('.tips-trigger')) return;
+
+  const glossary = [
+    ['ACM', 'AWS Certificate Manager — service for creating and managing TLS certificates used for HTTPS.'],
+    ['adaptive authentication', 'Risk-based authentication where logins from unusual locations or devices get extra challenges like MFA.'],
+    ['ALB', 'Application Load Balancer — Layer 7 load balancer for HTTP/HTTPS traffic, can authenticate requests before routing.'],
+    ['API Gateway', 'Managed front door for APIs. Can enforce Cognito authentication before routing to Lambda or backends.'],
+    ['Cognito', 'AWS identity service for app users outside your account. User Pools for authentication (login), Identity Pools for authorization (AWS access).'],
+    ['DynamoDB', 'Serverless NoSQL database. Identity Pool users can write directly to it if granted permission.'],
+    ['federation', 'Trusting an external identity provider (Google, Facebook, corporate directory) for logins instead of managing users yourself.'],
+    ['IAM role', 'AWS identity with attached permissions. Identity Pools returns temporary credentials that assume these roles.'],
+    ['JWT', 'JSON Web Token — a signed, self-contained proof of identity returned by User Pools after login.'],
+    ['Lambda', 'Serverless compute. Triggered by Cognito at various auth events (pre sign-up, post authentication, etc.).'],
+    ['MFA', 'Multi-factor authentication — login requires a password plus a second factor like a phone app or hardware key.'],
+    ['OIDC', 'OpenID Connect — a modern standard protocol for using an external identity provider (Okta, Auth0, Microsoft AD).'],
+    ['policy variable', 'Placeholder in an IAM policy like ${aws:username} that gets replaced with the user\'s actual value, enabling per-user access control.'],
+    ['SAML', 'Security Assertion Markup Language — a standard for enterprise identity federation, common for corporate directories like Microsoft AD or Okta.'],
+    ['S3', 'Simple Storage Service — AWS object storage. Cognito Identity Pool users can upload/download directly if permitted.'],
+    ['STS', 'Security Token Service — AWS service that issues temporary credentials. Called by Identity Pools behind the scenes.'],
+    ['sub', 'The unique user ID in a JWT and in the User Pool database. Use it to look up full user records.'],
+    ['temporary credentials', 'AWS access keys that expire automatically (hours), far safer than long-lived keys. Issued by STS.'],
+    ['User Pool', 'Cognito\'s managed user database — handles sign-ups, logins, password reset, MFA, and social/SAML login.'],
+  ];
+
+  const pageText = document.body.innerText.replace(/\s+/g, ' ');
+  const found = glossary.filter(([term]) => new RegExp('(^|[^A-Za-z0-9])' + escapeRegExp(term) + '([^A-Za-z0-9]|$)', 'i').test(pageText));
+  if (!found.length) return;
+
+  const button = document.createElement('button');
+  button.className = 'tips-trigger';
+  button.type = 'button';
+  button.setAttribute('aria-haspopup', 'dialog');
+  button.setAttribute('aria-expanded', 'false');
+  button.innerHTML = '<span class="tips-icon" aria-hidden="true">💡</span><span>Glossary</span>';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'tips-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'tips-title');
+  overlay.innerHTML = [
+    '<div class="tips-panel">',
+    '<div class="tips-header">',
+    '<h2 id="tips-title">💡 Every term on this page</h2>',
+    '<button class="tips-close" type="button" aria-label="Close glossary">Close</button>',
+    '</div>',
+    '<div class="tips-body">',
+    '<p class="tips-intro">A quick lookup if you lost the thread anywhere on this page.</p>',
+    '<ul class="tips-list">' + found.map(([term, tip]) => '<li><strong>' + escapeHtml(term) + '</strong>' + escapeHtml(tip) + '</li>').join('') + '</ul>',
+    '</div>',
+    '</div>'
+  ].join('');
+
+  document.body.appendChild(button);
+  document.body.appendChild(overlay);
+
+  const closeButton = overlay.querySelector('.tips-close');
+  function openTips() {
+    overlay.classList.add('open');
+    button.setAttribute('aria-expanded', 'true');
+    closeButton.focus();
+  }
+  function closeTips() {
+    overlay.classList.remove('open');
+    button.setAttribute('aria-expanded', 'false');
+    button.focus();
+  }
+
+  button.addEventListener('click', openTips);
+  closeButton.addEventListener('click', closeTips);
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) closeTips();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && overlay.classList.contains('open')) closeTips();
+  });
+
+  function escapeRegExp(value) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
+  }
+}());
+</script>
+
+<!-- Dark Theme Toggle Button -->
+<button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme" title="Toggle Light/Dark Theme">
+  <span class="theme-toggle-icon">🌙</span>
+  <span class="theme-toggle-text">Dark</span>
+</button>
+
+<script id="dark-theme-script">
+(function() {
+  function setupThemeToggle() {
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+
+    function syncUI() {
+      var isDark = document.documentElement.classList.contains('dark-mode') || document.body.classList.contains('dark-mode');
+      var icon = btn.querySelector('.theme-toggle-icon');
+      var text = btn.querySelector('.theme-toggle-text');
+      if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+      if (text) text.textContent = isDark ? 'Light' : 'Dark';
+    }
+
+    if (document.documentElement.classList.contains('dark-mode')) {
+      document.body.classList.add('dark-mode');
+    }
+    syncUI();
+
+    btn.addEventListener('click', function() {
+      var isDark = document.documentElement.classList.toggle('dark-mode');
+      document.body.classList.toggle('dark-mode', isDark);
+      localStorage.setItem('aws-notes-theme', isDark ? 'dark' : 'light');
+      syncUI();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupThemeToggle);
+  } else {
+    setupThemeToggle();
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script id="dark-theme-init">
+(function() {
+  var saved = localStorage.getItem('aws-notes-theme');
+  if (saved === 'dark' || (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark-mode');
+  }
+})();
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 31 — AWS Other Services (Blog Edition)</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --card: #f9fafb;
+    --accent: #d97706;
+    --accent-dark: #b45309;
+    --blue: #2563eb;
+    --green: #059669;
+    --purple: #7c3aed;
+    --red: #dc2626;
+    --code-bg: #f3f4f6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+  }
+  header.page-header {
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  header.page-header h1 {
+    margin: 0 0 6px 0;
+    font-size: 28px;
+    color: var(--accent-dark);
+  }
+  header.page-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14.5px;
+  }
+
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+  }
+  nav.toc h2 {
+    margin-top: 0;
+    font-size: 16px;
+    color: var(--accent-dark);
+  }
+  nav.toc ol {
+    margin: 0;
+    padding-left: 20px;
+    columns: 2;
+  }
+  nav.toc li { margin-bottom: 6px; font-size: 14px; }
+  nav.toc a { color: var(--blue); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  section.lecture {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 26px;
+    margin-bottom: 26px;
+    background: #fff;
+    scroll-margin-top: 16px;
+  }
+  section.lecture h2 {
+    margin-top: 0;
+    font-size: 20px;
+    color: #111827;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 8px;
+  }
+  .lecture-num {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 2px 8px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  h3 { color: var(--accent-dark); font-size: 16.5px; margin-bottom: 8px; margin-top: 26px; }
+
+  p { margin: 0 0 14px; }
+
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: #fffbeb;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 15px;
+  }
+  .callout.tip { border-left-color: var(--green); background: #ecfdf5; }
+  .callout.warning { border-left-color: var(--red); background: #fef2f2; }
+  .callout.define { border-left-color: var(--blue); background: #eff6ff; }
+  .callout.production { border-left-color: var(--purple); background: #f5f3ff; }
+  .callout strong { color: inherit; }
+  .callout-label {
+    display: block;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    margin-bottom: 4px;
+    opacity: 0.75;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th { background: var(--card); color: var(--accent-dark); }
+  tr:nth-child(even) td { background: #fcfcfd; }
+
+  code {
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 16px 0;
+  }
+  pre code { background: none; padding: 0; }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  .diagram {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 18px 0;
+    text-align: center;
+    overflow-x: auto;
+  }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram-caption { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  .top-link { font-size: 12px; text-align: right; }
+  .top-link a { color: var(--muted); text-decoration: none; }
+  .top-link a:hover { text-decoration: underline; }
+
+  hr.section-break { border: none; border-top: 2px dashed var(--border); margin: 36px 0; }
+
+  .summary-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 14px;
+  }
+  .summary-box h3 { color: var(--green); margin-top: 0; }
+
+  @media (max-width: 1024px) {
+    .container { padding-left: 20px; padding-right: 20px; }
+    nav.toc ol { columns: 2; }
+  }
+  @media (max-width: 860px) {
+    .container { padding: 20px 18px 60px; }
+    header.page-header h1 { font-size: 22px; }
+    nav.toc ol { columns: 1; }
+    section.lecture { padding: 18px 20px; }
+    table { font-size: 13px; }
+    th, td { padding: 7px 9px; }
+  }
+  @media (max-width: 480px) {
+    .container { padding: 16px 14px 50px; }
+    header.page-header h1 { font-size: 19px; line-height: 1.3; }
+    header.page-header p { font-size: 13px; }
+    nav.toc { padding: 14px 16px; border-radius: 10px; }
+    nav.toc ol { columns: 1; padding-left: 16px; }
+    nav.toc li { font-size: 14px; margin-bottom: 8px; }
+    section.lecture { padding: 16px 16px; border-radius: 10px; margin-bottom: 16px; }
+    section.lecture h2 { font-size: 17px; line-height: 1.3; }
+    h3 { font-size: 15px; }
+    table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; font-size: 13px; white-space: nowrap; }
+    th, td { padding: 7px 10px; }
+    code { font-size: 12.5px; word-break: break-all; }
+    ul, ol { padding-left: 18px; }
+    li { font-size: 14.5px; margin-bottom: 8px; }
+    .callout, .summary-box { padding: 10px 13px; font-size: 14px; }
+    .top-link { font-size: 13px; }
+  }
+  @media (max-width: 360px) {
+    .container { padding: 12px 12px 40px; }
+    section.lecture h2 { font-size: 16px; }
+  }
+
+  /* Tips popup for assumed AWS terms and prerequisite concepts */
+  .tips-trigger {
+    position: fixed; right: 18px; bottom: 18px; z-index: 999;
+    display: inline-flex; align-items: center; gap: 8px;
+    min-height: 44px; padding: 10px 14px;
+    border: 1px solid #f59e0b; border-radius: 999px;
+    background: #fffbeb; color: #92400e;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+    cursor: pointer; font: inherit; font-weight: 700;
+  }
+  .tips-trigger:hover { background: #fef3c7; }
+  .tips-trigger .tips-icon { font-size: 1.2rem; line-height: 1; }
+  .tips-overlay {
+    position: fixed; inset: 0; z-index: 1000; display: none;
+    align-items: center; justify-content: center; padding: 18px;
+    background: rgba(17, 24, 39, 0.46);
+  }
+  .tips-overlay.open { display: flex; }
+  .tips-panel {
+    width: min(760px, 100%); max-height: min(76vh, 720px); overflow: auto;
+    background: #ffffff; color: var(--text, #1f2937);
+    border: 1px solid #fcd34d; border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  }
+  .tips-header {
+    position: sticky; top: 0; display: flex; align-items: center;
+    justify-content: space-between; gap: 12px; padding: 16px 18px;
+    background: #fffbeb; border-bottom: 1px solid #fde68a;
+  }
+  .tips-header h2 { margin: 0; color: #92400e; font-size: 1.1rem; }
+  .tips-close {
+    border: 1px solid #f59e0b; border-radius: 8px; background: #ffffff;
+    color: #92400e; cursor: pointer; font: inherit; font-weight: 700;
+    line-height: 1; padding: 7px 10px;
+  }
+  .tips-body { padding: 16px 18px 18px; }
+  .tips-intro { margin: 0 0 12px; color: var(--muted, #6b7280); font-size: 0.95rem; }
+  .tips-list {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px; margin: 0; padding: 0; list-style: none;
+  }
+  .tips-list li { margin: 0; padding: 10px 12px; border: 1px solid #fde68a; border-radius: 8px; background: #fffdf5; }
+  .tips-list strong { display: block; margin-bottom: 3px; color: #92400e; }
+  @media (max-width: 480px) {
+    .tips-trigger { right: 12px; bottom: 12px; padding: 10px 12px; }
+    .tips-trigger span:not(.tips-icon) { display: none; }
+    .tips-overlay { padding: 10px; }
+    .tips-panel { max-height: 82vh; }
+    .tips-list { grid-template-columns: 1fr; }
+  }
+</style>
+<style id="dark-theme-styles">
+  html.dark-mode, body.dark-mode {
+    --bg: #181926; --card-bg: #222436; --card: #222436; --border: #33384f;
+    --text: #c0caf5; --text-muted: #94a3b8; --muted: #94a3b8; --code-bg: #13141f;
+    --accent: #f59e0b; --accent-dark: #fbbf24; --green: #34d399; --red: #f87171;
+    --purple: #c084fc; --blue: #60a5fa;
+    background-color: #181926 !important; color: #c0caf5 !important;
+  }
+  body.dark-mode { background-color: #181926 !important; color: #c0caf5 !important; }
+  body.dark-mode header.page-header h1 { color: #fbbf24 !important; }
+  body.dark-mode header.page-header p { color: #94a3b8 !important; }
+  body.dark-mode h2, body.dark-mode h3 { color: #f59e0b !important; }
+  body.dark-mode a { color: #60a5fa; }
+  body.dark-mode nav.toc { background: #1f2335 !important; border-color: #33384f !important; }
+  body.dark-mode nav.toc h2 { color: #fbbf24 !important; }
+  body.dark-mode nav.toc a { color: #60a5fa !important; }
+  body.dark-mode section.lecture { background: #222436 !important; border-color: #33384f !important; color: #c0caf5 !important; }
+  body.dark-mode section.lecture h2 { color: #e2e8f0 !important; border-bottom-color: #33384f !important; }
+  body.dark-mode table { border-color: #33384f !important; }
+  body.dark-mode th, body.dark-mode td { border-color: #33384f !important; }
+  body.dark-mode th { background: #1f2335 !important; color: #fbbf24 !important; }
+  body.dark-mode td { color: #cbd5e1 !important; }
+  body.dark-mode tr:nth-child(even) td { background: #1a1d2d !important; }
+  body.dark-mode code { background: #13141f !important; color: #e2e8f0 !important; border: 1px solid #2e324a !important; }
+  body.dark-mode pre { background: #13141f !important; color: #e2e8f0 !important; border-color: #2e324a !important; }
+  body.dark-mode .callout { background: #25231c !important; border-left-color: #f59e0b !important; color: #fef3c7 !important; }
+  body.dark-mode .callout.tip { background: #142921 !important; border-left-color: #34d399 !important; color: #d1fae5 !important; }
+  body.dark-mode .callout.warning { background: #2f1b1e !important; border-left-color: #f87171 !important; color: #fee2e2 !important; }
+  body.dark-mode .callout.define { background: #1d2038 !important; border-left-color: #60a5fa !important; color: #dbeafe !important; }
+  body.dark-mode .callout.production { background: #221c35 !important; border-left-color: #c084fc !important; color: #ede9fe !important; }
+  body.dark-mode .summary-box { background: #142921 !important; border-color: #059669 !important; color: #d1fae5 !important; }
+  body.dark-mode .summary-box h3 { color: #34d399 !important; }
+  body.dark-mode .diagram { background: #ffffff !important; border: 1px solid #cbd5e1 !important; border-radius: 12px !important; padding: 16px !important; box-shadow: 0 4px 14px rgba(0,0,0,0.3) !important; }
+  body.dark-mode .diagram-caption { color: #475569 !important; font-weight: 500 !important; }
+  .theme-toggle-btn {
+    position: fixed; top: 16px; right: 20px; z-index: 10000;
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;
+    border-radius: 20px; background: #ffffff; color: #1f2937; border: 1px solid #cbd5e1;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.25s ease; user-select: none;
+  }
+  .theme-toggle-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
+  body.dark-mode .theme-toggle-btn { background: #24273a !important; color: #e2e8f0 !important; border-color: #363a4f !important; box-shadow: 0 2px 10px rgba(0,0,0,0.4) !important; }
+  @media (max-width: 480px) {
+    .theme-toggle-btn { top: 12px; right: 12px; padding: 6px 10px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="container" id="top">
+
+  <header class="page-header">
+    <h1>Section 31 — AWS Other Services</h1>
+    <p>A lean tour of the grab-bag services that solve one problem each — email, search, SQL on raw data, Kafka, TLS certificates, data discovery, and dynamic configuration. Know what each one does and when to reach for it.</p>
+  </header>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#l1">1. AWS SES</a></li>
+      <li><a href="#l2">2. Amazon OpenSearch Service</a></li>
+      <li><a href="#l3">3. Amazon Athena</a></li>
+      <li><a href="#l4">4. Amazon MSK</a></li>
+      <li><a href="#l5">5. AWS Certificate Manager (ACM)</a></li>
+      <li><a href="#l6">6. ACM Private CA</a></li>
+      <li><a href="#l7">7. Amazon Macie</a></li>
+      <li><a href="#l8">8. AWS AppConfig</a></li>
+      <li><a href="#lsummary">Cheat Sheet</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1. SES -->
+  <section class="lecture" id="l1">
+    <h2><span class="lecture-num">1</span>AWS SES</h2>
+
+    <p>Every application that needs to send email — a password reset link, an order confirmation, a scheduled report — eventually hits the same problem: running an email server is tedious, and getting emails to land in the right inbox instead of spam requires careful setup. AWS SES solves that by giving you a managed, scalable email service.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>SES (Simple Email Service)</strong> is AWS's managed email sending and receiving service. It lets you send mail through an SMTP interface or the AWS SDK, and also receive incoming mail, routing it into S3, SNS (Simple Notification Service), or Lambda for processing.
+    </div>
+
+    <p>Access to SES is controlled through ordinary IAM permissions — the same policy framework you use everywhere else in AWS.</p>
+
+    <h3>Common use case</h3>
+
+    <p>An e-commerce site needs to send transactional emails after a customer completes a purchase. Instead of managing SMTP credentials and a mail server, the order-processing Lambda function simply calls SES to send the email. SES handles deliverability, bounce tracking, and compliance with anti-spam rules. The entire email lifecycle is just a few lines of code.</p>
+
+    <div class="callout warning">
+      <strong>Exam tip:</strong> If a question is about sending or receiving email, SES is almost certainly the right answer. Don't overthink it — SES = email.
+    </div>
+  </section>
+
+  <!-- 2. OPENSEARCH -->
+  <section class="lecture" id="l2">
+    <h2><span class="lecture-num">2</span>Amazon OpenSearch Service</h2>
+
+    <p>DynamoDB is fast for queries where you know your access pattern upfront — give it a partition key and sort key, and it zips to the result. But what if you need to search for customers by email address, even if your table is keyed by <code>customer_id</code>? What if you want partial-text matches, or full-text search? That's where OpenSearch comes in.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>OpenSearch</strong> is a search and analytics engine (the successor to Amazon Elasticsearch, renamed for licensing reasons). Unlike DynamoDB, it lets you search any field, including partial matches and full-text queries. It's commonly used as a search layer alongside another database, not as your primary data store.
+    </div>
+
+    <p>OpenSearch also surfaces data through <strong>OpenSearch Dashboards</strong> for analytics and visualization.</p>
+
+    <h3>How OpenSearch actually works in production</h3>
+
+    <p>A common real pattern starts with DynamoDB as your source of truth. When an item changes, a DynamoDB Stream sends that change to a Lambda function, which pushes the data into OpenSearch. Now your app can do two things: when a user types a search query, OpenSearch returns the matching item IDs in milliseconds; then the app fetches the full item details from DynamoDB. This two-step dance means DynamoDB stays authoritative, while OpenSearch handles the speed of search.</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Most search implementations run exactly this pattern — a primary database (DynamoDB, PostgreSQL, or MongoDB) as the source of truth, with OpenSearch as a search index kept in sync. The separation means you can rebuild the index from scratch without losing data, and queries are fast because OpenSearch is optimized for search, not storage.
+    </div>
+
+    <h3>Two flavors: managed vs. serverless</h3>
+
+    <p>OpenSearch offers a <strong>managed cluster</strong> mode, where you see and manage the actual cluster instances, deciding how many nodes you need and how to replicate them. Or choose <strong>serverless</strong>, where AWS handles all the scaling and operations — you just query it and pay for what you use.</p>
+
+    <p>Data flows into OpenSearch from several sources: a DynamoDB Stream plus Lambda, Kinesis Data Firehose (near real time), CloudWatch Logs, or a custom application. Security is handled through Cognito for user authentication combined with IAM, plus encryption at rest and in flight.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="80" width="130" height="40" rx="8" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="85" y="105" text-anchor="middle" font-size="12" font-weight="bold">DynamoDB</text>
+
+        <path d="M150,100 L220,100" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrowhead)"/>
+        <defs><marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><polygon points="0 0, 10 3, 0 6" fill="#9ca3af"/></marker></defs>
+
+        <rect x="220" y="80" width="110" height="40" rx="8" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="275" y="105" text-anchor="middle" font-size="12" font-weight="bold">Lambda</text>
+
+        <path d="M330,100 L400,100" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+        <rect x="400" y="80" width="130" height="40" rx="8" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+        <text x="465" y="105" text-anchor="middle" font-size="12" font-weight="bold">OpenSearch</text>
+
+        <path d="M465,120 L465,160" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrowhead)"/>
+        <text x="550" y="145" font-size="11" fill="#6b7280">Search results ← partial matches</text>
+
+        <rect x="20" y="160" width="620" height="1" fill="#e5e7eb"/>
+        <text x="340" y="185" text-anchor="middle" font-size="12" fill="#374151">App queries OpenSearch for matching IDs, then fetches full items from DynamoDB</text>
+      </svg>
+      <div class="diagram-caption">DynamoDB stays the source of truth, while OpenSearch (kept in sync via Streams + Lambda) provides fast partial-match search back to the item's ID.</div>
+    </div>
+  </section>
+
+  <!-- 3. ATHENA -->
+  <section class="lecture" id="l3">
+    <h2><span class="lecture-num">3</span>Amazon Athena</h2>
+
+    <p>You have years of data sitting in S3 — server access logs, application events, clickstreams — and you want to ask questions like "how many unique users visited last week" or "what's the 99th percentile of request latency." Running a traditional database for this is expensive and overkill. Athena lets you query S3 directly using standard SQL.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Athena</strong> is a serverless query service (built on Presto) that runs SQL directly over data in S3 — no database provisioning, no data movement. You pay a fixed amount per terabyte of data scanned, not per query or compute time.
+    </div>
+
+    <p>Athena supports CSV, JSON, ORC, Avro, and Parquet formats. It's typically paired with <strong>Amazon QuickSight</strong> for dashboards — QuickSight can run queries against Athena and visualize the results in real time.</p>
+
+    <h3>Where Athena shines</h3>
+
+    <p>Athena is perfect for ad hoc analytics, business intelligence reports, and analyzing AWS service logs (VPC Flow Logs, load balancer access logs, CloudTrail audit trails). You write a single SQL query, Athena scans the parts of S3 it needs, and you get back a CSV of results. No infrastructure to manage.</p>
+
+    <h3>Performance optimization (critical for the exam)</h3>
+
+    <p>Since you pay per terabyte scanned, every optimization saves money. Use columnar formats like Parquet or ORC instead of CSV — if you only need three columns out of fifty, scanning just those three columns costs a fraction as much. Compress your data; use the AWS Glue ETL service to convert raw CSV into compressed Parquet. Partition your S3 data by date — structuring your S3 prefix as <code>year=2024/month=06/day=15/</code> means a query filtering on June only scans June's folders, skipping the rest. And use larger files (128 MB+) rather than many small ones, since scanning overhead scales with file count.</p>
+
+    <div class="callout tip">
+      <strong>Real-world optimization:</strong> A company migrated their analysis logs from raw CSV to Parquet, compressed. The same queries that scanned 500 GB of data on CSV files now scanned only 50 GB on Parquet — a 10x reduction in cost with no code changes.
+    </div>
+
+    <h3>Reaching beyond S3 — Federated Query</h3>
+
+    <p>Athena's native home is S3, but it can also query databases that sit elsewhere — relational databases like RDS, NoSQL like DynamoDB, data on premises, or even custom data sources. This happens through a <strong>Data Source Connector</strong>, which is just one Lambda function per external source. Athena calls the Lambda, the Lambda talks to the external system, and results flow back to the Athena query.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 680 160" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="60" width="120" height="40" rx="8" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+        <text x="80" y="85" text-anchor="middle" font-size="12" font-weight="bold">Athena</text>
+
+        <path d="M140,65 L240,30" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path d="M140,85 L240,85" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path d="M140,105 L240,140" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+        <rect x="240" y="10" width="160" height="35" rx="6" fill="#bfdbfe" stroke="#2563eb" stroke-width="1.5"/>
+        <text x="320" y="32" text-anchor="middle" font-size="11" font-weight="bold">Data Source Connector</text>
+
+        <rect x="240" y="65" width="160" height="35" rx="6" fill="#a7f3d0" stroke="#059669" stroke-width="1.5"/>
+        <text x="320" y="87" text-anchor="middle" font-size="11" font-weight="bold">S3 (native)</text>
+
+        <rect x="240" y="120" width="160" height="35" rx="6" fill="#bfdbfe" stroke="#2563eb" stroke-width="1.5"/>
+        <text x="320" y="142" text-anchor="middle" font-size="11" font-weight="bold">Data Source Connector</text>
+
+        <path d="M400,27 L500,27" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <rect x="500" y="12" width="160" height="35" rx="6" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.5"/>
+        <text x="580" y="34" text-anchor="middle" font-size="10">RDS / DynamoDB</text>
+
+        <path d="M400,137 L500,137" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <rect x="500" y="122" width="160" height="35" rx="6" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.5"/>
+        <text x="580" y="144" text-anchor="middle" font-size="10">On-premises / Custom</text>
+      </svg>
+      <div class="diagram-caption">Athena can query S3 natively, or reach beyond S3 through per-source Lambda connectors, combining results on the fly.</div>
+    </div>
+  </section>
+
+  <!-- 4. MSK -->
+  <section class="lecture" id="l4">
+    <h2><span class="lecture-num">4</span>Amazon MSK</h2>
+
+    <p>AWS Kinesis is a good streaming solution for many teams, but some organizations are already deeply committed to Apache Kafka — a different streaming platform with its own ecosystem and operational patterns. If your team needs Kafka specifically (not Kinesis), then Amazon MSK is the managed path.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>MSK (Managed Streaming for Apache Kafka)</strong> is a fully managed Kafka cluster service. AWS provisions the Kafka brokers and Zookeeper nodes, spreads them across up to three Availability Zones for high availability, handles recovery from failures, and stores data on EBS for as long as you want. A <strong>Kafka topic</strong> is the basic unit of data — producers write to it, consumers read from it — conceptually similar to Kinesis shards, but called partitions in Kafka.
+    </div>
+
+    <p>Two operating modes are available: <strong>MSK provisioned</strong>, where you decide how many brokers you need, and <strong>MSK Serverless</strong>, where AWS scales compute and storage automatically based on your workload — removing all capacity-planning burden.</p>
+
+    <h3>Kafka vs. Kinesis — side by side</h3>
+
+    <p>Both are streaming platforms, but the details differ. Kinesis enforces message size at 1 MB by default, while Kafka lets you configure sizes up to 10 MB or more. Kinesis shards split to scale up and merge to scale down; Kafka partitions can only be added, never removed. Kinesis always encrypts data in flight; Kafka gives you a choice — plaintext or TLS, your pick. Both support encryption at rest and retention. Kinesis has standard retention limits, but MSK lets you keep data on EBS indefinitely if you pay for the storage.</p>
+
+    <h3>Consuming from MSK</h3>
+
+    <p>Once data is in a Kafka topic, it can be processed by Kinesis Data Analytics for Apache Flink, a Glue streaming ETL job (powered by Spark Streaming), a Lambda function (with MSK as an event source), or your own Kafka consumer code running on EC2, ECS, or EKS.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 680 140" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="50" width="110" height="40" rx="8" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="75" y="75" text-anchor="middle" font-size="11" font-weight="bold">Producers</text>
+
+        <path d="M130,70 L210,70" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+        <rect x="210" y="30" width="180" height="80" rx="8" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+        <text x="300" y="55" text-anchor="middle" font-size="12" font-weight="bold">Kafka Topic</text>
+        <text x="300" y="72" text-anchor="middle" font-size="11" fill="#6b7280">partitions, replicated</text>
+        <text x="300" y="88" text-anchor="middle" font-size="11" fill="#6b7280">across brokers</text>
+
+        <path d="M390,70 L470,70" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+        <rect x="470" y="50" width="110" height="40" rx="8" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="525" y="75" text-anchor="middle" font-size="11" font-weight="bold">Consumers</text>
+      </svg>
+      <div class="diagram-caption">Producers write to a Kafka topic; consumers pull from it. Partitions are replicated across brokers for durability and throughput.</div>
+    </div>
+  </section>
+
+  <!-- 5. ACM -->
+  <section class="lecture" id="l5">
+    <h2><span class="lecture-num">5</span>AWS Certificate Manager (ACM)</h2>
+
+    <p>HTTPS — encrypted web traffic — requires a TLS certificate. Traditionally, you buy a certificate from a CA (Certificate Authority), upload it to your server, set up renewal reminders, and pray you don't forget and let it expire (which has caused real outages at major companies). ACM removes all that tedium.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>ACM (AWS Certificate Manager)</strong> automatically provisions, manages, and renews SSL/TLS certificates for your endpoints. Public certificates are completely free, and ACM handles automatic renewal, so your HTTPS endpoint never expires. It integrates directly with AWS-managed endpoints like load balancers, CloudFront distributions, and API Gateway.
+    </div>
+
+    <h3>How ACM works in the real world</h3>
+
+    <p>You request a public certificate for your domain (e.g., example.com). ACM validates that you own the domain — typically via DNS validation, where ACM creates a special DNS record in Route 53, proves ownership, and then automatically issues the certificate. Once issued, you attach it to your load balancer, CloudFront distribution, or API Gateway. That AWS service loads the certificate and handles TLS termination — clients connect with HTTPS, your backend talks plain HTTP, and certificate renewal happens silently in the background. No code changes, no server downtime, no reminder emails.</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      The most common use case is attaching an ACM certificate to an Application Load Balancer (ALB). The ALB's HTTPS listener loads the certificate, terminates TLS, and forwards plain HTTP to EC2 instances behind it. This setup is so standard that AWS offers it as the default in Elastic Beanstalk and CloudFormation templates — you pick your domain, and ACM/ALB/Route 53 are configured for you.
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 680 130" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="50" width="110" height="40" rx="8" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="75" y="75" text-anchor="middle" font-size="11" font-weight="bold">ACM (TLS cert)</text>
+
+        <path d="M130,65 L210,65" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrowhead)"/>
+        <text x="170" y="50" text-anchor="middle" font-size="10" fill="#6b7280">loads cert</text>
+
+        <rect x="210" y="30" width="130" height="80" rx="8" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+        <text x="275" y="60" text-anchor="middle" font-size="11" font-weight="bold">Load Balancer</text>
+        <text x="275" y="78" text-anchor="middle" font-size="10" fill="#6b7280">HTTPS listener</text>
+
+        <path d="M340,70 L450,70" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrowhead)"/>
+        <text x="395" y="55" text-anchor="middle" font-size="10" fill="#6b7280">HTTP backend</text>
+
+        <rect x="450" y="50" width="210" height="40" rx="8" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="555" y="75" text-anchor="middle" font-size="11" font-weight="bold">EC2 / Auto Scaling Group</text>
+      </svg>
+      <div class="diagram-caption">ACM loads the TLS certificate onto the load balancer, which terminates HTTPS from clients while still talking plain HTTP to the backend.</div>
+    </div>
+
+    <div class="callout warning">
+      <strong>Exam tip:</strong> Any question about provisioning or renewing certificates on an AWS-managed endpoint should immediately point you to ACM. Don't confuse it with certificate pinning, self-signed certs, or manually managing certificates on EC2 — those are different problems.
+    </div>
+  </section>
+
+  <!-- 6. ACM PRIVATE CA -->
+  <section class="lecture" id="l6">
+    <h2><span class="lecture-num">6</span>ACM Private CA</h2>
+
+    <p>Public certificates from ACM work for internet-facing endpoints. But inside your organization, you might need certificates for internal APIs, databases, IoT devices, or user authentication — places where you control the entire chain of trust and don't need the public internet to verify your certs. That's where a private Certificate Authority comes in.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>ACM Private CA</strong> is a managed private Certificate Authority service. You create your own root CA (and optionally subordinate CAs underneath it) to issue end-entity X.509 certificates trusted only within your organization — they're never trusted on the public internet.
+    </div>
+
+    <p>These private certificates can still be loaded onto AWS services with ACM integration — load balancers, CloudFront, API Gateway, and Kubernetes services — just like public certificates. You control the entire certification process and trust chain.</p>
+
+    <h3>Real use cases</h3>
+
+    <p>A financial services company issues certificates to authenticate every API call between internal microservices — no passwords, just mutual TLS. A manufacturing company issues certificates to IoT devices on the factory floor, so devices can authenticate to a central system. An enterprise issues certificates for internal LDAP servers, and every employee's device trusts those certificates automatically. In each case, a private CA is the right tool.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 680 100" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="35" width="110" height="40" rx="8" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+        <text x="75" y="60" text-anchor="middle" font-size="11" font-weight="bold">Root CA</text>
+
+        <path d="M130,55 L220,55" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+        <rect x="220" y="35" width="130" height="40" rx="8" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+        <text x="285" y="60" text-anchor="middle" font-size="11" font-weight="bold">Subordinate CA</text>
+
+        <path d="M350,55 L440,55" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+        <rect x="440" y="35" width="220" height="40" rx="8" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="550" y="55" text-anchor="middle" font-size="11" font-weight="bold">End-entity certificates</text>
+        <text x="550" y="68" text-anchor="middle" font-size="9" fill="#6b7280">internal apps, users, IoT</text>
+      </svg>
+      <div class="diagram-caption">A private CA hierarchy issues certificates trusted only internally, never exposed on the public internet.</div>
+    </div>
+  </section>
+
+  <!-- 7. MACIE -->
+  <section class="lecture" id="l7">
+    <h2><span class="lecture-num">7</span>Amazon Macie</h2>
+
+    <p>Your S3 buckets contain years of data — documents, images, databases, logs. But mixed in with the innocuous stuff might be personally identifiable information (names, email addresses, credit card numbers, health data, government IDs) that you didn't realize was there. If a bucket accidentally gets public read access, that sensitive data leaks. Macie uses machine learning to find what you're hiding.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Macie</strong> is a fully managed data security and privacy service that uses machine learning and pattern matching to discover and protect sensitive data in AWS — most commonly PII (personally identifiable information) sitting in S3 buckets.
+    </div>
+
+    <p>To use Macie, you simply point it at the S3 buckets you want scanned — it's essentially one click in the AWS console. Macie crawls through your data, recognizes patterns (like 16-digit numbers that look like credit card numbers, or Social Security number patterns), and surfaces its findings through EventBridge. From there, you can route discoveries to SNS for alerting, Lambda for automated remediation, or anywhere else in your event-driven pipeline.</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Compliance frameworks like GDPR, CCPA, and HIPAA require organizations to know where sensitive data lives and how it's protected. Macie fills that requirement automatically — instead of running manual audits, you get continuous monitoring with alerting when new sensitive data is detected.
+    </div>
+  </section>
+
+  <!-- 8. APPCONFIG -->
+  <section class="lecture" id="l8">
+    <h2><span class="lecture-num">8</span>AWS AppConfig</h2>
+
+    <p>Feature flags have become essential in modern software delivery. Instead of rebuilding and redeploying an entire application to turn on a new feature, you should be able to flip a switch in production, have the running application pick up the change instantly, and if something goes wrong, flip it back. AppConfig is the AWS service that manages this lifecycle.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>AppConfig</strong> is a configuration management service that lets you configure, validate, and dynamically deploy configuration into running applications — all without restarting the app or redeploying code.
+    </div>
+
+    <h3>The classic use case: feature flags</h3>
+
+    <p>You ship an application with a new feature disabled — a JSON flag in AppConfig says <code>feature_new_checkout: false</code>. Later, you want to enable it for just 5% of users to test. You flip the flag to <code>true</code> and set a canary rollout to 5%. The running application polls AppConfig, picks up the change within minutes, and routes traffic to the new code path. If your monitoring sees errors spike, a CloudWatch alarm triggers an automatic rollback, and the flag flips back to <code>false</code> — all without touching the deployment.</p>
+
+    <h3>Beyond feature flags</h3>
+
+    <p>The same mechanism works for any runtime configuration — tuning performance parameters (max connection pool size, cache TTL), managing IP allow/block lists, or any other config an application needs to read at runtime. AppConfig supports apps on EC2, Lambda, ECS, and EKS.</p>
+
+    <h3>Validation and gradual rollout</h3>
+
+    <p>Before a configuration change deploys, AppConfig can validate it — either using a JSON Schema (checking data types and structure) or a Lambda function (for complex custom validation logic). Once validated, you can roll out the configuration gradually across instances instead of all at once, with a CloudWatch alarm able to trigger an automatic rollback if something looks wrong.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 680 150" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="60" width="130" height="40" rx="8" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+        <text x="85" y="85" text-anchor="middle" font-size="11" font-weight="bold">Config source</text>
+        <text x="85" y="25" text-anchor="middle" font-size="9" fill="#6b7280">Parameter Store / S3</text>
+
+        <path d="M150,80 L230,80" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+        <rect x="230" y="60" width="130" height="40" rx="8" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+        <text x="295" y="85" text-anchor="middle" font-size="11" font-weight="bold">AppConfig</text>
+
+        <path d="M360,70 L480,35" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrowhead)"/>
+        <text x="420" y="45" text-anchor="middle" font-size="9" fill="#6b7280">gradual rollout</text>
+
+        <rect x="480" y="15" width="180" height="35" rx="6" fill="#bfdbfe" stroke="#2563eb" stroke-width="1.5"/>
+        <text x="570" y="37" text-anchor="middle" font-size="10" font-weight="bold">EC2 / Lambda / ECS apps</text>
+
+        <path d="M570,50 L570,80" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+        <rect x="480" y="80" width="180" height="35" rx="6" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.5"/>
+        <text x="570" y="102" text-anchor="middle" font-size="10" font-weight="bold">CloudWatch alarm</text>
+
+        <path d="M480,98 L360,90" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrowhead)"/>
+        <text x="415" y="115" text-anchor="middle" font-size="9" fill="#6b7280">triggers rollback</text>
+      </svg>
+      <div class="diagram-caption">Configuration rolls out gradually across instances, with CloudWatch alarms able to trigger automatic rollback if metrics degrade.</div>
+    </div>
+  </section>
+
+  <hr class="section-break">
+
+  <!-- Final Summary -->
+  <section class="lecture" id="lsummary">
+    <h2>📋 Cheat Sheet</h2>
+
+    <div class="summary-box">
+      <h3>The eight services at a glance</h3>
+      <table>
+        <tr><th>Service</th><th>Solves</th></tr>
+        <tr><td><strong>SES</strong></td><td>Sending and receiving transactional email (SMTP or SDK).</td></tr>
+        <tr><td><strong>OpenSearch</strong></td><td>Full-text and partial-field search on top of another database; managed cluster or serverless.</td></tr>
+        <tr><td><strong>Athena</strong></td><td>Ad hoc SQL directly on S3 data; no infrastructure; pay per TB scanned. Federated Query reaches non-S3 sources.</td></tr>
+        <tr><td><strong>MSK</strong></td><td>Managed Apache Kafka — an alternative to Kinesis for teams committed to Kafka. Provisioned or serverless.</td></tr>
+        <tr><td><strong>ACM</strong></td><td>Provision, auto-renew, and deploy public/private TLS certificates; integrates with ALB, CloudFront, API Gateway.</td></tr>
+        <tr><td><strong>ACM Private CA</strong></td><td>Build your own private Certificate Authority hierarchy for internal certificates never trusted on the public internet.</td></tr>
+        <tr><td><strong>Macie</strong></td><td>Detect sensitive data (PII, credentials) hiding in S3 using machine learning; route findings through EventBridge.</td></tr>
+        <tr><td><strong>AppConfig</strong></td><td>Feature flags and dynamic configuration without redeployment; supports gradual rollout and CloudWatch-triggered rollback.</td></tr>
+      </table>
+    </div>
+
+    <div class="summary-box">
+      <h3>Quick decision guide</h3>
+      <ul>
+        <li><strong>Need to send or receive email?</strong> SES.</li>
+        <li><strong>Need to search data by any field, including partial matches?</strong> OpenSearch layered on top of your primary database.</li>
+        <li><strong>Need to run SQL on raw S3 data without a database?</strong> Athena.</li>
+        <li><strong>Need Kafka specifically, not Kinesis?</strong> MSK.</li>
+        <li><strong>Need HTTPS certificates for a load balancer, CloudFront, or API Gateway?</strong> ACM.</li>
+        <li><strong>Need certificates trusted only inside your organization?</strong> ACM Private CA.</li>
+        <li><strong>Need to find sensitive data hiding in S3?</strong> Macie.</li>
+        <li><strong>Need to toggle features or change config without redeploying?</strong> AppConfig.</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>The one paragraph version</h3>
+      <p>This section is a grab-bag of services, each solving one narrow, well-defined problem. SES handles email. OpenSearch adds full-text search on top of another database. Athena runs SQL directly on S3 data. MSK is Kafka if you need Kafka. ACM (and its Private CA variant) manages TLS certificates automatically. Macie finds sensitive data you didn't realize was exposed. AppConfig lets you change application behavior without a redeploy — particularly useful for feature flags. None of them require deep expertise for the exam — just enough to recognize which keyword in a question points to which service.</p>
+    </div>
+  </section>
+
+  <div class="top-link"><a href="#top">↑ Back to top</a></div>
+
+</div>
+
+<script>
+(function () {
+  if (document.querySelector('.tips-trigger')) return;
+
+  const glossary = [
+    ['ACM', 'AWS Certificate Manager. Automatically provisions, manages, and renews SSL/TLS certificates for load balancers, CloudFront, and API Gateway.'],
+    ['AppConfig', 'Configuration management service for deploying feature flags and dynamic configuration to running applications without redeployment.'],
+    ['Athena', 'Serverless SQL query service that runs directly over data in S3, billed per terabyte scanned.'],
+    ['EventBridge', 'Event bus for routing events between AWS services, applications, and scheduled rules.'],
+    ['feature flag', 'Configuration value that toggles a feature on or off without code deployment; commonly toggled with AppConfig.'],
+    ['Kafka', 'Distributed streaming platform used for real-time data pipelines, similar in purpose to Kinesis.'],
+    ['Kinesis', 'AWS streaming service for real-time data ingestion and processing; an alternative to Kafka.'],
+    ['Lambda', 'Serverless compute service for short-running functions triggered by events or requests.'],
+    ['Macie', 'Data security service that uses machine learning to discover sensitive data like PII in S3.'],
+    ['MSK', 'Managed Streaming for Apache Kafka; a fully managed Kafka cluster with automatic scaling and recovery.'],
+    ['OpenSearch', 'Search and analytics engine used for full-text search, log analytics, and dashboards; successor to Elasticsearch.'],
+    ['PII', 'Personally identifiable information such as names, email addresses, credit card numbers, or Social Security numbers.'],
+    ['S3', 'Simple Storage Service; AWS object storage for data, backups, logs, and data lakes.'],
+    ['SES', 'Simple Email Service; managed email sending and receiving service.'],
+    ['TLS', 'Transport Layer Security; encryption protocol behind HTTPS used to protect data in transit over networks.'],
+    ['X.509', 'Standard format for digital certificates used in TLS/SSL and certificate authorities.']
+  ];
+
+  const pageText = document.body.innerText.replace(/\s+/g, ' ');
+  const found = glossary.filter(([term]) => new RegExp('(^|[^A-Za-z0-9])' + escapeRegExp(term) + '([^A-Za-z0-9]|$)', 'i').test(pageText));
+  if (!found.length) return;
+
+  const button = document.createElement('button');
+  button.className = 'tips-trigger';
+  button.type = 'button';
+  button.setAttribute('aria-haspopup', 'dialog');
+  button.setAttribute('aria-expanded', 'false');
+  button.innerHTML = '<span class="tips-icon" aria-hidden="true">💡</span><span>Glossary</span>';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'tips-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'tips-title');
+  overlay.innerHTML = [
+    '<div class="tips-panel">',
+    '<div class="tips-header">',
+    '<h2 id="tips-title">💡 Every term on this page</h2>',
+    '<button class="tips-close" type="button" aria-label="Close glossary">Close</button>',
+    '</div>',
+    '<div class="tips-body">',
+    '<p class="tips-intro">A quick lookup if you lost the thread anywhere on this page.</p>',
+    '<ul class="tips-list">' + found.map(([term, tip]) => '<li><strong>' + escapeHtml(term) + '</strong>' + escapeHtml(tip) + '</li>').join('') + '</ul>',
+    '</div>',
+    '</div>'
+  ].join('');
+
+  document.body.appendChild(button);
+  document.body.appendChild(overlay);
+
+  const closeButton = overlay.querySelector('.tips-close');
+  function openTips() {
+    overlay.classList.add('open');
+    button.setAttribute('aria-expanded', 'true');
+    closeButton.focus();
+  }
+  function closeTips() {
+    overlay.classList.remove('open');
+    button.setAttribute('aria-expanded', 'false');
+    button.focus();
+  }
+
+  button.addEventListener('click', openTips);
+  closeButton.addEventListener('click', closeTips);
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) closeTips();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && overlay.classList.contains('open')) closeTips();
+  });
+
+  function escapeRegExp(value) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
+  }
+}());
+</script>
+
+<!-- Dark Theme Toggle Button -->
+<button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme" title="Toggle Light/Dark Theme">
+  <span class="theme-toggle-icon">🌙</span>
+  <span class="theme-toggle-text">Dark</span>
+</button>
+
+<script id="dark-theme-script">
+(function() {
+  function setupThemeToggle() {
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+
+    function syncUI() {
+      var isDark = document.documentElement.classList.contains('dark-mode') || document.body.classList.contains('dark-mode');
+      var icon = btn.querySelector('.theme-toggle-icon');
+      var text = btn.querySelector('.theme-toggle-text');
+      if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+      if (text) text.textContent = isDark ? 'Light' : 'Dark';
+    }
+
+    if (document.documentElement.classList.contains('dark-mode')) {
+      document.body.classList.add('dark-mode');
+    }
+    syncUI();
+
+    btn.addEventListener('click', function() {
+      var isDark = document.documentElement.classList.toggle('dark-mode');
+      document.body.classList.toggle('dark-mode', isDark);
+      localStorage.setItem('aws-notes-theme', isDark ? 'dark' : 'light');
+      syncUI();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupThemeToggle);
+  } else {
+    setupThemeToggle();
+  }
+})();
+</script>
+</body>
+</html>

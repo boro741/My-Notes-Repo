@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What Your ECS Config Is Actually Telling You — Load Testing Foundations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0C1116;
+    --surface:#131A22;
+    --surface-2:#1B2430;
+    --hairline:#26303D;
+    --hairline-soft:#1E2732;
+    --text-hi:#F3F5F8;
+    --text:#C7CFDB;
+    --text-muted:#8592A6;
+    --cpu:#FF9B4D;
+    --cpu-dim:#4A3222;
+    --mem:#4FD1FF;
+    --mem-dim:#1E3541;
+    --good:#6EE7B7;
+    --warn:#FFD166;
+    --font-display:'Space Grotesk', sans-serif;
+    --font-body:'IBM Plex Sans', sans-serif;
+    --font-mono:'IBM Plex Mono', monospace;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    line-height:1.65;
+    font-size:16px;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* subtle grid texture background */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background-image:
+      linear-gradient(var(--hairline-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--hairline-soft) 1px, transparent 1px);
+    background-size: 64px 64px;
+    opacity:0.35;
+    pointer-events:none;
+    z-index:0;
+    mask-image: radial-gradient(ellipse 120% 60% at 50% 0%, black 0%, transparent 70%);
+  }
+
+  a{color:var(--mem);}
+
+  .wrap{max-width:880px; margin:0 auto; padding:0 24px; position:relative; z-index:1;}
+  .wrap-wide{max-width:1040px; margin:0 auto; padding:0 24px; position:relative; z-index:1;}
+
+  ::selection{background:var(--cpu); color:#1a1206;}
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:sticky; top:0; z-index:50;
+    backdrop-filter:blur(10px);
+    background:rgba(12,17,22,0.75);
+    border-bottom:1px solid var(--hairline);
+  }
+  .navbar{
+    max-width:1040px; margin:0 auto; padding:16px 24px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .brand{
+    font-family:var(--font-mono); font-size:13px; letter-spacing:0.06em;
+    color:var(--text-muted); display:flex; align-items:center; gap:8px;
+  }
+  .brand .dot{width:7px;height:7px;border-radius:50%;background:var(--good); box-shadow:0 0 8px var(--good);}
+  .navlinks{display:flex; gap:24px; font-family:var(--font-mono); font-size:12.5px;}
+  .navlinks a{color:var(--text-muted); text-decoration:none; transition:color .2s;}
+  .navlinks a:hover{color:var(--text-hi);}
+  @media(max-width:700px){.navlinks{display:none;}}
+
+  /* ---------- HERO ---------- */
+  header.hero{padding:88px 0 56px; position:relative; z-index:1;}
+  .eyebrow{
+    font-family:var(--font-mono); font-size:12.5px; letter-spacing:0.14em;
+    color:var(--mem); text-transform:uppercase; display:flex; align-items:center; gap:10px; margin-bottom:22px;
+  }
+  .eyebrow::before{content:""; width:24px; height:1px; background:var(--mem);}
+
+  h1.title{
+    font-family:var(--font-display); font-weight:700;
+    font-size:clamp(2.2rem, 5vw, 3.4rem);
+    line-height:1.08; letter-spacing:-0.01em;
+    color:var(--text-hi); max-width:16ch;
+  }
+  h1.title .accent{color:var(--cpu);}
+
+  p.lede{
+    margin-top:22px; font-size:1.15rem; color:var(--text); max-width:62ch;
+    font-weight:400;
+  }
+  p.lede b{color:var(--text-hi); font-weight:600;}
+
+  /* spec card - signature element */
+  .spec-card{
+    margin-top:44px;
+    background:var(--surface);
+    border:1px solid var(--hairline);
+    border-radius:10px;
+    overflow:hidden;
+  }
+  .spec-card-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px; border-bottom:1px solid var(--hairline);
+    font-family:var(--font-mono); font-size:12px; color:var(--text-muted);
+  }
+  .spec-card-head .lights{display:flex; gap:6px;}
+  .spec-card-head .lights span{width:8px;height:8px;border-radius:50%;background:var(--hairline);}
+  .spec-body{padding:26px 20px 20px;}
+  .spec-line{
+    font-family:var(--font-mono); font-size:1.02rem;
+    display:flex; flex-wrap:wrap; align-items:baseline; gap:10px;
+    padding:10px 0;
+  }
+  .spec-key{color:var(--text-muted);}
+  .spec-val{color:var(--text-hi); font-weight:600;}
+  .spec-val.cpu-val{color:var(--cpu);}
+  .spec-val.mem-val{color:var(--mem);}
+  .spec-arrow{color:var(--text-muted); font-size:0.85rem;}
+  .spec-translation{
+    font-family:var(--font-body); font-size:0.92rem; color:var(--text-muted);
+  }
+  .spec-translation b{color:var(--text-hi);}
+
+  /* ---------- SECTION SHELL ---------- */
+  section{padding:72px 0; border-top:1px solid var(--hairline-soft); position:relative; z-index:1;}
+  section.no-border{border-top:none;}
+
+  .tag{
+    display:inline-block; font-family:var(--font-mono); font-size:11.5px;
+    letter-spacing:0.1em; padding:4px 10px; border-radius:4px; margin-bottom:18px;
+    border:1px solid var(--hairline); color:var(--text-muted);
+  }
+  .tag.cpu{color:var(--cpu); border-color:var(--cpu-dim); background:rgba(255,155,77,0.06);}
+  .tag.mem{color:var(--mem); border-color:var(--mem-dim); background:rgba(79,209,255,0.06);}
+  .tag.mix{color:var(--good); border-color:#1e3a2d; background:rgba(110,231,183,0.06);}
+
+  h2{
+    font-family:var(--font-display); font-weight:600;
+    font-size:clamp(1.5rem, 3vw, 2rem);
+    color:var(--text-hi); letter-spacing:-0.005em; margin-bottom:18px;
+  }
+  h3{
+    font-family:var(--font-display); font-weight:600; font-size:1.15rem;
+    color:var(--text-hi); margin:28px 0 10px;
+  }
+  p{margin-bottom:16px; max-width:70ch;}
+  p:last-child{margin-bottom:0;}
+  strong{color:var(--text-hi); font-weight:600;}
+  .lead-q{
+    font-family:var(--font-display); font-size:1.2rem; color:var(--text-hi);
+    font-weight:500; max-width:60ch; margin-bottom:24px;
+  }
+
+  /* ---------- CALLOUTS ---------- */
+  .callout{
+    margin:26px 0; padding:18px 20px; border-radius:8px;
+    border:1px solid var(--hairline); background:var(--surface);
+    font-size:0.96rem;
+  }
+  .callout .callout-label{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:0.1em;
+    text-transform:uppercase; margin-bottom:8px; display:block;
+  }
+  .callout.myth{border-left:3px solid #E85D5D;}
+  .callout.myth .callout-label{color:#E85D5D;}
+  .callout.reality{border-left:3px solid var(--good);}
+  .callout.reality .callout-label{color:var(--good);}
+  .callout.note{border-left:3px solid var(--warn);}
+  .callout.note .callout-label{color:var(--warn);}
+
+  /* ---------- ALLOCATION STRIPS (signature visual) ---------- */
+  .strip-block{
+    background:var(--surface); border:1px solid var(--hairline); border-radius:10px;
+    padding:24px; margin:28px 0;
+  }
+  .strip-title{
+    display:flex; justify-content:space-between; align-items:baseline; margin-bottom:16px;
+    font-family:var(--font-mono); font-size:13px; color:var(--text-muted);
+  }
+  .strip-title .val{color:var(--text-hi); font-weight:600; font-size:14px;}
+  .strip{
+    display:flex; gap:4px; height:34px; margin-bottom:6px;
+  }
+  .strip .seg{
+    flex:1; border-radius:3px; position:relative;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-mono); font-size:10.5px; color:rgba(0,0,0,0.55);
+    transition:transform .15s ease;
+  }
+  .strip .seg:hover{transform:translateY(-3px);}
+  .strip.cpu .seg{background:var(--cpu);}
+  .strip.mem .seg{background:var(--mem);}
+  .strip-caption{font-size:0.85rem; color:var(--text-muted); font-family:var(--font-mono);}
+
+  /* ---------- TABLES ---------- */
+  .table-wrap{overflow-x:auto; margin:24px 0; border:1px solid var(--hairline); border-radius:10px;}
+  table{width:100%; border-collapse:collapse; font-size:0.9rem; min-width:560px;}
+  thead th{
+    text-align:left; font-family:var(--font-mono); font-size:11px; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--text-muted); padding:14px 16px;
+    background:var(--surface-2); border-bottom:1px solid var(--hairline);
+  }
+  tbody td{padding:13px 16px; border-bottom:1px solid var(--hairline-soft); font-family:var(--font-mono); font-size:0.88rem; color:var(--text);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr.highlight td{background:rgba(255,155,77,0.06); color:var(--text-hi);}
+  td.hi{color:var(--text-hi); font-weight:600;}
+
+  /* ---------- GLOSSARY / DEFINITION GRID ---------- */
+  .def-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:26px 0;}
+  @media(max-width:640px){.def-grid{grid-template-columns:1fr;}}
+  .def-card{
+    background:var(--surface); border:1px solid var(--hairline); border-radius:8px; padding:18px 20px;
+  }
+  .def-card .term{font-family:var(--font-display); font-weight:600; color:var(--text-hi); font-size:1rem; margin-bottom:6px;}
+  .def-card .def{font-size:0.9rem; color:var(--text-muted); line-height:1.55;}
+
+  /* ---------- FORMULA BLOCK ---------- */
+  .formula{
+    font-family:var(--font-mono); background:var(--surface-2); border:1px solid var(--hairline);
+    border-radius:8px; padding:20px 22px; margin:22px 0; font-size:1rem; color:var(--text-hi);
+    overflow-x:auto;
+  }
+  .formula .fx{color:var(--mem);}
+  .formula .fx2{color:var(--cpu);}
+  .formula-label{font-family:var(--font-mono); font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px; display:block;}
+
+  /* worked example */
+  .worked{
+    border:1px dashed var(--hairline); border-radius:10px; padding:22px; margin:26px 0; background:rgba(255,255,255,0.015);
+  }
+  .worked h4{font-family:var(--font-mono); font-size:12px; color:var(--good); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:14px;}
+  .step{display:flex; gap:14px; padding:8px 0; align-items:flex-start;}
+  .step .n{font-family:var(--font-mono); font-size:12px; color:var(--text-muted); min-width:16px; padding-top:2px;}
+  .step .body{font-size:0.94rem;}
+  .step .body .out{color:var(--good); font-family:var(--font-mono);}
+
+  /* comparison legend row */
+  .legend{display:flex; gap:22px; margin-bottom:8px; flex-wrap:wrap;}
+  .legend .item{display:flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:12px; color:var(--text-muted);}
+  .legend .swatch{width:12px;height:12px;border-radius:3px;}
+
+  /* ---------- RECAP ---------- */
+  .recap-list{list-style:none; counter-reset:recap;}
+  .recap-list li{
+    counter-increment:recap;
+    padding:16px 0; border-bottom:1px solid var(--hairline-soft);
+    display:flex; gap:16px;
+  }
+  .recap-list li:last-child{border-bottom:none;}
+  .recap-list .rn{
+    font-family:var(--font-mono); font-size:12px; color:var(--bg); background:var(--good);
+    width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; margin-top:2px;
+  }
+  .recap-list b{color:var(--text-hi); font-weight:600;}
+  .recap-list span.d{color:var(--text-muted); font-size:0.92rem;}
+
+  /* ---------- FOOTER / NEXT ---------- */
+  footer{padding:80px 0 60px; text-align:left;}
+  .next-card{
+    background:linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
+    border:1px solid var(--hairline); border-radius:14px; padding:40px;
+  }
+  .next-card .tag{margin-bottom:14px;}
+  .next-card h3{font-size:1.5rem; margin:0 0 12px;}
+  .next-card p{color:var(--text-muted); max-width:56ch;}
+  .foot-meta{
+    margin-top:50px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px;
+    font-family:var(--font-mono); font-size:12px; color:var(--text-muted); border-top:1px solid var(--hairline-soft); padding-top:24px;
+  }
+
+  /* reveal on scroll */
+  .reveal{opacity:0; transform:translateY(16px); transition:opacity .6s ease, transform .6s ease;}
+  .reveal.in{opacity:1; transform:translateY(0);}
+
+  @media (prefers-reduced-motion: reduce){
+    .reveal{opacity:1; transform:none; transition:none;}
+    html{scroll-behavior:auto;}
+  }
+
+  code.inline{
+    font-family:var(--font-mono); background:var(--surface-2); padding:2px 6px; border-radius:4px;
+    font-size:0.88em; color:var(--warn);
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="navbar">
+    <div class="brand"><span class="dot"></span>LOAD-TEST/FOUNDATIONS</div>
+    <div class="navlinks">
+      <a href="#cpu">CPU</a>
+      <a href="#units">CPU Units</a>
+      <a href="#memory">Memory</a>
+      <a href="#workers">Workers</a>
+      <a href="#throughput">Throughput</a>
+      <a href="#recap">Cheat Sheet</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Load Testing Foundations · Part 1 of 3</div>
+    <h1 class="title">Before you load test, understand what you're <span class="accent">actually</span> testing on.</h1>
+    <p class="lede">
+      You've watched teammates run load tests against services in ECS, tweaking config like
+      <code class="inline">ecs_task_cpu: 2048</code> and <code class="inline">ecs_task_memory: 8192</code>.
+      Before those numbers mean anything, you need to know what a <b>CPU</b>, a <b>core</b>, a <b>vCPU</b>,
+      and <b>memory</b> actually are — and why "CPU memory" isn't a real thing.
+    </p>
+
+    <div class="spec-card reveal">
+      <div class="spec-card-head">
+        <span>task-definition.json</span>
+        <div class="lights"><span></span><span></span><span></span></div>
+      </div>
+      <div class="spec-body">
+        <div class="spec-line">
+          <span class="spec-key">"ecs_task_cpu":</span>
+          <span class="spec-val cpu-val">2048</span>
+          <span class="spec-arrow">→</span>
+          <span class="spec-translation"><b>2 full vCPUs</b> reserved for this task</span>
+        </div>
+        <div class="spec-line">
+          <span class="spec-key">"ecs_task_memory":</span>
+          <span class="spec-val mem-val">8192</span>
+          <span class="spec-arrow">→</span>
+          <span class="spec-translation"><b>8,192 MiB (8 GB) of RAM</b> — a ceiling while running, not disk space</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="no-border" id="cpu">
+  <div class="wrap reveal">
+    <span class="tag cpu">01 — THE PHYSICAL LAYER</span>
+    <h2>What a CPU and a core actually are</h2>
+    <p class="lead-q">Think of the CPU as a small factory, and each <strong>core</strong> as an independent production line inside it.</p>
+    <p>
+      A <strong>CPU (Central Processing Unit)</strong> is the physical chip that executes instructions — every
+      calculation, every comparison, every "if this, do that" in your code eventually becomes a stream of
+      instructions the CPU runs.
+    </p>
+    <p>
+      Early CPUs had exactly one production line: <strong>one core</strong>, running one instruction stream at a time.
+      Modern CPUs pack many cores onto a single chip — 4, 8, 16, sometimes 64+. Each core can independently execute
+      its own stream of instructions <strong>at the same time</strong> as the others. That's real, physical parallelism.
+    </p>
+    <div class="callout note">
+      <span class="callout-label">Worth knowing</span>
+      Many CPUs also use <strong>hyperthreading (SMT)</strong>, where one physical core presents itself to the
+      operating system as two logical threads. It's not two full cores' worth of power — it's one core getting
+      slightly better at overlapping work while it waits on things like memory access. This is why cloud providers
+      talk in <strong>vCPUs</strong>, not "cores."
+    </div>
+  </div>
+</section>
+
+<section id="vcpu">
+  <div class="wrap reveal">
+    <span class="tag cpu">02 — THE CLOUD ABSTRACTION</span>
+    <h2>What is a vCPU, really?</h2>
+    <p>
+      Cloud providers don't hand you a physical core. They hand you a <strong>vCPU</strong> — a virtual unit that
+      represents <em>your share of compute time</em> on the underlying physical hardware.
+    </p>
+    <p>
+      That's the key mental shift: <strong>a vCPU is not a fixed amount of "power."</strong> It's a promise about
+      how much of the CPU timeline is reserved for you, not a guarantee of clock speed or instructions-per-second —
+      those depend on whatever generation of physical hardware AWS happens to run your task on.
+    </p>
+    <h3>How is this different on Fargate vs. EC2?</h3>
+    <p>
+      On an EC2 instance, multiple containers can share the same physical cores, competing for cycles via
+      CPU shares. On <strong>Fargate</strong> — the launch type most teams use for ECS today — the vCPU you request
+      is isolated compute reserved for your task specifically. It's still virtualized, but you're not fighting
+      a noisy neighbor for it.
+    </p>
+    <div class="callout myth">
+      <span class="callout-label">Myth</span>
+      "1 vCPU always equals a fixed, comparable amount of processing power everywhere."
+    </div>
+    <div class="callout reality">
+      <span class="callout-label">Reality</span>
+      1 vCPU guarantees you a <strong>slice of time</strong> on a core. The actual throughput you get from that
+      slice depends on the physical CPU generation underneath — which is exactly why relative benchmarking
+      (covered below) matters more than any published spec sheet.
+    </div>
+  </div>
+</section>
+
+<section id="units">
+  <div class="wrap reveal">
+    <span class="tag cpu">03 — ECS'S OWN CURRENCY</span>
+    <h2>Decoding "CPU Units" — what 2048 means</h2>
+    <p class="lead-q">ECS doesn't let you write <code class="inline">cpu: 2</code>. It uses its own unit, and once you know the exchange rate, the config reads itself.</p>
+    <p>
+      In ECS and Fargate task definitions, CPU is expressed in <strong>CPU units</strong>, where:
+    </p>
+
+    <div class="formula">
+      <span class="formula-label">Exchange rate</span>
+      <span class="fx2">1024 CPU units</span> = <span class="fx">1 full vCPU</span>
+    </div>
+
+    <p>This traces back to Docker's underlying <code class="inline">--cpu-shares</code> mechanism, a relative-weight
+    system from Linux cgroups where 1024 was chosen as the baseline "one share" value. ECS kept that number and
+    built a clean vCPU scale on top of it.</p>
+
+    <div class="strip-block">
+      <div class="strip-title">ecs_task_cpu: <span class="val">2048</span></div>
+      <div class="legend">
+        <div class="item"><span class="swatch" style="background:var(--cpu)"></span>1024 units = 1 vCPU block</div>
+      </div>
+      <div class="strip cpu">
+        <div class="seg">1024</div>
+        <div class="seg">1024</div>
+      </div>
+      <div class="strip-caption">2048 ÷ 1024 = 2 vCPUs reserved for this task</div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>CPU units (config value)</th><th>vCPU equivalent</th><th>Typical use</th></tr></thead>
+        <tbody>
+          <tr><td>256</td><td>0.25 vCPU</td><td>Tiny sidecars, cron-style jobs</td></tr>
+          <tr><td>512</td><td>0.5 vCPU</td><td>Lightweight APIs, low traffic</td></tr>
+          <tr><td>1024</td><td>1 vCPU</td><td>Typical single-service workload</td></tr>
+          <tr class="highlight"><td>2048</td><td class="hi">2 vCPU</td><td>Moderate traffic services (your example)</td></tr>
+          <tr><td>4096</td><td>4 vCPU</td><td>Compute-heavier services</td></tr>
+          <tr><td>8192</td><td>8 vCPU</td><td>High-throughput or CPU-bound workloads</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="memory">
+  <div class="wrap reveal">
+    <span class="tag mem">04 — WORKING MEMORY, NOT STORAGE</span>
+    <h2>What "memory: 8192" is telling you</h2>
+    <p class="lead-q">This is the one that trips almost everyone up — including the "is this storage?" question you asked. It isn't.</p>
+    <p>
+      <strong>Memory in ECS is RAM</strong> — the fast, temporary workspace your application uses <em>while it's
+      running</em>. It holds things like variables, loaded objects, request buffers, caches, and your app's heap.
+      It is emptied every time the task restarts.
+    </p>
+    <p>
+      <code class="inline">ecs_task_memory: 8192</code> means <strong>8,192 MiB (≈8 GB) is the ceiling</strong> your
+      task's containers are allowed to use <em>during execution</em>. It has nothing to do with how much code or how
+      many files you can "load onto" the vCPU — that's a completely different resource (ephemeral disk storage),
+      configured separately and rarely the bottleneck people mean when they say "memory."
+    </p>
+    <div class="callout myth">
+      <span class="callout-label">Myth</span>
+      "CPU memory" is a separate resource from regular memory, and 2048 vs 8192 are two flavors of the same thing.
+    </div>
+    <div class="callout reality">
+      <span class="callout-label">Reality</span>
+      There is no such thing as "CPU memory" in this context. You are allocating <strong>two independent
+      resources</strong>: compute (CPU units → vCPU) and working memory (MiB → RAM). They just happen to sit
+      next to each other in the same config file.
+    </div>
+    <p>
+      What happens if your app tries to exceed 8192 MiB? The Linux kernel's OOM (out-of-memory) killer terminates
+      the container, and ECS reports the task as stopped — not "disk full," not "CPU exhausted." A memory
+      ceiling breach and a CPU bottleneck look completely different in your metrics, which is exactly why
+      load testing needs to watch both separately.
+    </p>
+
+    <div class="strip-block">
+      <div class="strip-title">ecs_task_memory: <span class="val">8192 MiB</span></div>
+      <div class="legend">
+        <div class="item"><span class="swatch" style="background:var(--mem)"></span>1024 MiB block</div>
+      </div>
+      <div class="strip mem">
+        <div class="seg">1024</div><div class="seg">1024</div><div class="seg">1024</div><div class="seg">1024</div>
+        <div class="seg">1024</div><div class="seg">1024</div><div class="seg">1024</div><div class="seg">1024</div>
+      </div>
+      <div class="strip-caption">8192 ÷ 1024 = 8 GiB of RAM available to the task while running</div>
+    </div>
+  </div>
+</section>
+
+<section id="ratio">
+  <div class="wrap reveal">
+    <span class="tag mix">05 — WHY THESE TWO NUMBERS ARE PAIRED</span>
+    <h2>Fargate doesn't let you pick CPU and memory freely</h2>
+    <p>
+      For every CPU value, Fargate only accepts memory values within a fixed range. Your team's
+      <code class="inline">2048 / 8192</code> pairing sits comfortably inside the valid range for 2 vCPU —
+      nowhere near the edges, which is a reasonably balanced, general-purpose ratio.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>CPU units</th><th>vCPU</th><th>Allowed memory range</th><th>Increment</th></tr></thead>
+        <tbody>
+          <tr><td>256</td><td>0.25</td><td>512 MiB – 2 GB</td><td>1 GB</td></tr>
+          <tr><td>512</td><td>0.5</td><td>1 GB – 4 GB</td><td>1 GB</td></tr>
+          <tr><td>1024</td><td>1</td><td>2 GB – 8 GB</td><td>1 GB</td></tr>
+          <tr class="highlight"><td>2048</td><td class="hi">2</td><td class="hi">4 GB – 16 GB</td><td>1 GB</td></tr>
+          <tr><td>4096</td><td>4</td><td>8 GB – 30 GB</td><td>1 GB</td></tr>
+          <tr><td>8192</td><td>8</td><td>16 GB – 60 GB</td><td>4 GB</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:0.85rem; color:var(--text-muted);">Ranges reflect standard AWS Fargate CPU/memory combinations at time of writing — always confirm current limits in AWS docs before sizing production workloads.</p>
+  </div>
+</section>
+
+<section id="benchmark">
+  <div class="wrap reveal">
+    <span class="tag cpu">06 — GIVE YOURSELF SOMETHING RELATIVE</span>
+    <h2>How strong is "1 vCPU," concretely?</h2>
+    <p>
+      This is the right instinct — a raw number like "1 vCPU" is meaningless without a reference point. AWS
+      doesn't publish a fixed clock speed for it on purpose, because the underlying hardware generation changes
+      over time. So don't look for a universal constant. Build your own reference instead.
+    </p>
+    <h3>A rough intuition to start with</h3>
+    <p>
+      Treat <strong>1 modern vCPU (post-2020 cloud hardware) ≈ one core of a decent modern laptop running flat
+      out.</strong> Good enough to reason about orders of magnitude, not good enough to size production capacity.
+    </p>
+    <h3>The reliable way: benchmark it yourself</h3>
+    <div class="worked">
+      <h4>A 10-minute relative benchmark</h4>
+      <div class="step"><span class="n">1</span><div class="body">Deploy the same service twice — once at <code class="inline">cpu: 1024</code> (1 vCPU) and once at <code class="inline">cpu: 2048</code> (2 vCPU), same memory ratio.</div></div>
+      <div class="step"><span class="n">2</span><div class="body">Hit each with an identical, CPU-bound load test (e.g. via <code class="inline">k6</code> or <code class="inline">wrk</code>) — same endpoint, same payload, ramping RPS.</div></div>
+      <div class="step"><span class="n">3</span><div class="body">Record the RPS each configuration sustains before latency or error rate spikes.</div></div>
+      <div class="step"><span class="n">4</span><div class="body">Now you have a number that means something: <span class="out">"1 vCPU on our stack ≈ X sustained RPS for this endpoint."</span> That's your real unit of measurement — specific to your code, not a generic spec sheet.</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="workers">
+  <div class="wrap reveal">
+    <span class="tag mix">07 — THE PART THAT ACTUALLY USES THE CPU</span>
+    <h2>What is a "worker"?</h2>
+    <p class="lead-q">Cores execute. Workers are what your application gives the cores to execute.</p>
+    <p>
+      A <strong>worker</strong> is a process or thread your application spins up to handle requests. When a
+      request arrives, it's picked up by an available worker — not directly by "the CPU." The number and type
+      of workers determines how much of your allocated vCPU actually gets used.
+    </p>
+    <div class="def-grid">
+      <div class="def-card">
+        <div class="term">Sync worker</div>
+        <div class="def">Handles exactly one request at a time and blocks while waiting on I/O (database calls, external APIs). Examples: Gunicorn's sync workers, Puma's default mode.</div>
+      </div>
+      <div class="def-card">
+        <div class="term">Async / event-loop worker</div>
+        <div class="def">Juggles thousands of in-flight requests on a single thread by never blocking on I/O wait. Examples: Node.js, Python asyncio, Netty.</div>
+      </div>
+    </div>
+    <div class="formula">
+      <span class="formula-label">A common starting rule of thumb (sync workers)</span>
+      workers = (<span class="fx2">2 × cores</span>) + 1
+    </div>
+    <div class="callout note">
+      <span class="callout-label">Why more workers than cores can still help</span>
+      If your workload is <strong>I/O-bound</strong> (waiting on a database, another service, disk), a worker
+      that's blocked on I/O isn't using CPU — so extra workers let the core stay busy serving someone else while
+      others wait. If your workload is <strong>CPU-bound</strong> (heavy computation, no waiting), piling on
+      workers beyond your core count just adds context-switching overhead with no throughput gain.
+    </div>
+  </div>
+</section>
+
+<section id="throughput">
+  <div class="wrap reveal">
+    <span class="tag mem">08 — THE NUMBERS LOAD TESTS ACTUALLY REPORT</span>
+    <h2>Throughput vs. RPS</h2>
+    <div class="def-grid">
+      <div class="def-card">
+        <div class="term">RPS</div>
+        <div class="def">Requests Per Second — a rate. A snapshot of how fast requests are arriving or completing at a given moment.</div>
+      </div>
+      <div class="def-card">
+        <div class="term">Throughput</div>
+        <div class="def">The RPS your system can actually <em>sustain</em> without a growing backlog — the real, steady-state ceiling of what it can push through.</div>
+      </div>
+    </div>
+    <p>
+      During a load test, watch for two different curves: the <strong>offered load</strong> (the RPS your test
+      tool is firing) and the <strong>achieved throughput</strong> (the RPS actually completing successfully).
+      They track together — until your system saturates. Past that point, offered load keeps climbing while
+      achieved throughput flattens or drops, and latency starts creeping up. That divergence is your system
+      telling you where its ceiling is.
+    </p>
+  </div>
+</section>
+
+<section id="littles-law">
+  <div class="wrap reveal">
+    <span class="tag mem">09 — CONNECTING THE DOTS</span>
+    <h2>Little's Law: tying CPU, workers, and RPS together</h2>
+    <p>
+      One formula quietly governs almost every capacity question in load testing:
+    </p>
+    <div class="formula">
+      <span class="formula-label">Little's Law</span>
+      <span class="fx">Concurrency</span> = <span class="fx2">Throughput</span> × <span class="fx2">Avg. Response Time</span>
+    </div>
+    <p>
+      <strong>Concurrency</strong> here means "requests in flight at any instant" — which is exactly what your
+      worker pool has to be sized to handle.
+    </p>
+    <div class="worked">
+      <h4>Worked example</h4>
+      <div class="step"><span class="n">1</span><div class="body">Target: <strong>500 RPS</strong>, average response time: <strong>200 ms (0.2s)</strong>.</div></div>
+      <div class="step"><span class="n">2</span><div class="body">Concurrency needed = 500 × 0.2 = <span class="out">100 concurrent in-flight requests</span> at any instant.</div></div>
+      <div class="step"><span class="n">3</span><div class="body">Your worker pool (across all vCPUs) needs to comfortably handle ~100 simultaneous requests — this is the number that should drive your worker count and, from there, how many vCPUs you actually need.</div></div>
+    </div>
+    <p style="font-size:0.85rem; color:var(--text-muted);">This is a planning estimate, not a guarantee — real systems have variance, tail latency, and non-uniform load. Use it to set a starting point for your load test, then verify with real numbers.</p>
+  </div>
+</section>
+
+<section id="recap">
+  <div class="wrap reveal">
+    <span class="tag mix">CHEAT SHEET</span>
+    <h2>Recap — reading your ECS config from now on</h2>
+    <ul class="recap-list">
+      <li><span class="rn">1</span><div><b>CPU</b> — the physical chip; <b>cores</b> are its independent execution lanes.<br><span class="d">More cores = more true parallelism, not just faster single-thread work.</span></div></li>
+      <li><span class="rn">2</span><div><b>vCPU</b> — your reserved share of compute time in the cloud, not a fixed unit of power.<br><span class="d">Its real speed depends on the physical hardware generation underneath.</span></div></li>
+      <li><span class="rn">3</span><div><b>CPU units</b> — ECS's own scale, where <b>1024 units = 1 vCPU</b>.<br><span class="d">2048 → 2 vCPU. 512 → half a vCPU.</span></div></li>
+      <li><span class="rn">4</span><div><b>Memory (MiB)</b> — RAM available <em>while the task runs</em>, not disk or "CPU memory."<br><span class="d">8192 → 8 GB RAM ceiling. Exceed it and the container gets OOM-killed.</span></div></li>
+      <li><span class="rn">5</span><div><b>Workers</b> — the processes/threads that actually consume your allocated vCPU.<br><span class="d">Sync workers ≈ (2 × cores) + 1; async workers scale differently for I/O-bound work.</span></div></li>
+      <li><span class="rn">6</span><div><b>RPS vs. Throughput</b> — RPS is a rate; throughput is what you can sustain without a growing backlog.<br><span class="d">Watch offered load vs. achieved throughput diverge to find your system's real ceiling.</span></div></li>
+      <li><span class="rn">7</span><div><b>Little's Law</b> — Concurrency = Throughput × Response Time.<br><span class="d">Turns a target RPS into a concrete number of in-flight requests your infra must handle.</span></div></li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap reveal">
+    <div class="next-card">
+      <span class="tag cpu">UP NEXT — PART 2</span>
+      <h3>Designing your first load test around real resource limits</h3>
+      <p>
+        Now that CPU units, memory, and workers actually mean something, the next piece is turning them into a
+        load test plan: choosing ramp patterns, picking the metrics that matter, and reading a Grafana dashboard
+        the way an engineer who set the <code class="inline">cpu</code> and <code class="inline">memory</code>
+        values would.
+      </p>
+    </div>
+    <div class="foot-meta">
+      <span>LOAD-TEST/FOUNDATIONS · PART 1</span>
+      <span>Reading time ≈ 12 min</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const els = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, {threshold:0.08, rootMargin:"0px 0px -40px 0px"});
+  els.forEach(el=>io.observe(el));
+</script>
+
+</body>
+</html>

@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script id="dark-theme-init">
+(function() {
+  var saved = localStorage.getItem('aws-notes-theme');
+  if (saved === 'dark' || (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark-mode');
+  }
+})();
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 29 — Advanced Identity (Blog Edition)</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --card: #f9fafb;
+    --accent: #d97706;
+    --accent-dark: #b45309;
+    --blue: #2563eb;
+    --green: #059669;
+    --purple: #7c3aed;
+    --red: #dc2626;
+    --code-bg: #f3f4f6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+  }
+  header.page-header {
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  header.page-header h1 {
+    margin: 0 0 6px 0;
+    font-size: 28px;
+    color: var(--accent-dark);
+  }
+  header.page-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14.5px;
+  }
+
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+  }
+  nav.toc h2 {
+    margin-top: 0;
+    font-size: 16px;
+    color: var(--accent-dark);
+  }
+  nav.toc ol {
+    margin: 0;
+    padding-left: 20px;
+    columns: 2;
+  }
+  nav.toc li { margin-bottom: 6px; font-size: 14px; }
+  nav.toc a { color: var(--blue); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  section.lecture {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 26px;
+    margin-bottom: 26px;
+    background: #fff;
+    scroll-margin-top: 16px;
+  }
+  section.lecture h2 {
+    margin-top: 0;
+    font-size: 20px;
+    color: #111827;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 8px;
+  }
+  .lecture-num {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 2px 8px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  h3 { color: var(--accent-dark); font-size: 16.5px; margin-bottom: 8px; margin-top: 26px; }
+
+  p { margin: 0 0 14px; }
+
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: #fffbeb;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 15px;
+  }
+  .callout.tip { border-left-color: var(--green); background: #ecfdf5; }
+  .callout.warning { border-left-color: var(--red); background: #fef2f2; }
+  .callout.define { border-left-color: var(--blue); background: #eff6ff; }
+  .callout.production { border-left-color: var(--purple); background: #f5f3ff; }
+  .callout strong { color: inherit; }
+  .callout-label {
+    display: block;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    margin-bottom: 4px;
+    opacity: 0.75;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th { background: var(--card); color: var(--accent-dark); }
+  tr:nth-child(even) td { background: #fcfcfd; }
+
+  code {
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 16px 0;
+  }
+  pre code { background: none; padding: 0; }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  .diagram {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 18px 0;
+    text-align: center;
+    overflow-x: auto;
+  }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram-caption { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  .top-link { font-size: 12px; text-align: right; }
+  .top-link a { color: var(--muted); text-decoration: none; }
+  .top-link a:hover { text-decoration: underline; }
+
+  hr.section-break { border: none; border-top: 2px dashed var(--border); margin: 36px 0; }
+
+  .summary-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 14px;
+  }
+  .summary-box h3 { color: var(--green); margin-top: 0; }
+
+  @media (max-width: 1024px) {
+    .container { padding-left: 20px; padding-right: 20px; }
+    nav.toc ol { columns: 2; }
+  }
+  @media (max-width: 860px) {
+    .container { padding: 20px 18px 60px; }
+    header.page-header h1 { font-size: 22px; }
+    nav.toc ol { columns: 1; }
+    section.lecture { padding: 18px 20px; }
+    table { font-size: 13px; }
+    th, td { padding: 7px 9px; }
+  }
+  @media (max-width: 480px) {
+    .container { padding: 16px 14px 50px; }
+    header.page-header h1 { font-size: 19px; line-height: 1.3; }
+    header.page-header p { font-size: 13px; }
+    nav.toc { padding: 14px 16px; border-radius: 10px; }
+    nav.toc ol { columns: 1; padding-left: 16px; }
+    nav.toc li { font-size: 14px; margin-bottom: 8px; }
+    section.lecture { padding: 16px 16px; border-radius: 10px; margin-bottom: 16px; }
+    section.lecture h2 { font-size: 17px; line-height: 1.3; }
+    h3 { font-size: 15px; }
+    table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; font-size: 13px; white-space: nowrap; }
+    th, td { padding: 7px 10px; }
+    code { font-size: 12.5px; word-break: break-all; }
+    ul, ol { padding-left: 18px; }
+    li { font-size: 14.5px; margin-bottom: 8px; }
+    .callout, .summary-box { padding: 10px 13px; font-size: 14px; }
+    .top-link { font-size: 13px; }
+  }
+  @media (max-width: 360px) {
+    .container { padding: 12px 12px 40px; }
+    section.lecture h2 { font-size: 16px; }
+  }
+
+  /* Tips popup for assumed AWS terms and prerequisite concepts */
+  .tips-trigger {
+    position: fixed; right: 18px; bottom: 18px; z-index: 999;
+    display: inline-flex; align-items: center; gap: 8px;
+    min-height: 44px; padding: 10px 14px;
+    border: 1px solid #f59e0b; border-radius: 999px;
+    background: #fffbeb; color: #92400e;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+    cursor: pointer; font: inherit; font-weight: 700;
+  }
+  .tips-trigger:hover { background: #fef3c7; }
+  .tips-trigger .tips-icon { font-size: 1.2rem; line-height: 1; }
+  .tips-overlay {
+    position: fixed; inset: 0; z-index: 1000; display: none;
+    align-items: center; justify-content: center; padding: 18px;
+    background: rgba(17, 24, 39, 0.46);
+  }
+  .tips-overlay.open { display: flex; }
+  .tips-panel {
+    width: min(760px, 100%); max-height: min(76vh, 720px); overflow: auto;
+    background: #ffffff; color: var(--text, #1f2937);
+    border: 1px solid #fcd34d; border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  }
+  .tips-header {
+    position: sticky; top: 0; display: flex; align-items: center;
+    justify-content: space-between; gap: 12px; padding: 16px 18px;
+    background: #fffbeb; border-bottom: 1px solid #fde68a;
+  }
+  .tips-header h2 { margin: 0; color: #92400e; font-size: 1.1rem; }
+  .tips-close {
+    border: 1px solid #f59e0b; border-radius: 8px; background: #ffffff;
+    color: #92400e; cursor: pointer; font: inherit; font-weight: 700;
+    line-height: 1; padding: 7px 10px;
+  }
+  .tips-body { padding: 16px 18px 18px; }
+  .tips-intro { margin: 0 0 12px; color: var(--muted, #6b7280); font-size: 0.95rem; }
+  .tips-list {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px; margin: 0; padding: 0; list-style: none;
+  }
+  .tips-list li { margin: 0; padding: 10px 12px; border: 1px solid #fde68a; border-radius: 8px; background: #fffdf5; }
+  .tips-list strong { display: block; margin-bottom: 3px; color: #92400e; }
+  @media (max-width: 480px) {
+    .tips-trigger { right: 12px; bottom: 12px; padding: 10px 12px; }
+    .tips-trigger span:not(.tips-icon) { display: none; }
+    .tips-overlay { padding: 10px; }
+    .tips-panel { max-height: 82vh; }
+    .tips-list { grid-template-columns: 1fr; }
+  }
+</style>
+<style id="dark-theme-styles">
+  html.dark-mode, body.dark-mode {
+    --bg: #181926; --card-bg: #222436; --card: #222436; --border: #33384f;
+    --text: #c0caf5; --text-muted: #94a3b8; --muted: #94a3b8; --code-bg: #13141f;
+    --accent: #f59e0b; --accent-dark: #fbbf24; --green: #34d399; --red: #f87171;
+    --purple: #c084fc; --blue: #60a5fa;
+    background-color: #181926 !important; color: #c0caf5 !important;
+  }
+  body.dark-mode { background-color: #181926 !important; color: #c0caf5 !important; }
+  body.dark-mode header.page-header h1 { color: #fbbf24 !important; }
+  body.dark-mode header.page-header p { color: #94a3b8 !important; }
+  body.dark-mode h2, body.dark-mode h3 { color: #f59e0b !important; }
+  body.dark-mode a { color: #60a5fa; }
+  body.dark-mode nav.toc { background: #1f2335 !important; border-color: #33384f !important; }
+  body.dark-mode nav.toc h2 { color: #fbbf24 !important; }
+  body.dark-mode nav.toc a { color: #60a5fa !important; }
+  body.dark-mode section.lecture { background: #222436 !important; border-color: #33384f !important; color: #c0caf5 !important; }
+  body.dark-mode section.lecture h2 { color: #e2e8f0 !important; border-bottom-color: #33384f !important; }
+  body.dark-mode table { border-color: #33384f !important; }
+  body.dark-mode th, body.dark-mode td { border-color: #33384f !important; }
+  body.dark-mode th { background: #1f2335 !important; color: #fbbf24 !important; }
+  body.dark-mode td { color: #cbd5e1 !important; }
+  body.dark-mode tr:nth-child(even) td { background: #1a1d2d !important; }
+  body.dark-mode code { background: #13141f !important; color: #e2e8f0 !important; border: 1px solid #2e324a !important; }
+  body.dark-mode pre { background: #13141f !important; color: #e2e8f0 !important; border-color: #2e324a !important; }
+  body.dark-mode .callout { background: #25231c !important; border-left-color: #f59e0b !important; color: #fef3c7 !important; }
+  body.dark-mode .callout.tip { background: #142921 !important; border-left-color: #34d399 !important; color: #d1fae5 !important; }
+  body.dark-mode .callout.warning { background: #2f1b1e !important; border-left-color: #f87171 !important; color: #fee2e2 !important; }
+  body.dark-mode .callout.define { background: #1d2038 !important; border-left-color: #60a5fa !important; color: #dbeafe !important; }
+  body.dark-mode .callout.production { background: #221c35 !important; border-left-color: #c084fc !important; color: #ede9fe !important; }
+  body.dark-mode .summary-box { background: #142921 !important; border-color: #059669 !important; color: #d1fae5 !important; }
+  body.dark-mode .summary-box h3 { color: #34d399 !important; }
+  body.dark-mode .diagram { background: #ffffff !important; border: 1px solid #cbd5e1 !important; border-radius: 12px !important; padding: 16px !important; box-shadow: 0 4px 14px rgba(0,0,0,0.3) !important; }
+  body.dark-mode .diagram-caption { color: #475569 !important; font-weight: 500 !important; }
+  .theme-toggle-btn {
+    position: fixed; top: 16px; right: 20px; z-index: 10000;
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;
+    border-radius: 20px; background: #ffffff; color: #1f2937; border: 1px solid #cbd5e1;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.25s ease; user-select: none;
+  }
+  .theme-toggle-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
+  body.dark-mode .theme-toggle-btn { background: #24273a !important; color: #e2e8f0 !important; border-color: #363a4f !important; box-shadow: 0 2px 10px rgba(0,0,0,0.4) !important; }
+  @media (max-width: 480px) {
+    .theme-toggle-btn { top: 12px; right: 12px; padding: 6px 10px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="container" id="top">
+
+  <header class="page-header">
+    <h1>Section 29 — Advanced Identity</h1>
+    <p>Temporary badges, policy math, cross-account access, and where your company's people actually live. The fine print behind who can do what in AWS.</p>
+  </header>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#l30">30. STS — The Temporary Badge Office</a></li>
+      <li><a href="#l31">31. How AWS Actually Decides Yes/No</a></li>
+      <li><a href="#l32">32. IAM Policy + S3 Bucket Policy — Two Votes, One Door</a></li>
+      <li><a href="#l33">33. Dynamic Policies — One Policy, Thousands of People</a></li>
+      <li><a href="#l34">34. Policy Types — Who's Allowed to Edit the Rulebook</a></li>
+      <li><a href="#l35">35. Passing a Role — The Two-Lock Problem</a></li>
+      <li><a href="#l36">36. Directory Services — Where Do People Actually Live</a></li>
+      <li><a href="#lsummary">Cheat Sheet</a></li>
+    </ol>
+  </nav>
+
+  <!-- 30 -->
+  <section class="lecture" id="l30">
+    <h2><span class="lecture-num">30</span>STS — The Temporary Badge Office</h2>
+
+    <p>Imagine hard-coding a permanent AWS access key into a mobile app or handing one to a contractor. That key never expires on its own. It's easy to leak — screenshots, GitHub commits, decompiled apps — and if it does leak, you have to hunt it down and manually revoke it. A permanent credential for a temporary need is a liability sitting in your codebase.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>STS</strong> (Security Token Service) is the AWS service that hands out short-lived, temporary credentials instead of permanent ones. You don't get to keep a master key; instead, you show your proof of identity, and STS prints you a temporary badge that expires in 15 minutes to an hour.
+    </div>
+
+    <p>Once that badge expires, it's worthless. Nobody has to chase you down to take it back. That's the whole design: temporary credentials mean a leak is only dangerous for a small window, not forever.</p>
+
+    <p>STS works through a simple sequence. You call one of its APIs — most commonly <code>AssumeRole</code> — with proof of who you are. STS checks two things: does your identity have permission to assume this role, and does the role's trust policy allow your identity to assume it? If both say yes, STS returns three pieces of temporary evidence — an access key ID, a secret access key, and a session token — all bundled together and valid for 15 minutes to an hour.</p>
+
+    <div class="callout tip">
+      <strong>Why this matters:</strong> A long-lived access key sitting on a developer's laptop is a real risk. If that laptop is lost or the key leaks, the key keeps working until someone manually notices and revokes it, which could take months. Many companies now avoid handing people permanent keys entirely, and instead issue short-lived, auto-expiring credentials through STS.
+    </div>
+
+    <h3>The STS API toolkit</h3>
+    <table>
+      <tr><th>API</th><th>What it does</th></tr>
+      <tr><td><code>AssumeRole</code></td><td>Assume a role within your account or across accounts. Returns temporary credentials.</td></tr>
+      <tr><td><code>AssumeRoleWithSAML</code></td><td>Temporary credentials for users signed in via SAML (enterprise SSO).</td></tr>
+      <tr><td><code>AssumeRoleWithWebIdentity</code></td><td>Temporary credentials for Facebook/Google/OpenID Connect logins — largely replaced by Cognito now.</td></tr>
+      <tr><td><code>GetSessionToken</code></td><td>Temporary credentials for an IAM user or root account, usually combined with MFA.</td></tr>
+      <tr><td><code>GetFederationToken</code></td><td>Temporary credentials for external (federated) identities.</td></tr>
+      <tr><td><code>GetCallerIdentity</code></td><td>Returns the identity making the current request — answers "who am I?"</td></tr>
+      <tr><td><code>DecodeAuthorizationMessage</code></td><td>Decodes the cryptic error message AWS returns when a call is denied.</td></tr>
+    </table>
+
+    <div class="callout warning">
+      <strong>For the exam:</strong> Know <code>AssumeRole</code>, <code>GetSessionToken</code>, <code>GetCallerIdentity</code>, and <code>DecodeAuthorizationMessage</code> cold.
+    </div>
+
+    <h3>STS and MFA work together</h3>
+    <p>Some actions are dangerous enough — terminating production instances, deleting a bucket — that a password alone shouldn't grant permission. So IAM lets you attach a condition to a policy: <code>"aws:MultiFactorAuthPresent": true</code>. But that condition needs something to check against. That's where <code>GetSessionToken</code> comes in. After a user proves their identity with an MFA device, this API call returns an access key, a secret key, and a session token (all three travel together), plus an expiry. Only credentials obtained this way carry the flag that says "yes, MFA was present," which is what the policy condition is checking for.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#6b6a66"/>
+          </marker>
+        </defs>
+
+        <rect x="10" y="45" width="130" height="40" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="2"/>
+        <text x="75" y="69" text-anchor="middle" font-size="12" fill="#2b2a28" font-weight="600">You (caller)</text>
+
+        <path d="M140,60 L270,60" stroke="#9ca3af" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+        <text x="205" y="50" text-anchor="middle" font-size="11" fill="#6b7280">sts:AssumeRole</text>
+
+        <rect x="270" y="20" width="160" height="90" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+        <text x="350" y="50" text-anchor="middle" font-weight="600" font-size="12" fill="#2b2a28">STS</text>
+        <text x="350" y="70" text-anchor="middle" font-size="11" fill="#6b7280">checks trust policy</text>
+        <text x="350" y="83" text-anchor="middle" font-size="11" fill="#6b7280">+ permissions</text>
+
+        <path d="M430,60 L560,60" stroke="#9ca3af" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+        <text x="495" y="50" text-anchor="middle" font-size="11" fill="#6b7280">if allowed</text>
+
+        <rect x="560" y="45" width="210" height="40" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="2"/>
+        <text x="665" y="63" text-anchor="middle" font-size="12" fill="#2b2a28" font-weight="600">Temporary credentials</text>
+        <text x="665" y="76" text-anchor="middle" font-size="11" fill="#6b7280">(15 min – 1 hour)</text>
+      </svg>
+      <div class="diagram-caption">STS checks both the caller's permission to assume and the role's trust policy. Only if both allow does it return temporary credentials.</div>
+    </div>
+  </section>
+
+  <!-- 31 -->
+  <section class="lecture" id="l31">
+    <h2><span class="lecture-num">31</span>How AWS Actually Decides Yes/No</h2>
+
+    <p>A single IAM user can have several policies attached at once — one from their group, one attached directly, maybe an inline one too. If one policy says "allow S3 delete" and another says "deny S3 delete," which one wins? Without a strict, predictable algorithm, permissions would be a coin flip. Security systems can never be a coin flip.</p>
+
+    <p>AWS resolves this with one deterministic rule, evaluated the exact same way every time. The algorithm starts at a default of <strong>deny</strong>. AWS then gathers every policy attached to that user — from all groups, direct attachments, everything — and checks for an explicit deny anywhere in that pile for the action being requested. If there is an explicit deny, the request is immediately denied, and evaluation stops. Only if there's no explicit deny anywhere does AWS look for an explicit allow. If it finds one, the request is allowed. If it finds none, the request is still denied, because deny was always the starting point.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 140" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrowhead2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#6b7280"/>
+          </marker>
+        </defs>
+
+        <rect x="10" y="50" width="120" height="40" rx="6" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+        <text x="70" y="74" text-anchor="middle" font-size="12" fill="#2b2a28" font-weight="600">Start: Deny</text>
+
+        <path d="M130,70 L240,70" stroke="#9ca3af" stroke-width="2" fill="none" marker-end="url(#arrowhead2)"/>
+        <rect x="240" y="50" width="180" height="40" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+        <text x="330" y="74" text-anchor="middle" font-size="12" fill="#2b2a28" font-weight="600">Explicit Deny anywhere?</text>
+
+        <path d="M330,90 L330,120" stroke="#9ca3af" stroke-width="2" fill="none" marker-end="url(#arrowhead2)"/>
+        <text x="365" y="110" text-anchor="middle" font-size="11" fill="#6b7280">yes</text>
+        <rect x="260" y="120" width="140" height="20" rx="5" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+        <text x="330" y="133" text-anchor="middle" font-size="12" fill="#dc2626" font-weight="600">DENY</text>
+
+        <path d="M420,70 L540,70" stroke="#9ca3af" stroke-width="2" fill="none" marker-end="url(#arrowhead2)"/>
+        <text x="480" y="60" text-anchor="middle" font-size="11" fill="#6b7280">no</text>
+        <rect x="540" y="50" width="140" height="40" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+        <text x="610" y="74" text-anchor="middle" font-size="12" fill="#2b2a28" font-weight="600">Explicit Allow?</text>
+
+        <path d="M680,60 L760,30" stroke="#9ca3af" stroke-width="2" fill="none" marker-end="url(#arrowhead2)"/>
+        <text x="720" y="24" text-anchor="middle" font-size="11" fill="#6b7280">yes</text>
+        <rect x="760" y="15" width="20" height="30" rx="3" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+        <text x="770" y="34" text-anchor="middle" font-size="12" fill="#059669" font-weight="600">OK</text>
+
+        <path d="M680,80 L760,110" stroke="#9ca3af" stroke-width="2" fill="none" marker-end="url(#arrowhead2)"/>
+        <text x="720" y="100" text-anchor="middle" font-size="11" fill="#6b7280">no</text>
+        <rect x="760" y="95" width="20" height="30" rx="3" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+        <text x="770" y="114" text-anchor="middle" font-size="12" fill="#dc2626" font-weight="600">DENY</text>
+      </svg>
+      <div class="diagram-caption">Permission evaluation always starts at deny. An explicit deny anywhere in applicable policies wins immediately. Only if no deny exists does an explicit allow matter.</div>
+    </div>
+
+    <div class="callout warning">
+      <strong>Critical:</strong> One explicit deny somewhere in a user's policy set beats any number of allows. There is no "allow overrides deny" — deny is checked first and ends the conversation.
+    </div>
+
+    <p>This rule has a single, powerful implication: if you want to block an action for someone, putting a deny in their policies always works. But if you want to allow an action, you have to be sure no other policy is denying it. That's why many companies use a standard set of "baseline allow" policies for everyone, and then use deny statements only to carve out exceptions.</p>
+  </section>
+
+  <!-- 32 -->
+  <section class="lecture" id="l32">
+    <h2><span class="lecture-num">32</span>IAM Policy + S3 Bucket Policy — Two Votes, One Door</h2>
+
+    <p>IAM policies are attached to people and roles inside your account. But S3 buckets often sit at the boundary between accounts, or you want the bucket itself to carry its own rules regardless of who's asking. If only IAM policies mattered, a bucket owner in a completely different account could never grant access to someone else's IAM user. So S3 needed its own policy language, attached directly to the resource itself.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Resource-based policy</strong> is a policy attached directly to a resource (like an S3 bucket), not to a user or role. It talks about which principals — users, roles, whole accounts — are allowed to interact with this resource.
+    </div>
+
+    <p>Now that two policies can both talk about the same action on the same S3 bucket, AWS needed a rule for combining them. The rule is simple: take the <strong>union</strong> — anything either policy allows is allowed — unless an explicit deny shows up in either one, which (as you just learned) always wins.</p>
+
+    <h3>The permission math</h3>
+    <p>For an S3 request to succeed, the effective permission is calculated as: (IAM policy allows OR bucket policy allows) AND NOT (explicit deny anywhere). In plain English, either the user's own IAM policy or the bucket's own policy granting access is enough, unless a deny blocks the whole thing.</p>
+
+    <table>
+      <tr><th>IAM role (on EC2)</th><th>S3 bucket policy</th><th>Result</th><th>Why</th></tr>
+      <tr><td>Allows read/write to bucket</td><td>None</td><td>Can read/write</td><td>IAM allow is sufficient</td></tr>
+      <tr><td>Allows read/write to bucket</td><td>Explicit deny for that role</td><td>Cannot read/write</td><td>Explicit deny wins</td></tr>
+      <tr><td>Empty (no S3 permissions)</td><td>Explicit allow for that role</td><td>Can read/write</td><td>Bucket policy allows it</td></tr>
+      <tr><td>Explicit deny</td><td>Allows read/write</td><td>Cannot read/write</td><td>Explicit deny wins</td></tr>
+    </table>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      This design means removing S3 permissions from an EC2 instance's IAM role doesn't necessarily block that instance from S3 — if the bucket policy separately allows that role, access still works. This trips up teams trying to revoke access; they remove the IAM policy and wonder why the instance still works. The union of both policies is what counts.
+    </div>
+
+    <p>The practical implication is that you have to think about S3 permissions in two places at once. A complete access review means checking both the IAM side (what does the role allow) and the resource side (what does the bucket allow).</p>
+  </section>
+
+  <!-- 33 -->
+  <section class="lecture" id="l33">
+    <h2><span class="lecture-num">33</span>Dynamic Policies — One Policy, Thousands of People</h2>
+
+    <p>Say every employee needs a private <code>/home/&lt;username&gt;</code> folder in a shared S3 bucket, readable and writable only by themselves. The naive approach: write one IAM policy per person. That works fine for five people. For five thousand — every new hire means writing, testing, and attaching a brand-new policy. Forever. That doesn't scale.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Policy variable</strong> is a placeholder in a policy that AWS substitutes with the actual value at the moment the request is evaluated. The most common is <code>${aws:username}</code>, which resolves to the caller's actual username.
+    </div>
+
+    <p>Here's the elegant solution: write <strong>one</strong> policy with a placeholder. Instead of hardcoding a username, use the variable <code>${aws:username}</code>. Attach this single policy to every user in the company. When Alice makes a request, the variable resolves to "alice" and she lands in <code>/home/alice</code>. When Bob makes a request, it resolves to "bob" and he lands in <code>/home/bob</code>. Each person automatically gets their own private scope, from a single policy document.</p>
+
+    <p>Here's what that policy looks like:</p>
+
+    <pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject"],
+      "Resource": "arn:aws:s3:::company-bucket/home/${aws:username}/*"
+    }
+  ]
+}</code></pre>
+
+    <p>One policy. Everyone gets it. Everyone sees only their own folder. No per-user policies to maintain, no drift, no mistakes. AWS also supports other variables: <code>${aws:userid}</code>, <code>${aws:SourceIp}</code>, and many others for time-based, service-specific, or context-based scoping.</p>
+
+    <div class="callout tip">
+      <strong>Why it matters:</strong> Dynamic policies let you write one permission rule that behaves differently for each person automatically. It's the difference between maintaining a growing pile of near-identical policies and maintaining one template.
+    </div>
+  </section>
+
+  <!-- 34 -->
+  <section class="lecture" id="l34">
+    <h2><span class="lecture-num">34</span>Policy Types — Who's Allowed to Edit the Rulebook</h2>
+
+    <p>Not every policy should be maintained the same way. Some permissions are so common — like read-only access to everything — that you'd rather AWS keep them updated as new services launch. Others are highly specific to your company and need version history, change tracking, and rollback. And sometimes you just need a quick, throwaway rule that lives on exactly one user and disappears when they leave.</p>
+
+    <p>AWS gives you three choices, each solving a different maintenance problem:</p>
+
+    <h3>AWS managed policies</h3>
+    <p>AWS writes and maintains these. They're good for power users, full admins, and job-function policies. The upside: AWS keeps them current as new services and APIs appear. The downside: you have zero control over the content. You either take the whole thing or you don't.</p>
+
+    <h3>Customer managed policies</h3>
+    <p>You write and maintain these. This is the best practice for granular control. You can version them, roll back to an older version, and see exactly who changed what and when. They're reusable across many principals — attach the same policy to dozens of roles. They support full audit trails, which compliance teams need.</p>
+
+    <h3>Inline policies</h3>
+    <p>A strict one-to-one relationship: one policy, one user or role. When that user leaves, the policy vanishes automatically. There's no version control. They can't be reused. And they have a hard size limit — 2 KB per principal. If your access pattern is broad enough, an inline policy might be too big to save.</p>
+
+    <div class="callout warning">
+      <strong>Watch out:</strong> Inline policies have a 2 KB size limit per principal. A broad policy that grants "List" permissions for every EC2 operation can exceed that limit and force you to trim it or switch to a managed policy.
+    </div>
+
+    <table>
+      <tr><th>Type</th><th>Maintained by</th><th>Reusable</th><th>Versioning</th><th>Use case</th></tr>
+      <tr><td>AWS managed</td><td>AWS</td><td>Yes</td><td>No (AWS controls)</td><td>Broad permissions, keep current automatically</td></tr>
+      <tr><td>Customer managed</td><td>You</td><td>Yes</td><td>Yes</td><td>Granular control, audit trail, reuse across principals</td></tr>
+      <tr><td>Inline</td><td>You</td><td>No</td><td>No</td><td>One-off rules tied to a single principal</td></tr>
+    </table>
+  </section>
+
+  <!-- 35 -->
+  <section class="lecture" id="l35">
+    <h2><span class="lecture-num">35</span>Passing a Role — The Two-Lock Problem</h2>
+
+    <p>Suppose a developer is allowed to launch EC2 instances. If they could attach <em>any</em> IAM role to that instance — including an admin role — they could quietly hand their own EC2 instance god-mode permissions and escalate their privilege. That's a critical security flaw, and AWS needed to stop it without stopping developers from launching EC2 instances at all.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Assume role</strong> means to take on the identity and permissions of a role temporarily. A role doesn't belong to anyone permanently; it gets assumed (picked up) when needed.
+    </div>
+
+    <p>The fix is two independent checks that both must pass before a role can be attached to a service. Call them two locks that must both open.</p>
+
+    <h3>Lock 1: The user's own permission</h3>
+    <p>The user needs the <code>iam:PassRole</code> permission, and this permission can be scoped down to a single role ARN. For example: "this user can launch EC2 instances, but PassRole is restricted only to the <code>S3Access</code> role." That's the only role this user could ever hand to an instance.</p>
+
+    <h3>Lock 2: The role's trust policy</h3>
+    <p>Even if the user is allowed to pass a role, the role itself has a separate policy called a <strong>trust policy</strong> (or trust relationship). It declares which service principals — <code>ec2.amazonaws.com</code>, <code>lambda.amazonaws.com</code>, <code>codepipeline.amazonaws.com</code> — are allowed to assume it in the first place. The service (EC2, Lambda, CodePipeline) checks this before accepting the role.</p>
+
+    <p>Both gates must open. PassRole alone means the user can hand out a role, but says nothing about which services are trustworthy recipients. The trust policy alone would mean any user with any permissions could hand any role to any service that trusts it. You need both: a gate on the giver and a gate on the receiver.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 140" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrowhead3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#6b7280"/>
+          </marker>
+        </defs>
+
+        <rect x="10" y="50" width="150" height="40" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="2"/>
+        <text x="85" y="74" text-anchor="middle" font-size="12" fill="#2b2a28" font-weight="600">User (IAM policy)</text>
+
+        <path d="M160,60 L280,35" stroke="#9ca3af" stroke-width="2" fill="none" marker-end="url(#arrowhead3)"/>
+        <text x="220" y="40" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="600">🔒 needs iam:PassRole</text>
+
+        <rect x="280" y="10" width="160" height="40" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+        <text x="360" y="34" text-anchor="middle" font-size="12" fill="#2b2a28" font-weight="600">IAM Role</text>
+
+        <path d="M160,80 L280,105" stroke="#9ca3af" stroke-width="2" fill="none" marker-end="url(#arrowhead3)"/>
+        <text x="220" y="120" text-anchor="middle" font-size="11" fill="#6b7280">hands role to</text>
+
+        <rect x="280" y="85" width="160" height="40" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="2"/>
+        <text x="360" y="109" text-anchor="middle" font-size="12" fill="#2b2a28" font-weight="600">Target service (EC2)</text>
+
+        <path d="M440,30 L440,95" stroke="#9ca3af" stroke-width="2" fill="none" marker-end="url(#arrowhead3)"/>
+        <text x="590" y="60" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="600">🔒 role's trust policy</text>
+        <text x="590" y="73" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="600">must allow this service</text>
+      </svg>
+      <div class="diagram-caption">Two gates, both must open. The user needs iam:PassRole permission, and the role's trust policy must explicitly name the target service as allowed.</div>
+    </div>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      When a security incident happens — an employee accidentally escalated themselves to admin — the root cause is usually that one of these locks was left open. Either PassRole wasn't scoped to specific roles, or a role's trust policy was too broad and allowed services that shouldn't have been allowed. Good security hygiene means regularly checking both sides of every role assignment.
+    </div>
+  </section>
+
+  <!-- 36 -->
+  <section class="lecture" id="l36">
+    <h2><span class="lecture-num">36</span>Directory Services — Where Do People Actually Live?</h2>
+
+    <p>Large companies have thousands of employee accounts sitting in an on-premise Microsoft Active Directory — logins, computers, printers, file shares, all centrally managed. Moving to AWS shouldn't mean recreating every one of those accounts by hand as an IAM user. AWS needed a way to either extend that existing directory into the cloud, or stand up something AD-compatible without duplicating effort.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Microsoft Active Directory (AD)</strong> is a database of objects — user accounts, computers, printers, file shares, security groups — with centralized security management. It normally runs on Windows Server. Objects are organized into trees, a group of trees is called a forest, and a domain controller validates logins against the central database.
+    </div>
+
+    <p>AWS gives you three flavors to choose from, each solving a slightly different version of the problem. Think of them as three characters in the same story: managing where your identities actually live.</p>
+
+    <h3>Character 1 — AWS Managed Microsoft AD</h3>
+    <p>A real Microsoft Active Directory, run by AWS, with users living natively in the cloud. It can optionally set up a two-way trust with your on-premise AD, so users can be validated on either side. Both sides stay in sync. MFA is supported.</p>
+
+    <h3>Character 2 — AD Connector</h3>
+    <p>Not a directory at all — a proxy. It holds no users of its own. Every login request is forwarded straight back to your on-premise AD, which stays the single source of truth. Your on-premise AD does all the actual work. MFA is supported.</p>
+
+    <h3>Character 3 — Simple AD</h3>
+    <p>A standalone, AD-compatible directory living only in AWS. Same API surface as Microsoft AD, but not real Microsoft AD under the hood. No trust relationship with an on-premise AD is possible. MFA is not supported.</p>
+
+    <table>
+      <tr><th>Flavor</th><th>Where users live</th><th>On-premise trust</th><th>MFA</th></tr>
+      <tr><td>AWS Managed Microsoft AD</td><td>Locally in AWS (plus optional two-way sync with on-premise)</td><td>Yes — two-way trust relationship</td><td>Yes</td></tr>
+      <tr><td>AD Connector</td><td>Solely on-premise (this is just a proxy)</td><td>Proxies all requests back to on-premise AD</td><td>Yes</td></tr>
+      <tr><td>Simple AD</td><td>Locally in AWS (AD-compatible, not real Microsoft AD)</td><td>No — cannot link to on-premise AD</td><td>No</td></tr>
+    </table>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Federation</strong> in the context of identity means connecting two systems (like on-premise AD and AWS) so they recognize each other's users without having to recreate accounts.
+    </div>
+
+    <h3>Picking the right one</h3>
+    <p>If your company already has an on-premise AD and wants to extend it into AWS while keeping both sides in sync, use AWS Managed Microsoft AD with a two-way trust. If you want to keep all users strictly on-premise and just have AWS proxy requests back to them (no AWS user accounts), use AD Connector. If you're a pure-cloud company with no on-premise directory and want something AD-compatible, use Simple AD — but remember it has no MFA and no on-premise linking.</p>
+
+    <div class="callout tip">
+      <strong>Exam tip:</strong> The exam often tests which Directory Service flavor to pick. The key differentiator is where you want users to live and whether you need on-premise integration. Managed Microsoft AD shares users both ways; AD Connector is purely a proxy with no local users; Simple AD stands entirely alone.
+    </div>
+  </section>
+
+  <hr class="section-break">
+
+  <!-- SUMMARY -->
+  <section class="lecture" id="lsummary">
+    <h2>📋 Cheat Sheet</h2>
+
+    <div class="summary-box">
+      <h3>Core Concepts at a Glance</h3>
+      <ul>
+        <li><strong>STS:</strong> Hands out short-lived temporary credentials (15 min – 1 hour) so nobody needs to hold a permanent key for a temporary job.</li>
+        <li><strong>Policy evaluation:</strong> Starts at deny. Explicit deny anywhere wins immediately. Only if no deny exists does an explicit allow matter.</li>
+        <li><strong>S3 + IAM union:</strong> For S3, effective permission is the union of the IAM policy and the bucket policy — either one allowing is enough, unless a deny blocks it.</li>
+        <li><strong>Dynamic policies:</strong> Use variables like <code>${aws:username}</code> so one policy behaves differently per user — e.g., scoping each user to their own S3 folder.</li>
+        <li><strong>Policy types:</strong> AWS managed (maintained by AWS), customer managed (best practice — versioned, reusable), inline (1:1 with a principal, no versioning, 2 KB cap).</li>
+        <li><strong>PassRole:</strong> Needs two things: the user's <code>iam:PassRole</code> permission, <em>and</em> the role's own trust policy naming that service as allowed.</li>
+        <li><strong>Directory Services:</strong> Managed Microsoft AD (cloud users + optional two-way on-premise trust + MFA), AD Connector (pure proxy to on-premise, no local users), Simple AD (fully standalone, AD-compatible API only, no MFA).</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>Key Facts Worth Remembering</h3>
+      <ul>
+        <li>STS APIs to know: <code>AssumeRole</code> (cross-account access), <code>GetSessionToken</code> (MFA-aware temp credentials), <code>GetCallerIdentity</code> ("who am I?"), <code>DecodeAuthorizationMessage</code> (decode denial errors).</li>
+        <li>Policy evaluation is not a negotiation — a single deny anywhere ends the conversation. Deny is always checked first.</li>
+        <li>Removing S3 permissions from a role doesn't necessarily block S3 access if the bucket policy separately grants that role access. The union still applies.</li>
+        <li>Dynamic policies with <code>${aws:username}</code> and similar variables let you write one policy that automatically scopes itself per user.</li>
+        <li>Inline policies are perfect for one-off exceptions tied to a single principal; customer managed policies are the standard for anything you want to maintain long-term.</li>
+        <li>Passing a role to a service requires both the user's PassRole permission <em>and</em> the role's trust policy accepting that service — no shortcuts.</li>
+        <li>AD Connector is pure proxy, no local users. Managed Microsoft AD keeps users in the cloud with optional on-premise trust. Simple AD is standalone, no on-premise link possible.</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>The One-Paragraph Version</h3>
+      <p>STS exists so you never have to give out permanent credentials for temporary jobs — temporary badges auto-expire, and a leak is only dangerous for a small window. Permission evaluation always starts at deny, and an explicit deny anywhere beats any number of allows. For S3 specifically, both the IAM policy and the bucket policy matter equally — either can grant access, but a deny in either one always wins. Dynamic policies let you write one rule that behaves differently per user by substituting variables like username at request time. Policy types exist to solve different maintenance problems — AWS managed for broad permissions AWS keeps current, customer managed for audit trails and reuse, inline for one-off exceptions. Passing a role to a service requires two independent checks, both must pass, which prevents privilege escalation. And Directory Services is simply deciding where your Windows-world identities actually live — in the cloud with optional on-premise sync, proxied from on-premise, or standalone.</p>
+    </div>
+
+    <div class="summary-box">
+      <h3>Common Misconceptions</h3>
+      <ul>
+        <li><strong>Wrong:</strong> "An explicit allow anywhere always wins." <strong>Right:</strong> An explicit deny anywhere always wins first; allow is only checked if no deny exists.</li>
+        <li><strong>Wrong:</strong> "Removing a role's S3 permissions always blocks S3 access." <strong>Right:</strong> Not if the bucket policy separately grants that role access — the union still applies.</li>
+        <li><strong>Wrong:</strong> "PassRole alone is enough to attach a role to a service." <strong>Right:</strong> The role's own trust policy must also name that service as an allowed principal — both locks must open.</li>
+        <li><strong>Wrong:</strong> "Simple AD is just a smaller version of Managed Microsoft AD." <strong>Right:</strong> Simple AD isn't real Microsoft AD at all, can't trust an on-premise AD, and has no MFA — it's a different tool, not a smaller one.</li>
+        <li><strong>Wrong:</strong> "Inline policies are just a lightweight version of customer managed policies." <strong>Right:</strong> They're not reusable across principals, have no version control, and vanish automatically when the principal is deleted.</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>Decision Guide</h3>
+      <table>
+        <tr><th>Need</th><th>Use</th></tr>
+        <tr><td>Temporary access to a role (same or different account)</td><td>STS <code>AssumeRole</code></td></tr>
+        <tr><td>Require MFA before a sensitive action</td><td>IAM condition <code>aws:MultiFactorAuthPresent</code> + STS <code>GetSessionToken</code></td></tr>
+        <tr><td>One S3 policy, each user scoped to their own folder</td><td>Dynamic policy with <code>${aws:username}</code></td></tr>
+        <tr><td>Reusable, versioned, auditable custom permission</td><td>Customer managed policy</td></tr>
+        <tr><td>One-off permission tied to a single principal</td><td>Inline policy</td></tr>
+        <tr><td>Let users attach a role to a service they configure</td><td>Grant specific <code>iam:PassRole</code> + role's trust policy allows service</td></tr>
+        <tr><td>Manage AD users in AWS with optional on-premise sync</td><td>AWS Managed Microsoft AD</td></tr>
+        <tr><td>Keep users solely on-premise, proxy requests to them</td><td>AD Connector</td></tr>
+        <tr><td>Need AD-compatible directory, no on-premise AD</td><td>Simple AD</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <div class="top-link"><a href="#top">↑ Back to top</a></div>
+
+</div>
+
+<script>
+(function () {
+  if (document.querySelector('.tips-trigger')) return;
+
+  const glossary = [
+    ['assume role', 'To take on the permissions and identity of an IAM role temporarily; roles are borrowed, not owned.'],
+    ['cross-account access', 'When a user or role in one AWS account can work with resources in another AWS account, enabled by trust policies and STS.'],
+    ['explicit deny', 'A deny statement in a policy that immediately blocks a requested action; always wins over any allow.'],
+    ['federation', 'Connecting two identity systems (like on-premise AD and AWS) so they recognize each other\'s users without recreating accounts.'],
+    ['IAM', 'Identity and Access Management. It controls who can do what in AWS.'],
+    ['inline policy', 'A policy with a strict one-to-one relationship to a single user or role; auto-deleted when the principal is deleted; 2 KB size limit.'],
+    ['MFA', 'Multi-factor authentication. Login requires a password plus a second factor such as an authenticator app.'],
+    ['policy', 'Permission document that allows or denies actions on resources, written in JSON.'],
+    ['policy variable', 'A placeholder in a policy (like ${aws:username}) that AWS substitutes with the actual value at request time.'],
+    ['principal', 'An AWS identity (user, role, account, or service) that can perform actions.'],
+    ['region', 'A geographic AWS area containing multiple Availability Zones.'],
+    ['resource-based policy', 'A policy attached directly to a resource (like an S3 bucket) that specifies which principals can interact with it.'],
+    ['role', 'A set of permissions that can be assumed by users, services, or external accounts; no permanent credentials.'],
+    ['STS', 'Security Token Service. It issues short-lived, temporary AWS credentials for temporary access needs.'],
+    ['trust policy', 'The policy attached to an IAM role that declares which principals (services or accounts) can assume it.'],
+  ];
+
+  const pageText = document.body.innerText.replace(/\s+/g, ' ');
+  const found = glossary.filter(([term]) => new RegExp('(^|[^A-Za-z0-9])' + escapeRegExp(term) + '([^A-Za-z0-9]|$)', 'i').test(pageText));
+  if (!found.length) return;
+
+  const button = document.createElement('button');
+  button.className = 'tips-trigger';
+  button.type = 'button';
+  button.setAttribute('aria-haspopup', 'dialog');
+  button.setAttribute('aria-expanded', 'false');
+  button.innerHTML = '<span class="tips-icon" aria-hidden="true">💡</span><span>Glossary</span>';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'tips-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'tips-title');
+  overlay.innerHTML = [
+    '<div class="tips-panel">',
+    '<div class="tips-header">',
+    '<h2 id="tips-title">💡 Every term on this page</h2>',
+    '<button class="tips-close" type="button" aria-label="Close glossary">Close</button>',
+    '</div>',
+    '<div class="tips-body">',
+    '<p class="tips-intro">A quick lookup if you lost the thread anywhere on this page.</p>',
+    '<ul class="tips-list">' + found.map(([term, tip]) => '<li><strong>' + escapeHtml(term) + '</strong>' + escapeHtml(tip) + '</li>').join('') + '</ul>',
+    '</div>',
+    '</div>'
+  ].join('');
+
+  document.body.appendChild(button);
+  document.body.appendChild(overlay);
+
+  const closeButton = overlay.querySelector('.tips-close');
+  function openTips() {
+    overlay.classList.add('open');
+    button.setAttribute('aria-expanded', 'true');
+    closeButton.focus();
+  }
+  function closeTips() {
+    overlay.classList.remove('open');
+    button.setAttribute('aria-expanded', 'false');
+    button.focus();
+  }
+
+  button.addEventListener('click', openTips);
+  closeButton.addEventListener('click', closeTips);
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) closeTips();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && overlay.classList.contains('open')) closeTips();
+  });
+
+  function escapeRegExp(value) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
+  }
+}());
+</script>
+
+<!-- Dark Theme Toggle Button -->
+<button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme" title="Toggle Light/Dark Theme">
+  <span class="theme-toggle-icon">🌙</span>
+  <span class="theme-toggle-text">Dark</span>
+</button>
+
+<script id="dark-theme-script">
+(function() {
+  function setupThemeToggle() {
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+
+    function syncUI() {
+      var isDark = document.documentElement.classList.contains('dark-mode') || document.body.classList.contains('dark-mode');
+      var icon = btn.querySelector('.theme-toggle-icon');
+      var text = btn.querySelector('.theme-toggle-text');
+      if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+      if (text) text.textContent = isDark ? 'Light' : 'Dark';
+    }
+
+    if (document.documentElement.classList.contains('dark-mode')) {
+      document.body.classList.add('dark-mode');
+    }
+    syncUI();
+
+    btn.addEventListener('click', function() {
+      var isDark = document.documentElement.classList.toggle('dark-mode');
+      document.body.classList.toggle('dark-mode', isDark);
+      localStorage.setItem('aws-notes-theme', isDark ? 'dark' : 'light');
+      syncUI();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupThemeToggle);
+  } else {
+    setupThemeToggle();
+  }
+})();
+</script>
+</body>
+</html>

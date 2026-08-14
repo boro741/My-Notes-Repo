@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script id="dark-theme-init">
+(function() {
+  var saved = localStorage.getItem('aws-notes-theme');
+  if (saved === 'dark' || (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark-mode');
+  }
+})();
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Section 22 — AWS Serverless DynamoDB (Blog Edition)</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --card: #f9fafb;
+    --accent: #d97706;
+    --accent-dark: #b45309;
+    --blue: #2563eb;
+    --green: #059669;
+    --purple: #7c3aed;
+    --red: #dc2626;
+    --code-bg: #f3f4f6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+  }
+  header.page-header {
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  header.page-header h1 {
+    margin: 0 0 6px 0;
+    font-size: 28px;
+    color: var(--accent-dark);
+  }
+  header.page-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14.5px;
+  }
+
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+  }
+  nav.toc h2 {
+    margin-top: 0;
+    font-size: 16px;
+    color: var(--accent-dark);
+  }
+  nav.toc ol {
+    margin: 0;
+    padding-left: 20px;
+    columns: 2;
+  }
+  nav.toc li { margin-bottom: 6px; font-size: 14px; }
+  nav.toc a { color: var(--blue); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  section.lecture {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 26px;
+    margin-bottom: 26px;
+    background: #fff;
+    scroll-margin-top: 16px;
+  }
+  section.lecture h2 {
+    margin-top: 0;
+    font-size: 20px;
+    color: #111827;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 8px;
+  }
+  .lecture-num {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 2px 8px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  h3 { color: var(--accent-dark); font-size: 16.5px; margin-bottom: 8px; margin-top: 26px; }
+
+  p { margin: 0 0 14px; }
+
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: #fffbeb;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 15px;
+  }
+  .callout.tip { border-left-color: var(--green); background: #ecfdf5; }
+  .callout.warning { border-left-color: var(--red); background: #fef2f2; }
+  .callout.define { border-left-color: var(--blue); background: #eff6ff; }
+  .callout.production { border-left-color: var(--purple); background: #f5f3ff; }
+  .callout strong { color: inherit; }
+  .callout-label {
+    display: block;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    margin-bottom: 4px;
+    opacity: 0.75;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th { background: var(--card); color: var(--accent-dark); }
+  tr:nth-child(even) td { background: #fcfcfd; }
+
+  code {
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 16px 0;
+  }
+  pre code { background: none; padding: 0; }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  .diagram {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 18px 0;
+    text-align: center;
+    overflow-x: auto;
+  }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram-caption { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  .top-link { font-size: 12px; text-align: right; }
+  .top-link a { color: var(--muted); text-decoration: none; }
+  .top-link a:hover { text-decoration: underline; }
+
+  hr.section-break { border: none; border-top: 2px dashed var(--border); margin: 36px 0; }
+
+  .summary-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 14px;
+  }
+  .summary-box h3 { color: var(--green); margin-top: 0; }
+
+  @media (max-width: 1024px) {
+    .container { padding-left: 20px; padding-right: 20px; }
+    nav.toc ol { columns: 2; }
+  }
+  @media (max-width: 860px) {
+    .container { padding: 20px 18px 60px; }
+    header.page-header h1 { font-size: 22px; }
+    nav.toc ol { columns: 1; }
+    section.lecture { padding: 18px 20px; }
+    table { font-size: 13px; }
+    th, td { padding: 7px 9px; }
+  }
+  @media (max-width: 480px) {
+    .container { padding: 16px 14px 50px; }
+    header.page-header h1 { font-size: 19px; line-height: 1.3; }
+    header.page-header p { font-size: 13px; }
+    nav.toc { padding: 14px 16px; border-radius: 10px; }
+    nav.toc ol { columns: 1; padding-left: 16px; }
+    nav.toc li { font-size: 14px; margin-bottom: 8px; }
+    section.lecture { padding: 16px 16px; border-radius: 10px; margin-bottom: 16px; }
+    section.lecture h2 { font-size: 17px; line-height: 1.3; }
+    h3 { font-size: 15px; }
+    table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; font-size: 13px; white-space: nowrap; }
+    th, td { padding: 7px 10px; }
+    code { font-size: 12.5px; word-break: break-all; }
+    ul, ol { padding-left: 18px; }
+    li { font-size: 14.5px; margin-bottom: 8px; }
+    .callout, .summary-box { padding: 10px 13px; font-size: 14px; }
+    .top-link { font-size: 13px; }
+  }
+  @media (max-width: 360px) {
+    .container { padding: 12px 12px 40px; }
+    section.lecture h2 { font-size: 16px; }
+  }
+
+  /* Tips popup for assumed AWS terms and prerequisite concepts */
+  .tips-trigger {
+    position: fixed; right: 18px; bottom: 18px; z-index: 999;
+    display: inline-flex; align-items: center; gap: 8px;
+    min-height: 44px; padding: 10px 14px;
+    border: 1px solid #f59e0b; border-radius: 999px;
+    background: #fffbeb; color: #92400e;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+    cursor: pointer; font: inherit; font-weight: 700;
+  }
+  .tips-trigger:hover { background: #fef3c7; }
+  .tips-trigger .tips-icon { font-size: 1.2rem; line-height: 1; }
+  .tips-overlay {
+    position: fixed; inset: 0; z-index: 1000; display: none;
+    align-items: center; justify-content: center; padding: 18px;
+    background: rgba(17, 24, 39, 0.46);
+  }
+  .tips-overlay.open { display: flex; }
+  .tips-panel {
+    width: min(760px, 100%); max-height: min(76vh, 720px); overflow: auto;
+    background: #ffffff; color: var(--text, #1f2937);
+    border: 1px solid #fcd34d; border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  }
+  .tips-header {
+    position: sticky; top: 0; display: flex; align-items: center;
+    justify-content: space-between; gap: 12px; padding: 16px 18px;
+    background: #fffbeb; border-bottom: 1px solid #fde68a;
+  }
+  .tips-header h2 { margin: 0; color: #92400e; font-size: 1.1rem; }
+  .tips-close {
+    border: 1px solid #f59e0b; border-radius: 8px; background: #ffffff;
+    color: #92400e; cursor: pointer; font: inherit; font-weight: 700;
+    line-height: 1; padding: 7px 10px;
+  }
+  .tips-body { padding: 16px 18px 18px; }
+  .tips-intro { margin: 0 0 12px; color: var(--muted, #6b7280); font-size: 0.95rem; }
+  .tips-list {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px; margin: 0; padding: 0; list-style: none;
+  }
+  .tips-list li { margin: 0; padding: 10px 12px; border: 1px solid #fde68a; border-radius: 8px; background: #fffdf5; }
+  .tips-list strong { display: block; margin-bottom: 3px; color: #92400e; }
+  @media (max-width: 480px) {
+    .tips-trigger { right: 12px; bottom: 12px; padding: 10px 12px; }
+    .tips-trigger span:not(.tips-icon) { display: none; }
+    .tips-overlay { padding: 10px; }
+    .tips-panel { max-height: 82vh; }
+    .tips-list { grid-template-columns: 1fr; }
+  }
+
+  /* SVG diagram styling from source */
+  .svg-box { fill: #fff; stroke: #9ca3af; stroke-width: 1.5; }
+  .svg-box-accent { fill: #fef3c7; stroke: var(--accent); stroke-width: 1.5; }
+  .svg-text { font-family: -apple-system, sans-serif; font-size: 12px; fill: #1f2937; }
+  .svg-label { font-family: -apple-system, sans-serif; font-size: 11px; fill: #6b7280; }
+  .svg-arrow { stroke: #6b7280; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+  body.dark-mode .svg-box { fill: #222436; stroke: #33384f; }
+  body.dark-mode .svg-box-accent { fill: #221c35; stroke: #c084fc; }
+  body.dark-mode .svg-text { fill: #c0caf5; }
+  body.dark-mode .svg-label { fill: #94a3b8; }
+  body.dark-mode .svg-arrow { stroke: #94a3b8; }
+</style>
+<style id="dark-theme-styles">
+  html.dark-mode, body.dark-mode {
+    --bg: #181926; --card-bg: #222436; --card: #222436; --border: #33384f;
+    --text: #c0caf5; --text-muted: #94a3b8; --muted: #94a3b8; --code-bg: #13141f;
+    --accent: #f59e0b; --accent-dark: #fbbf24; --green: #34d399; --red: #f87171;
+    --purple: #c084fc; --blue: #60a5fa;
+    background-color: #181926 !important; color: #c0caf5 !important;
+  }
+  body.dark-mode { background-color: #181926 !important; color: #c0caf5 !important; }
+  body.dark-mode header.page-header h1 { color: #fbbf24 !important; }
+  body.dark-mode header.page-header p { color: #94a3b8 !important; }
+  body.dark-mode h2, body.dark-mode h3 { color: #f59e0b !important; }
+  body.dark-mode a { color: #60a5fa; }
+  body.dark-mode nav.toc { background: #1f2335 !important; border-color: #33384f !important; }
+  body.dark-mode nav.toc h2 { color: #fbbf24 !important; }
+  body.dark-mode nav.toc a { color: #60a5fa !important; }
+  body.dark-mode section.lecture { background: #222436 !important; border-color: #33384f !important; color: #c0caf5 !important; }
+  body.dark-mode section.lecture h2 { color: #e2e8f0 !important; border-bottom-color: #33384f !important; }
+  body.dark-mode table { border-color: #33384f !important; }
+  body.dark-mode th, body.dark-mode td { border-color: #33384f !important; }
+  body.dark-mode th { background: #1f2335 !important; color: #fbbf24 !important; }
+  body.dark-mode td { color: #cbd5e1 !important; }
+  body.dark-mode tr:nth-child(even) td { background: #1a1d2d !important; }
+  body.dark-mode code { background: #13141f !important; color: #e2e8f0 !important; border: 1px solid #2e324a !important; }
+  body.dark-mode pre { background: #13141f !important; color: #e2e8f0 !important; border-color: #2e324a !important; }
+  body.dark-mode .callout { background: #25231c !important; border-left-color: #f59e0b !important; color: #fef3c7 !important; }
+  body.dark-mode .callout.tip { background: #142921 !important; border-left-color: #34d399 !important; color: #d1fae5 !important; }
+  body.dark-mode .callout.warning { background: #2f1b1e !important; border-left-color: #f87171 !important; color: #fee2e2 !important; }
+  body.dark-mode .callout.define { background: #1d2038 !important; border-left-color: #60a5fa !important; color: #dbeafe !important; }
+  body.dark-mode .callout.production { background: #221c35 !important; border-left-color: #c084fc !important; color: #ede9fe !important; }
+  body.dark-mode .summary-box { background: #142921 !important; border-color: #059669 !important; color: #d1fae5 !important; }
+  body.dark-mode .summary-box h3 { color: #34d399 !important; }
+  body.dark-mode .diagram { background: #ffffff !important; border: 1px solid #cbd5e1 !important; border-radius: 12px !important; padding: 16px !important; box-shadow: 0 4px 14px rgba(0,0,0,0.3) !important; }
+  body.dark-mode .diagram-caption { color: #475569 !important; font-weight: 500 !important; }
+  .theme-toggle-btn {
+    position: fixed; top: 16px; right: 20px; z-index: 10000;
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;
+    border-radius: 20px; background: #ffffff; color: #1f2937; border: 1px solid #cbd5e1;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.25s ease; user-select: none;
+  }
+  .theme-toggle-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
+  body.dark-mode .theme-toggle-btn { background: #24273a !important; color: #e2e8f0 !important; border-color: #363a4f !important; box-shadow: 0 2px 10px rgba(0,0,0,0.4) !important; }
+  @media (max-width: 480px) {
+    .theme-toggle-btn { top: 12px; right: 12px; padding: 6px 10px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="container" id="top">
+
+  <header class="page-header">
+    <h1>Section 22 — AWS Serverless DynamoDB</h1>
+    <p>How DynamoDB scales to millions of requests a second. Learn to design around partition keys, provision capacity, use indexes and streams, and solve the real patterns every team encounters.</p>
+  </header>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#l1">1. DynamoDB Overview</a></li>
+      <li><a href="#l2">2. Basics & Hands-On</a></li>
+      <li><a href="#l3">3. WCU &amp; RCU — Throughput</a></li>
+      <li><a href="#l4">4. Basic Operations &amp; APIs</a></li>
+      <li><a href="#l5">5. Conditional, Concurrent &amp; Atomic Writes</a></li>
+      <li><a href="#l6">6. Indexes: GSI &amp; LSI</a></li>
+      <li><a href="#l7">7. PartiQL</a></li>
+      <li><a href="#l8">8. DAX — The Cache Layer</a></li>
+      <li><a href="#l9">9. DynamoDB Streams</a></li>
+      <li><a href="#l10">10. TTL — Auto-Expiring Data</a></li>
+      <li><a href="#l11">11. CLI &amp; Pagination</a></li>
+      <li><a href="#l12">12. Transactions</a></li>
+      <li><a href="#l13">13. Session State Storage</a></li>
+      <li><a href="#l14">14. Write Sharding</a></li>
+      <li><a href="#l15">15. Patterns with S3</a></li>
+      <li><a href="#l16">16. Table Operations: Cleanup &amp; Copy</a></li>
+      <li><a href="#l17">17. Security &amp; Fine-Grained Access</a></li>
+      <li><a href="#summary">Cheat Sheet</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <section class="lecture" id="l1">
+    <h2><span class="lecture-num">1</span>DynamoDB Overview</h2>
+
+    <p>Relational databases like RDS trade off horizontal scaling for the power to join data, aggregate it, and ask complex questions. DynamoDB trades the other way: it sacrifices joins and aggregations to achieve near-unlimited scale — millions of requests per second, trillions of items, hundreds of terabytes, all managed for you.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>DynamoDB</strong> is a fully managed, serverless NoSQL database from AWS. It stores data as key-value pairs and documents, automatically replicates across availability zones, and scales horizontally without you having to manage hardware or databases.
+    </div>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>NoSQL</strong> means "not only SQL" — a database that doesn't use relational tables and SQL queries. Instead of rows and columns, NoSQL databases store flexible documents, key-value pairs, or graphs. No joins.
+    </div>
+
+    <h3>The core trade-off</h3>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+        <rect class="svg-box" x="20" y="20" width="340" height="90" rx="8"/>
+        <text class="svg-text" x="190" y="42" text-anchor="middle" font-weight="600" font-size="12">RDBMS (RDS)</text>
+        <text class="svg-label" x="190" y="62" text-anchor="middle" font-size="9">SQL, joins, aggregations, strict schema</text>
+        <text class="svg-label" x="190" y="80" text-anchor="middle" font-size="9">Scales mostly vertically; read replicas</text>
+        <text class="svg-label" x="190" y="98" text-anchor="middle" font-size="9">for limited horizontal read scaling</text>
+
+        <rect class="svg-box-accent" x="410" y="20" width="350" height="90" rx="8"/>
+        <text class="svg-text" x="585" y="42" text-anchor="middle" font-weight="600" font-size="12">NoSQL (DynamoDB)</text>
+        <text class="svg-label" x="585" y="62" text-anchor="middle" font-size="9">No joins, no aggregations — all needed</text>
+        <text class="svg-label" x="585" y="80" text-anchor="middle" font-size="9">data lives in one row per query</text>
+        <text class="svg-label" x="585" y="98" text-anchor="middle" font-size="9">Scales horizontally — millions of req/sec</text>
+      </svg>
+      <div class="diagram-caption">Relational databases give you rich querying (joins, aggregations) but scale mostly vertically; NoSQL databases like DynamoDB trade that querying power for near-unlimited horizontal scale.</div>
+    </div>
+
+    <p>Relational databases are built for asking "give me all orders from this month grouped by customer." DynamoDB is built for asking "give me this customer's profile right now" — and answering billions of times per second. You can still ask complex questions, but you have to design your data model upfront to support the specific questions you'll ask. That's the fundamental shift.</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Amazon (the retail giant and also AWS's parent) built DynamoDB to power their own shopping cart, user profiles, and product catalogs. When Thanksgiving rolls around and traffic spikes 10x, the system keeps running without anyone provisioning extra capacity. Companies like Airbnb, Netflix, and Lyft rely on DynamoDB for the same reason — it scales to match their actual traffic, not a guessed capacity.
+    </div>
+
+    <h3>Core basics</h3>
+
+    <p>A DynamoDB table stores <strong>items</strong> (like rows), each identified by a <strong>primary key</strong>. The primary key comes in two flavors: a simple <strong>partition key</strong> (hash key), or a <strong>partition key plus sort key</strong> (hash + range). Items can have any number of <strong>attributes</strong> (columns), which you can add or remove anytime — there's no schema lock-in. Each item is capped at 400 KB.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Partition key</strong> determines which internal server ("partition") holds an item, and must be unique across all items with that key. Design it so that load spreads evenly — a key like "region" with only 4 values would concentrate all data in 4 partitions, causing one to get hot.
+    </div>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Sort key</strong> (optional) is a second part of the primary key. The combination (partition key + sort key) must be unique. This lets you store multiple items under one partition key — like many posts from one user, sorted by date.
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 150" xmlns="http://www.w3.org/2000/svg">
+        <rect class="svg-box" x="20" y="15" width="340" height="120" rx="8"/>
+        <text class="svg-text" x="190" y="37" text-anchor="middle" font-weight="600" font-size="11">Partition key only (hash)</text>
+        <text class="svg-label" x="190" y="57" text-anchor="middle" font-size="9">Must be unique per item</text>
+        <text class="svg-label" x="190" y="75" text-anchor="middle" font-size="9">e.g. Users table: user_id</text>
+        <text class="svg-label" x="190" y="95" text-anchor="middle" font-size="9">Needs high cardinality so data</text>
+        <text class="svg-label" x="190" y="113" text-anchor="middle" font-size="9">spreads evenly across partitions</text>
+
+        <rect class="svg-box-accent" x="410" y="15" width="350" height="120" rx="8"/>
+        <text class="svg-text" x="585" y="37" text-anchor="middle" font-weight="600" font-size="11">Partition key + Sort key (hash + range)</text>
+        <text class="svg-label" x="585" y="57" text-anchor="middle" font-size="9">The COMBINATION must be unique</text>
+        <text class="svg-label" x="585" y="75" text-anchor="middle" font-size="9">e.g. UserGames: user_id + game_id</text>
+        <text class="svg-label" x="585" y="95" text-anchor="middle" font-size="9">Data grouped by partition key,</text>
+        <text class="svg-label" x="585" y="113" text-anchor="middle" font-size="9">sorted within it by sort key</text>
+      </svg>
+      <div class="diagram-caption">A simple partition key must be unique per item; a partition+sort key combo lets multiple items share a partition key (e.g. many games per user) as long as the pair is unique.</div>
+    </div>
+
+    <p>DynamoDB supports scalar data types (string, number, binary, boolean, null), document types (lists, maps), and sets (string, number, or binary sets). It replicates synchronously across three availability zones in a region, so you never lose data. There's no "create a database" step — you just create tables.</p>
+
+    <div class="callout warning">
+      <strong>Partition key design is critical:</strong> pick a key with high cardinality (many unique values) that distributes evenly. A voting app with partition key = "Candidate" (only 2 values) will create two "hot" partitions handling all the traffic. Later on we'll see how to fix this.
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="lecture" id="l2">
+    <h2><span class="lecture-num">2</span>Basics &amp; Hands-On</h2>
+
+    <p>Creating a DynamoDB table is straightforward: you pick a name, choose your partition key (and optionally a sort key), decide whether the table is Standard or Standard-IA (for infrequently accessed data), and pick a capacity mode.</p>
+
+    <h3>Capacity modes</h3>
+
+    <table>
+      <tr><th>Mode</th><th>How it works</th><th>Best for</th></tr>
+      <tr><td>Provisioned</td><td>You specify RCU/WCU upfront (can auto-scale)</td><td>Predictable, steady workloads</td></tr>
+      <tr><td>On-demand</td><td>Scales automatically with traffic</td><td>Unpredictable or spiky workloads</td></tr>
+    </table>
+
+    <p>You can switch between modes once every 24 hours. Provisioned is cheaper if you know your traffic pattern. On-demand is roughly 2.5× more expensive but requires zero capacity planning. Most new projects start On-demand, then switch to Provisioned once the pattern is clear.</p>
+
+    <h3>The flexibility trap</h3>
+
+    <p>One huge difference from traditional databases: you can add a new attribute to one item without touching the rest. Other items simply won't have that attribute (it reads as missing/null). This flexibility is powerful, but it's also a trap — without discipline, your data model can become chaotic. Team consensus on attribute names and structure matters more than in SQL.</p>
+
+    <div class="callout tip">
+      A practical rule: use a schema validation library or layer in your application to enforce consistent shapes, even though DynamoDB itself doesn't require it.
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="lecture" id="l3">
+    <h2><span class="lecture-num">3</span>WCU &amp; RCU — Throughput</h2>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>WCU (Write Capacity Unit)</strong> measures write throughput. 1 WCU = 1 write per second for an item up to 1 KB. Larger items cost more.
+    </div>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>RCU (Read Capacity Unit)</strong> measures read throughput. 1 RCU = 1 strongly consistent read per second (or 2 eventually consistent reads) for an item up to 4 KB.
+    </div>
+
+    <h3>The math</h3>
+
+    <p>Always round up item size to the next KB (for writes) or 4 KB (for reads). If you're writing 10 items per second, each 2 KB, that's 10 items × (2 KB rounded up = 2) = 20 WCU. If you're reading 16 items per second eventually consistent, each 12 KB (rounds to 16 KB = 4 × 4 KB), that's (16 ÷ 2) × 4 = 32 RCU.</p>
+
+    <p>The confusing part for many: <strong>RCU and WCU are split evenly across partitions</strong>. If you provision 1000 WCU, that's split across your internal partitions. If one partition key gets all the traffic, that one partition hits its share of the budget and starts throttling — even though the table's total capacity looks fine. This is called a "hot partition," and we'll see how to detect and fix it later.</p>
+
+    <h3>Consistency trade-off</h3>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#6b7280"/>
+          </marker>
+        </defs>
+        <rect class="svg-box" x="20" y="45" width="120" height="40" rx="6"/><text class="svg-text" x="80" y="69" text-anchor="middle" font-size="9">App writes</text>
+        <path class="svg-arrow" d="M140,55 L260,45"/>
+        <path class="svg-arrow" d="M140,65 L260,65"/>
+        <path class="svg-arrow" d="M140,75 L260,85"/>
+        <rect class="svg-box-accent" x="260" y="25" width="90" height="30" rx="5"/><text class="svg-text" x="305" y="45" text-anchor="middle" font-size="8">Server 1</text>
+        <rect class="svg-box-accent" x="260" y="55" width="90" height="30" rx="5"/><text class="svg-text" x="305" y="75" text-anchor="middle" font-size="8">Server 2</text>
+        <rect class="svg-box-accent" x="260" y="85" width="90" height="30" rx="5"/><text class="svg-text" x="305" y="105" text-anchor="middle" font-size="8">Server 3</text>
+        <text class="svg-label" x="550" y="35" text-anchor="middle" font-size="9">Eventually consistent read (default):</text>
+        <text class="svg-label" x="550" y="50" text-anchor="middle" font-size="9">may hit a server before replication finishes</text>
+        <text class="svg-label" x="550" y="80" text-anchor="middle" font-size="9">Strongly consistent read:</text>
+        <text class="svg-label" x="550" y="95" text-anchor="middle" font-size="9">guaranteed latest data, costs 2× the RCU</text>
+      </svg>
+      <div class="diagram-caption">Writes replicate across internal servers; reading right after a write can hit an un-replicated copy (eventually consistent) unless you explicitly request a strongly consistent read (set <code>ConsistentRead: true</code>).</div>
+    </div>
+
+    <p>When you read an item right after writing it, you might hit a server that hasn't fully replicated the write yet. Asking for <strong>eventually consistent</strong> reads (the default, cheaper) accepts this risk. Asking for <strong>strongly consistent</strong> reads (setting <code>ConsistentRead: true</code>) adds latency and costs 2× the RCU, but guarantees you see the latest version.</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Most applications use eventually consistent reads for the vast majority of requests — the latency and cost savings are worth the rare race conditions. Only critical reads (like "am I out of stock?") use strong consistency.
+    </div>
+
+    <h3>Auto scaling</h3>
+
+    <p>In provisioned mode, you can enable auto scaling: set a minimum and maximum capacity, plus a target utilization percentage. DynamoDB adjusts RCU/WCU automatically to hit that target. It's similar to EC2 Auto Scaling — if you hit 80% capacity, it scales up.</p>
+  </section>
+
+  <!-- 4 -->
+  <section class="lecture" id="l4">
+    <h2><span class="lecture-num">4</span>Basic Operations &amp; APIs</h2>
+
+    <p>Every DynamoDB interaction goes through a small set of core operations. Some read, some write, some batch multiple items together.</p>
+
+    <table>
+      <tr><th>Operation</th><th>API</th><th>Use case</th></tr>
+      <tr><td>Write (full replace)</td><td><code>PutItem</code></td><td>Overwrite or create an item by key</td></tr>
+      <tr><td>Write (partial)</td><td><code>UpdateItem</code></td><td>Modify specific attributes; also for atomic counters</td></tr>
+      <tr><td>Read one</td><td><code>GetItem</code></td><td>Fetch by primary key</td></tr>
+      <tr><td>Read by key range</td><td><code>Query</code></td><td>Find items matching partition key (and optionally sort key range)</td></tr>
+      <tr><td>Read everything</td><td><code>Scan</code></td><td>Expensive — reads the entire table, filters client-side</td></tr>
+      <tr><td>Delete one</td><td><code>DeleteItem</code></td><td>Remove by primary key</td></tr>
+      <tr><td>Delete whole table</td><td><code>DeleteTable</code></td><td>Far faster than scanning + deleting each item</td></tr>
+    </table>
+
+    <p>The <code>Query</code> operation is optimized: it uses the partition key to jump straight to the right partition, then searches within it using the sort key. <code>Scan</code> is not optimized — it reads everything and filters after, so it's expensive. Avoid it in production unless you're rebuilding an index or doing a one-time migration.</p>
+
+    <h3>Batch operations</h3>
+
+    <p><code>BatchGetItem</code> fetches up to 100 items (across one or more tables) in one request. <code>BatchWriteItem</code> creates or deletes up to 25 items (no updates in a batch, though). Both are capped at 16 MB. If any items fail, they come back in <code>UnprocessedItems</code> — retry them with exponential backoff.</p>
+
+    <h3>PartiQL — SQL syntax for DynamoDB</h3>
+
+    <p>If your team knows SQL, <strong>PartiQL</strong> lets you write SELECT/INSERT/UPDATE/DELETE queries against DynamoDB without learning the native API syntax. Under the hood it's the same operations — you're just using SQL-like syntax. No joins, though. You can use it from the console, the CLI, the SDK, or NoSQL Workbench.</p>
+  </section>
+
+  <!-- 5 -->
+  <section class="lecture" id="l5">
+    <h2><span class="lecture-num">5</span>Conditional, Concurrent &amp; Atomic Writes</h2>
+
+    <p>What happens when two clients try to update the same item at the same time? DynamoDB has three answers, depending on what you ask for.</p>
+
+    <h3>Without conditions</h3>
+
+    <p>Two clients update the same item. Both "succeed," but whichever write lands second silently overwrites the first. Data loss, silently. Avoid this.</p>
+
+    <h3>With conditions (optimistic locking)</h3>
+
+    <p>You attach a condition to your write: "only update if the version attribute equals 3." Whichever update lands first, the other fails because the condition no longer holds. The client that failed knows to fetch the latest version and retry. It's called optimistic locking — you assume conflicts are rare, and only handle them when they actually happen.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Condition expressions</strong> are rules you attach to writes (Put, Update, Delete) to decide whether they happen. Common building blocks: <code>attribute_exists</code>, <code>attribute_not_exists</code>, <code>contains</code>, <code>begins_with</code>, <code>BETWEEN</code>, <code>IN</code>, <code>size()</code>.
+    </div>
+
+    <h3>Atomic writes</h3>
+
+    <p>Two clients each increment a counter by some amount. Without special handling, one might overwrite the other. But if you use the <code>SET counter = counter + :amount</code> syntax (which DynamoDB evaluates server-side), both increments apply correctly. The final value reflects both.</p>
+
+    <div class="callout warning">
+      <strong>Filter vs. condition expressions:</strong> a <strong>filter expression</strong> applies to reads (Query/Scan results) after they're fetched, reducing the size of what's returned. A <strong>condition expression</strong> applies to writes (Put/Update/Delete) and decides whether the write happens at all. Filter expressions consume RCU whether they match or not; condition expressions are free.
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="lecture" id="l6">
+    <h2><span class="lecture-num">6</span>Indexes: GSI &amp; LSI</h2>
+
+    <p>Your main table is indexed by the partition key you picked at creation time. But what if you need to query by a different key? That's where indexes come in. There are two types, and they behave very differently.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>LSI (Local Secondary Index)</strong> lets you query the same partition key with a different sort key. It must be created at table creation time, shares the base table's capacity, and is limited to 10 GB per partition key value.
+    </div>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>GSI (Global Secondary Index)</strong> lets you query by an entirely different partition (and optionally sort) key. It can be created or deleted anytime, has its own provisioned RCU/WCU, and has no size limit.
+    </div>
+
+    <table>
+      <tr><th></th><th>LSI</th><th>GSI</th></tr>
+      <tr><td>Partition key</td><td>Same as base table</td><td>Can be different</td></tr>
+      <tr><td>Sort key</td><td>Different (alternative)</td><td>Can be different</td></tr>
+      <tr><td>Created</td><td>Only at table creation</td><td>Anytime</td></tr>
+      <tr><td>Capacity</td><td>Shares base table RCU/WCU</td><td>Own RCU/WCU</td></tr>
+      <tr><td>Throttling behavior</td><td>No special handling</td><td>If GSI throttles, the base table throttles too</td></tr>
+    </table>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+        <rect class="svg-box" x="20" y="15" width="340" height="100" rx="8"/>
+        <text class="svg-text" x="190" y="37" text-anchor="middle" font-weight="600" font-size="11">Base table</text>
+        <text class="svg-label" x="190" y="57" text-anchor="middle" font-size="9">PK: user_id, SK: game_id</text>
+        <path class="svg-arrow" d="M190,65 L190,90"/>
+        <rect class="svg-box-accent" x="60" y="90" width="260" height="20" rx="4"/>
+        <text class="svg-text" x="190" y="104" text-anchor="middle" font-size="8">LSI — PK: user_id, SK: game_timestamp</text>
+
+        <rect class="svg-box-accent" x="410" y="15" width="350" height="100" rx="8"/>
+        <text class="svg-text" x="585" y="37" text-anchor="middle" font-weight="600" font-size="11">GSI</text>
+        <text class="svg-label" x="585" y="57" text-anchor="middle" font-size="9">PK: game_id, SK: game_timestamp</text>
+        <text class="svg-label" x="585" y="80" text-anchor="middle" font-size="9">Own RCU/WCU — acts like a different table</text>
+        <text class="svg-label" x="585" y="98" text-anchor="middle" font-size="9">projected attributes: user_id, etc.</text>
+      </svg>
+      <div class="diagram-caption">An LSI just gives you an alternative sort key on the same partition key; a GSI gives you a whole different partition (and optionally sort) key, with its own dedicated capacity.</div>
+    </div>
+
+    <p>An LSI is convenient but inflexible — you have to know at table creation time that you'll want to query by (old_partition_key, new_sort_key). A GSI is more flexible — you can add it months later — but costs more and has trickier throttling behavior. If a query hits the GSI and the GSI is overloaded, the whole table gets throttled, not just the GSI.</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Most teams start with one main table and one or two GSIs. When you realize you need to query differently, you add a GSI instead of redesigning the main table. The cost is worth it for the flexibility.
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="lecture" id="l7">
+    <h2><span class="lecture-num">7</span>PartiQL</h2>
+
+    <p>PartiQL is a SQL-like syntax for DynamoDB. If your team is more familiar with SQL than the DynamoDB API, this is a friendlier way to interact with the database.</p>
+
+    <p>You can use it from the console (there's a PartiQL editor), the CLI, NoSQL Workbench, or any SDK. Common examples:</p>
+
+    <pre><code>SELECT * FROM users WHERE user_id = '123'
+INSERT INTO users VALUE {'user_id': '123', 'name': 'Alice'}
+UPDATE users SET #name = 'Bob' WHERE user_id = '123'
+DELETE FROM users WHERE user_id = '123'</code></pre>
+
+    <p>Under the hood, PartiQL is translated to the same API calls we discussed earlier (Query, PutItem, UpdateItem, DeleteItem). It's just syntax. No joins, no aggregations — same limitations as the core DynamoDB model.</p>
+  </section>
+
+  <!-- 8 -->
+  <section class="lecture" id="l8">
+    <h2><span class="lecture-num">8</span>DAX — The Cache Layer</h2>
+
+    <p>Imagine a table storing user profiles. Every single app request reads the same few profiles — celebrities, popular accounts — over and over. Those reads are hitting DynamoDB billions of times per day, burning through RCU. What if you cached the answers?</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>DAX (DynamoDB Accelerator)</strong> is a fully managed, in-memory cache for DynamoDB. It caches queries, scans, and individual items with microsecond latency. Your app talks to DAX instead of DynamoDB directly — if the item is cached, DAX answers instantly; if not, DAX fetches it from DynamoDB, caches it, and returns it.
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 100" xmlns="http://www.w3.org/2000/svg">
+        <rect class="svg-box" x="20" y="30" width="140" height="40" rx="6"/><text class="svg-text" x="90" y="54" text-anchor="middle" font-size="9">Application</text>
+        <path class="svg-arrow" d="M160,50 L280,50"/>
+        <rect class="svg-box-accent" x="280" y="30" width="180" height="40" rx="6"/><text class="svg-text" x="370" y="54" text-anchor="middle" font-size="9">DAX Cluster (cache nodes)</text>
+        <path class="svg-arrow" d="M460,50 L580,50"/>
+        <rect class="svg-box" x="580" y="30" width="160" height="40" rx="6"/><text class="svg-text" x="660" y="54" text-anchor="middle" font-size="9">DynamoDB Tables</text>
+      </svg>
+      <div class="diagram-caption">The app talks to the DAX cluster instead of DynamoDB directly; DAX serves cached results (default 5-minute TTL) or fetches and caches on a miss.</div>
+    </div>
+
+    <h3>When to use it</h3>
+
+    <p>DAX is perfect for "hot" items — popular profiles, trending posts, frequently read settings. It's overkill for data accessed once or twice. A typical DAX cluster has 3 nodes across availability zones (for production HA) and a default 5-minute TTL. Items expire from the cache automatically, ensuring freshness.</p>
+
+    <p>The magic part: DAX is API-compatible with DynamoDB. You change your endpoint from DynamoDB to DAX, and the rest of your code stays the same. No rewrite needed.</p>
+
+    <div class="callout tip">
+      DAX is not the same as ElastiCache. DAX caches DynamoDB objects and queries. ElastiCache is a general-purpose in-memory store; you'd use it for caching the results of your own application-side aggregation or computation.
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section class="lecture" id="l9">
+    <h2><span class="lecture-num">9</span>DynamoDB Streams</h2>
+
+    <p>Every time an item in a table is created, updated, or deleted, you might want to react to that change — send a welcome email, update analytics, replicate to another database, feed a search engine. <strong>DynamoDB Streams</strong> capture these changes for 24 hours, making them available to downstream consumers.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>DynamoDB Streams</strong> is an ordered list of item-level modifications on a table. Each modification (create, update, delete) becomes a record in the stream, visible for 24 hours.
+    </div>
+
+    <h3>How streams work</h3>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 130" xmlns="http://www.w3.org/2000/svg">
+        <rect class="svg-box" x="20" y="45" width="140" height="40" rx="6"/><text class="svg-text" x="90" y="69" text-anchor="middle" font-size="9">Table writes</text>
+        <path class="svg-arrow" d="M160,65 L280,65"/>
+        <rect class="svg-box-accent" x="280" y="45" width="160" height="40" rx="6"/><text class="svg-text" x="360" y="69" text-anchor="middle" font-size="9">DynamoDB Stream</text>
+        <path class="svg-arrow" d="M440,55 L560,30"/>
+        <rect class="svg-box" x="560" y="10" width="180" height="30" rx="5"/><text class="svg-text" x="650" y="30" text-anchor="middle" font-size="8">Lambda (Event Source Mapping)</text>
+        <path class="svg-arrow" d="M440,75 L560,100"/>
+        <rect class="svg-box" x="560" y="85" width="180" height="30" rx="5"/><text class="svg-text" x="650" y="105" text-anchor="middle" font-size="8">Kinesis Data Streams / KCL app</text>
+      </svg>
+      <div class="diagram-caption">Every create/update/delete lands in the stream; Lambda (via an Event Source Mapping) or a Kinesis Client Library app can consume it in near real-time.</div>
+    </div>
+
+    <p>Enable streams on a table and choose a view type: <code>KEYS_ONLY</code> (just the key), <code>NEW_IMAGE</code> (the new version of the item), <code>OLD_IMAGE</code> (the old version), or <code>NEW_AND_OLD_IMAGES</code> (both). Lambda functions can automatically trigger on stream records via event source mappings. Or a Kinesis app can consume them for real-time processing. The stream is made of shards, like Kinesis — AWS manages shard provisioning automatically.</p>
+
+    <p>Streams enable powerful patterns: welcome emails on new signups, derivative tables (denormalized copies for specific query patterns), real-time analytics, or Global Tables (multi-region replication).</p>
+
+    <div class="callout warning">
+      <strong>Important:</strong> streams are not retroactive. You only get events for changes that happen after you enable the stream. You can't replay history from before you turned it on.
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section class="lecture" id="l10">
+    <h2><span class="lecture-num">10</span>TTL — Auto-Expiring Data</h2>
+
+    <p>Session data, temporary tokens, or any item with an expiration date can be tedious to manage manually. You'd have to run a job to scan and delete old items — expensive in terms of RCU/WCU.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>TTL (Time To Live)</strong> in DynamoDB automatically deletes items when a specified Unix epoch timestamp passes. It's free — no WCU consumed — because DynamoDB does the cleanup internally.
+    </div>
+
+    <h3>How it works</h3>
+
+    <p>You pick one numeric attribute (e.g., <code>expires_at</code>) and tell DynamoDB "this is my TTL attribute." DynamoDB periodically scans for expired items and deletes them — usually within a day, sometimes longer. Expired-but-not-yet-deleted items still show up in reads, queries, and scans, so filter client-side if that matters. When TTL deletes an item, it also deletes it from any LSI/GSI, and the delete appears in the DynamoDB Stream (if enabled).</p>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Every session storage system uses TTL. Every API key expiration. Every rate-limit bucket. DynamoDB's TTL is often the first operational burden it removes — you stop having to write cleanup jobs.
+    </div>
+  </section>
+
+  <!-- 11 -->
+  <section class="lecture" id="l11">
+    <h2><span class="lecture-num">11</span>CLI &amp; Pagination</h2>
+
+    <p>When you use the CLI or SDK, you often need to control how much data comes back at once. Query and Scan can return thousands of items; you probably want to process them in pages.</p>
+
+    <table>
+      <tr><th>Option</th><th>Purpose</th></tr>
+      <tr><td><code>--page-size</code></td><td>Break one logical request into smaller API calls behind the scenes (avoids timeouts) while still returning everything</td></tr>
+      <tr><td><code>--max-items</code></td><td>Limit how many items are shown per command output</td></tr>
+      <tr><td><code>--starting-token</code> + <code>NextToken</code></td><td>Continue retrieving the next page after a previous command</td></tr>
+      <tr><td><code>--projection-expression</code></td><td>Only fetch specific attributes (saves RCU)</td></tr>
+      <tr><td><code>--filter-expression</code></td><td>Filter results client-side (consumes RCU whether matches or not)</td></tr>
+    </table>
+
+    <p><code>--page-size</code> and <code>--max-items</code> solve different problems. Page-size keeps individual API calls small (preventing timeouts) while returning all results. Max-items caps how much you see, requiring you to use NextToken to fetch more. If you're scanning a million items, page-size prevents your single command from timing out; max-items lets you display 50 at a time on a web page.</p>
+  </section>
+
+  <!-- 12 -->
+  <section class="lecture" id="l12">
+    <h2><span class="lecture-num">12</span>Transactions</h2>
+
+    <p>Imagine a banking system. You need to debit one account and credit another — atomically. If the first write succeeds and the second fails, money disappears. Or imagine a game where a player buys an item for gold. You need to deduct their gold AND add the item to their inventory, all at once or not at all.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Transactions</strong> in DynamoDB give you all-or-nothing semantics across multiple items or tables. Either all writes succeed, or none do. Full ACID guarantees.
+    </div>
+
+    <h3>Cost and limitations</h3>
+
+    <p>Transactions cost <strong>2× the RCU/WCU</strong> of an equivalent non-transactional operation. DynamoDB has to prepare the transaction, then commit it, and that double work is billed. Example: 3 transactional writes/sec × 5 KB = 3 × 5 × 2 = <strong>30 WCU</strong> (versus 15 WCU if they weren't transactional).</p>
+
+    <p>Two transaction APIs: <code>TransactGetItems</code> (read multiple items consistently) and <code>TransactWriteItems</code> (write multiple items atomically). You can include up to 25 items per transaction.</p>
+
+    <div class="callout warning">
+      <strong>Use sparingly:</strong> transactions are more expensive and slower than normal operations. Only use them when atomicity is actually required (payments, inventory, gaming). Most reads and writes don't need them.
+    </div>
+  </section>
+
+  <!-- 13 -->
+  <section class="lecture" id="l13">
+    <h2><span class="lecture-num">13</span>Session State Storage</h2>
+
+    <p>When a user logs into a web app, the server stores their session (authentication token, preferences, cart, etc.) somewhere — not in memory on a single server, because the next request might hit a different server. Where should it go?</p>
+
+    <table>
+      <tr><th>Option</th><th>Good for</th><th>Avoid if</th></tr>
+      <tr><td>DynamoDB</td><td>Serverless, automatic scaling, no ops</td><td>You need pure in-memory speed</td></tr>
+      <tr><td>ElastiCache (Redis/Memcached)</td><td>In-memory, fast, simple key-value</td><td>You want fully managed and serverless</td></tr>
+      <tr><td>EFS</td><td>Shared network filesystem across EC2</td><td>You need low-latency access (EFS has higher latency)</td></tr>
+      <tr><td>EBS / instance store</td><td>Local disk, very fast</td><td>You have multiple servers (not shared)</td></tr>
+      <tr><td>S3</td><td>Extremely durable, cheap</td><td>You need low latency (S3 is designed for larger objects)</td></tr>
+    </table>
+
+    <p>Most new teams pick DynamoDB or ElastiCache. DynamoDB if you want zero operational overhead and automatic scaling. ElastiCache if you have a dedicated team to manage it and you need microsecond latency for in-memory operations.</p>
+  </section>
+
+  <!-- 14 -->
+  <section class="lecture" id="l14">
+    <h2><span class="lecture-num">14</span>Write Sharding</h2>
+
+    <p>A voting app needs to count votes for candidates. You use partition key = "candidate_name" (either "Alice" or "Bob"). The problem: all data lands in just two partitions. Millions of votes all hitting the same two partition keys means two hot partitions throttling.</p>
+
+    <p><strong>Write sharding</strong> solves this by artificially spreading writes across many more partition keys. Instead of "CandidateA", use "CandidateA#1", "CandidateA#2", ..., "CandidateA#10". When you write a vote, randomly pick one shard. When you count votes for Alice, you query all 10 shards and sum the results.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 100" xmlns="http://www.w3.org/2000/svg">
+        <rect class="svg-box" x="20" y="30" width="160" height="40" rx="6"/><text class="svg-text" x="100" y="54" text-anchor="middle" font-size="9">PK: "CandidateA"</text>
+        <text class="svg-label" x="330" y="20" text-anchor="middle" font-size="9">→ append a random/hashed suffix →</text>
+        <path class="svg-arrow" d="M180,50 L440,50"/>
+        <rect class="svg-box-accent" x="440" y="20" width="90" height="25" rx="4"/><text class="svg-text" x="485" y="37" text-anchor="middle" font-size="8">CandidateA-11</text>
+        <rect class="svg-box-accent" x="440" y="50" width="90" height="25" rx="4"/><text class="svg-text" x="485" y="67" text-anchor="middle" font-size="8">CandidateA-20</text>
+        <rect class="svg-box-accent" x="540" y="20" width="90" height="25" rx="4"/><text class="svg-text" x="585" y="37" text-anchor="middle" font-size="8">CandidateB-17</text>
+        <rect class="svg-box-accent" x="540" y="50" width="90" height="25" rx="4"/><text class="svg-text" x="585" y="67" text-anchor="middle" font-size="8">CandidateB-18</text>
+      </svg>
+      <div class="diagram-caption">Appending a random or hashed suffix to a low-cardinality partition key artificially spreads writes across many more partitions, avoiding hot-partition throttling.</div>
+    </div>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Write sharding</strong> adds a random or hashed suffix to a low-cardinality partition key, spreading writes across many more partitions so no single partition gets hot. Cost: more queries needed to read (you must query all shards).
+    </div>
+
+    <div class="callout tip">
+      You can also use a distributed hash function to generate the shard ID deterministically, rather than randomly picking one. The goal is just better distribution.
+    </div>
+  </section>
+
+  <!-- 15 -->
+  <section class="lecture" id="l15">
+    <h2><span class="lecture-num">15</span>Patterns with S3</h2>
+
+    <h3>Pattern 1: Large objects in S3, metadata in DynamoDB</h3>
+
+    <p>DynamoDB items max out at 400 KB. If you're storing large files (images, videos, PDFs), put them in S3 and keep only a pointer (the S3 key or URL) plus metadata in DynamoDB. When a user requests a file, your app reads metadata from DynamoDB (fast), then fetches the actual object from S3.</p>
+
+    <h3>Pattern 2: Index S3 objects in DynamoDB</h3>
+
+    <p>S3 doesn't have a way to ask "show me all images uploaded by this user in the last month" — it's just a flat store of objects. But you can: when an object is uploaded to S3, an event notification triggers a Lambda function that writes the object's metadata (size, timestamp, uploader, etc.) to a DynamoDB table. Now you can query DynamoDB to find objects by timestamp, owner, or type, then fetch the actual objects from S3 by their key.</p>
+
+    <p>This pattern works because DynamoDB is optimized for queryability and metadata storage, while S3 is optimized for durability and large objects. Use each for what it's good at.</p>
+  </section>
+
+  <!-- 16 -->
+  <section class="lecture" id="l16">
+    <h2><span class="lecture-num">16</span>Table Operations: Cleanup &amp; Copy</h2>
+
+    <h3>Clearing a table</h3>
+
+    <p>Never scan a table and delete each item individually — that's slow and expensive. Instead, use <code>DeleteTable</code> and recreate it. Far faster, and if you've designed your data model to be ephemeral (which you should for testing), no data loss.</p>
+
+    <h3>Backup and restore</h3>
+
+    <p><strong>AWS Backup</strong> can back up a source table and restore it to the same account or a different one. The restore creates a new table with the same schema and data. Perfect for disaster recovery or cloning.</p>
+
+    <h3>Migration and ETL</h3>
+
+    <p><strong>AWS Glue</strong> can export data from DynamoDB to other services, or import data in. It generates a script to read the source and write the destination. For custom logic, write your own code using <code>Scan</code> + <code>BatchWriteItem</code>.</p>
+  </section>
+
+  <!-- 17 -->
+  <section class="lecture" id="l17">
+    <h2><span class="lecture-num">17</span>Security &amp; Fine-Grained Access</h2>
+
+    <p>DynamoDB integrates with IAM, KMS, VPC endpoints, and other AWS security services. But there's one pattern that stands out: giving end-user applications direct access to DynamoDB without a backend server.</p>
+
+    <h3>Federated access for clients</h3>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 110" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrowhead2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#6b7280"/>
+          </marker>
+        </defs>
+        <rect class="svg-box" x="20" y="35" width="150" height="40" rx="6"/><text class="svg-text" x="95" y="59" text-anchor="middle" font-size="9">Web/mobile client</text>
+        <path class="svg-arrow" d="M170,55 L290,55" marker-end="url(#arrowhead2)"/>
+        <text class="svg-label" x="230" y="45" text-anchor="middle" font-size="8">login</text>
+        <rect class="svg-box-accent" x="290" y="35" width="180" height="40" rx="6"/><text class="svg-text" x="380" y="59" text-anchor="middle" font-size="9">Cognito / Google / SAML</text>
+        <path class="svg-arrow" d="M470,55 L590,55" marker-end="url(#arrowhead2)"/>
+        <text class="svg-label" x="530" y="45" text-anchor="middle" font-size="8">temp creds + IAM role</text>
+        <rect class="svg-box" x="590" y="35" width="170" height="40" rx="6"/><text class="svg-text" x="675" y="59" text-anchor="middle" font-size="9">DynamoDB (own rows only)</text>
+      </svg>
+      <div class="diagram-caption">Clients authenticate via an identity provider, exchange that identity for temporary AWS credentials tied to a restricted IAM role — never long-lived IAM users handed out to end users.</div>
+    </div>
+
+    <p>A mobile app needs to read and write a user's own data without a backend service. You use <strong>Cognito</strong> or another identity provider to authenticate the user. After authentication, they get temporary AWS credentials tied to an IAM role. That role's policy uses a condition on <code>dynamodb:LeadingKeys</code> to restrict the user to reading/writing only rows where the partition key equals their own identity.</p>
+
+    <div class="callout define">
+      <span class="callout-label">💡 New word</span>
+      <strong>Point-in-Time Recovery (PITR)</strong> automatically backs up your table and lets you restore to any point in the last 35 days. No manual snapshots needed, and zero performance impact.
+    </div>
+
+    <h3>Other security features</h3>
+
+    <ul>
+      <li><strong>Encryption at rest</strong> (KMS) and in transit (TLS/HTTPS).</li>
+      <li><strong>VPC Endpoints</strong> keep DynamoDB traffic off the public internet.</li>
+      <li><strong>Global Tables</strong>: multi-region, multi-active replication (requires Streams enabled).</li>
+      <li><strong>DynamoDB Local</strong>: run a local simulation for testing without hitting the real service.</li>
+      <li><strong>AWS DMS</strong>: migrate data to/from DynamoDB (e.g., Oracle → DynamoDB, or DynamoDB → S3).</li>
+    </ul>
+
+    <div class="callout production">
+      <span class="callout-label">🏭 In real companies</span>
+      Many apps use Cognito + DynamoDB for the full identity + storage stack. Mobile apps especially: authenticate with Cognito, get a role with fine-grained DynamoDB access, and never need a backend server — pure serverless.
+    </div>
+  </section>
+
+  <hr class="section-break">
+
+  <!-- Final Summary -->
+  <section class="lecture" id="summary">
+    <h2>📋 Cheat Sheet</h2>
+
+    <div class="summary-box">
+      <h3>Core Concepts</h3>
+      <ul>
+        <li><strong>Partition key</strong>: determine item distribution. High cardinality, even spread. Must be unique (for partition-key-only tables) or part of unique combo (with sort key).</li>
+        <li><strong>Sort key</strong>: optional, enables range queries and multiple items per partition key.</li>
+        <li><strong>WCU/RCU math</strong>: 1 WCU = 1 write/sec up to 1KB; 1 RCU = 1 strong read/sec (or 2 eventual) up to 4KB. Always round up.</li>
+        <li><strong>Hot partitions</strong>: uneven load across partitions causes throttling even if table capacity is fine. Fix with write sharding or better key distribution.</li>
+        <li><strong>LSI</strong>: alternate sort key, same partition key, created at table creation, shares capacity.</li>
+        <li><strong>GSI</strong>: different partition/sort key, created anytime, own capacity. Throttling on GSI throttles the whole table.</li>
+        <li><strong>Transactions</strong>: 2× cost, full ACID across items. Use only for atomicity-critical operations.</li>
+        <li><strong>DAX</strong>: microsecond cache for hot items. ElastiCache for app-side computed results.</li>
+        <li><strong>Streams</strong>: 24-hour event log. Not retroactive. Triggers Lambda, feeds Global Tables.</li>
+        <li><strong>TTL</strong>: free auto-expiration. Deletes are not instant, still visible until garbage-collected.</li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>Decision Tree</h3>
+      <ul>
+        <li>Need to query by an alternate sort key on the same partition? → <strong>LSI</strong></li>
+        <li>Need to query by a completely different key? → <strong>GSI</strong></li>
+        <li>Hot partition from low-cardinality keys? → <strong>Write sharding</strong></li>
+        <li>Slow reads on popular items? → <strong>DAX</strong></li>
+        <li>React to table changes in real-time? → <strong>Streams + Lambda</strong></li>
+        <li>Auto-expire old data? → <strong>TTL</strong></li>
+        <li>All-or-nothing writes across items? → <strong>Transactions</strong></li>
+        <li>Files bigger than 400 KB? → <strong>S3 + DynamoDB metadata</strong></li>
+      </ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>The Big Picture</h3>
+      <p>DynamoDB gives you unlimited scale by constraining how you query: no joins, no aggregations, all needed data in one row. Design your partition key to distribute load evenly. Understand RCU/WCU math so you provision correctly. Use the right extension (LSI, GSI, DAX, Streams, TTL, Transactions) for each pattern. Master these basics, and DynamoDB stops being mystifying and becomes a straightforward choice for any serverless application that needs a data store.</p>
+    </div>
+  </section>
+
+  <div class="top-link"><a href="#top">↑ Back to top</a></div>
+
+</div>
+
+<script>
+(function () {
+  if (document.querySelector('.tips-trigger')) return;
+
+  const glossary = [
+    ['access key', 'Long-term credential pair for programmatic access: Access Key ID plus Secret Access Key. Treat it like a password.'],
+    ['API', 'Application Programming Interface — the way software components talk to each other.'],
+    ['availability zone', 'One isolated data center inside a region. Multi-AZ designs survive one zone failing.'],
+    ['DAX', 'DynamoDB Accelerator. In-memory cache that caches DynamoDB queries and items.'],
+    ['DynamoDB', 'Serverless NoSQL key-value/document database. Scales horizontally to millions of requests/sec.'],
+    ['Glue', 'AWS service for ETL (extract, transform, load) — moves data between services.'],
+    ['Global Tables', 'Multi-region, multi-active DynamoDB tables with automatic cross-region replication.'],
+    ['GSI', 'Global Secondary Index. Alternate query pattern with its own partition/sort key and capacity.'],
+    ['KMS', 'Key Management Service. Manages encryption keys used by other AWS services.'],
+    ['Lambda', 'Serverless compute for short-running functions triggered by events.'],
+    ['LSI', 'Local Secondary Index. Alternate sort key on the same partition key.'],
+    ['NoSQL', 'Database that doesn\'t use SQL or relational tables. Includes key-value, document, graph databases.'],
+    ['partition key', 'Primary key that determines which partition an item lives in.'],
+    ['PITR', 'Point-in-Time Recovery. Automatic backups allowing restore to any moment in the last 35 days.'],
+    ['RCU', 'Read Capacity Unit. Measures read throughput — 1 RCU = 1 read/sec up to 4KB.'],
+    ['Scan', 'DynamoDB operation that reads the entire table (expensive — avoid in production).'],
+    ['sort key', 'Optional second part of a primary key. Enables range queries and multiple items per partition key.'],
+    ['Streams', 'Ordered list of item-level changes (create/update/delete) retained for 24 hours.'],
+    ['TTL', 'Time To Live. Attribute that triggers automatic item deletion at a specified time.'],
+    ['WCU', 'Write Capacity Unit. Measures write throughput — 1 WCU = 1 write/sec up to 1KB.']
+  ];
+
+  const pageText = document.body.innerText.replace(/\s+/g, ' ');
+  const found = glossary.filter(([term]) => new RegExp('(^|[^A-Za-z0-9])' + escapeRegExp(term) + '([^A-Za-z0-9]|$)', 'i').test(pageText));
+  if (!found.length) return;
+
+  const button = document.createElement('button');
+  button.className = 'tips-trigger';
+  button.type = 'button';
+  button.setAttribute('aria-haspopup', 'dialog');
+  button.setAttribute('aria-expanded', 'false');
+  button.innerHTML = '<span class="tips-icon" aria-hidden="true">💡</span><span>Glossary</span>';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'tips-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'tips-title');
+  overlay.innerHTML = [
+    '<div class="tips-panel">',
+    '<div class="tips-header">',
+    '<h2 id="tips-title">💡 Every term on this page</h2>',
+    '<button class="tips-close" type="button" aria-label="Close glossary">Close</button>',
+    '</div>',
+    '<div class="tips-body">',
+    '<p class="tips-intro">A quick lookup if you lost the thread anywhere on this page.</p>',
+    '<ul class="tips-list">' + found.map(([term, tip]) => '<li><strong>' + escapeHtml(term) + '</strong>' + escapeHtml(tip) + '</li>').join('') + '</ul>',
+    '</div>',
+    '</div>'
+  ].join('');
+
+  document.body.appendChild(button);
+  document.body.appendChild(overlay);
+
+  const closeButton = overlay.querySelector('.tips-close');
+  function openTips() {
+    overlay.classList.add('open');
+    button.setAttribute('aria-expanded', 'true');
+    closeButton.focus();
+  }
+  function closeTips() {
+    overlay.classList.remove('open');
+    button.setAttribute('aria-expanded', 'false');
+    button.focus();
+  }
+
+  button.addEventListener('click', openTips);
+  closeButton.addEventListener('click', closeTips);
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) closeTips();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && overlay.classList.contains('open')) closeTips();
+  });
+
+  function escapeRegExp(value) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
+  }
+}());
+</script>
+
+<!-- Dark Theme Toggle Button -->
+<button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme" title="Toggle Light/Dark Theme">
+  <span class="theme-toggle-icon">🌙</span>
+  <span class="theme-toggle-text">Dark</span>
+</button>
+
+<script id="dark-theme-script">
+(function() {
+  function setupThemeToggle() {
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+
+    function syncUI() {
+      var isDark = document.documentElement.classList.contains('dark-mode') || document.body.classList.contains('dark-mode');
+      var icon = btn.querySelector('.theme-toggle-icon');
+      var text = btn.querySelector('.theme-toggle-text');
+      if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+      if (text) text.textContent = isDark ? 'Light' : 'Dark';
+    }
+
+    if (document.documentElement.classList.contains('dark-mode')) {
+      document.body.classList.add('dark-mode');
+    }
+    syncUI();
+
+    btn.addEventListener('click', function() {
+      var isDark = document.documentElement.classList.toggle('dark-mode');
+      document.body.classList.toggle('dark-mode', isDark);
+      localStorage.setItem('aws-notes-theme', isDark ? 'dark' : 'light');
+      syncUI();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupThemeToggle);
+  } else {
+    setupThemeToggle();
+  }
+})();
+</script>
+</body>
+</html>
