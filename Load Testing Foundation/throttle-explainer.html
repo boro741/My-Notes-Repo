@@ -364,6 +364,21 @@
   }
   .gauge-legend{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10px;color:var(--text-faint);margin-top:8px;}
 
+  /* ---------- Core facts (read-first) ---------- */
+  .fact-list{display:flex;flex-direction:column;gap:14px;}
+  .fact-card{
+    background:var(--bg-panel);border:1px solid var(--border);border-radius:12px;
+    padding:18px 20px;display:flex;gap:16px;align-items:flex-start;
+  }
+  .fact-num{
+    flex:0 0 auto;width:30px;height:30px;border-radius:50%;
+    background:var(--accent-amber);color:#241a08;font-family:var(--font-mono);font-weight:700;font-size:14px;
+    display:flex;align-items:center;justify-content:center;margin-top:2px;
+  }
+  .fact-body h4{font-family:var(--font-display);font-size:15px;margin:0 0 6px;letter-spacing:-.005em;}
+  .fact-body h4 em{font-style:normal;color:var(--accent-amber);}
+  .fact-body p{font-size:13.5px;color:var(--text-muted);margin:0;line-height:1.55;}
+
   /* ---------- One-off vs continuous compare ---------- */
   .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:8px;}
   .compare-col{background:var(--bg-panel);border:1px solid var(--border);border-radius:14px;padding:22px;}
@@ -534,49 +549,9 @@
   .guide-dots .gd{width:7px;height:7px;border-radius:50%;background:var(--bg-track);border:1px solid var(--border);}
   .guide-dots .gd.on{background:var(--accent-amber);border-color:var(--accent-amber);}
   @media (max-width:640px){.guide-panel{right:10px;left:10px;width:auto;bottom:10px;}.guide-launcher{right:10px;bottom:10px;}}
-
-  /* ---------- Top Site Nav ---------- */
-  .site-nav{
-    position:sticky; top:0; z-index:40;
-    backdrop-filter:blur(12px);
-    background:rgba(16,20,27,0.85);
-    border-bottom:1px solid var(--border);
-  }
-  .site-nav-inner{
-    max-width:920px; margin:0 auto; padding:14px 24px;
-    display:flex; align-items:center; justify-content:space-between;
-  }
-  .site-nav a.back-link{
-    font-family:var(--font-mono); font-size:12.5px;
-    color:var(--text-muted); text-decoration:none;
-    display:flex; align-items:center; gap:6px;
-    transition:color .15s;
-  }
-  .site-nav a.back-link:hover{ color:var(--accent-amber); }
-  .site-nav-pills{
-    display:flex; gap:14px; font-family:var(--font-mono); font-size:12px;
-  }
-  .site-nav-pills a{
-    color:var(--text-faint); text-decoration:none; transition:color .15s;
-  }
-  .site-nav-pills a:hover{ color:var(--text-primary); }
-  .site-nav-pills a.active{ color:var(--accent-amber); font-weight:600; }
-  @media(max-width:640px){.site-nav-pills{display:none;}}
 </style>
 </head>
 <body>
-
-<nav class="site-nav">
-  <div class="site-nav-inner">
-    <a href="../index.html" class="back-link">← Back to Notes Library</a>
-    <div class="site-nav-pills">
-      <a href="Load-testing-foundations Part 1.html">Part 1</a>
-      <a href="Load-testing-foundations-part2.html">Part 2</a>
-      <a href="load-testing-foundations-part3.html">Part 3</a>
-      <a href="throttle-explainer.html" class="active">Throttle Simulation</a>
-    </div>
-  </div>
-</nav>
 
 <div class="wrap">
   <div class="hero">
@@ -589,6 +564,44 @@
     </div>
     <button class="btn primary" id="startGuideBtn" style="margin-top:24px;">🧭 Start the guided walkthrough</button>
   </div>
+
+  <!-- ================= CORE FACTS (READ FIRST) ================= -->
+  <section id="core-facts">
+    <div class="section-num">00</div>
+    <h2>Read this first — four facts everything below depends on</h2>
+    <p class="section-lede">These are the exact points that take the longest to click. Lock them in now and every simulation below will make sense on the first look, instead of needing a second pass.</p>
+
+    <div class="fact-list">
+      <div class="fact-card">
+        <div class="fact-num">1</div>
+        <div class="fact-body">
+          <h4>A "window" is 100ms of <em>time</em> — not a slot for one task</h4>
+          <p>It can hold one giant task, or fifty tiny ones, or nothing at all. The window doesn't count tasks; it only watches the clock. Windows also happen one after another, in sequence — never several at once.</p>
+        </div>
+      </div>
+      <div class="fact-card">
+        <div class="fact-num">2</div>
+        <div class="fact-body">
+          <h4>The CPU quota is <em>one shared budget</em> for the whole container</h4>
+          <p>Not one budget per task. Whether 1 task or 20 are running at the same time, they all draw from the exact same pot every window.</p>
+        </div>
+      </div>
+      <div class="fact-card">
+        <div class="fact-num">3</div>
+        <div class="fact-body">
+          <h4>When the budget runs dry, <em>everything</em> freezes together</h4>
+          <p>All at the same instant, as one single event, until the next window starts — regardless of whether 1 task or 40 tasks happened to be running when it hit zero.</p>
+        </div>
+      </div>
+      <div class="fact-card">
+        <div class="fact-num">4</div>
+        <div class="fact-body">
+          <h4>The throttle ratio counts <em>windows</em>, never tasks</h4>
+          <p>It's one yes/no question per window — "did the shared budget run dry at some point in here?" — tallied up and divided by the total windows so far. A window with 1 frozen task and a window with 40 frozen tasks both count as exactly <b>one</b> throttled window.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- ================= SETUP ================= -->
   <section>
