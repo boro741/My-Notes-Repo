@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -262,6 +263,16 @@
   .step .body{font-size:0.94rem;}
   .step .body .out{color:var(--good); font-family:var(--font-mono);}
 
+  .flow-chain{display:flex; align-items:stretch; gap:8px; margin:22px 0; flex-wrap:wrap;}
+  .flow-step{
+    flex:1; min-width:150px; background:var(--surface-2); border:1px solid var(--hairline); border-radius:8px;
+    padding:14px; font-family:var(--font-mono); font-size:12px; color:var(--text); text-align:center;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .flow-step.warn{border-color:var(--warn-dim); color:var(--warn); background:rgba(255,209,102,0.06);}
+  .flow-arrow{display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:18px; padding:0 2px;}
+  @media(max-width:760px){.flow-chain{flex-direction:column;} .flow-arrow{transform:rotate(90deg);}}
+
   .legend{display:flex; gap:22px; margin-bottom:8px; flex-wrap:wrap;}
   .legend .item{display:flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:12px; color:var(--text-muted);}
   .legend .swatch{width:12px;height:12px;border-radius:3px;}
@@ -416,6 +427,7 @@
       <a href="#cpu">CPU</a>
       <a href="#units">CPU Units</a>
       <a href="#scheduler">Scheduler</a>
+      <a href="#throttle-ratio">Throttle Ratio</a>
       <a href="#sizing">Sizing</a>
       <a href="#workers">Workers</a>
       <a href="#map">The Map</a>
@@ -621,9 +633,154 @@
   </div>
 </section>
 
+<section id="throttle-ratio">
+  <div class="wrap reveal">
+    <span class="tag cpu">05 — THE METRIC YOUR TEAM ACTUALLY WATCHES</span>
+    <h2>The throttle ratio, properly</h2>
+    <p class="lead-q">"CPU Utilization: 45%" and "Throttle ratio: 30%" can both be true about the exact same five seconds. They are not measuring the same thing.</p>
+    <p>
+      Section 04 told you the scheduler hands out CPU time in ~100ms periods and pauses you if you ask for more
+      than you've paid for. The <strong>throttle ratio</strong> is how you measure how often that pausing actually
+      happens — and it's worth understanding precisely, because it's easy to assume it's counted the same way as
+      your request metrics. It isn't.
+    </p>
+
+    <h3>The quota is time, not requests</h3>
+    <p>
+      Linux's CFS bandwidth controller gives your task a hard compute budget every period, sized directly from
+      the CPU units you configured:
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ecs_task_cpu</th><th>vCPU</th><th>Quota per 100ms period</th></tr></thead>
+        <tbody>
+          <tr><td>256</td><td>0.25</td><td>25ms</td></tr>
+          <tr><td>512</td><td>0.5</td><td>50ms</td></tr>
+          <tr><td>1024</td><td>1</td><td>100ms</td></tr>
+          <tr class="highlight"><td>2048</td><td class="hi">2</td><td class="hi">200ms</td></tr>
+          <tr><td>4096</td><td>4</td><td>400ms</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:0.85rem; color:var(--text-muted);">
+      That quota is one shared pool for the whole task — every worker or thread inside it draws from the same
+      budget every period. It's not a separate quota per worker, which is exactly why the practical run animation
+      throttles the moment all five workers are busy at once: five workers doing heavy work simultaneously drain
+      the shared 200ms (2048-unit) budget far faster than one worker would alone.
+    </p>
+
+    <div class="worked">
+      <h4>Worked example — a request that needs more than its quota</h4>
+      <div class="step"><span class="n">1</span><div class="body">Task is allocated <strong>512 CPU units (0.5 vCPU)</strong> — a quota of <span class="out">50ms</span> of real CPU execution per 100ms period.</div></div>
+      <div class="step"><span class="n">2</span><div class="body">A request needs <strong>140ms</strong> of actual CPU work to finish. Nothing about the 100ms period is a deadline for the request itself — it's just the accounting window.</div></div>
+      <div class="step"><span class="n">3</span><div class="body">Period 1: runs 50ms, hits the quota, gets <span class="out">frozen</span> for the rest of the period.</div></div>
+      <div class="step"><span class="n">4</span><div class="body">Period 2: quota refills, runs another 50ms (100ms of work done), <span class="out">frozen</span> again.</div></div>
+      <div class="step"><span class="n">5</span><div class="body">Period 3: quota refills, runs the final 40ms and completes — with 10ms of that period's quota still unused.</div></div>
+      <div class="step"><span class="n">6</span><div class="body">Result: 140ms of real work took <span class="out">~240ms of wall-clock time</span> — and the worker holding that request was unavailable to pick up anything else for the whole time it sat frozen.</div></div>
+    </div>
+
+    <div class="formula">
+      <span class="formula-label">Throttle ratio</span>
+      <span class="fx2">Throttled periods</span> ÷ <span class="fx">Total periods</span> — read directly as
+      <code class="inline">nr_throttled ÷ nr_periods</code> from the cgroup's <code class="inline">cpu.stat</code>,
+      the same file the Linux kernel's CFS bandwidth controller maintains for every task.
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Throttle ratio</th><th>Status</th><th>What it means</th></tr></thead>
+        <tbody>
+          <tr><td>0% – 5%</td><td class="good">Healthy</td><td>Your app almost never exhausts its quota mid-period.</td></tr>
+          <tr class="highlight"><td>5% – 20%</td><td class="warn">Moderate</td><td>Occasional bursts past the limit — users see periodic latency spikes.</td></tr>
+          <tr><td>&gt; 20%</td><td class="warn">Severe</td><td>Constantly CPU-starved — requests back up, response times climb.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout myth">
+      <span class="callout-label">Myth</span>
+      Throttle ratio is just "requests waiting in queue ÷ requests that arrived."
+    </div>
+    <div class="callout reality">
+      <span class="callout-label">Reality</span>
+      That's a different metric entirely — the <strong>backlog ratio</strong>, counted in requests. Throttle
+      ratio is counted in <strong>100ms time-slices</strong>, straight from the kernel. They live in different
+      domains, but one causes the other: a frozen worker can't drain the queue, so CPU throttling now shows up as
+      request backlog moments later.
+    </div>
+
+    <div class="flow-chain">
+      <div class="flow-step">App exceeds its CPU quota mid-period</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">CFS freezes that worker until the next period</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Frozen worker can't pick up new requests</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step warn">Queue / backlog grows</div>
+    </div>
+
+    <h3>Why "CPU Utilization: 45%" can still mean severe throttling</h3>
+    <p>
+      This isn't just about bursty traffic — it's built into how the quota is enforced. The CFS bandwidth
+      controller only asks <em>"did this task exceed its own quota within this specific 100ms window,"</em> full
+      stop. It never asks whether the wider machine has spare physical capacity sitting idle right next to it. A
+      task can be charged and frozen mid-period even while the box it's running on is mostly idle overall —
+      because the limit is about <strong>your slice</strong>, not the machine's total headroom.
+    </p>
+    <p>
+      That's why a handful of worker threads doing short, sharp bursts of computation can rack up a real throttle
+      ratio while the <em>averaged</em> CPU utilization graph — sampled every 30 or 60 seconds — shows something
+      calm like 45%. The average smooths right over the burst that got frozen.
+    </p>
+
+    <div class="callout note">
+      <span class="callout-label">Where teams actually get stuck watching this</span>
+      On raw Linux or Kubernetes with cgroup access, you can read <code class="inline">nr_throttled</code> and
+      <code class="inline">nr_periods</code> directly. On <strong>AWS Fargate</strong>, the task metadata endpoint
+      documents a matching field — but it's a known, long-standing bug: that counter stays at <strong>0</strong>
+      even while real throttling is happening. In practice, most ECS/Fargate teams can't read a clean
+      throttle-ratio panel at all — they infer throttling indirectly, from CPU pinned near 100% plus climbing
+      latency, exactly like the diagnostic table below. If your team watches CPU and latency instead of a direct
+      throttle metric, that's not a gap in their setup — that's the actual state of the tooling.
+    </div>
+
+    <h3>Throttled vs. OOM-killed — two very different kinds of "it stopped"</h3>
+    <div class="def-grid">
+      <div class="def-card">
+        <div class="term">Throttled (CPU)</div>
+        <div class="def">The kernel pauses your worker mid-execution and resumes it, unchanged, next period. Nothing is lost — the request just takes longer. Recovers by itself the moment demand drops.</div>
+      </div>
+      <div class="def-card">
+        <div class="term">OOM-killed (memory)</div>
+        <div class="def">The kernel kills the container outright. Any in-flight requests on it are lost. ECS has to notice and restart the task before it can serve anything again — a much harder failure.</div>
+      </div>
+    </div>
+    <p>
+      This is exactly the difference the practical run animation shows you: the CPU gauge redlining just slows
+      things down, but the memory gauge crossing its ceiling takes an entire worker out.
+    </p>
+
+    <h3>Reading the three signals together</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Scenario</th><th>CPU utilization</th><th>Throttle ratio</th><th>Latency</th><th>What it means</th></tr></thead>
+        <tbody>
+          <tr class="highlight"><td>Healthy</td><td class="good">60–80%</td><td class="good">~0%</td><td class="good">Stable</td><td class="hi">Running well — headroom for spikes.</td></tr>
+          <tr><td>CPU-bound bottleneck</td><td class="warn">~100%</td><td class="warn">&gt;15%</td><td class="warn">Spiking</td><td>Genuinely needs more CPU units — this is the real ceiling.</td></tr>
+          <tr><td>Downstream bottleneck</td><td>&lt;40%</td><td class="good">~0%</td><td class="warn">Spiking</td><td>Not your CPU at all — a slow DB, lock, or dependency is the real ceiling.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Never read CPU utilization alone. It's the combination — CPU high <em>and</em> throttle ratio high
+      <em>and</em> latency climbing — that tells you compute is really the bottleneck, and not just busy.
+    </p>
+  </div>
+</section>
+
 <section id="memory">
   <div class="wrap reveal">
-    <span class="tag mem">05 — WORKING MEMORY, NOT STORAGE</span>
+    <span class="tag mem">06 — WORKING MEMORY, NOT STORAGE</span>
     <h2>What "memory: 8192" is telling you</h2>
     <p class="lead-q">This is the one that trips almost everyone up.</p>
     <p>
@@ -668,7 +825,7 @@
 
 <section id="ratio">
   <div class="wrap reveal">
-    <span class="tag mix">06 — WHY THESE TWO NUMBERS ARE PAIRED</span>
+    <span class="tag mix">07 — WHY THESE TWO NUMBERS ARE PAIRED</span>
     <h2>Fargate doesn't let you pick CPU and memory freely</h2>
     <p>
       For every CPU value, Fargate only accepts memory values within a fixed range. Your team's
@@ -694,7 +851,7 @@
 
 <section id="sizing">
   <div class="wrap reveal">
-    <span class="tag cpu">07 — HOW MUCH DO YOU ACTUALLY NEED</span>
+    <span class="tag cpu">08 — HOW MUCH DO YOU ACTUALLY NEED</span>
     <h2>How do you know how many CPU units your app needs?</h2>
     <p class="lead-q">Three steps: classify the workload, estimate with math, then confirm by benchmarking.</p>
 
@@ -798,7 +955,7 @@
 
 <section id="workers">
   <div class="wrap reveal">
-    <span class="tag mix">08 — THE PART THAT ACTUALLY USES THE CPU</span>
+    <span class="tag mix">09 — THE PART THAT ACTUALLY USES THE CPU</span>
     <h2>Workers: software, not hardware</h2>
     <p class="lead-q">Easy to mentally place "inside" the CPU — but workers are pure software, sitting in your application's memory.</p>
     <p>
@@ -849,7 +1006,7 @@
 
 <section id="map">
   <div class="wrap reveal">
-    <span class="tag mix">09 — THE WHOLE PICTURE, IN ONE MAP</span>
+    <span class="tag mix">10 — THE WHOLE PICTURE, IN ONE MAP</span>
     <h2>Where does everything actually live?</h2>
     <p class="lead-q">Cores and vCPUs are hardware, boxed inside the physical CPU chip. Workers are software — they live in your application's memory, and only ever <em>borrow</em> vCPU time.</p>
 
@@ -938,7 +1095,7 @@
 
 <section id="throughput">
   <div class="wrap reveal">
-    <span class="tag mem">10 — WATCH IT HAPPEN</span>
+    <span class="tag mem">11 — WATCH IT HAPPEN</span>
     <h2>Throughput vs. RPS, animated</h2>
     <div class="def-grid">
       <div class="def-card">
@@ -985,7 +1142,7 @@
 
 <section id="littles-law">
   <div class="wrap reveal">
-    <span class="tag mem">11 — THE FORMULA BEHIND THE ANIMATION</span>
+    <span class="tag mem">12 — THE FORMULA BEHIND THE ANIMATION</span>
     <h2>Little's Law, one more time</h2>
     <p>
       The animation above is Little's Law in motion: at any instant, the number of dots between "arrived" and
@@ -1002,7 +1159,7 @@
 
 <section id="practical">
   <div class="wrap reveal">
-    <span class="tag mix">12 — SEE IT ALL RUN TOGETHER</span>
+    <span class="tag mix">13 — SEE IT ALL RUN TOGETHER</span>
     <h2>A practical load test against the 2048 / 8192 task</h2>
     <p class="lead-q">Same task definition from the top of this article — 2 vCPUs, 8 GB RAM, 5 sync workers. Below is what a real load test does to it, staged the way a k6 or Locust script would ramp traffic.</p>
     <p>
@@ -1089,7 +1246,7 @@
 
 <section id="hunt">
   <div class="wrap reveal">
-    <span class="tag mix">13 — WHY THIS EXISTS</span>
+    <span class="tag mix">14 — WHY THIS EXISTS</span>
     <h2>Why a load test happens, and what you're actually hunting for</h2>
     <p class="lead-q">Nobody runs a load test because they have k6 installed. They run one because someone has a specific, falsifiable worry.</p>
     <p>
@@ -1181,10 +1338,11 @@
       <li><span class="rn">2</span><div><b>vCPU</b> — your reserved share of one core's execution time. Safe to treat as <b>1 vCPU = 1 core</b> when sizing workers.<br><span class="d">Under the hood, it's one hyperthread's slice of a physical core.</span></div></li>
       <li><span class="rn">3</span><div><b>CPU units</b> — ECS's own scale, where <b>1024 units = 1 vCPU</b> (think: 1024 pizza slices, or your internet cafe's 60-minute hour).<br><span class="d">2048 → 2 vCPU. 512 → half a vCPU.</span></div></li>
       <li><span class="rn">4</span><div><b>The scheduler</b> hands out time in ~100ms periods, proportional to your ticket count.<br><span class="d">Need more than you've paid for? You get throttled — paused, not killed — and finish next period.</span></div></li>
-      <li><span class="rn">5</span><div><b>Memory (MiB)</b> — RAM available <em>while the task runs</em>, not disk or "CPU memory."<br><span class="d">8192 → 8 GB RAM ceiling. Exceed it and the container gets OOM-killed.</span></div></li>
-      <li><span class="rn">6</span><div><b>Workers</b> — software, not hardware. They live in your app's memory and borrow vCPU time.<br><span class="d">Sync workers ≈ (2 × cores) + 1; async workers scale differently for I/O-bound work.</span></div></li>
-      <li><span class="rn">7</span><div><b>RPS vs. Throughput</b> — RPS is a rate; throughput is what you can sustain without a growing backlog.<br><span class="d">Watch offered load vs. achieved throughput diverge to find your system's real ceiling.</span></div></li>
-      <li><span class="rn">8</span><div><b>Little's Law & vCPU Sizing</b> — Concurrency = RPS × Total Response Time; Required vCPUs = (RPS × T<sub>cpu</sub>) ÷ Target Utilization.<br><span class="d">Turns a target RPS and active CPU time into concrete container task and vCPU requirements.</span></div></li>
+      <li><span class="rn">5</span><div><b>Throttle ratio</b> — nr_throttled ÷ nr_periods, straight from the cgroup. Time-slices, not requests.<br><span class="d">A different metric from backlog/queue ratio — but throttling now causes backlog moments later.</span></div></li>
+      <li><span class="rn">6</span><div><b>Memory (MiB)</b> — RAM available <em>while the task runs</em>, not disk or "CPU memory."<br><span class="d">8192 → 8 GB RAM ceiling. Exceed it and the container gets OOM-killed — a harder failure than throttling.</span></div></li>
+      <li><span class="rn">7</span><div><b>Workers</b> — software, not hardware. They live in your app's memory and borrow vCPU time.<br><span class="d">Sync workers ≈ (2 × cores) + 1; async workers scale differently for I/O-bound work.</span></div></li>
+      <li><span class="rn">8</span><div><b>RPS vs. Throughput</b> — RPS is a rate; throughput is what you can sustain without a growing backlog.<br><span class="d">Watch offered load vs. achieved throughput diverge to find your system's real ceiling.</span></div></li>
+      <li><span class="rn">9</span><div><b>Little's Law & vCPU Sizing</b> — Concurrency = RPS × Total Response Time; Required vCPUs = (RPS × T<sub>cpu</sub>) ÷ Target Utilization.<br><span class="d">Turns a target RPS and active CPU time into concrete container task and vCPU requirements.</span></div></li>
     </ul>
   </div>
 </section>
