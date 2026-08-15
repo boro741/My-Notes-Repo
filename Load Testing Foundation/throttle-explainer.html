@@ -370,6 +370,118 @@
 
   footer{padding:40px 0 60px;}
   footer p{font-family:var(--font-mono);font-size:12px;color:var(--text-faint);}
+
+  /* ---------- Load test dashboard ---------- */
+  .live-dot{width:8px;height:8px;border-radius:50%;background:var(--accent-mint);box-shadow:0 0 0 4px rgba(111,224,194,.18);animation:pulse 1s infinite;display:inline-block;}
+  .col-dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+
+  .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .dash-col{background:var(--bg-panel);border:1px solid var(--border);border-radius:14px;padding:22px;}
+  .dash-col h3{font-family:var(--font-display);font-size:16px;margin:0 0 4px;display:flex;align-items:center;gap:9px;}
+  .dash-col .col-sub{font-family:var(--font-mono);font-size:11px;color:var(--text-faint);margin:0 0 18px;}
+  .metric-list{display:flex;flex-direction:column;gap:12px;}
+  .metric-row{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    background:var(--bg-panel-2);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;transition:border-color .3s;
+  }
+  .metric-info{display:flex;flex-direction:column;gap:3px;min-width:88px;}
+  .metric-label{font-family:var(--font-mono);font-size:10px;color:var(--text-faint);letter-spacing:.05em;text-transform:uppercase;}
+  .metric-value{font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--text-primary);white-space:nowrap;}
+  .metric-value.amber{color:var(--accent-amber);}
+  .metric-value.red{color:var(--accent-red);}
+  .metric-value.mint{color:var(--accent-mint);}
+  .metric-value.blue{color:var(--accent-blue);}
+  .metric-spark{width:74px;height:26px;flex:0 0 auto;}
+  .metric-spark polyline{fill:none;stroke-width:2;stroke:var(--accent-amber);stroke-linejoin:round;stroke-linecap:round;}
+  .metric-flag{
+    font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.05em;
+    padding:4px 8px;border-radius:999px;flex:0 0 auto;white-space:nowrap;
+  }
+  .metric-flag.ok{background:rgba(111,224,194,.15);color:var(--accent-mint);}
+  .metric-flag.warn{background:rgba(255,180,84,.15);color:var(--accent-amber);}
+  .metric-flag.bad{background:rgba(255,95,95,.18);color:var(--accent-red);}
+  @media (max-width:640px){.dash-grid{grid-template-columns:1fr;} .metric-spark{display:none;}}
+
+  /* ---------- Live traffic ---------- */
+  .load-controls{display:flex;align-items:center;gap:10px;margin-bottom:22px;flex-wrap:wrap;}
+  .eyebrow-mini{font-family:var(--font-mono);font-size:11px;color:var(--text-faint);letter-spacing:.08em;text-transform:uppercase;margin-right:2px;}
+  .load-btn.active{background:var(--accent-amber);color:#241a08;border-color:var(--accent-amber);}
+  .live-indicator{margin-left:auto;display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:12px;color:var(--text-faint);letter-spacing:.06em;}
+
+  .graph-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .graph-card{background:var(--bg-panel);border:1px solid var(--border);border-radius:12px;padding:16px 18px;}
+  .graph-card .graph-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+  .graph-card h4{font-family:var(--font-mono);font-size:11px;letter-spacing:.05em;margin:0;color:var(--text-faint);}
+  .graph-card .graph-now{font-family:var(--font-mono);font-weight:700;font-size:16px;color:var(--text-primary);}
+  .graph-svg{width:100%;height:90px;display:block;}
+  .graph-legend{display:flex;gap:14px;margin-top:8px;font-family:var(--font-mono);font-size:10px;color:var(--text-faint);}
+  .graph-legend span{display:flex;align-items:center;gap:5px;}
+  .graph-legend .sw{width:10px;height:2px;display:inline-block;}
+  @media (max-width:640px){.graph-grid{grid-template-columns:1fr;}}
+
+  .live-timeline-label{font-family:var(--font-mono);font-size:11px;color:var(--text-faint);letter-spacing:.08em;margin:26px 0 10px;text-transform:uppercase;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .live-timeline-label .rr{color:var(--accent-amber);font-weight:700;}
+
+  .snapshot-hint{font-family:var(--font-mono);font-size:12px;color:var(--text-faint);margin:28px 0 12px;}
+  .snapshot-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
+  .snapshot-card{
+    background:var(--bg-panel);border:1px solid var(--border);border-radius:12px;padding:16px 18px;
+    animation:snapIn .3s ease;
+  }
+  @keyframes snapIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .snapshot-card .snap-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+  .snapshot-card .snap-title{font-family:var(--font-mono);font-size:11px;color:var(--accent-amber);font-weight:700;letter-spacing:.04em;}
+  .snapshot-card .snap-load{font-family:var(--font-mono);font-size:9px;color:var(--text-faint);background:var(--bg-panel-2);padding:2px 7px;border-radius:999px;border:1px solid var(--border);}
+  .snap-row{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:12px;padding:3px 0;color:var(--text-muted);}
+  .snap-row b{color:var(--text-primary);font-weight:600;}
+  .snap-row.hl b{color:var(--accent-amber);}
+  .snap-empty{font-family:var(--font-mono);font-size:12px;color:var(--text-faint);}
+
+  /* ---------- CPU config readout ---------- */
+  .cpu-config-card{
+    background:var(--bg-panel-2);border:1px solid var(--border);border-radius:10px;
+    padding:14px 16px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);
+    margin-bottom:22px;max-width:520px;
+  }
+  .cpu-config-card .cfg-title{font-size:10px;color:var(--text-faint);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;}
+  .cpu-config-card .cfg-row{display:flex;justify-content:space-between;padding:3px 0;}
+  .cpu-config-card .cfg-row b{color:var(--accent-amber);}
+  .cpu-config-card .cfg-code{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:4px;}
+  .cpu-config-card .cfg-code .cfg-code-label{color:var(--text-faint);}
+  .cpu-config-card .cfg-code span.v{color:var(--accent-mint);}
+
+  /* ---------- flash highlight on scenario run ---------- */
+  .flash-highlight{animation:flashPulse 1.2s ease;}
+  @keyframes flashPulse{
+    0%{box-shadow:0 0 0 0 rgba(255,180,84,.55);border-color:var(--accent-amber);}
+    100%{box-shadow:0 0 0 16px rgba(255,180,84,0);border-color:var(--border);}
+  }
+
+  /* ---------- Guided walkthrough ---------- */
+  .walkthrough-list{display:flex;flex-direction:column;gap:22px;}
+  .scenario-card{
+    background:var(--bg-panel);border:1px solid var(--border);border-radius:14px;
+    padding:24px 24px 20px;position:relative;
+  }
+  .scenario-num{
+    position:absolute;top:-16px;left:22px;background:var(--accent-amber);color:#241a08;
+    font-family:var(--font-mono);font-weight:700;font-size:14px;width:32px;height:32px;
+    border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid var(--bg);
+  }
+  .scenario-card h3{font-family:var(--font-display);font-size:17px;margin:8px 0 16px;letter-spacing:-.005em;}
+  .scenario-line{display:flex;gap:12px;margin-bottom:10px;font-size:14px;color:var(--text-muted);line-height:1.5;}
+  .scenario-line .tag{
+    font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.05em;
+    color:var(--text-faint);min-width:54px;padding-top:3px;flex:0 0 auto;
+  }
+  .scenario-line.set .tag{color:var(--accent-blue);}
+  .scenario-line.watch .tag{color:var(--accent-mint);}
+  .scenario-line.why .tag{color:var(--accent-amber);}
+  .scenario-line b{color:var(--text-primary);}
+  .scenario-actions{margin-top:16px;display:flex;justify-content:flex-end;}
+  .run-scenario-btn{font-family:var(--font-mono);}
+  @media (max-width:640px){.scenario-line{flex-direction:column;gap:2px;}}
 </style>
 </head>
 <body>
@@ -519,6 +631,205 @@
         <h4><span class="sw" style="background:var(--accent-blue);"></span>Low ratio + high latency</h4>
         <p>The CPU isn't the bottleneck. Workers are likely blocked on a slow database call, a lock, or garbage collection — look downstream, not at compute.</p>
       </div>
+    </div>
+  </section>
+
+  <!-- ================= LOAD TEST DASHBOARD ================= -->
+  <section id="dashboard">
+    <div class="section-num">05</div>
+    <h2>Load test dashboard — reading both sides at once</h2>
+    <p class="section-lede">One column watches the <strong class="hl">machine</strong> — what the CPU is actually doing, and the signals that are driven by it. The other watches <strong class="hl-mint">the traffic you're pointing at it</strong>. Neither column means much alone — a latency spike only makes sense once you know whether the machine or the traffic caused it.</p>
+
+    <div class="dash-grid">
+      <div class="dash-col">
+        <h3><span class="col-dot" style="background:var(--accent-amber);"></span>System &amp; CPU metrics</h3>
+        <p class="col-sub">what the container / host is doing</p>
+        <div class="metric-list">
+          <div class="metric-row">
+            <div class="metric-info"><span class="metric-label">CPU usage</span><span class="metric-value amber" id="m-cpuUsage">—</span></div>
+            <svg class="metric-spark" viewBox="0 0 74 26" id="spark-cpuUsage"><polyline points=""></polyline></svg>
+            <span class="metric-flag ok" id="flag-cpuUsage">OK</span>
+          </div>
+          <div class="metric-row">
+            <div class="metric-info"><span class="metric-label">Memory usage</span><span class="metric-value blue" id="m-memUsage">—</span></div>
+            <svg class="metric-spark" viewBox="0 0 74 26" id="spark-memUsage"><polyline points=""></polyline></svg>
+            <span class="metric-flag ok" id="flag-memUsage">OK</span>
+          </div>
+          <div class="metric-row">
+            <div class="metric-info"><span class="metric-label">Throughput</span><span class="metric-value mint" id="m-throughput">—</span></div>
+            <svg class="metric-spark" viewBox="0 0 74 26" id="spark-throughput"><polyline points=""></polyline></svg>
+            <span class="metric-flag ok">req/s done</span>
+          </div>
+          <div class="metric-row">
+            <div class="metric-info"><span class="metric-label">Served RPS</span><span class="metric-value mint" id="m-servedRps">—</span></div>
+            <svg class="metric-spark" viewBox="0 0 74 26" id="spark-servedRps"><polyline points=""></polyline></svg>
+            <span class="metric-flag ok">completed</span>
+          </div>
+          <div class="metric-row">
+            <div class="metric-info"><span class="metric-label">Throttle</span><span class="metric-value mint" id="m-throttleState">—</span></div>
+            <svg class="metric-spark" viewBox="0 0 74 26" id="spark-throttleRatio2"><polyline points=""></polyline></svg>
+            <span class="metric-flag ok" id="flag-throttleState">OK</span>
+          </div>
+          <div class="metric-row">
+            <div class="metric-info"><span class="metric-label">Periods elapsed</span><span class="metric-value" id="m-periodsElapsed">—</span></div>
+            <svg class="metric-spark" viewBox="0 0 74 26" id="spark-periodsElapsed"><polyline points=""></polyline></svg>
+            <span class="metric-flag ok">100ms each</span>
+          </div>
+          <div class="metric-row">
+            <div class="metric-info"><span class="metric-label">Throttled periods</span><span class="metric-value red" id="m-throttledPeriods">—</span></div>
+            <svg class="metric-spark" viewBox="0 0 74 26" id="spark-throttledPeriods"><polyline points=""></polyline></svg>
+            <span class="metric-flag ok">quota hit</span>
+          </div>
+          <div class="metric-row">
+            <div class="metric-info"><span class="metric-label">Throttle ratio</span><span class="metric-value amber" id="m-throttleRatio">—</span></div>
+            <svg class="metric-spark" viewBox="0 0 74 26" id="spark-throttleRatio"><polyline points=""></polyline></svg>
+            <span class="metric-flag ok" id="flag-throttleRatio">OK</span>
+          </div>
+          <div class="metric-row">
+            <div class="metric-info"><span class="metric-label">Backlog queue</span><span class="metric-value red" id="m-backlogQueue">—</span></div>
+            <svg class="metric-spark" viewBox="0 0 74 26" id="spark-backlogQueue"><polyline points=""></polyline></svg>
+            <span class="metric-flag ok" id="flag-backlogQueue">OK</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-col">
+        <h3><span class="col-dot" style="background:var(--accent-blue);"></span>Traffic sending metrics</h3>
+        <p class="col-sub">what the load generator / client sees</p>
+        <div class="metric-list">
+          <div class="metric-row">
+            <div class="metric-info"><span class="metric-label">RPS sent</span><span class="metric-value blue" id="m-rpsSent">—</span></div>
+            <svg class="metric-spark" viewBox="0 0 74 26" id="spark-rpsSent"><polyline points=""></polyline></svg>
+            <span class="metric-flag ok">offered load</span>
+          </div>
+          <div class="metric-row">
+            <div class="metric-info"><span class="metric-label">Latency</span><span class="metric-value red" id="m-latency">—</span></div>
+            <svg class="metric-spark" viewBox="0 0 74 26" id="spark-latency"><polyline points=""></polyline></svg>
+            <span class="metric-flag ok" id="flag-latency">OK</span>
+          </div>
+          <div class="metric-row">
+            <div class="metric-info"><span class="metric-label">Error rate</span><span class="metric-value red" id="m-errorRate">—</span></div>
+            <svg class="metric-spark" viewBox="0 0 74 26" id="spark-errorRate"><polyline points=""></polyline></svg>
+            <span class="metric-flag ok" id="flag-errorRate">OK</span>
+          </div>
+          <div class="setup-card" style="margin-top:6px;">
+            <span class="icon">💡</span>
+            <h3 style="font-size:13px;">Reading the two columns together</h3>
+            <p>When RPS sent (right) climbs faster than throughput (left) can absorb, the gap becomes backlog. Backlog plus a rising throttle ratio is what turns into the latency and error-rate you see on the right — the cause lives in the left column, the symptom shows up in the right.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LIVE TRAFFIC ================= -->
+  <section id="live-traffic">
+    <div class="section-num">06</div>
+    <h2>Live traffic — same engine as the simulation above</h2>
+    <p class="section-lede">This runs the identical period‑by‑period quota engine from section 02, now fed by continuous request traffic instead of one lump of work. Push the load level up and watch the sequence: RPS sent rises → CPU usage rises → periods start hitting quota (shown below, just like before) → throttle ratio climbs → backlog builds → latency and errors follow.</p>
+
+    <div class="load-controls">
+      <span class="eyebrow-mini">Load level</span>
+      <button class="btn load-btn active" data-load="normal">Normal</button>
+      <button class="btn load-btn" data-load="spike">Spike</button>
+      <button class="btn load-btn" data-load="overload">Overload</button>
+      <div class="config-item" style="min-width:150px;">
+        <label>vCPU quota <span class="val" id="liveVcpuVal">0.6</span></label>
+        <input type="range" id="liveVcpuSlider" min="0.2" max="1.5" step="0.1" value="0.6">
+      </div>
+      <div class="btn-group">
+        <button class="btn" id="livePauseBtn">⏸ Pause</button>
+        <button class="btn primary" id="snapshotBtn">📸 Snapshot</button>
+      </div>
+      <span class="live-indicator"><span class="live-dot" id="liveDot"></span><span id="liveStateLabel">LIVE</span></span>
+    </div>
+
+    <div class="cpu-config-card">
+      <div class="cfg-title">Current CPU config</div>
+      <div class="cfg-row"><span>vCPU quota</span><b id="cfgVcpu">0.6</b></div>
+      <div class="cfg-row"><span>Quota per 100ms period</span><b id="cfgQuotaMs">60ms</b></div>
+      <div class="cfg-code">
+        <div class="cfg-code-label">docker run: <span class="v" id="cfgDocker">--cpus="0.6"</span></div>
+        <div class="cfg-code-label">k8s resources.limits.cpu: <span class="v" id="cfgK8s">"600m"</span></div>
+      </div>
+    </div>
+
+    <div class="live-timeline-label">Period timeline (100ms each) — same quota model as section 02 · ratio so far: <span class="rr" id="liveRatioInline">0%</span></div>
+    <div class="timeline" id="liveTimeline"></div>
+
+    <div class="graph-grid">
+      <div class="graph-card">
+        <div class="graph-head"><h4>RPS SENT vs PROCESSED</h4><span class="graph-now" id="rpsNow">—</span></div>
+        <svg class="graph-svg" viewBox="0 0 300 90" id="rpsGraph"></svg>
+        <div class="graph-legend"><span><span class="sw" style="background:var(--accent-blue);"></span>sent</span><span><span class="sw" style="background:var(--accent-amber);"></span>processed</span></div>
+      </div>
+      <div class="graph-card">
+        <div class="graph-head"><h4>CPU USAGE %</h4><span class="graph-now" id="cpuNow">—</span></div>
+        <svg class="graph-svg" viewBox="0 0 300 90" id="cpuGraph"></svg>
+        <div class="graph-legend"><span><span class="sw" style="background:var(--accent-amber);"></span>cpu% (capped by quota)</span></div>
+      </div>
+      <div class="graph-card">
+        <div class="graph-head"><h4>LATENCY (MS)</h4><span class="graph-now" id="latNow">—</span></div>
+        <svg class="graph-svg" viewBox="0 0 300 90" id="latGraph"></svg>
+        <div class="graph-legend"><span><span class="sw" style="background:var(--accent-red);"></span>p50 latency</span></div>
+      </div>
+      <div class="graph-card">
+        <div class="graph-head"><h4>ERROR RATE %</h4><span class="graph-now" id="errNow">—</span></div>
+        <svg class="graph-svg" viewBox="0 0 300 90" id="errGraph"></svg>
+        <div class="graph-legend"><span><span class="sw" style="background:var(--accent-red);"></span>errors</span></div>
+      </div>
+    </div>
+
+    <p class="snapshot-hint">Hit <strong class="hl">Pause</strong> to freeze every metric at once, or <strong class="hl">Snapshot</strong> to pin the current instant as a card below — take one at low load and one during a spike, and compare them side by side.</p>
+    <div class="snapshot-grid" id="snapshotGrid">
+      <div class="snap-empty">No snapshots yet — press 📸 Snapshot above at any moment to pin one here.</div>
+    </div>
+  </section>
+
+  <!-- ================= GUIDED WALKTHROUGH ================= -->
+  <section id="walkthrough">
+    <div class="section-num">07</div>
+    <h2>Guided walkthrough — build the throttle ratio intuition step by step</h2>
+    <p class="section-lede">Four scenarios, run in order, on the live panel above. Each one has a button that sets the controls for you and scrolls you up to watch it happen — you don't need to click anything up there yourself. The goal is to see, in sequence, exactly <em>when</em> the ratio moves and <em>why</em>.</p>
+
+    <div class="walkthrough-list">
+
+      <div class="scenario-card">
+        <div class="scenario-num">1</div>
+        <h3>The healthy baseline</h3>
+        <div class="scenario-line set"><span class="tag">SET</span><span>Load = <b>Normal</b>, vCPU quota = <b>0.6</b> (the defaults).</span></div>
+        <div class="scenario-line watch"><span class="tag">WATCH</span><span>The period timeline stays almost entirely <b>CLEAN</b> (green tag). Throttle ratio sits near <b>0%</b>. CPU usage floats well under the 60% ceiling.</span></div>
+        <div class="scenario-line why"><span class="tag">WHY</span><span>Traffic fits comfortably inside every period's 60ms budget, so no period ever runs out of quota. Zero periods hit the wall → <b>0 ÷ total = 0%</b>. This is your reference point for "nothing is wrong."</span></div>
+        <div class="scenario-actions"><button class="btn primary run-scenario-btn" data-load="normal" data-quota="0.6">▶ Run this scenario</button></div>
+      </div>
+
+      <div class="scenario-card">
+        <div class="scenario-num">2</div>
+        <h3>Push traffic past the quota</h3>
+        <div class="scenario-line set"><span class="tag">SET</span><span>Leave vCPU quota at <b>0.6</b>. Switch load to <b>Spike</b>.</span></div>
+        <div class="scenario-line watch"><span class="tag">WATCH</span><span>Some period boxes flip to <b>PAUSED</b> (red). Throttle ratio climbs into the <b>10–30%</b> range. CPU usage pins right at ~60% — it stops climbing even as traffic keeps rising.</span></div>
+        <div class="scenario-line why"><span class="tag">WHY</span><span>This is the core idea: once demand exceeds the period's budget, extra requests can't push CPU% any higher — the quota is a hard ceiling. Instead, they push the <b>ratio</b> higher, because more periods now fail the "did we run out?" check. Ratio and CPU% are measuring different things.</span></div>
+        <div class="scenario-actions"><button class="btn primary run-scenario-btn" data-load="spike" data-quota="0.6">▶ Run this scenario</button></div>
+      </div>
+
+      <div class="scenario-card">
+        <div class="scenario-num">3</div>
+        <h3>Go overload — watch the full chain, in order</h3>
+        <div class="scenario-line set"><span class="tag">SET</span><span>Same <b>0.6</b> vCPU quota. Switch load to <b>Overload</b>.</span></div>
+        <div class="scenario-line watch"><span class="tag">WATCH</span><span>Ratio climbs fast, toward <b>60–90%</b>, timeline mostly red. A beat later, backlog queue climbs. A beat after <em>that</em>, latency and error rate spike. Press <b>📸 Snapshot</b> once things settle.</span></div>
+        <div class="scenario-line why"><span class="tag">WHY</span><span>Notice the order: <b>ratio moves first</b> — it's a direct readout of the quota math, immediate every period. Backlog builds next as unfinished work piles up. Latency and errors are last, only showing once the queue is deep enough to matter. That lag is exactly why the ratio is a leading indicator — by the time users feel it as slowness, it's already been climbing for a while.</span></div>
+        <div class="scenario-actions"><button class="btn primary run-scenario-btn" data-load="overload" data-quota="0.6">▶ Run this scenario</button></div>
+      </div>
+
+      <div class="scenario-card">
+        <div class="scenario-num">4</div>
+        <h3>Fix it with config, not less traffic</h3>
+        <div class="scenario-line set"><span class="tag">SET</span><span>Leave load on <b>Overload</b> — don't touch it. Instead drag the <b>vCPU quota</b> slider up to <b>~1.4</b>.</span></div>
+        <div class="scenario-line watch"><span class="tag">WATCH</span><span>Same incoming traffic, but the ratio falls back toward <b>0%</b> within a few periods. Backlog drains, latency and errors recover. Snapshot this too, then compare it against your scenario‑3 snapshot.</span></div>
+        <div class="scenario-line why"><span class="tag">WHY</span><span>Nothing about the traffic changed — same RPS sent, same load generator. Only the CPU config changed. That's the real-world takeaway: a high throttle ratio is a <b>budget</b> problem, not automatically a <b>traffic</b> problem. The fix is usually raising the limit (or adding replicas), not asking upstream to send less.</span></div>
+        <div class="scenario-actions"><button class="btn primary run-scenario-btn" data-load="overload" data-quota="1.4">▶ Run this scenario</button></div>
+      </div>
+
     </div>
   </section>
 
@@ -767,6 +1078,326 @@
   });
 
   reset();
+})();
+</script>
+
+<script>
+(function(){
+  const PERIOD_MS = 100;
+  const COST_MS = 0.35; // simulated CPU-ms cost to service one request
+  const MAX_QUEUE = 420; // backlog size at which requests start getting dropped (errors)
+  const N = 40; // graph history length
+  const TIMELINE_SHOW = 12; // period boxes visible in the live timeline
+
+  const loadTargets = {
+    normal:   { rpsSent: 110 },
+    spike:    { rpsSent: 420 },
+    overload: { rpsSent: 780 }
+  };
+
+  let loadLevel = 'normal';
+  let quotaMs = 60; // 0.6 vCPU default
+  let backlog = 0;
+  let memVal = 40;
+  let periodsElapsed = 0;
+  let throttledPeriods = 0;
+  let periodHistory = []; // {throttled, cpuPct}
+  let paused = false;
+
+  const hist = { rps:[], rpsSent:[], cpu:[], mem:[], lat:[], err:[], ratio:[], backlog:[], periodsElapsed:[], throttledPeriods:[] };
+  let lastSnapshot = null;
+
+  const $ = id => document.getElementById(id);
+  const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+
+  function pushHist(key, val){
+    hist[key].push(val);
+    if (hist[key].length > N) hist[key].shift();
+  }
+
+  // one call = one simulated 100ms period
+  function tick(){
+    const target = loadTargets[loadLevel];
+
+    const rpsSent = Math.max(0, target.rpsSent + (Math.random()-0.5) * target.rpsSent * 0.22);
+    const arrivals = rpsSent / 10; // requests arriving in this 100ms period
+
+    const capacityReq = quotaMs / COST_MS; // max requests this period's quota can service
+    const toServe = backlog + arrivals;
+    const processedThisPeriod = Math.min(toServe, capacityReq);
+    const throttled = toServe > capacityReq + 1e-9;
+
+    let newBacklog = toServe - processedThisPeriod;
+    let dropped = 0;
+    if (newBacklog > MAX_QUEUE){
+      dropped = newBacklog - MAX_QUEUE;
+      newBacklog = MAX_QUEUE;
+    }
+    backlog = newBacklog;
+
+    const quotaUsedMs = processedThisPeriod * COST_MS;
+    const cpuPct = clamp((Math.min(quotaUsedMs, quotaMs) / PERIOD_MS) * 100, 0, 100);
+
+    periodsElapsed++;
+    if (throttled) throttledPeriods++;
+    const ratio = periodsElapsed > 0 ? (throttledPeriods / periodsElapsed * 100) : 0;
+
+    periodHistory.push({ throttled, cpuPct });
+    if (periodHistory.length > TIMELINE_SHOW) periodHistory.shift();
+
+    memVal += ((28 + cpuPct * 0.45 + backlog * 0.03) - memVal) * 0.05 + (Math.random()-0.5) * 0.6;
+    memVal = clamp(memVal, 15, 97);
+
+    const processedRps = processedThisPeriod * 10; // back to req/s
+    const latency = clamp(8 + (backlog / Math.max(capacityReq,1)) * PERIOD_MS + (Math.random()-0.5) * 5, 4, 950);
+    const errorRate = clamp((dropped / Math.max(arrivals,1)) * 100 + (Math.random()*0.2), 0, 60);
+
+    pushHist('rps', processedRps);
+    pushHist('rpsSent', rpsSent);
+    pushHist('cpu', cpuPct);
+    pushHist('mem', memVal);
+    pushHist('lat', latency);
+    pushHist('err', errorRate);
+    pushHist('ratio', ratio);
+    pushHist('backlog', backlog);
+    pushHist('periodsElapsed', periodsElapsed);
+    pushHist('throttledPeriods', throttledPeriods);
+
+    render({
+      cpu: cpuPct, mem: memVal, processed: processedRps, rpsSent,
+      ratio, backlog, latency, errorRate, periodsElapsed, throttledPeriods
+    });
+  }
+
+  function sparkPoints(arr, w, h){
+    if (arr.length < 2) return '';
+    const max = Math.max(...arr, 1);
+    const min = Math.min(...arr, 0);
+    const range = (max - min) || 1;
+    return arr.map((v,i) => {
+      const x = (i/(arr.length-1)) * w;
+      const y = h - ((v - min) / range) * h;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+  }
+
+  function setSpark(id, arr, w, h){
+    const el = $(id);
+    if (!el) return;
+    el.querySelector('polyline').setAttribute('points', sparkPoints(arr, w, h));
+  }
+
+  function setFlag(id, status){
+    const el = $(id);
+    if (!el) return;
+    el.className = 'metric-flag ' + status;
+    el.textContent = status === 'ok' ? 'OK' : (status === 'warn' ? 'WATCH' : 'ALERT');
+  }
+
+  function drawGraph(svgId, series, colors){
+    const svg = $(svgId);
+    if (!svg) return;
+    let html = '';
+    series.forEach((arr, i) => {
+      const pts = sparkPoints(arr, 300, 90);
+      html += `<polyline points="${pts}" fill="none" stroke="${colors[i]}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    });
+    svg.innerHTML = html;
+  }
+
+  function periodBoxHtml(idx, cpuPct, throttled, isCurrent){
+    const tag = throttled ? '<div class="period-tag tag-throttled">PAUSED</div>' : '<div class="period-tag tag-clean">CLEAN</div>';
+    const workPct = Math.min(100, cpuPct);
+    const pausePct = throttled ? (100 - workPct) : 0;
+    return `
+      <div class="period-box ${isCurrent ? 'current' : ''}">
+        ${tag}
+        <div class="period-idx">P${idx}</div>
+        <div class="period-fill" style="height:${Math.min(100, workPct + pausePct)}%;">
+          <div class="seg-pause" style="height:${pausePct}%;"></div>
+          <div class="seg-work" style="height:${workPct}%;"></div>
+        </div>
+      </div>`;
+  }
+
+  function renderTimeline(){
+    const startIdx = periodsElapsed - periodHistory.length + 1;
+    let html = periodHistory.map((p, i) => periodBoxHtml(startIdx + i, p.cpuPct, p.throttled, i === periodHistory.length - 1)).join('');
+    $('liveTimeline').innerHTML = html || '<span class="ledger-empty">warming up…</span>';
+  }
+
+  function render(v){
+    $('m-cpuUsage').textContent = v.cpu.toFixed(0) + '%';
+    setSpark('spark-cpuUsage', hist.cpu, 74, 26);
+    setFlag('flag-cpuUsage', v.cpu > 90 ? 'bad' : v.cpu > 55 ? 'warn' : 'ok');
+
+    $('m-memUsage').textContent = v.mem.toFixed(0) + '%';
+    setSpark('spark-memUsage', hist.mem, 74, 26);
+    setFlag('flag-memUsage', v.mem > 90 ? 'bad' : v.mem > 75 ? 'warn' : 'ok');
+
+    $('m-throughput').textContent = v.processed.toFixed(0) + ' req/s';
+    setSpark('spark-throughput', hist.rps, 74, 26);
+
+    $('m-servedRps').textContent = v.processed.toFixed(0);
+    setSpark('spark-servedRps', hist.rps, 74, 26);
+
+    const throttledNow = periodHistory.length && periodHistory[periodHistory.length-1].throttled;
+    const stateEl = $('m-throttleState');
+    stateEl.textContent = throttledNow ? 'THROTTLED' : 'CLEAR';
+    stateEl.className = 'metric-value ' + (throttledNow ? 'red' : 'mint');
+    setFlag('flag-throttleState', v.ratio > 50 ? 'bad' : throttledNow ? 'warn' : 'ok');
+
+    $('m-periodsElapsed').textContent = v.periodsElapsed;
+    setSpark('spark-periodsElapsed', hist.periodsElapsed, 74, 26);
+
+    $('m-throttledPeriods').textContent = v.throttledPeriods;
+    setSpark('spark-throttledPeriods', hist.throttledPeriods, 74, 26);
+
+    $('m-throttleRatio').textContent = v.ratio.toFixed(0) + '%';
+    setSpark('spark-throttleRatio', hist.ratio, 74, 26);
+    setFlag('flag-throttleRatio', v.ratio > 50 ? 'bad' : v.ratio > 15 ? 'warn' : 'ok');
+
+    $('m-backlogQueue').textContent = v.backlog.toFixed(0);
+    setSpark('spark-backlogQueue', hist.backlog, 74, 26);
+    setFlag('flag-backlogQueue', v.backlog > 300 ? 'bad' : v.backlog > 80 ? 'warn' : 'ok');
+
+    $('m-rpsSent').textContent = v.rpsSent.toFixed(0);
+    setSpark('spark-rpsSent', hist.rpsSent, 74, 26);
+
+    $('m-latency').textContent = v.latency.toFixed(0) + 'ms';
+    setSpark('spark-latency', hist.lat, 74, 26);
+    setFlag('flag-latency', v.latency > 300 ? 'bad' : v.latency > 100 ? 'warn' : 'ok');
+
+    $('m-errorRate').textContent = v.errorRate.toFixed(1) + '%';
+    setSpark('spark-errorRate', hist.err, 74, 26);
+    setFlag('flag-errorRate', v.errorRate > 5 ? 'bad' : v.errorRate > 1 ? 'warn' : 'ok');
+
+    drawGraph('rpsGraph', [hist.rpsSent, hist.rps], ['var(--accent-blue)', 'var(--accent-amber)']);
+    $('rpsNow').textContent = v.processed.toFixed(0) + ' / ' + v.rpsSent.toFixed(0);
+
+    drawGraph('cpuGraph', [hist.cpu], ['var(--accent-amber)']);
+    $('cpuNow').textContent = v.cpu.toFixed(0) + '%';
+
+    drawGraph('latGraph', [hist.lat], ['var(--accent-red)']);
+    $('latNow').textContent = v.latency.toFixed(0) + 'ms';
+
+    drawGraph('errGraph', [hist.err], ['var(--accent-red)']);
+    $('errNow').textContent = v.errorRate.toFixed(1) + '%';
+
+    $('liveRatioInline').textContent = v.ratio.toFixed(0) + '%';
+
+    renderTimeline();
+    lastSnapshot = v;
+  }
+
+  let timer = null;
+  function startTimer(){
+    if (timer) clearInterval(timer);
+    timer = setInterval(tick, 500);
+  }
+
+  function setPaused(p){
+    paused = p;
+    $('livePauseBtn').textContent = paused ? '▶ Resume' : '⏸ Pause';
+    $('liveStateLabel').textContent = paused ? 'PAUSED' : 'LIVE';
+    $('liveDot').style.background = paused ? 'var(--accent-amber)' : 'var(--accent-mint)';
+    $('liveDot').style.animation = paused ? 'none' : 'pulse 1s infinite';
+    if (paused){ if (timer) clearInterval(timer); }
+    else { startTimer(); }
+  }
+
+  $('livePauseBtn').addEventListener('click', () => setPaused(!paused));
+
+  function setLoad(level){
+    document.querySelectorAll('.load-btn').forEach(b => b.classList.toggle('active', b.dataset.load === level));
+    loadLevel = level;
+  }
+
+  document.querySelectorAll('.load-btn').forEach(btn => {
+    btn.addEventListener('click', () => setLoad(btn.dataset.load));
+  });
+
+  const vcpuSlider = $('liveVcpuSlider');
+
+  function updateCpuConfigCard(vcpu){
+    const ms = Math.round(vcpu * 100);
+    const milliCores = Math.round(vcpu * 1000);
+    $('cfgVcpu').textContent = vcpu.toFixed(1);
+    $('cfgQuotaMs').textContent = ms + 'ms';
+    $('cfgDocker').textContent = `--cpus="${vcpu.toFixed(1)}"`;
+    $('cfgK8s').textContent = `"${milliCores}m"`;
+  }
+
+  function setQuota(vcpu){
+    vcpuSlider.value = vcpu;
+    quotaMs = Math.round(vcpu * 100);
+    $('liveVcpuVal').textContent = vcpu.toFixed(1);
+    updateCpuConfigCard(vcpu);
+  }
+
+  vcpuSlider.addEventListener('input', () => setQuota(parseFloat(vcpuSlider.value)));
+  updateCpuConfigCard(parseFloat(vcpuSlider.value));
+
+  let snapshotCount = 0;
+  function addSnapshot(){
+    if (!lastSnapshot) return;
+    snapshotCount++;
+    const v = lastSnapshot;
+    const grid = $('snapshotGrid');
+    if (grid.querySelector('.snap-empty')) grid.innerHTML = '';
+
+    const card = document.createElement('div');
+    card.className = 'snapshot-card';
+    card.innerHTML = `
+      <div class="snap-head">
+        <span class="snap-title">SNAPSHOT #${snapshotCount} · period ${v.periodsElapsed}</span>
+        <span class="snap-load">${loadLevel.toUpperCase()} · ${parseFloat(vcpuSlider.value).toFixed(1)} vCPU</span>
+      </div>
+      <div class="snap-row"><span>CPU usage</span><b>${v.cpu.toFixed(0)}%</b></div>
+      <div class="snap-row"><span>Periods elapsed</span><b>${v.periodsElapsed}</b></div>
+      <div class="snap-row"><span>Throttled periods</span><b>${v.throttledPeriods}</b></div>
+      <div class="snap-row hl"><span>Throttle ratio</span><b>${v.ratio.toFixed(0)}%</b></div>
+      <div class="snap-row"><span>Backlog queue</span><b>${v.backlog.toFixed(0)}</b></div>
+      <div class="snap-row"><span>RPS sent</span><b>${v.rpsSent.toFixed(0)}</b></div>
+      <div class="snap-row"><span>Throughput</span><b>${v.processed.toFixed(0)}</b></div>
+      <div class="snap-row"><span>Latency</span><b>${v.latency.toFixed(0)}ms</b></div>
+      <div class="snap-row"><span>Error rate</span><b>${v.errorRate.toFixed(1)}%</b></div>
+    `;
+    grid.appendChild(card);
+
+    // keep at most 3 snapshots visible at once
+    const cards = grid.querySelectorAll('.snapshot-card');
+    if (cards.length > 3) cards[0].remove();
+  }
+
+  $('snapshotBtn').addEventListener('click', addSnapshot);
+
+  // ---- guided walkthrough: run-scenario buttons drive the live panel above ----
+  document.querySelectorAll('.run-scenario-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const level = btn.dataset.load;
+      const quota = parseFloat(btn.dataset.quota);
+
+      setLoad(level);
+      setQuota(quota);
+      if (paused) setPaused(false);
+
+      const liveSection = document.getElementById('live-traffic');
+      if (liveSection) liveSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      const controls = document.querySelector('.load-controls');
+      const cfgCard = document.querySelector('.cpu-config-card');
+      [controls, cfgCard].forEach(el => {
+        if (!el) return;
+        el.classList.remove('flash-highlight');
+        void el.offsetWidth; // restart animation
+        el.classList.add('flash-highlight');
+      });
+    });
+  });
+
+  for (let i = 0; i < N; i++) tick(); // seed history so graphs/timeline aren't empty on load
+  startTimer();
 })();
 </script>
 
