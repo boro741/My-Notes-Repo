@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Throttle, Decoded</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#10141b;
+    --bg-panel:#171c26;
+    --bg-panel-2:#1e2531;
+    --bg-track:#252c3a;
+    --text-primary:#eef1f6;
+    --text-muted:#8b93a3;
+    --text-faint:#5a6274;
+    --accent-amber:#ffb454;
+    --accent-amber-dim:#7a5a2c;
+    --accent-red:#ff5f5f;
+    --accent-red-dim:#5c2f33;
+    --accent-mint:#6fe0c2;
+    --accent-blue:#6fa8ff;
+    --border:#2a3140;
+    --font-display:'Space Grotesk', sans-serif;
+    --font-body:'Inter', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text-primary);
+    font-family:var(--font-body);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px;}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding:88px 0 56px;
+    border-bottom:1px solid var(--border);
+    position:relative;
+    overflow:hidden;
+  }
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--accent-amber);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:22px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent-amber);box-shadow:0 0 0 4px rgba(255,180,84,.15);}
+  h1{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:clamp(36px,6vw,58px);
+    line-height:1.02;
+    margin:0 0 20px;
+    letter-spacing:-.02em;
+  }
+  h1 em{font-style:normal;color:var(--accent-amber);}
+  .hero p.lede{
+    font-size:18px;
+    color:var(--text-muted);
+    max-width:560px;
+    margin:0 0 36px;
+  }
+
+  .mini-clock{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--text-faint);
+  }
+  .mini-track{
+    width:220px;height:10px;border-radius:6px;background:var(--bg-track);overflow:hidden;position:relative;border:1px solid var(--border);
+  }
+  .mini-fill{
+    position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,var(--accent-amber),var(--accent-red));
+    animation:miniFill 2.4s cubic-bezier(.65,0,.35,1) infinite;
+  }
+  @keyframes miniFill{
+    0%{width:0%;}
+    45%{width:50%;background:linear-gradient(90deg,var(--accent-amber),var(--accent-amber));}
+    50%{width:50%;background:var(--accent-red);}
+    92%{width:50%;background:var(--accent-red);}
+    100%{width:0%;background:var(--accent-amber);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .mini-fill{animation:none;width:50%;}
+  }
+
+  /* ---------- Sections ---------- */
+  section{padding:64px 0;border-bottom:1px solid var(--border);}
+  section:last-of-type{border-bottom:none;}
+  .section-num{
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--text-faint);
+    letter-spacing:.1em;
+    margin-bottom:10px;
+  }
+  h2{
+    font-family:var(--font-display);
+    font-size:clamp(24px,3.4vw,32px);
+    margin:0 0 14px;
+    letter-spacing:-.01em;
+  }
+  .section-lede{color:var(--text-muted);max-width:640px;margin:0 0 32px;font-size:16px;}
+  strong.hl{color:var(--accent-amber);font-weight:600;}
+  strong.hl-red{color:var(--accent-red);font-weight:600;}
+  strong.hl-mint{color:var(--accent-mint);font-weight:600;}
+
+  /* ---------- Setup diagram ---------- */
+  .setup-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+  .setup-card{
+    background:var(--bg-panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:22px;
+  }
+  .setup-card .icon{font-size:22px;margin-bottom:10px;display:block;}
+  .setup-card h3{font-family:var(--font-display);font-size:16px;margin:0 0 8px;}
+  .setup-card p{font-size:14px;color:var(--text-muted);margin:0;}
+  @media (max-width:640px){.setup-grid{grid-template-columns:1fr;}}
+
+  /* ---------- Control bar ---------- */
+  .control-bar{
+    position:sticky;
+    top:0;
+    z-index:20;
+    background:rgba(16,20,27,.92);
+    backdrop-filter:blur(10px);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:16px 18px;
+    margin-bottom:28px;
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:18px;
+  }
+  .btn-group{display:flex;gap:8px;}
+  .btn{
+    font-family:var(--font-mono);
+    font-size:13px;
+    font-weight:600;
+    color:var(--text-primary);
+    background:var(--bg-panel-2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:9px 14px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    transition:background .15s, border-color .15s, transform .1s;
+  }
+  .btn:hover{border-color:var(--accent-amber);}
+  .btn:active{transform:scale(.96);}
+  .btn.primary{background:var(--accent-amber);color:#241a08;border-color:var(--accent-amber);}
+  .btn.primary:hover{background:#ffc576;}
+  .btn:disabled{opacity:.35;cursor:not-allowed;}
+  .btn:disabled:hover{border-color:var(--border);}
+
+  .speed-group{display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:12px;color:var(--text-faint);}
+  .speed-btn{
+    background:transparent;border:1px solid var(--border);color:var(--text-muted);
+    font-family:var(--font-mono);font-size:12px;border-radius:6px;padding:5px 8px;cursor:pointer;
+  }
+  .speed-btn.active{background:var(--bg-panel-2);color:var(--accent-amber);border-color:var(--accent-amber);}
+
+  .config-group{display:flex;flex-wrap:wrap;gap:22px;margin-left:auto;}
+  .config-item{display:flex;flex-direction:column;gap:4px;min-width:150px;}
+  .config-item label{font-family:var(--font-mono);font-size:11px;color:var(--text-faint);letter-spacing:.04em;display:flex;justify-content:space-between;}
+  .config-item label span.val{color:var(--accent-amber);}
+  .config-item input[type=range]{
+    -webkit-appearance:none;width:100%;height:4px;border-radius:3px;background:var(--bg-track);outline:none;
+  }
+  .config-item input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent-amber);cursor:pointer;border:2px solid #10141b;
+  }
+  .config-item input[type=range]::-moz-range-thumb{
+    width:14px;height:14px;border-radius:50%;background:var(--accent-amber);cursor:pointer;border:2px solid #10141b;
+  }
+
+  /* ---------- Simulation panel ---------- */
+  .sim-panel{
+    background:var(--bg-panel);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:26px;
+  }
+
+  .state-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:22px;
+    flex-wrap:wrap;
+    gap:14px;
+  }
+  .state-badge{
+    font-family:var(--font-mono);
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:.06em;
+    padding:8px 16px;
+    border-radius:999px;
+    display:flex;
+    align-items:center;
+    gap:9px;
+    border:1px solid transparent;
+  }
+  .state-badge .pip{width:8px;height:8px;border-radius:50%;}
+  .state-badge.running{background:rgba(255,180,84,.12);color:var(--accent-amber);border-color:rgba(255,180,84,.3);}
+  .state-badge.running .pip{background:var(--accent-amber);box-shadow:0 0 0 4px rgba(255,180,84,.18);animation:pulse 1s infinite;}
+  .state-badge.throttled{background:rgba(255,95,95,.12);color:var(--accent-red);border-color:rgba(255,95,95,.32);}
+  .state-badge.throttled .pip{background:var(--accent-red);box-shadow:0 0 0 4px rgba(255,95,95,.18);}
+  .state-badge.done{background:rgba(111,224,194,.12);color:var(--accent-mint);border-color:rgba(111,224,194,.3);}
+  .state-badge.done .pip{background:var(--accent-mint);}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+  .wall-clock{font-family:var(--font-mono);font-size:13px;color:var(--text-muted);}
+  .wall-clock b{color:var(--text-primary);}
+
+  /* Timeline strip */
+  .timeline-label{font-family:var(--font-mono);font-size:11px;color:var(--text-faint);letter-spacing:.08em;margin-bottom:10px;text-transform:uppercase;}
+  .timeline{
+    display:flex;
+    gap:6px;
+    align-items:flex-end;
+    overflow:hidden;
+    padding-bottom:6px;
+    margin-bottom:26px;
+  }
+  .period-box{
+    flex:0 0 auto;
+    width:96px;
+    height:88px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:var(--bg-track);
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+  }
+  .period-box.current{border-color:var(--accent-amber);box-shadow:0 0 0 1px rgba(255,180,84,.25);}
+  .period-fill{position:absolute;bottom:0;left:0;right:0;display:flex;flex-direction:column-reverse;height:0;}
+  .period-fill .seg-work{background:var(--accent-amber);flex:0 0 auto;}
+  .period-fill .seg-pause{background:repeating-linear-gradient(135deg,var(--accent-red) 0 5px,#3a1f22 5px 10px);flex:0 0 auto;}
+  .period-quota-line{position:absolute;left:0;right:0;border-top:1px dashed rgba(255,255,255,.25);}
+  .period-idx{position:relative;z-index:2;font-family:var(--font-mono);font-size:10px;color:var(--text-faint);padding:6px 8px;}
+  .period-box.current .period-idx{color:var(--bg);font-weight:700;}
+  .period-tag{
+    position:absolute;top:6px;right:7px;font-family:var(--font-mono);font-size:9px;letter-spacing:.05em;
+    padding:2px 5px;border-radius:4px;z-index:2;
+  }
+  .period-tag.tag-throttled{background:var(--accent-red);color:#2a0e10;}
+  .period-tag.tag-clean{background:var(--accent-mint);color:#0c261f;}
+
+  @media (max-width:640px){
+    .period-box{width:60px;height:70px;}
+    .config-group{margin-left:0;}
+  }
+
+  /* Stats grid */
+  .stats-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+  }
+  .stat{
+    background:var(--bg-panel-2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:14px 16px;
+  }
+  .stat .stat-label{font-family:var(--font-mono);font-size:10px;color:var(--text-faint);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;}
+  .stat .stat-val{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--text-primary);}
+  .stat .stat-val.amber{color:var(--accent-amber);}
+  .stat .stat-val.red{color:var(--accent-red);}
+  @media (max-width:640px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
+
+  /* ---------- Ratio / ledger section ---------- */
+  .ledger-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:26px;}
+  .ledger-chip{
+    width:22px;height:22px;border-radius:5px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-mono);font-size:9px;font-weight:700;
+  }
+  .ledger-chip.clean{background:rgba(111,224,194,.18);color:var(--accent-mint);border:1px solid rgba(111,224,194,.4);}
+  .ledger-chip.throttled{background:rgba(255,95,95,.18);color:var(--accent-red);border:1px solid rgba(255,95,95,.4);}
+  .ledger-empty{font-family:var(--font-mono);font-size:12px;color:var(--text-faint);}
+
+  .formula-card{
+    background:var(--bg-panel);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:28px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:18px;
+    flex-wrap:wrap;
+    font-family:var(--font-mono);
+  }
+  .formula-term{
+    text-align:center;
+  }
+  .formula-term .big{font-size:30px;font-weight:700;color:var(--text-primary);}
+  .formula-term .small{font-size:11px;color:var(--text-faint);letter-spacing:.05em;text-transform:uppercase;margin-top:4px;}
+  .formula-term.throttled .big{color:var(--accent-red);}
+  .formula-term.total .big{color:var(--accent-blue);}
+  .formula-term.ratio .big{color:var(--accent-amber);}
+  .formula-op{font-size:26px;color:var(--text-faint);}
+
+  /* ---------- Gauge section ---------- */
+  .gauge-wrap{margin-top:8px;}
+  .gauge-track{
+    height:22px;
+    border-radius:11px;
+    position:relative;
+    background:linear-gradient(90deg,
+      var(--accent-mint) 0%, var(--accent-mint) 5%,
+      var(--accent-amber) 5%, var(--accent-amber) 20%,
+      var(--accent-red) 20%, var(--accent-red) 100%);
+    border:1px solid var(--border);
+  }
+  .gauge-pointer{
+    position:absolute;top:-10px;
+    width:2px;height:42px;background:var(--text-primary);
+    transform:translateX(-1px);
+    transition:left .25s ease;
+  }
+  .gauge-pointer::after{
+    content:attr(data-label);
+    position:absolute;top:-24px;left:50%;transform:translateX(-50%);
+    font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--text-primary);
+    white-space:nowrap;
+    background:var(--bg-panel-2);padding:2px 6px;border-radius:5px;border:1px solid var(--border);
+  }
+  .gauge-legend{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10px;color:var(--text-faint);margin-top:8px;}
+
+  .diagnosis-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:34px;}
+  .diag-card{
+    background:var(--bg-panel);border:1px solid var(--border);border-radius:12px;padding:18px;
+  }
+  .diag-card h4{font-family:var(--font-display);font-size:15px;margin:0 0 8px;display:flex;align-items:center;gap:8px;}
+  .diag-card h4 .sw{width:9px;height:9px;border-radius:50%;}
+  .diag-card p{font-size:13px;color:var(--text-muted);margin:0;}
+  @media (max-width:640px){.diagnosis-cards{grid-template-columns:1fr;}}
+
+  footer{padding:40px 0 60px;}
+  footer p{font-family:var(--font-mono);font-size:12px;color:var(--text-faint);}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow"><span class="dot"></span>CPU SCHEDULING · CFS BANDWIDTH CONTROL</div>
+    <h1>Throttle, <em>decoded</em>.</h1>
+    <p class="lede">Your container isn't crashing — it's being paused. A live, pausable simulation of how CPU quotas turn into latency, and how the throttle ratio tells you whether that's actually your problem.</p>
+    <div class="mini-clock">
+      <div class="mini-track"><div class="mini-fill"></div></div>
+      <span>quota draining, then a forced pause — every 100ms period</span>
+    </div>
+  </div>
+
+  <!-- ================= SETUP ================= -->
+  <section>
+    <div class="section-num">01</div>
+    <h2>The setup: a time budget, not a task budget</h2>
+    <p class="section-lede">The kernel manages CPU with a stopwatch, not a to‑do list. Every <strong class="hl">100ms period</strong>, your app is handed a fixed slice of execution time — its quota, set by however many CPU units you configured. It doesn't matter what the work is; only how long it runs.</p>
+    <div class="setup-grid">
+      <div class="setup-card">
+        <span class="icon">⏱️</span>
+        <h3>The period</h3>
+        <p>The scheduler checks in every 100 milliseconds. Each check‑in is a fresh window — your quota resets, whether or not you used it all last time.</p>
+      </div>
+      <div class="setup-card">
+        <span class="icon">🎟️</span>
+        <h3>The quota</h3>
+        <p>0.5 vCPU means 50ms of run time per 100ms period. Spend it all before the period ends, and there's nothing left to spend.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SIMULATION ================= -->
+  <section id="sim">
+    <div class="section-num">02</div>
+    <h2>Watch it happen — pause it any time</h2>
+    <p class="section-lede">This worker has a chunk of CPU work to finish and a fixed quota per period. Press play, then <strong class="hl">pause whenever you want to freeze the state</strong> and inspect exactly where the quota ran out. Step advances the simulation frame‑by‑frame while paused.</p>
+
+    <div class="control-bar">
+      <div class="btn-group">
+        <button class="btn primary" id="playPauseBtn">▶ Play</button>
+        <button class="btn" id="stepBtn">⏭ Step</button>
+        <button class="btn" id="resetBtn">⟲ Reset</button>
+      </div>
+      <div class="speed-group">
+        SPEED
+        <button class="speed-btn" data-speed="0.5">0.5×</button>
+        <button class="speed-btn active" data-speed="1">1×</button>
+        <button class="speed-btn" data-speed="2">2×</button>
+        <button class="speed-btn" data-speed="4">4×</button>
+      </div>
+      <div class="config-group">
+        <div class="config-item">
+          <label>vCPU quota <span class="val" id="vcpuVal">0.5</span></label>
+          <input type="range" id="vcpuSlider" min="0.1" max="1.5" step="0.1" value="0.5">
+        </div>
+        <div class="config-item">
+          <label>Work needed (ms) <span class="val" id="workVal">140</span></label>
+          <input type="range" id="workSlider" min="20" max="400" step="10" value="140">
+        </div>
+      </div>
+    </div>
+
+    <div class="sim-panel">
+      <div class="state-row">
+        <div class="state-badge running" id="stateBadge"><span class="pip"></span><span id="stateText">RUNNING</span></div>
+        <div class="wall-clock">wall‑clock elapsed: <b id="wallClockVal">0</b> ms &nbsp;·&nbsp; work remaining: <b id="workRemVal">140</b> ms</div>
+      </div>
+
+      <div class="timeline-label">Period timeline (100ms each)</div>
+      <div class="timeline" id="timeline"></div>
+
+      <div class="stats-grid">
+        <div class="stat">
+          <div class="stat-label">Periods elapsed</div>
+          <div class="stat-val" id="statPeriods">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Throttled periods</div>
+          <div class="stat-val red" id="statThrottled">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">CPU time used</div>
+          <div class="stat-val amber" id="statCpuUsed">0 ms</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Throttle ratio</div>
+          <div class="stat-val" id="statRatio">0%</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= RATIO ================= -->
+  <section id="ratio">
+    <div class="section-num">03</div>
+    <h2>Throttle ratio: a yes/no question, asked every period</h2>
+    <p class="section-lede">The ratio doesn't measure how long each pause lasted. It only asks, once per period: <em>did we run out of quota?</em> Each square below is one completed period from the simulation above — <strong class="hl-mint">green</strong> means it never hit the limit, <strong class="hl-red">red</strong> means it got paused.</p>
+
+    <div class="ledger-row" id="ledgerRow">
+      <span class="ledger-empty">Press play above to start generating periods…</span>
+    </div>
+
+    <div class="formula-card">
+      <div class="formula-term throttled">
+        <div class="big" id="formThrottled">0</div>
+        <div class="small">throttled periods</div>
+      </div>
+      <div class="formula-op">÷</div>
+      <div class="formula-term total">
+        <div class="big" id="formTotal">0</div>
+        <div class="small">total periods</div>
+      </div>
+      <div class="formula-op">=</div>
+      <div class="formula-term ratio">
+        <div class="big" id="formRatio">0%</div>
+        <div class="small">throttle ratio</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= DIAGNOSTIC ================= -->
+  <section id="diagnosis">
+    <div class="section-num">04</div>
+    <h2>What the ratio tells you about your server</h2>
+    <p class="section-lede">The live ratio from your simulation is marked below on the standard health bands. In production, always read this next to CPU utilization — the ratio tells you <em>whether</em> the CPU is the ceiling, not just that something is slow.</p>
+
+    <div class="gauge-wrap">
+      <div class="gauge-track">
+        <div class="gauge-pointer" id="gaugePointer" style="left:0%;" data-label="0%"></div>
+      </div>
+      <div class="gauge-legend">
+        <span>0–5% healthy</span>
+        <span>5–20% moderate</span>
+        <span>20%+ severe</span>
+      </div>
+    </div>
+
+    <div class="diagnosis-cards">
+      <div class="diag-card">
+        <h4><span class="sw" style="background:var(--accent-red);"></span>High ratio + high CPU util</h4>
+        <p>Your app is genuinely CPU‑starved. The quota is the real ceiling — more instances won't help as much as more CPU per instance.</p>
+      </div>
+      <div class="diag-card">
+        <h4><span class="sw" style="background:var(--accent-blue);"></span>Low ratio + high latency</h4>
+        <p>The CPU isn't the bottleneck. Workers are likely blocked on a slow database call, a lock, or garbage collection — look downstream, not at compute.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Simulation models the CFS bandwidth controller: quota resets every 100ms period; exceeding it pauses execution until the next period.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const PERIOD_MS = 100;
+  const BASE_PERIOD_REAL_MS = 1000; // real ms per period at 1x speed
+
+  let quotaMs = 50;
+  let totalWorkMs = 140;
+
+  let periodIndex = 0;
+  let periodElapsed = 0;
+  let quotaUsed = 0;
+  let workRemaining = totalWorkMs;
+  let wallClock = 0;
+  let history = [];
+  let isPlaying = false;
+  let speedMult = 1;
+  let lastTime = null;
+  let finished = false;
+
+  const els = {
+    playPauseBtn: document.getElementById('playPauseBtn'),
+    stepBtn: document.getElementById('stepBtn'),
+    resetBtn: document.getElementById('resetBtn'),
+    vcpuSlider: document.getElementById('vcpuSlider'),
+    vcpuVal: document.getElementById('vcpuVal'),
+    workSlider: document.getElementById('workSlider'),
+    workVal: document.getElementById('workVal'),
+    stateBadge: document.getElementById('stateBadge'),
+    stateText: document.getElementById('stateText'),
+    wallClockVal: document.getElementById('wallClockVal'),
+    workRemVal: document.getElementById('workRemVal'),
+    timeline: document.getElementById('timeline'),
+    statPeriods: document.getElementById('statPeriods'),
+    statThrottled: document.getElementById('statThrottled'),
+    statCpuUsed: document.getElementById('statCpuUsed'),
+    statRatio: document.getElementById('statRatio'),
+    ledgerRow: document.getElementById('ledgerRow'),
+    formThrottled: document.getElementById('formThrottled'),
+    formTotal: document.getElementById('formTotal'),
+    formRatio: document.getElementById('formRatio'),
+    gaugePointer: document.getElementById('gaugePointer'),
+  };
+
+  function reset(){
+    quotaMs = Math.round(parseFloat(els.vcpuSlider.value) * 100);
+    totalWorkMs = parseInt(els.workSlider.value, 10);
+    els.vcpuVal.textContent = parseFloat(els.vcpuSlider.value).toFixed(1);
+    els.workVal.textContent = totalWorkMs;
+
+    periodIndex = 0;
+    periodElapsed = 0;
+    quotaUsed = 0;
+    workRemaining = totalWorkMs;
+    wallClock = 0;
+    history = [];
+    finished = false;
+    isPlaying = false;
+    lastTime = null;
+    els.playPauseBtn.textContent = '▶ Play';
+    els.stepBtn.disabled = false;
+    render();
+  }
+
+  function currentlyThrottled(){
+    return quotaUsed >= quotaMs - 1e-9;
+  }
+
+  // advance simulation by dt simulated milliseconds
+  function step(dt){
+    let guard = 0;
+    while (dt > 1e-9 && !finished && guard < 1000){
+      guard++;
+      const remainInPeriod = PERIOD_MS - periodElapsed;
+
+      if (currentlyThrottled()){
+        const chunk = Math.min(dt, remainInPeriod);
+        periodElapsed += chunk;
+        wallClock += chunk;
+        dt -= chunk;
+        if (periodElapsed >= PERIOD_MS - 1e-9){
+          history.push({index: periodIndex, throttled: true});
+          periodIndex++; periodElapsed = 0; quotaUsed = 0;
+        }
+      } else {
+        const remainQuota = quotaMs - quotaUsed;
+        const chunk = Math.min(dt, remainInPeriod, remainQuota, workRemaining);
+        periodElapsed += chunk;
+        quotaUsed += chunk;
+        workRemaining -= chunk;
+        wallClock += chunk;
+        dt -= chunk;
+
+        if (workRemaining <= 1e-9){
+          workRemaining = 0;
+          finished = true;
+          break;
+        }
+        if (periodElapsed >= PERIOD_MS - 1e-9){
+          history.push({index: periodIndex, throttled: currentlyThrottled()});
+          periodIndex++; periodElapsed = 0; quotaUsed = 0;
+        }
+      }
+    }
+  }
+
+  function status(){
+    if (finished) return 'done';
+    return currentlyThrottled() ? 'throttled' : 'running';
+  }
+
+  function render(){
+    const st = status();
+    els.stateBadge.className = 'state-badge ' + st;
+    els.stateText.textContent = st === 'done' ? 'DONE' : (st === 'throttled' ? 'THROTTLED' : 'RUNNING');
+    els.wallClockVal.textContent = Math.round(wallClock);
+    els.workRemVal.textContent = Math.max(0, Math.round(workRemaining));
+
+    // timeline: last 4 history periods + current (if not finished)
+    const shown = history.slice(-4);
+    let boxesHtml = '';
+    shown.forEach(p => {
+      const workPct = (p.throttled ? quotaMs : PERIOD_MS) / PERIOD_MS * 100;
+      const pausePct = 100 - workPct;
+      boxesHtml += periodBoxHtml(p.index, workPct, pausePct, false, p.throttled, true);
+    });
+    if (!finished){
+      const workPct = (quotaUsed / PERIOD_MS) * 100;
+      const pausePct = (currentlyThrottled() ? (periodElapsed - quotaUsed) : 0) / PERIOD_MS * 100;
+      boxesHtml += periodBoxHtml(periodIndex, workPct, pausePct, true, currentlyThrottled(), false);
+    }
+    els.timeline.innerHTML = boxesHtml;
+
+    // stats
+    const totalPeriods = history.length;
+    const throttledPeriods = history.filter(p => p.throttled).length;
+    const ratio = totalPeriods > 0 ? (throttledPeriods / totalPeriods * 100) : 0;
+    const cpuUsed = totalWorkMs - workRemaining;
+
+    els.statPeriods.textContent = totalPeriods;
+    els.statThrottled.textContent = throttledPeriods;
+    els.statCpuUsed.textContent = Math.round(cpuUsed) + ' ms';
+    els.statRatio.textContent = ratio.toFixed(0) + '%';
+
+    // ledger
+    if (totalPeriods === 0){
+      els.ledgerRow.innerHTML = '<span class="ledger-empty">Press play above to start generating periods…</span>';
+    } else {
+      els.ledgerRow.innerHTML = history.map(p =>
+        `<div class="ledger-chip ${p.throttled ? 'throttled' : 'clean'}" title="Period ${p.index + 1}: ${p.throttled ? 'throttled' : 'clean'}">${p.index + 1}</div>`
+      ).join('');
+    }
+
+    // formula
+    els.formThrottled.textContent = throttledPeriods;
+    els.formTotal.textContent = totalPeriods;
+    els.formRatio.textContent = ratio.toFixed(0) + '%';
+
+    // gauge
+    const gaugePos = Math.min(100, ratio);
+    els.gaugePointer.style.left = gaugePos + '%';
+    els.gaugePointer.setAttribute('data-label', ratio.toFixed(0) + '%');
+
+    if (finished){
+      els.playPauseBtn.textContent = '▶ Play';
+      els.playPauseBtn.disabled = true;
+      els.stepBtn.disabled = true;
+      isPlaying = false;
+    } else {
+      els.playPauseBtn.disabled = false;
+    }
+  }
+
+  function periodBoxHtml(idx, workPct, pausePct, isCurrent, throttled, isPast){
+    const tag = isPast ? `<div class="period-tag ${throttled ? 'tag-throttled' : 'tag-clean'}">${throttled ? 'PAUSED' : 'CLEAN'}</div>` : '';
+    return `
+      <div class="period-box ${isCurrent ? 'current' : ''}">
+        ${tag}
+        <div class="period-idx">P${idx + 1}</div>
+        <div class="period-fill" style="height:${Math.min(100, workPct + pausePct)}%;">
+          <div class="seg-pause" style="height:${pausePct}%;"></div>
+          <div class="seg-work" style="height:${workPct}%;"></div>
+        </div>
+      </div>`;
+  }
+
+  function loop(now){
+    if (!isPlaying){ lastTime = null; return; }
+    if (lastTime === null){ lastTime = now; }
+    let realDt = now - lastTime;
+    lastTime = now;
+    realDt = Math.min(realDt, 100); // clamp big jumps (tab switch etc)
+    const simDt = (realDt / BASE_PERIOD_REAL_MS) * PERIOD_MS * speedMult;
+    step(simDt);
+    render();
+    if (isPlaying && !finished){
+      requestAnimationFrame(loop);
+    } else {
+      isPlaying = false;
+      render();
+    }
+  }
+
+  els.playPauseBtn.addEventListener('click', () => {
+    if (finished) return;
+    isPlaying = !isPlaying;
+    els.playPauseBtn.textContent = isPlaying ? '⏸ Pause' : '▶ Play';
+    if (isPlaying){
+      lastTime = null;
+      requestAnimationFrame(loop);
+    }
+  });
+
+  els.stepBtn.addEventListener('click', () => {
+    if (finished) return;
+    isPlaying = false;
+    els.playPauseBtn.textContent = '▶ Play';
+    step(15); // small fixed sim-ms increment for fine inspection
+    render();
+  });
+
+  els.resetBtn.addEventListener('click', reset);
+
+  els.vcpuSlider.addEventListener('input', () => {
+    els.vcpuVal.textContent = parseFloat(els.vcpuSlider.value).toFixed(1);
+    reset();
+  });
+  els.workSlider.addEventListener('input', () => {
+    els.workVal.textContent = els.workSlider.value;
+    reset();
+  });
+
+  document.querySelectorAll('.speed-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      speedMult = parseFloat(btn.dataset.speed);
+    });
+  });
+
+  reset();
+})();
+</script>
+
+</body>
+</html>

@@ -16,7 +16,7 @@ My HTML Notes/
 │
 ├── AWS Learning/                       ← 30 interactive notes & decision trees
 ├── New AWS Learning Blog/              ← 28 blog-style AWS architecture deep-dives
-├── Load Testing Foundation/            ← 3-part ECS & backend performance guides
+├── Load Testing Foundation/            ← 4 guides: ECS sizing, test design, bottleneck isolation & CPU throttling
 ├── The Visual MBA/                     ← Visual business & finance chapter notes + Hub
 ├── Udemy A Comprehensive Entrepreneurship Course.../ ← 6 startup & ideation notes
 ├── Misc/                               ← 5 guides (ACM/TLS, Kafka, OpenSearch, etc.)
