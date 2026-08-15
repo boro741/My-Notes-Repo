@@ -808,6 +808,74 @@
       </p>
     </div>
 
+    <h3>The same request at 1 vCPU</h3>
+    <p>
+      Same task, same 140ms request — just <code class="inline">ecs_task_cpu: 1024</code> instead of 512. The
+      quota per period is now 100ms, so the request never runs out mid-period: it spends the whole of period 1
+      running, rolls over into period 2 for the last 40ms, and finishes. No freeze, anywhere.
+    </p>
+
+    <div class="anim-block reveal">
+      <div class="anim-controls">
+        <div class="anim-status good" id="freeze1Status"><span class="pulse"></span><span id="freeze1StatusText">Running — spending its 100ms/period quota on Request A</span></div>
+        <button type="button" class="anim-pause-btn" id="freeze1PauseBtn" aria-pressed="false">Pause</button>
+      </div>
+
+      <div class="anim-stats">
+        <div class="stat offered"><div class="num" id="freeze1WallClock">0</div><div class="lbl">Wall-clock elapsed (ms)</div></div>
+        <div class="stat achieved"><div class="num" id="freeze1WorkDone">0</div><div class="lbl">Request A work done (ms)</div></div>
+      </div>
+
+      <div class="period-ruler-wrap">
+        <div class="period-ruler" id="freeze1Ruler">
+          <div class="period-cell" data-period="0">Period 1<span class="d">0–100ms quota window (100ms quota)</span></div>
+          <div class="period-cell" data-period="1">Period 2<span class="d">100–200ms quota window (100ms quota)</span></div>
+        </div>
+        <div class="playhead" id="freeze1Playhead"></div>
+      </div>
+
+      <div class="lane-label">The worker</div>
+      <div class="request-track">
+        <div class="request-fill" id="freeze1Fill"></div>
+        <span class="request-label" id="freeze1Label">Request A — 0 / 140ms done</span>
+      </div>
+
+      <p class="anim-caption">
+        Compare this to the 0.5 vCPU run above: same request, same 140ms of work — but at 1 vCPU the quota
+        (100ms) is bigger than what's left to do after period 1 (40ms), so it never hits a wall. It finishes at
+        <b>140ms wall-clock</b>, not 240ms. That 100ms difference <em>is</em> the cost of throttling.
+      </p>
+    </div>
+
+    <h3>What about 2 vCPU and 4 vCPU?</h3>
+    <p class="lead-q">For this same single request, they behave <em>identically</em> to 1 vCPU. That's not a simplification — it's the actual mechanics, and it's worth sitting with.</p>
+    <p>
+      A single request runs on a single thread, and a single thread can only ever execute on <strong>one core at
+      a time</strong>. Whether the task's total quota is 100ms (1 vCPU), 200ms (2 vCPU), or 400ms (4 vCPU) per
+      period, that one thread still can't consume more than 100ms of CPU-time in a 100ms period — there's only
+      one core's worth of instructions it can physically issue. The extra quota from 2 or 4 vCPU sits completely
+      unused by this request.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ecs_task_cpu</th><th>Quota / period</th><th>This request's wall-clock</th><th>Froze?</th></tr></thead>
+        <tbody>
+          <tr><td>512 (0.5 vCPU)</td><td>50ms</td><td class="warn">240ms</td><td class="warn">Yes — twice</td></tr>
+          <tr class="highlight"><td>1024 (1 vCPU)</td><td class="hi">100ms</td><td class="hi">140ms</td><td class="good">No</td></tr>
+          <tr><td>2048 (2 vCPU)</td><td>200ms</td><td>140ms</td><td class="good">No</td></tr>
+          <tr><td>4096 (4 vCPU)</td><td>400ms</td><td>140ms</td><td class="good">No</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout reality">
+      <span class="callout-label">Where 2 vCPU and 4 vCPU actually pay off</span>
+      Not by making one request faster — by giving <strong>more concurrent workers</strong> room in the same
+      shared pool. Five workers all doing heavy compute at once will exhaust a 100ms (1 vCPU) quota almost
+      immediately; against a 400ms (4 vCPU) quota, those same five workers can all run flat-out without anyone
+      getting frozen. That's exactly what section 09's worker formula and the practical run animation are
+      sizing for — concurrent demand, not single-request speed.
+    </div>
+
     <h3>Why "CPU Utilization: 45%" can still mean severe throttling</h3>
     <p>
       This isn't just about bursty traffic — it's built into how the quota is enforced. The CFS bandwidth
@@ -2386,6 +2454,78 @@
       pauseBtn.disabled = true;
       pauseBtn.textContent = 'Paused';
     }
+  })();
+
+  // ---------- 1 vCPU (no-freeze) animation ----------
+  (function(){
+    const statusEl = document.getElementById('freeze1Status');
+    if (!statusEl) return;
+    const statusText = document.getElementById('freeze1StatusText');
+    const pauseBtn = document.getElementById('freeze1PauseBtn');
+    const fill = document.getElementById('freeze1Fill');
+    const label = document.getElementById('freeze1Label');
+    const wallClockEl = document.getElementById('freeze1WallClock');
+    const workDoneEl = document.getElementById('freeze1WorkDone');
+    const periodCells = Array.from(document.querySelectorAll('#freeze1Ruler .period-cell'));
+    const playhead = document.getElementById('freeze1Playhead');
+    const ruler = document.getElementById('freeze1Ruler');
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const LOOP = 18;
+    const RUN_END = 14;   // 14 real seconds of running represents 0-140ms of work
+    const WORK_TOTAL = 140;
+
+    let t = 0, last = null, running = false, visible = false, paused = false;
+
+    function render(){
+      const wallClock = Math.min(WORK_TOTAL, (Math.min(t, RUN_END)/RUN_END)*WORK_TOTAL);
+      const done = wallClock; // 1 vCPU never freezes, so work done tracks wall-clock 1:1
+      const period = wallClock < 100 ? 0 : 1;
+
+      wallClockEl.textContent = Math.round(wallClock);
+      workDoneEl.textContent = Math.round(done);
+      periodCells.forEach((cell,i) => cell.classList.toggle('active', i === period));
+      playhead.style.left = Math.min(100, (wallClock/200)*100) + '%';
+
+      fill.classList.remove('done');
+      if (t < RUN_END){
+        fill.style.width = (done/WORK_TOTAL*100) + '%';
+        label.textContent = `Request A — ${Math.round(done)} / ${WORK_TOTAL}ms done`;
+        statusText.textContent = 'Running — spending its 100ms/period quota on Request A';
+      } else {
+        fill.style.width = '100%';
+        fill.classList.add('done');
+        label.textContent = `Request A — done (${WORK_TOTAL} / ${WORK_TOTAL}ms)`;
+        statusText.textContent = 'Request A finished at 140ms wall-clock — no freeze needed.';
+      }
+    }
+
+    function step(dt){ t += dt; if (t >= LOOP) t -= LOOP; render(); }
+    function loop(now){
+      if (!running) return;
+      if (last === null) last = now;
+      let dt = (now-last)/1000;
+      dt = Math.min(dt, 0.05);
+      last = now;
+      step(dt);
+      requestAnimationFrame(loop);
+    }
+    function syncRunning(){
+      const should = visible && !paused && !reducedMotion;
+      if (should && !running){ running = true; last = null; requestAnimationFrame(loop); }
+      else if (!should && running){ running = false; }
+    }
+    pauseBtn.addEventListener('click', () => {
+      paused = !paused;
+      pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+      pauseBtn.classList.toggle('is-paused', paused);
+      pauseBtn.setAttribute('aria-pressed', String(paused));
+      syncRunning();
+    });
+    const io = new IntersectionObserver((entries)=>{ entries.forEach(e=>{ visible = e.isIntersecting; syncRunning(); }); }, {threshold:0.1});
+    io.observe(ruler);
+    if (reducedMotion){ t = 5; render(); pauseBtn.disabled = true; pauseBtn.textContent = 'Paused'; }
   })();
 </script>
 
