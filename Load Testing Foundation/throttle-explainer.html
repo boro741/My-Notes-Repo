@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -482,6 +483,39 @@
   .scenario-actions{margin-top:16px;display:flex;justify-content:flex-end;}
   .run-scenario-btn{font-family:var(--font-mono);}
   @media (max-width:640px){.scenario-line{flex-direction:column;gap:2px;}}
+
+  /* ---------- Floating step-by-step guide ---------- */
+  .guide-launcher{
+    position:fixed;right:22px;bottom:22px;z-index:50;
+    font-family:var(--font-mono);font-size:13px;font-weight:700;
+    background:var(--accent-amber);color:#241a08;border:none;border-radius:999px;
+    padding:13px 20px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.4);
+    display:flex;align-items:center;gap:8px;
+  }
+  .guide-launcher:hover{background:#ffc576;}
+  .guide-panel{
+    position:fixed;right:22px;bottom:22px;z-index:50;width:340px;max-width:calc(100vw - 44px);
+    background:var(--bg-panel);border:1px solid var(--accent-amber);border-radius:14px;
+    padding:18px 20px 16px;box-shadow:0 12px 44px rgba(0,0,0,.55);
+    max-height:72vh;overflow-y:auto;
+  }
+  .guide-panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .guide-step-badge{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--accent-amber);background:rgba(255,180,84,.14);padding:4px 10px;border-radius:999px;}
+  .guide-close{background:none;border:none;color:var(--text-faint);font-size:15px;cursor:pointer;padding:2px 6px;line-height:1;}
+  .guide-close:hover{color:var(--text-primary);}
+  .guide-panel h4{font-family:var(--font-display);font-size:15px;margin:0 0 12px;letter-spacing:-.005em;}
+  .guide-line{display:flex;gap:10px;font-size:12.5px;color:var(--text-muted);margin-bottom:9px;line-height:1.45;}
+  .guide-line .tag{font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.05em;color:var(--text-faint);min-width:42px;flex:0 0 auto;padding-top:2px;}
+  .guide-line.set .tag{color:var(--accent-blue);}
+  .guide-line.watch .tag{color:var(--accent-mint);}
+  .guide-line.why .tag{color:var(--accent-amber);}
+  .guide-line b{color:var(--text-primary);}
+  .guide-actions{display:flex;gap:8px;margin-top:14px;}
+  .guide-actions .btn{flex:1;font-size:11px;padding:9px 8px;justify-content:center;}
+  .guide-dots{display:flex;gap:6px;margin-top:12px;justify-content:center;}
+  .guide-dots .gd{width:7px;height:7px;border-radius:50%;background:var(--bg-track);border:1px solid var(--border);}
+  .guide-dots .gd.on{background:var(--accent-amber);border-color:var(--accent-amber);}
+  @media (max-width:640px){.guide-panel{right:10px;left:10px;width:auto;bottom:10px;}.guide-launcher{right:10px;bottom:10px;}}
 </style>
 </head>
 <body>
@@ -495,6 +529,7 @@
       <div class="mini-track"><div class="mini-fill"></div></div>
       <span>quota draining, then a forced pause — every 100ms period</span>
     </div>
+    <button class="btn primary" id="startGuideBtn" style="margin-top:24px;">🧭 Start the guided walkthrough</button>
   </div>
 
   <!-- ================= SETUP ================= -->
@@ -836,6 +871,25 @@
   <footer>
     <p>Simulation models the CFS bandwidth controller: quota resets every 100ms period; exceeding it pauses execution until the next period.</p>
   </footer>
+</div>
+
+<button class="guide-launcher" id="guideLauncherBtn">🧭 Guide</button>
+
+<div class="guide-panel" id="guidePanel" hidden>
+  <div class="guide-panel-head">
+    <span class="guide-step-badge" id="guideStepBadge">STEP 1 / 4</span>
+    <button class="guide-close" id="guideCloseBtn" aria-label="Close guide">✕</button>
+  </div>
+  <h4 id="guideTitle">The healthy baseline</h4>
+  <div class="guide-line set"><span class="tag">SET</span><span id="guideSet"></span></div>
+  <div class="guide-line watch"><span class="tag">WATCH</span><span id="guideWatch"></span></div>
+  <div class="guide-line why"><span class="tag">WHY</span><span id="guideWhy"></span></div>
+  <div class="guide-actions">
+    <button class="btn" id="guidePrevBtn">‹ Prev</button>
+    <button class="btn primary" id="guideRunBtn">▶ Run this step</button>
+    <button class="btn" id="guideNextBtn">Next ›</button>
+  </div>
+  <div class="guide-dots" id="guideDots"></div>
 </div>
 
 <script>
@@ -1398,6 +1452,73 @@
 
   for (let i = 0; i < N; i++) tick(); // seed history so graphs/timeline aren't empty on load
   startTimer();
+})();
+</script>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+
+  // pull scenario content straight from the walkthrough cards, so there's one source of truth
+  const cards = Array.from(document.querySelectorAll('.scenario-card'));
+  const STEPS = cards.map(card => ({
+    title: card.querySelector('h3').textContent,
+    set: card.querySelector('.scenario-line.set span:last-child').innerHTML,
+    watch: card.querySelector('.scenario-line.watch span:last-child').innerHTML,
+    why: card.querySelector('.scenario-line.why span:last-child').innerHTML,
+    btn: card.querySelector('.run-scenario-btn'),
+  }));
+
+  let stepIdx = 0;
+
+  const panel = $('guidePanel');
+  const launcher = $('guideLauncherBtn');
+
+  function renderDots(){
+    $('guideDots').innerHTML = STEPS.map((_, i) => `<span class="gd ${i === stepIdx ? 'on' : ''}"></span>`).join('');
+  }
+
+  function renderStep(){
+    const s = STEPS[stepIdx];
+    $('guideStepBadge').textContent = `STEP ${stepIdx + 1} / ${STEPS.length}`;
+    $('guideTitle').textContent = s.title;
+    $('guideSet').innerHTML = s.set;
+    $('guideWatch').innerHTML = s.watch;
+    $('guideWhy').innerHTML = s.why;
+    $('guidePrevBtn').disabled = stepIdx === 0;
+    $('guideNextBtn').disabled = stepIdx === STEPS.length - 1;
+    renderDots();
+  }
+
+  function openPanel(){
+    panel.hidden = false;
+    launcher.hidden = true;
+    renderStep();
+  }
+  function closePanel(){
+    panel.hidden = true;
+    launcher.hidden = false;
+  }
+
+  launcher.addEventListener('click', openPanel);
+  $('guideCloseBtn').addEventListener('click', closePanel);
+  $('startGuideBtn').addEventListener('click', () => {
+    stepIdx = 0;
+    openPanel();
+    STEPS[stepIdx].btn.click(); // runs the scenario immediately and scrolls to the live panel
+  });
+
+  $('guidePrevBtn').addEventListener('click', () => { if (stepIdx > 0){ stepIdx--; renderStep(); } });
+  $('guideNextBtn').addEventListener('click', () => { if (stepIdx < STEPS.length - 1){ stepIdx++; renderStep(); } });
+  $('guideRunBtn').addEventListener('click', () => STEPS[stepIdx].btn.click());
+
+  // clicking a scenario card's own button keeps the floating panel in sync and opens it
+  cards.forEach((card, i) => {
+    card.querySelector('.run-scenario-btn').addEventListener('click', () => {
+      stepIdx = i;
+      openPanel();
+    });
+  });
 })();
 </script>
 
