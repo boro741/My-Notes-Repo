@@ -710,16 +710,54 @@
       </div>
     </div>
 
-    <h3>Step 2 — Estimate concurrency with Little's Law</h3>
-    <p>A quick way to turn a traffic target into a concrete resource estimate:</p>
+    <h3>Step 2 — Estimate concurrency & required vCPUs</h3>
+    <p>A two-part formula turns a traffic target into a concrete container and vCPU estimate:</p>
+
+    <h4>Part A: Estimate in-flight concurrency with Little's Law</h4>
     <div class="formula">
-      <span class="formula-label">Little's Law</span>
+      <span class="formula-label">Little's Law (In-Flight Concurrency)</span>
       <span class="fx">Concurrency</span> = <span class="fx2">Target RPS</span> × <span class="fx2">Avg. Response Time</span>
     </div>
     <div class="worked">
-      <h4>Worked example</h4>
-      <div class="step"><span class="n">1</span><div class="body">Target: <strong>500 RPS</strong>, average response time: <strong>200 ms (0.2s)</strong>.</div></div>
-      <div class="step"><span class="n">2</span><div class="body">Concurrency = 500 × 0.2 = <span class="out">100 concurrent in-flight requests</span> at any instant — this is what your worker pool and vCPU allocation need to comfortably absorb.</div></div>
+      <h4>Worked calculation — in-flight requests</h4>
+      <div class="step"><span class="n">1</span><div class="body">Target: <strong>500 RPS</strong>, average total response time: <strong>200 ms (0.2s)</strong>.</div></div>
+      <div class="step"><span class="n">2</span><div class="body">Concurrency = 500 × 0.2 = <span class="out">100 concurrent in-flight requests</span> at any instant inside the system.</div></div>
+    </div>
+
+    <h4>Part B: Turn concurrency into required vCPUs</h4>
+    <p>
+      Crucially, <strong>100 in-flight requests does NOT mean you need 100 vCPUs</strong>.
+      During a 200 ms request lifetime, code only actively runs instructions on silicon for a fraction of that time — the rest is spent waiting for a database, Redis, or an external API:
+    </p>
+
+    <div class="def-grid">
+      <div class="def-card">
+        <div class="term">Active CPU time (T<sub>cpu</sub>)</div>
+        <div class="def">Active silicon compute: JSON serialization, parsing, business logic, cryptography. (e.g. <strong>10 ms</strong>)</div>
+      </div>
+      <div class="def-card">
+        <div class="term">I/O wait time (T<sub>io</sub>)</div>
+        <div class="def">Zero CPU load: sleeping while waiting on database queries, network sockets, or disk. (e.g. <strong>190 ms</strong>)</div>
+      </div>
+    </div>
+
+    <div class="formula">
+      <span class="formula-label">vCPU Demand Formula</span>
+      <span class="fx">vCPUs Required</span> = (<span class="fx2">Target RPS</span> × <span class="fx2">CPU Time per Req (T<sub>cpu</sub>)</span>) ÷ <span class="fx">Target Utilization</span>
+    </div>
+
+    <div class="worked">
+      <h4>Worked calculation — vCPU provisioning</h4>
+      <div class="step"><span class="n">1</span><div class="body">From APM profiling (e.g., Datadog/CloudWatch): of the 200 ms response time, <strong>T<sub>cpu</sub> = 10 ms (0.01s)</strong>, while 190 ms is idle I/O wait.</div></div>
+      <div class="step"><span class="n">2</span><div class="body">Raw compute demand = 500 RPS × 0.01s = <span class="out">5.0 vCPUs</span> running at 100% continuous load.</div></div>
+      <div class="step"><span class="n">3</span><div class="body">Factor in a <strong>70% target utilization</strong> sweet spot for headroom (from Step 3): 5.0 ÷ 0.70 = <strong>7.14 vCPUs</strong> → round up to <span class="out">8 vCPUs total</span>.</div></div>
+      <div class="step"><span class="n">4</span><div class="body">Map to ECS tasks: provision <strong>four 2-vCPU tasks</strong> (<code class="inline">ecs_task_cpu: 2048</code>) or <strong>two 4-vCPU tasks</strong> (<code class="inline">ecs_task_cpu: 4096</code>).</div></div>
+    </div>
+
+    <div class="callout note">
+      <span class="callout-label">How runtime architecture affects your cluster sizing</span>
+      <strong>Async runtimes (Node.js, Go, FastAPI / asyncio)</strong> hold hundreds of waiting I/O connections per thread without blocking CPU, so they only need the raw compute allocation: <strong>~8 vCPUs total</strong>.<br>
+      <strong>Sync worker runtimes (Gunicorn sync, Puma)</strong> block an entire worker thread during the 190 ms I/O wait. To hold 100 concurrent requests without queue backpressure, you need 100 sync workers across your fleet (e.g., 20 tasks of 2 vCPU each, using the formula in Section 08).
     </div>
 
     <h3>Step 3 — Confirm with a real benchmark</h3>
@@ -1146,7 +1184,7 @@
       <li><span class="rn">5</span><div><b>Memory (MiB)</b> — RAM available <em>while the task runs</em>, not disk or "CPU memory."<br><span class="d">8192 → 8 GB RAM ceiling. Exceed it and the container gets OOM-killed.</span></div></li>
       <li><span class="rn">6</span><div><b>Workers</b> — software, not hardware. They live in your app's memory and borrow vCPU time.<br><span class="d">Sync workers ≈ (2 × cores) + 1; async workers scale differently for I/O-bound work.</span></div></li>
       <li><span class="rn">7</span><div><b>RPS vs. Throughput</b> — RPS is a rate; throughput is what you can sustain without a growing backlog.<br><span class="d">Watch offered load vs. achieved throughput diverge to find your system's real ceiling.</span></div></li>
-      <li><span class="rn">8</span><div><b>Little's Law</b> — Concurrency = Throughput × Response Time.<br><span class="d">Turns a target RPS into a concrete number of in-flight requests your infra must handle.</span></div></li>
+      <li><span class="rn">8</span><div><b>Little's Law & vCPU Sizing</b> — Concurrency = RPS × Total Response Time; Required vCPUs = (RPS × T<sub>cpu</sub>) ÷ Target Utilization.<br><span class="d">Turns a target RPS and active CPU time into concrete container task and vCPU requirements.</span></div></li>
     </ul>
   </div>
 </section>
