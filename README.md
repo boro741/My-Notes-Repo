@@ -14,24 +14,13 @@ My HTML Notes/
 ├── README.md
 ├── .gitignore
 │
-├── AWS Learning/
-│   ├── Section 4 Notes - IAM & AWS CLI.html
-│   ├── section_5_Ec2_Fundamentals.html
-│   ├── Section_6_EC2_Instance_Storage_Notes.html
-│   ├── Section 7 Notes - ELB + ASG.html
-│   └── Section 10 Notes - VPC Fundamentals.html
-│
-├── Udemy A Comprehensive Entrepreneurship Course.../
-│   ├── section1_ProblemSolutionFit_Notes.html
-│   ├── Section2_ProductMarketFit_Notes.html
-│   ├── section3_Lean_Canvas_Notes.html
-│   ├── section4_notes.html
-│   └── section5_notes.html
-│
-└── Youtube Videos/
-    ├── Beauty Brand - 6 Steps Notes.html
-    ├── How to Build Products People Can't Quit - Product Psychology Playbook.html
-    └── How to Invest in Indian Real Estate - Notes.html
+├── AWS Learning/                       ← 30 interactive notes & decision trees
+├── New AWS Learning Blog/              ← 28 blog-style AWS architecture deep-dives
+├── Load Testing Foundation/            ← 3-part ECS & backend performance guides
+├── The Visual MBA/                     ← Visual business & finance chapter notes + Hub
+├── Udemy A Comprehensive Entrepreneurship Course.../ ← 6 startup & ideation notes
+├── Misc/                               ← 5 guides (ACM/TLS, Kafka, OpenSearch, etc.)
+└── Youtube Videos/                     ← 5 curated video takeaways & playbooks
 ```
 
 ---

@@ -581,11 +581,11 @@
 
     <div class="stats-row">
       <div class="stat">
-        <div class="stat-value" id="total-notes">79</div>
+        <div class="stat-value" id="total-notes">81</div>
         <div class="stat-label">Total Notes</div>
       </div>
       <div class="stat">
-        <div class="stat-value" id="total-folders">6</div>
+        <div class="stat-value" id="total-folders">7</div>
         <div class="stat-label">Folders</div>
       </div>
     </div>
@@ -1191,6 +1191,58 @@
       </div>
     </section>
 
+    <!-- ── Load Testing Foundation ── -->
+    <section class="section theme-pink" id="section-load-testing" data-section>
+      <div class="section-header" role="button" tabindex="0" aria-expanded="true">
+        <div class="section-header-left">
+          <div class="folder-icon">🧪</div>
+          <div>
+            <div class="section-title">Load Testing Foundation</div>
+            <div class="section-count">3 notes</div>
+          </div>
+        </div>
+        <div class="section-header-right">
+          <div class="chevron-icon" title="Toggle Section">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="cards-wrapper">
+        <div class="cards-wrapper-inner">
+          <div class="cards-grid">
+
+        <a class="card" href="Load Testing Foundation/Load-testing-foundations Part 1.html" data-card>
+          <div class="card-icon">⚙️</div>
+          <div class="card-body">
+            <div class="card-title">Part 1 — What Your ECS Config Is Actually Telling You</div>
+            <div class="card-sub">Physical layer, CPU, RAM &amp; network throughput on ECS infrastructure</div>
+          </div>
+          <span class="card-arrow">→</span>
+        </a>
+
+        <a class="card" href="Load Testing Foundation/Load-testing-foundations-part2.html" data-card>
+          <div class="card-icon">🎯</div>
+          <div class="card-body">
+            <div class="card-title">Part 2 — Designing Your First Load Test</div>
+            <div class="card-sub">Test patterns, traffic modeling, metrics &amp; concurrency targets</div>
+          </div>
+          <span class="card-arrow">→</span>
+        </a>
+
+        <a class="card" href="Load Testing Foundation/load-testing-foundations-part3.html" data-card>
+          <div class="card-icon">🔍</div>
+          <div class="card-body">
+            <div class="card-title">Part 3 — Isolating the Real Bottleneck</div>
+            <div class="card-sub">CPU, memory, thread pool exhaustion, database &amp; latency analysis</div>
+          </div>
+          <span class="card-arrow">→</span>
+        </a>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ── Visual MBA ── -->
     <section class="section theme-blue" id="section-visual-mba" data-section>
       <div class="section-header" role="button" tabindex="0" aria-expanded="true">
@@ -1332,7 +1384,7 @@
           <div class="folder-icon">📁</div>
           <div>
             <div class="section-title">Misc</div>
-            <div class="section-count">6 notes</div>
+            <div class="section-count">5 notes</div>
           </div>
         </div>
         <div class="section-header-right">
@@ -1386,15 +1438,6 @@
           <div class="card-body">
             <div class="card-title">Container Orchestration Guide</div>
             <div class="card-sub">Docker Compose vs ECS vs EKS vs Kubernetes scope &amp; brain ownership</div>
-          </div>
-          <span class="card-arrow">→</span>
-        </a>
-
-        <a class="card" href="Misc/Load-testing-foundations.html" data-card>
-          <div class="card-icon">🧪</div>
-          <div class="card-body">
-            <div class="card-title">Load Testing Foundations</div>
-            <div class="card-sub">Physical layer, CPU, RAM &amp; network throughput on ECS infrastructure</div>
           </div>
           <span class="card-arrow">→</span>
         </a>
@@ -1494,6 +1537,12 @@
     const noResults   = document.getElementById('no-results');
     const sections    = document.querySelectorAll('[data-section]');
     const STORAGE_KEY = 'my_html_notes_collapsed_sections';
+
+    // Auto-update header stats based on DOM
+    const totalNotesEl = document.getElementById('total-notes');
+    const totalFoldersEl = document.getElementById('total-folders');
+    if (totalNotesEl) totalNotesEl.textContent = document.querySelectorAll('[data-card]').length;
+    if (totalFoldersEl) totalFoldersEl.textContent = sections.length;
 
     // ── LocalStorage state helpers ──
     function getCollapsedSections() {
