@@ -191,7 +191,7 @@
   .config-item label{font-family:var(--font-mono);font-size:11px;color:var(--text-faint);letter-spacing:.04em;display:flex;justify-content:space-between;}
   .config-item label span.val{color:var(--accent-amber);}
   .config-item input[type=range]{
-    -webkit-appearance:none;width:100%;height:4px;border-radius:3px;background:var(--bg-track);outline:none;
+    -webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;background:var(--bg-track);outline:none;
   }
   .config-item input[type=range]::-webkit-slider-thumb{
     -webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent-amber);cursor:pointer;border:2px solid #10141b;
@@ -250,6 +250,10 @@
     padding-bottom:6px;
     margin-bottom:26px;
   }
+  /* live timeline renders oldest→newest left-to-right; it can hold more boxes than fit the
+     row, so anchor the newest (current) period to the right edge and let old ones clip off
+     the left — otherwise flex's default left-packing clips the newest one off-screen instead. */
+  #liveTimeline{justify-content:flex-end;}
   .period-box{
     flex:0 0 auto;
     width:96px;
@@ -359,6 +363,20 @@
     background:var(--bg-panel-2);padding:2px 6px;border-radius:5px;border:1px solid var(--border);
   }
   .gauge-legend{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10px;color:var(--text-faint);margin-top:8px;}
+
+  /* ---------- One-off vs continuous compare ---------- */
+  .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:8px;}
+  .compare-col{background:var(--bg-panel);border:1px solid var(--border);border-radius:14px;padding:22px;}
+  .compare-tag{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.06em;padding:5px 11px;border-radius:999px;display:inline-block;margin-bottom:12px;}
+  .compare-tag.one-off{background:rgba(255,95,95,.14);color:var(--accent-red);border:1px solid rgba(255,95,95,.32);}
+  .compare-tag.continuous{background:rgba(111,224,194,.14);color:var(--accent-mint);border:1px solid rgba(111,224,194,.32);}
+  .compare-desc{font-size:13.5px;color:var(--text-muted);margin:0 0 18px;line-height:1.55;}
+  .compare-row{display:flex;gap:5px;margin-bottom:16px;flex-wrap:wrap;}
+  .period-box.mini{width:52px;height:60px;}
+  .period-box.mini .period-idx{font-size:9px;padding:4px 5px;}
+  .period-box.mini .period-tag{font-size:7px;padding:1px 3px;top:4px;right:4px;}
+  .compare-verdict{font-family:var(--font-mono);font-size:13px;color:var(--text-muted);line-height:1.6;border-top:1px solid var(--border);padding-top:14px;}
+  @media (max-width:640px){.compare-grid{grid-template-columns:1fr;}}
 
   .diagnosis-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:34px;}
   .diag-card{
@@ -640,11 +658,50 @@
     </div>
   </section>
 
+  <!-- ================= COMPARE: ONE-OFF vs CONTINUOUS ================= -->
+  <section id="compare">
+    <div class="section-num">03.5</div>
+    <h2>Same word, two different questions</h2>
+    <p class="section-lede">Section 02 and section 06 both show a "throttle ratio" — but they're answering two different questions, which is why one can land on 8% and the other never can. Read both rows left to right, window by window.</p>
+
+    <div class="compare-grid">
+      <div class="compare-col">
+        <span class="compare-tag one-off">ONE-OFF JOB · section 02</span>
+        <p class="compare-desc">A fixed pile of work, given once. Every window before the last is <b>forced</b> to end paused — there's no way around it, whatever numbers you pick. Only the final window, the one where the work finally runs out, ever has a chance of being clean.</p>
+        <div class="compare-row">
+          <div class="period-box mini"><div class="period-tag tag-throttled">PAUSED</div><div class="period-idx">1</div><div class="period-fill" style="height:100%;"><div class="seg-pause" style="height:50%;"></div><div class="seg-work" style="height:50%;"></div></div></div>
+          <div class="period-box mini"><div class="period-tag tag-throttled">PAUSED</div><div class="period-idx">2</div><div class="period-fill" style="height:100%;"><div class="seg-pause" style="height:50%;"></div><div class="seg-work" style="height:50%;"></div></div></div>
+          <div class="period-box mini current"><div class="period-tag tag-clean">CLEAN</div><div class="period-idx">3</div><div class="period-fill" style="height:40%;"><div class="seg-pause" style="height:0%;"></div><div class="seg-work" style="height:40%;"></div></div></div>
+        </div>
+        <div class="compare-verdict">2 paused ÷ 3 windows = <strong class="hl-red">67%</strong><br>Only 0%, 50%, 67%, 75%, 80%… are reachable here. Never 8%.</div>
+      </div>
+      <div class="compare-col">
+        <span class="compare-tag continuous">NEVER-ENDING TRAFFIC · section 06</span>
+        <p class="compare-desc">Fresh, random work shows up every window, forever. Each window is its own independent roll of the dice — not building toward one finish line.</p>
+        <div class="compare-row">
+          <div class="period-box mini"><div class="period-tag tag-clean">CLEAN</div><div class="period-idx">1</div><div class="period-fill" style="height:38%;"><div class="seg-work" style="height:38%;"></div></div></div>
+          <div class="period-box mini"><div class="period-tag tag-clean">CLEAN</div><div class="period-idx">2</div><div class="period-fill" style="height:45%;"><div class="seg-work" style="height:45%;"></div></div></div>
+          <div class="period-box mini"><div class="period-tag tag-clean">CLEAN</div><div class="period-idx">3</div><div class="period-fill" style="height:52%;"><div class="seg-work" style="height:52%;"></div></div></div>
+          <div class="period-box mini"><div class="period-tag tag-clean">CLEAN</div><div class="period-idx">4</div><div class="period-fill" style="height:41%;"><div class="seg-work" style="height:41%;"></div></div></div>
+          <div class="period-box mini"><div class="period-tag tag-clean">CLEAN</div><div class="period-idx">5</div><div class="period-fill" style="height:48%;"><div class="seg-work" style="height:48%;"></div></div></div>
+          <div class="period-box mini"><div class="period-tag tag-clean">CLEAN</div><div class="period-idx">6</div><div class="period-fill" style="height:55%;"><div class="seg-work" style="height:55%;"></div></div></div>
+          <div class="period-box mini current"><div class="period-tag tag-throttled">PAUSED</div><div class="period-idx">7</div><div class="period-fill" style="height:100%;"><div class="seg-pause" style="height:40%;"></div><div class="seg-work" style="height:60%;"></div></div></div>
+          <div class="period-box mini"><div class="period-tag tag-clean">CLEAN</div><div class="period-idx">8</div><div class="period-fill" style="height:44%;"><div class="seg-work" style="height:44%;"></div></div></div>
+          <div class="period-box mini"><div class="period-tag tag-clean">CLEAN</div><div class="period-idx">9</div><div class="period-fill" style="height:50%;"><div class="seg-work" style="height:50%;"></div></div></div>
+          <div class="period-box mini"><div class="period-tag tag-clean">CLEAN</div><div class="period-idx">10</div><div class="period-fill" style="height:39%;"><div class="seg-work" style="height:39%;"></div></div></div>
+          <div class="period-box mini"><div class="period-tag tag-clean">CLEAN</div><div class="period-idx">11</div><div class="period-fill" style="height:47%;"><div class="seg-work" style="height:47%;"></div></div></div>
+          <div class="period-box mini"><div class="period-tag tag-clean">CLEAN</div><div class="period-idx">12</div><div class="period-fill" style="height:43%;"><div class="seg-work" style="height:43%;"></div></div></div>
+        </div>
+        <div class="compare-verdict">1 paused ÷ 12 windows = <strong class="hl-mint">8%</strong><br>Any percentage is possible — every window is a fresh, independent chance.</div>
+      </div>
+    </div>
+  </section>
+
   <!-- ================= DIAGNOSTIC ================= -->
   <section id="diagnosis">
     <div class="section-num">04</div>
     <h2>What the ratio tells you about your server</h2>
-    <p class="section-lede">The live ratio from your simulation is marked below on the standard health bands. In production, always read this next to CPU utilization — the ratio tells you <em>whether</em> the CPU is the ceiling, not just that something is slow.</p>
+    <p class="section-lede">The live ratio from your simulation is marked below on the standard health bands. <strong class="hl">A ratio above 0% is not automatically bad</strong> — bursty traffic occasionally grazing the limit is normal and often a deliberate cost tradeoff. It becomes a real problem when it's sustained/high <em>and</em> shows up as user-facing latency or errors. Always read it next to CPU utilization — the ratio tells you <em>whether</em> the CPU is the ceiling, not just that something is slow.</p>
 
     <div class="gauge-wrap">
       <div class="gauge-track">
@@ -659,8 +716,16 @@
 
     <div class="diagnosis-cards">
       <div class="diag-card">
-        <h4><span class="sw" style="background:var(--accent-red);"></span>High ratio + high CPU util</h4>
-        <p>Your app is genuinely CPU‑starved. The quota is the real ceiling — more instances won't help as much as more CPU per instance.</p>
+        <h4><span class="sw" style="background:var(--accent-mint);"></span>Low, occasional ratio (0–5%)</h4>
+        <p>Normal. Traffic bursts briefly graze the limit now and then. Not a problem unless it's trending upward or you're already seeing latency/error spikes alongside it.</p>
+      </div>
+      <div class="diag-card">
+        <h4><span class="sw" style="background:var(--accent-red);"></span>High ratio + CPU pinned at the quota ceiling</h4>
+        <p>Genuinely CPU‑starved. Fix: raise the vCPU quota per instance (helps individual request latency) and/or add more replicas (helps overall throughput). Both are valid — quota for latency, replicas for volume.</p>
+      </div>
+      <div class="diag-card">
+        <h4><span class="sw" style="background:var(--accent-amber);"></span>High ratio, but the work itself looks light</h4>
+        <p>Often an app/runtime problem, not a hardware one: thread pools, worker counts, or GOMAXPROCS set higher than the container's actual CPU quota cause self-inflicted contention. Fix the concurrency config or the code before adding CPU.</p>
       </div>
       <div class="diag-card">
         <h4><span class="sw" style="background:var(--accent-blue);"></span>Low ratio + high latency</h4>
@@ -972,7 +1037,7 @@
         wallClock += chunk;
         dt -= chunk;
         if (periodElapsed >= PERIOD_MS - 1e-9){
-          history.push({index: periodIndex, throttled: true});
+          history.push({index: periodIndex, throttled: true, workMs: quotaUsed});
           periodIndex++; periodElapsed = 0; quotaUsed = 0;
         }
       } else {
@@ -985,12 +1050,16 @@
         dt -= chunk;
 
         if (workRemaining <= 1e-9){
+          // the job finished inside this period without ever exhausting its quota —
+          // that's a real, non-throttled period and must be counted, or the ratio
+          // silently drops the one period that would have pulled it down.
           workRemaining = 0;
           finished = true;
+          history.push({index: periodIndex, throttled: false, workMs: quotaUsed});
           break;
         }
         if (periodElapsed >= PERIOD_MS - 1e-9){
-          history.push({index: periodIndex, throttled: currentlyThrottled()});
+          history.push({index: periodIndex, throttled: currentlyThrottled(), workMs: quotaUsed});
           periodIndex++; periodElapsed = 0; quotaUsed = 0;
         }
       }
@@ -1013,8 +1082,8 @@
     const shown = history.slice(-4);
     let boxesHtml = '';
     shown.forEach(p => {
-      const workPct = (p.throttled ? quotaMs : PERIOD_MS) / PERIOD_MS * 100;
-      const pausePct = 100 - workPct;
+      const workPct = (p.workMs / PERIOD_MS) * 100;
+      const pausePct = p.throttled ? (100 - workPct) : 0;
       boxesHtml += periodBoxHtml(p.index, workPct, pausePct, false, p.throttled, true);
     });
     if (!finished){
@@ -1138,10 +1207,11 @@
 <script>
 (function(){
   const PERIOD_MS = 100;
-  const COST_MS = 0.35; // simulated CPU-ms cost to service one request
+  const COST_MS = 1.35; // simulated CPU-ms cost to service one request
   const MAX_QUEUE = 420; // backlog size at which requests start getting dropped (errors)
   const N = 40; // graph history length
   const TIMELINE_SHOW = 12; // period boxes visible in the live timeline
+  const RATIO_WINDOW = 24; // periods (~12s of ticks) the displayed ratio is averaged over
 
   const loadTargets = {
     normal:   { rpsSent: 110 },
@@ -1156,6 +1226,7 @@
   let periodsElapsed = 0;
   let throttledPeriods = 0;
   let periodHistory = []; // {throttled, cpuPct}
+  let ratioWindow = []; // rolling recent-throttled booleans — drives the displayed ratio
   let paused = false;
 
   const hist = { rps:[], rpsSent:[], cpu:[], mem:[], lat:[], err:[], ratio:[], backlog:[], periodsElapsed:[], throttledPeriods:[] };
@@ -1194,7 +1265,13 @@
 
     periodsElapsed++;
     if (throttled) throttledPeriods++;
-    const ratio = periodsElapsed > 0 ? (throttledPeriods / periodsElapsed * 100) : 0;
+
+    // ratio reflects RECENT periods (like a Prometheus rate() over a window), not the
+    // lifetime total — otherwise months of history since page-load would drown out
+    // whatever just changed in the last few seconds.
+    ratioWindow.push(throttled);
+    if (ratioWindow.length > RATIO_WINDOW) ratioWindow.shift();
+    const ratio = ratioWindow.length ? (ratioWindow.filter(Boolean).length / ratioWindow.length * 100) : 0;
 
     periodHistory.push({ throttled, cpuPct });
     if (periodHistory.length > TIMELINE_SHOW) periodHistory.shift();
@@ -1365,6 +1442,7 @@
   function setLoad(level){
     document.querySelectorAll('.load-btn').forEach(b => b.classList.toggle('active', b.dataset.load === level));
     loadLevel = level;
+    ratioWindow = []; // config just changed — don't blend the ratio with the old regime
   }
 
   document.querySelectorAll('.load-btn').forEach(btn => {
@@ -1387,6 +1465,7 @@
     quotaMs = Math.round(vcpu * 100);
     $('liveVcpuVal').textContent = vcpu.toFixed(1);
     updateCpuConfigCard(vcpu);
+    ratioWindow = []; // config just changed — don't blend the ratio with the old regime
   }
 
   vcpuSlider.addEventListener('input', () => setQuota(parseFloat(vcpuSlider.value)));

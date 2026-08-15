@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reading the Numbers — A Field Guide to Financial Statements, Markets & Venture Capital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F5F1E7;
+    --paper-deep:#EEE8D9;
+    --card:#FBF9F2;
+    --ink:#14181F;
+    --ink-soft:#4B5261;
+    --ink-faint:#8B8A7C;
+    --rule:#D9D1B8;
+    --brass:#A9793E;
+    --brass-deep:#8A5F2C;
+    --positive:#33573E;
+    --negative:#9B3B2C;
+    --paper-shadow: rgba(20,24,31,0.08);
+    --maxw: 780px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--brass); color:var(--paper); }
+
+  /* ---------- texture ---------- */
+  .grain{
+    position:fixed; inset:0; pointer-events:none; z-index:2;
+    opacity:0.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:10;
+    background:rgba(245,241,231,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--rule);
+  }
+  .topbar-inner{
+    max-width:1040px; margin:0 auto; padding:14px 28px;
+    display:flex; align-items:center; justify-content:space-between; gap:20px;
+  }
+  .brandmark{
+    font-family:'Fraunces', serif; font-weight:600; font-size:15px;
+    letter-spacing:0.02em; color:var(--ink); text-decoration:none;
+    display:flex; align-items:center; gap:8px;
+  }
+  .brandmark .dot{width:7px;height:7px;border-radius:50%;background:var(--brass);display:inline-block;}
+  .navlinks{ display:flex; gap:26px; }
+  .navlinks a{
+    font-size:12.5px; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--ink-soft); text-decoration:none; font-weight:600;
+    border-bottom:1px solid transparent; padding-bottom:3px;
+    transition:border-color .2s ease, color .2s ease;
+  }
+  .navlinks a:hover{ color:var(--brass-deep); border-color:var(--brass); }
+  @media (max-width:720px){ .navlinks{display:none;} }
+
+  /* ---------- hero ---------- */
+  .hero{
+    max-width:920px; margin:0 auto; padding:86px 28px 40px;
+    text-align:left;
+  }
+  .kicker{
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px;
+    letter-spacing:0.14em; text-transform:uppercase; color:var(--brass-deep);
+    display:flex; align-items:center; gap:12px; margin-bottom:26px;
+  }
+  .kicker::before{ content:""; width:34px; height:1px; background:var(--brass-deep); display:inline-block;}
+  h1.headline{
+    font-family:'Fraunces', serif; font-weight:600; font-style:normal;
+    font-size:clamp(38px, 6.2vw, 68px); line-height:1.04; letter-spacing:-0.01em;
+    margin:0 0 26px;
+  }
+  h1.headline em{ font-style:italic; font-weight:450; color:var(--brass-deep); }
+  .dek{
+    font-size:19px; line-height:1.6; color:var(--ink-soft); max-width:640px;
+    margin:0 0 34px; font-weight:400;
+  }
+  .meta-row{
+    display:flex; flex-wrap:wrap; gap:22px; align-items:center;
+    padding-top:22px; border-top:1px solid var(--rule);
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--ink-faint);
+    letter-spacing:0.03em;
+  }
+  .meta-row b{ color:var(--ink-soft); font-weight:600; }
+
+  /* ---------- the equation banner (signature element) ---------- */
+  .equation-wrap{
+    max-width:920px; margin:44px auto 10px; padding:0 28px;
+  }
+  .equation{
+    background:var(--ink); color:var(--paper);
+    border-radius:2px; padding:30px 34px;
+    display:flex; align-items:center; justify-content:center; gap:22px;
+    flex-wrap:wrap;
+    font-family:'Fraunces', serif; font-size:clamp(20px,3.4vw,30px); font-weight:500;
+    position:relative; overflow:hidden;
+  }
+  .equation::before{
+    content:"THE EQUATION OF BALANCE";
+    position:absolute; top:10px; left:20px;
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.16em;
+    color:rgba(245,241,231,0.4); text-transform:uppercase;
+  }
+  .equation .term{ padding:6px 4px; }
+  .equation .op{ color:var(--brass); font-size:0.7em; padding:0 4px; }
+  .equation .sub{ display:block; font-family:'IBM Plex Mono', monospace; font-size:10.5px; letter-spacing:0.08em; color:rgba(245,241,231,0.55); margin-top:6px; text-transform:uppercase; font-style:normal;}
+
+  /* ---------- article shell ---------- */
+  article{ max-width:var(--maxw); margin:0 auto; padding:64px 28px 40px; }
+  .lede{
+    font-size:20px; line-height:1.75; color:var(--ink); margin-bottom:30px;
+  }
+  .lede::first-letter{
+    font-family:'Fraunces', serif; font-weight:600; font-size:3.6em; float:left;
+    line-height:0.82; padding:6px 10px 0 0; color:var(--brass-deep);
+  }
+  p{ font-size:17px; line-height:1.8; color:#282d36; margin:0 0 22px; }
+  p b, li b{ color:var(--ink); }
+  a.inline{ color:var(--brass-deep); text-decoration-color:var(--brass); text-underline-offset:3px;}
+
+  h2.section-title{
+    font-family:'Fraunces', serif; font-weight:600; font-size:clamp(28px,4vw,38px);
+    margin:64px 0 8px; letter-spacing:-0.01em; scroll-margin-top:90px;
+  }
+  .section-num{
+    font-family:'IBM Plex Mono', monospace; color:var(--brass); font-size:13px;
+    letter-spacing:0.1em; display:block; margin-bottom:10px;
+  }
+  h3.sub-title{
+    font-family:'Fraunces', serif; font-weight:600; font-size:23px; margin:38px 0 14px;
+  }
+
+  blockquote{
+    margin:38px 0; padding:4px 0 4px 26px; border-left:3px solid var(--brass);
+    font-family:'Fraunces', serif; font-style:italic; font-size:23px; line-height:1.5;
+    color:var(--ink);
+  }
+  blockquote cite{ display:block; font-family:'IBM Plex Mono', monospace; font-style:normal;
+    font-size:12px; color:var(--ink-faint); margin-top:12px; letter-spacing:0.04em;}
+
+  ul, ol{ padding-left:22px; margin:0 0 22px; }
+  li{ font-size:17px; line-height:1.8; color:#282d36; margin-bottom:8px; }
+
+  /* ---------- ledger card (DMart-style highlighted numbers) ---------- */
+  .ledger{
+    background:var(--card); border:1px solid var(--rule); border-radius:3px;
+    padding:26px 28px; margin:30px 0;
+    box-shadow:0 1px 0 var(--paper-shadow);
+    background-image:
+      linear-gradient(var(--rule) 1px, transparent 1px);
+    background-size: 100% 38px;
+    background-position: 0 60px;
+  }
+  .ledger-head{
+    display:flex; justify-content:space-between; align-items:baseline;
+    margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--ink);
+  }
+  .ledger-head h4{
+    font-family:'Fraunces', serif; font-size:18px; font-weight:600; margin:0;
+  }
+  .ledger-head span{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--ink-faint);
+    text-transform:uppercase; letter-spacing:0.06em;
+  }
+  .ledger-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:9px 0; font-family:'IBM Plex Mono', monospace; font-size:14.5px;
+  }
+  .ledger-row .label{ color:var(--ink-soft); }
+  .ledger-row .value{ font-weight:600; color:var(--ink); }
+  .ledger-row .value.hot{ color:var(--negative); }
+  .ledger-row .value.good{ color:var(--positive); }
+  .ledger-row.total{
+    border-top:1.5px solid var(--ink); margin-top:8px; padding-top:14px;
+    font-weight:700;
+  }
+  .ledger-foot{
+    margin-top:16px; padding-top:14px; border-top:1px dashed var(--rule);
+    font-size:14px; color:var(--ink-soft); font-family:'Inter',sans-serif; line-height:1.6;
+  }
+
+  /* ---------- comparison table ---------- */
+  .tbl-wrap{ overflow-x:auto; margin:30px 0; border:1px solid var(--rule); border-radius:3px; }
+  table{ width:100%; border-collapse:collapse; background:var(--card); min-width:520px;}
+  thead th{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; text-transform:uppercase;
+    letter-spacing:0.06em; color:var(--paper); background:var(--ink);
+    padding:14px 18px; text-align:left; font-weight:500;
+  }
+  tbody td{
+    padding:13px 18px; font-size:15px; border-top:1px solid var(--rule); color:#282d36;
+  }
+  tbody td:first-child{ font-weight:600; color:var(--ink); }
+  tbody tr:nth-child(even){ background:var(--paper-deep); }
+  td.num{ font-family:'IBM Plex Mono', monospace; }
+
+  /* ---------- definition cards ---------- */
+  .term-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:30px 0;
+  }
+  @media (max-width:600px){ .term-grid{ grid-template-columns:1fr; } }
+  .term-card{
+    background:var(--card); border:1px solid var(--rule); border-radius:3px;
+    padding:20px 22px;
+  }
+  .term-card .t{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--brass-deep);
+    text-transform:uppercase; letter-spacing:0.07em; margin-bottom:8px; display:block;
+  }
+  .term-card p{ font-size:15px; margin:0; line-height:1.65; color:#333844;}
+
+  /* ---------- cash flow matrix ---------- */
+  .flow-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:30px 0;
+  }
+  @media (max-width:640px){ .flow-grid{ grid-template-columns:1fr; } }
+  .flow-cell{
+    border:1px solid var(--rule); border-radius:3px; padding:18px; background:var(--card);
+  }
+  .flow-cell .signs{
+    font-family:'IBM Plex Mono', monospace; font-size:13px; margin-bottom:10px;
+    display:flex; gap:8px;
+  }
+  .flow-cell .signs span{ padding:2px 7px; border-radius:2px; font-weight:600; font-size:12px;}
+  .sign-pos{ background:rgba(51,87,62,0.12); color:var(--positive); }
+  .sign-neg{ background:rgba(155,59,44,0.1); color:var(--negative); }
+  .flow-cell h5{ font-family:'Fraunces', serif; font-size:16px; margin:0 0 6px; }
+  .flow-cell p{ font-size:13.5px; margin:0; color:var(--ink-soft); line-height:1.55; }
+
+  /* ---------- pull-callout ---------- */
+  .callout{
+    background:var(--ink); color:var(--paper); border-radius:3px;
+    padding:30px 32px; margin:38px 0;
+  }
+  .callout .t{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; letter-spacing:0.1em;
+    text-transform:uppercase; color:var(--brass); margin-bottom:12px; display:block;
+  }
+  .callout p{ color:rgba(245,241,231,0.88); font-size:16.5px; margin:0; }
+  .callout p + p{ margin-top:12px; }
+
+  /* ---------- checklist ---------- */
+  .checklist{ margin:30px 0; border:1px solid var(--rule); border-radius:3px; overflow:hidden; background:var(--card);}
+  .check-item{
+    display:flex; gap:16px; padding:16px 20px; border-bottom:1px solid var(--rule);
+  }
+  .check-item:last-child{ border-bottom:none; }
+  .check-num{
+    font-family:'IBM Plex Mono', monospace; font-size:13px; color:var(--brass-deep);
+    font-weight:600; min-width:22px; padding-top:2px;
+  }
+  .check-item h5{ font-family:'Fraunces', serif; font-size:16.5px; margin:0 0 4px; }
+  .check-item p{ font-size:14.5px; margin:0; color:var(--ink-soft); line-height:1.6; }
+
+  /* ---------- fund tiers ---------- */
+  .tier-row{ display:flex; gap:0; margin:28px 0; border:1px solid var(--rule); border-radius:3px; overflow:hidden;}
+  .tier{ flex:1; padding:20px; text-align:center; border-right:1px solid var(--rule); background:var(--card);}
+  .tier:last-child{ border-right:none; }
+  .tier .cap{ font-family:'Fraunces', serif; font-size:19px; font-weight:600; margin-bottom:4px;}
+  .tier .rng{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--ink-faint); margin-bottom:10px;}
+  .tier .desc{ font-size:13.5px; color:var(--ink-soft); line-height:1.5;}
+  @media (max-width:620px){ .tier-row{ flex-direction:column; } .tier{ border-right:none; border-bottom:1px solid var(--rule);} .tier:last-child{border-bottom:none;} }
+
+  /* ---------- divider ---------- */
+  .rule{ border:none; border-top:1px solid var(--rule); margin:52px 0; }
+  .rule.brass{ border-top:2px solid var(--brass); width:60px; margin:52px 0; }
+
+  figure.stat{
+    display:flex; gap:30px; flex-wrap:wrap; margin:34px 0; padding:26px 0;
+    border-top:1px solid var(--rule); border-bottom:1px solid var(--rule);
+  }
+  .stat-item{ flex:1; min-width:140px; }
+  .stat-item .big{ font-family:'Fraunces', serif; font-size:36px; font-weight:600; color:var(--brass-deep); line-height:1;}
+  .stat-item .lbl{ font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.05em; margin-top:8px; }
+
+  /* ---------- footer ---------- */
+  footer{
+    max-width:var(--maxw); margin:0 auto; padding:20px 28px 90px;
+  }
+  .signoff{
+    display:flex; gap:18px; align-items:center; padding:28px 0; border-top:1px solid var(--rule);
+  }
+  .avatar{
+    width:46px; height:46px; border-radius:50%; background:var(--brass);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces', serif; color:var(--paper); font-weight:600; font-size:17px;
+    flex-shrink:0;
+  }
+  .signoff .name{ font-family:'Fraunces', serif; font-size:17px; font-weight:600; }
+  .signoff .role{ font-size:13px; color:var(--ink-faint); margin-top:2px; }
+  .fine{ font-size:13px; color:var(--ink-faint); line-height:1.7; margin-top:14px; }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <a class="brandmark" href="#top"><span class="dot"></span>DANDA&nbsp;SCHOOL — FIELD NOTES</a>
+    <nav class="navlinks">
+      <a href="#statements">Statements</a>
+      <a href="#markets">Markets</a>
+      <a href="#venture">Venture</a>
+      <a href="#pitch">The Pitch</a>
+    </nav>
+  </div>
+</div>
+
+<div id="top" class="hero">
+  <div class="kicker">Module 01 · Financial Literacy for Builders</div>
+  <h1 class="headline">Read the balance sheet<br>before you read <em>anything</em> else.</h1>
+  <p class="dek">A working session on how three financial statements, one grocery chain, and a decade-old pitch deck can teach you more about business than most finance textbooks ever will — using DMart, Apple, and the anatomy of a venture-ready deck as live specimens.</p>
+  <div class="meta-row">
+    <span><b>Format</b> · Live cohort session, annotated</span>
+    <span><b>Reading time</b> · 14 min</span>
+    <span><b>Level</b> · No finance background required</span>
+  </div>
+</div>
+
+<div class="equation-wrap">
+  <div class="equation">
+    <span class="term">Assets<span class="sub">what the business owns</span></span>
+    <span class="op">=</span>
+    <span class="term">Equity<span class="sub">what the owners put in</span></span>
+    <span class="op">+</span>
+    <span class="term">Liabilities<span class="sub">what's owed to others</span></span>
+  </div>
+</div>
+
+<article>
+  <p class="lede">Every publicly listed company is legally required to publish its financial statements — and most people never open them. That's a shame, because a balance sheet is nothing more than a diagnostic report, the corporate equivalent of an ECG. You don't need an MBA to read one. You need to know where to look, and what the numbers are quietly telling you.</p>
+
+  <p>This piece walks through a single working session that did exactly that: it took the real, public financial statements of DMart — the grocery chain most Indians have shopped at without ever wondering how it makes money — and used them to teach the three statements every business runs on, then moved outward into how public markets price a company, and finally into how venture capital decides who gets funded at all.</p>
+
+  <blockquote>
+    "I didn't need a director at DMart to tell me this. I didn't need a YouTube video. I just had to Google their annual report — and the numbers told me everything."
+    <cite>— on reading a balance sheet cold</cite>
+  </blockquote>
+
+  <h2 class="section-title" id="statements"><span class="section-num">Part One</span>The Three Statements</h2>
+
+  <p class="lede">Every business, no matter the size, is described by three documents: the <b>balance sheet</b> (what it owns and owes, at a moment in time), the <b>profit &amp; loss statement</b> (how it performed over a year), and the <b>cash flow statement</b> (whether that performance actually turned into cash). Read in that order, they tell a complete story.</p>
+
+  <h3 class="sub-title">The balance sheet: a snapshot of health</h3>
+  <p>The entire balance sheet rests on one identity that never breaks, for any company, in any country: <b>assets always equal equity plus liabilities.</b> Assets are the resources a business uses to generate revenue. Liabilities are what it owes to banks, landlords, or lenders. Equity is what's left — the owners' stake, built from the money they put in plus everything the business has earned and kept.</p>
+
+  <p>Assets split into two buckets. <b>Non-current assets</b> can't be turned into cash within twelve months — buildings, equipment, long-term investments. <b>Current assets</b> can — inventory, receivables, cash itself. The same split applies to liabilities: obligations due within a year are <b>current</b>, everything else is <b>long-term</b>.</p>
+
+  <div class="ledger">
+    <div class="ledger-head">
+      <h4>DMart — Balance Sheet Snapshot</h4>
+      <span>FY 2024 → FY 2025, ₹ Crore</span>
+    </div>
+    <div class="ledger-row"><span class="label">Property, plant &amp; equipment</span><span class="value hot">14,120</span></div>
+    <div class="ledger-row"><span class="label">Inventories</span><span class="value">4,850</span></div>
+    <div class="ledger-row"><span class="label">Right-of-use assets (leased space)</span><span class="value">1,599</span></div>
+    <div class="ledger-row"><span class="label">Cash &amp; cash equivalents</span><span class="value">330</span></div>
+    <div class="ledger-row total"><span class="label">Total assets = Total equity &amp; liabilities</span><span class="value hot">24,891</span></div>
+    <div class="ledger-foot">The single biggest line item isn't inventory — it's property. DMart owns roughly 90% of the land and buildings its stores sit on, where most retail competitors lease. That one fact, visible before reading a single word of commentary, explains the entire strategic thesis of the business.</div>
+  </div>
+
+  <p>That's the kind of inference a balance sheet hands you for free. A grocery retailer whose largest asset bucket is real estate, not inventory, isn't really behaving like a grocer — it's behaving like a landlord who happens to sell groceries. Rent, for DMart, doesn't rise 5% a year the way it does for a chain that leases every store. That single structural choice is a moat.</p>
+
+  <h3 class="sub-title">The current ratio — can it pay its bills?</h3>
+  <p>Current assets exist for a reason: they need to comfortably exceed current liabilities, the obligations due within the year. The relationship between the two is called the <b>current ratio</b>.</p>
+
+  <div class="term-grid">
+    <div class="term-card">
+      <span class="t">The formula</span>
+      <p>Current ratio = Current assets ÷ Current liabilities. For DMart, roughly ₹6,000 Cr against ₹2,000 Cr — a ratio near <b>3.0×</b>. It can cover its near-term obligations three times over.</p>
+    </div>
+    <div class="term-card">
+      <span class="t">Why it matters</span>
+      <p>JP Morgan's Jamie Dimon calls this a "fortress balance sheet" — one strong enough to withstand a downturn without missing payments. There's no universal ideal ratio; it depends entirely on the industry, but higher is generally safer.</p>
+    </div>
+  </div>
+
+  <h3 class="sub-title">Reading it against a second company: Apple</h3>
+  <p>Put DMart's statement next to Apple's and the contrast is instructive. Apple's balance sheet lists current assets first and non-current assets last — the accepted convention, ordering by how quickly something can be turned into cash. DMart does the reverse, leading with property. Neither is wrong; it's simply a signal of what each business considers most defining about itself.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>Metric</th><th>DMart</th><th>Apple</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Total assets</td><td class="num">₹24,891 Cr</td><td class="num">$379 B</td></tr>
+        <tr><td>Cash &amp; equivalents</td><td class="num">₹330 Cr</td><td class="num">$45 B</td></tr>
+        <tr><td>Total equity</td><td class="num">₹22,000 Cr</td><td class="num">$88 B</td></tr>
+        <tr><td>Total liabilities</td><td class="num">₹2,000 Cr</td><td class="num">$291 B</td></tr>
+        <tr><td>Debt-to-equity (approx.)</td><td class="num">&lt; 0.1×</td><td class="num">≈ 1.0×</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Apple carries far more liabilities relative to equity than DMart does — and that isn't automatically a weakness. A company that size can carry leverage well, because it has the cash-generating power and the investable assets to back it. The lesson isn't "less debt is always better." It's that <b>debt</b>, or more precisely <b>leverage</b>, is simply the cheapest form of capital a business can raise, and the right amount of it depends entirely on the business's ability to service it.</p>
+
+  <div class="callout">
+    <span class="t">A note on leverage</span>
+    <p>Being debt-free is not automatically "value-accretive." Debt is cheap money — usually far cheaper than giving up equity — and a business with zero leverage may simply be under-using a tool available to it. The goal isn't avoiding debt; it's avoiding <i>too much</i> of it relative to what the business can service.</p>
+  </div>
+
+  <h3 class="sub-title">The profit &amp; loss statement: three different kinds of profit</h3>
+  <p>If the balance sheet shows health, the P&amp;L shows performance. And it's built around a hierarchy that's easy to remember once you see why it exists: <b>net profit is always less than EBITDA, which is always less than gross profit.</b> Each strips away a different layer of reality.</p>
+
+  <div class="term-grid">
+    <div class="term-card">
+      <span class="t">Gross profit</span>
+      <p>Revenue minus the direct cost of what was sold. This is profit in a "dream world" — no employees, no rent, no taxes, no interest. It tells you whether the underlying economics of the product itself are any good.</p>
+    </div>
+    <div class="term-card">
+      <span class="t">EBITDA</span>
+      <p>Earnings before interest, tax, depreciation and amortisation. This is profit in an "ideal world" — you run the actual company, but strip out the wear-and-tear on assets, the interest owed to banks, and the tax bill, since all three vary by financing choice and geography, not by the business itself.</p>
+    </div>
+    <div class="term-card">
+      <span class="t">Net profit</span>
+      <p>What's actually left after everything — the real, final number, the last line of the P&amp;L. This is the "real world" figure.</p>
+    </div>
+    <div class="term-card">
+      <span class="t">Why split it three ways</span>
+      <p>Each isolates a different question. Is the product itself profitable? Is the operating business sound once financing decisions are set aside? And finally — after every real obligation — does money actually land in the owners' pocket?</p>
+    </div>
+  </div>
+
+  <figure class="stat">
+    <div class="stat-item"><div class="big">12.5%</div><div class="lbl">DMart Gross Margin</div></div>
+    <div class="stat-item"><div class="big">8.1%</div><div class="lbl">DMart EBITDA Margin</div></div>
+    <div class="stat-item"><div class="big">5.2%</div><div class="lbl">DMart Net Margin</div></div>
+    <div class="stat-item"><div class="big">48%</div><div class="lbl">Apple Gross Margin</div></div>
+  </figure>
+
+  <p>Apple's numbers explain themselves: a ~48% gross margin, ~35% EBITDA margin, and ~30% net margin are the kind of economics that once made it the most valuable company on earth. DMart's much thinner margins aren't a red flag — they're the ordinary reality of being a retail middleman rather than a brand that owns pricing power. The insight isn't in the number alone; it's in the number <i>relative to the business model</i>.</p>
+
+  <h3 class="sub-title">Cash flow: the statement that keeps everyone honest</h3>
+  <p>A business can be profitable on paper and still run out of cash — because profit is an accounting concept, and cash is a fact. The cash flow statement resolves that gap across three buckets: cash from <b>operations</b>, from <b>investing</b>, and from <b>financing</b>. The pattern across all three tells you what kind of company you're looking at, without reading another line.</p>
+
+  <div class="flow-grid">
+    <div class="flow-cell">
+      <div class="signs"><span class="sign-pos">Ops +</span><span class="sign-neg">Invest −</span><span class="sign-neg">Finance −</span></div>
+      <h5>Mature, self-funding</h5>
+      <p>Generating cash from operations, reinvesting it into growth, paying down interest. DMart and Apple both sit here.</p>
+    </div>
+    <div class="flow-cell">
+      <div class="signs"><span class="sign-pos">Ops +</span><span class="sign-neg">Invest −</span><span class="sign-pos">Finance +</span></div>
+      <h5>Aggressive expansion</h5>
+      <p>Profitable operations, but raising fresh capital anyway to fund a faster build-out than cash flow alone would support.</p>
+    </div>
+    <div class="flow-cell">
+      <div class="signs"><span class="sign-neg">Ops −</span><span class="sign-neg">Invest −</span><span class="sign-pos">Finance +</span></div>
+      <h5>Early-stage / venture-funded</h5>
+      <p>Operations still burn cash. Growth is funded entirely by outside capital — the classic profile of an early consumer-tech startup.</p>
+    </div>
+  </div>
+
+  <hr class="rule brass">
+
+  <h2 class="section-title" id="markets"><span class="section-num">Part Two</span>How the Market Prices What You Just Read</h2>
+
+  <p class="lede">Financial statements tell you what a business <i>is</i>. The market tells you what people are willing to <i>pay</i> for it — and the gap between the two is where most of investing actually happens.</p>
+
+  <h3 class="sub-title">Market capitalisation, and the index built from it</h3>
+  <p>Market cap is deceptively simple: the number of shares a company has issued, multiplied by the price of one share. That single number is also, functionally, the market's real-time opinion of what the entire company is worth. Nifty 50 is nothing more than the top 50 Indian companies by <i>free-float</i> market cap — the portion of shares actually available to trade, excluding what founders and large institutions hold and never sell — indexed against a 1991 base year. A Nifty level of roughly 24,000 simply means: the free-float value of India's largest 50 companies today is about 24 times what it was in 1991.</p>
+
+  <div class="tier-row">
+    <div class="tier"><div class="cap">Large Cap</div><div class="rng">&gt; ₹20,000 Cr</div><div class="desc">Lower relative risk, lower relative return — the safety end of the spectrum.</div></div>
+    <div class="tier"><div class="cap">Mid Cap</div><div class="rng">₹5,000 – 20,000 Cr</div><div class="desc">Higher growth potential, meaningfully higher volatility.</div></div>
+    <div class="tier"><div class="cap">Small Cap</div><div class="rng">&lt; ₹5,000 Cr</div><div class="desc">Highest potential return, and the first to suffer in any downturn.</div></div>
+  </div>
+
+  <h3 class="sub-title">Three ratios that summarise a company in seconds</h3>
+  <div class="term-grid">
+    <div class="term-card">
+      <span class="t">P/E — Price to Earnings</span>
+      <p>Share price ÷ earnings per share. A high P/E signals a market betting heavily on future growth (Tesla, at times, traded above 300×, against an auto-sector average near 30×). A low P/E signals skepticism, or genuine undervaluation.</p>
+    </div>
+    <div class="term-card">
+      <span class="t">P/B — Price to Book</span>
+      <p>Share price ÷ book value of equity per share (equity from the balance sheet, divided by shares outstanding). It measures price against the company's own stated net worth, rather than its earnings.</p>
+    </div>
+    <div class="term-card">
+      <span class="t">ROE — Return on Equity</span>
+      <p>Net profit ÷ book value of equity. For every rupee of owners' capital retained in the business, how many paise does it generate back? The higher, the more efficiently equity is being put to work.</p>
+    </div>
+    <div class="term-card">
+      <span class="t">The relationship</span>
+      <p>These three tie together neatly: <b>P/B = ROE × P/E.</b> You don't need to memorise it — just recognise that price, profitability, and equity are never independent of one another.</p>
+    </div>
+  </div>
+
+  <blockquote>
+    "A P/E ratio of 350 doesn't mean a company is broken. It means the market has decided you're either the future — or dramatically overvalued. Only time tells you which."
+  </blockquote>
+
+  <p>A sensible personal portfolio, built from first principles rather than stock-picking, tends to look something like this: the bulk in equities via mutual funds spread across market caps and sectors, a meaningful allocation to gold and silver as a hedge, a slice in short-duration debt instruments for liquidity, and — for those with genuine conviction and appetite for risk — a small, capped allocation to individual stocks. The specific weights matter less than the discipline of never letting a single conviction bet dominate the whole.</p>
+
+  <hr class="rule brass">
+
+  <h2 class="section-title" id="venture"><span class="section-num">Part Three</span>The Venture Capital Landscape</h2>
+
+  <p class="lede">Once you understand how public markets price a mature business, venture capital starts to make more sense — it's simply the same game, played years earlier, on companies that don't have financial statements to read yet.</p>
+
+  <p>A VC fund raises capital from institutions and high-net-worth individuals, deploys it into early companies over roughly a seven-year cycle, and needs to return that capital with a premium — typically comfortably above what a public index would have delivered, since that's the baseline an investor could get without taking any startup risk at all. The arithmetic only works because of extreme asymmetry: the fund expects the overwhelming majority of its bets to fail outright, and relies on a small handful of outsized winners to return the entire fund several times over.</p>
+
+  <div class="callout">
+    <span class="t">The question every VC is actually asking</span>
+    <p>Not "is this a good business?" but "can this business return my entire fund?" A profitable, well-run local business can still be a poor venture fit — not because it's flawed, but because its ceiling isn't high enough to justify venture economics. VCs are underwriting a scale outcome, not a steady one.</p>
+  </div>
+
+  <p>India's venture landscape splits roughly into two camps: <b>international funds</b> whose capital is largely raised abroad and deployed into India — names like Peak XV Partners (formerly Sequoia India), Accel, Tiger Global, SoftBank Vision Fund, and Warburg Pincus — and <b>India-focused funds</b> such as Elevation Capital, Nexus Venture Partners, Blume Ventures, and Kalaari Capital. Each has a sector thesis — consumer tech, SaaS, fintech, healthtech — and reaching out cold to a fund with no history in your sector is close to wasted effort. The far better use of time is matching your pitch to the funds already proven to bet on your category.</p>
+
+  <hr class="rule brass">
+
+  <h2 class="section-title" id="pitch"><span class="section-num">Part Four</span>Anatomy of a Pitch That Actually Works</h2>
+
+  <p class="lede">The clearest way to internalise what a VC is looking for is to read a deck that raised real money. Urban Company's original 2014 deck — back when it was Urban Clap, pitching a category nobody yet believed could be built as a platform — is a masterclass in structure over polish. Nineteen slides. Plain bullet points. No cinematic design. And every base covered.</p>
+
+  <div class="checklist">
+    <div class="check-item">
+      <span class="check-num">01</span>
+      <div><h5>One-line purpose</h5><p>If the business can't be described in a single sentence, it can't yet be scaled or pitched. Clarity here is a forcing function, not a nicety.</p></div>
+    </div>
+    <div class="check-item">
+      <span class="check-num">02</span>
+      <div><h5>The problem — and its scale</h5><p>Not just "is this a real problem," but "is this problem big enough that solving it well could become a genuinely large business." A vitamin, however pleasant, is not a painkiller.</p></div>
+    </div>
+    <div class="check-item">
+      <span class="check-num">03</span>
+      <div><h5>Why now</h5><p>What's changed — technologically, regulatorily, behaviourally — that makes this the moment this business becomes possible, when it wasn't five years ago.</p></div>
+    </div>
+    <div class="check-item">
+      <span class="check-num">04</span>
+      <div><h5>The solution and business model</h5><p>How the problem actually gets solved, and how money moves through the system as a result.</p></div>
+    </div>
+    <div class="check-item">
+      <span class="check-num">05</span>
+      <div><h5>Why you</h5><p>What gives this specific team an edge that a well-funded competitor entering tomorrow wouldn't have.</p></div>
+    </div>
+    <div class="check-item">
+      <span class="check-num">06</span>
+      <div><h5>Traction, unit economics, and the founders</h5><p>Whatever evidence exists that the thesis is already starting to be true — plus a credible, specific team behind it.</p></div>
+    </div>
+  </div>
+
+  <p>What Urban Clap's deck did particularly well was sequencing: open with the size of the opportunity, walk through the pain from both sides of the marketplace — customers and service providers — only then introduce the solution, and close with a believable, math-backed picture of what the business looks like at scale. By the time the ask arrives, the investor has already built the conviction themselves.</p>
+
+  <hr class="rule">
+
+  <h2 class="section-title">The Real Takeaway</h2>
+  <p class="lede">None of this requires a finance degree. It requires the willingness to open an annual report instead of assuming it's unreadable. Pull up any company you're curious about, find its balance sheet, and ask three questions: what's the biggest asset, and does that match the story the company tells about itself? Is the current ratio healthy for its industry? And is the business generating real cash, or just accounting profit? Those three questions, asked consistently, will tell you more than most finance commentary ever will.</p>
+
+</article>
+
+<footer>
+  <div class="signoff">
+    <div class="avatar">DS</div>
+    <div>
+      <div class="name">Danda School — Field Notes</div>
+      <div class="role">Session recap · Financial Statements, Markets &amp; Venture Capital</div>
+    </div>
+  </div>
+  <p class="fine">This article summarises a live teaching session and is intended for general financial literacy. Figures for DMart and Apple are illustrative, drawn from the session's discussion of public annual reports, and should be independently verified against primary filings before being used for investment decisions. Nothing here constitutes financial advice.</p>
+</footer>
+
+</body>
+</html>
