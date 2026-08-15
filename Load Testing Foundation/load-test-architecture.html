@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Load Testing — Corrected Architecture Map</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/iconfont/tabler-icons.min.css">
+<style>
+  :root{
+    --bg:#121214;
+    --dot:#232326;
+    --panel:#18181b;
+    --panel-border:#2a2a2e;
+    --text-primary:#e8e6e1;
+    --text-secondary:#9a9890;
+    --text-muted:#6b6a64;
+
+    --purple:#7F77DD;
+    --blue:#378ADD;
+    --teal:#1D9E75;
+    --coral:#D85A30;
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    background-color:var(--bg);
+    background-image: radial-gradient(var(--dot) 1px, transparent 1px);
+    background-size: 22px 22px;
+    color:var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 48px 32px 80px;
+  }
+
+  .page-head{ max-width: 1180px; margin: 0 auto 40px; }
+  .page-head h1{ font-size: 22px; font-weight: 600; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .page-head p{ font-size: 14px; color: var(--text-secondary); margin: 0; line-height: 1.6; max-width: 660px; }
+  .legend{ display:flex; gap:18px; margin-top:18px; flex-wrap: wrap; }
+  .legend-item{ display:flex; align-items:center; gap:7px; font-size:12px; color: var(--text-secondary); }
+  .swatch{ width:10px; height:10px; border-radius:3px; }
+  .swatch.line{ width:16px; height:2px; border-radius:0; }
+
+  .board{
+    max-width: 1180px;
+    margin: 0 auto;
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px 40px;
+    position: relative;
+  }
+
+  @media (max-width: 880px){ .board{ grid-template-columns: 1fr; gap: 56px; } }
+
+  #connections{
+    position:absolute;
+    top:0; left:0;
+    width:100%; height:100%;
+    pointer-events:none;
+    overflow: visible;
+    z-index: 3;
+  }
+  #connections text{ font-size: 10.5px; font-family: inherit; }
+  #connections rect.label-bg{ fill: var(--bg); opacity: 0.92; }
+
+  .group-label{
+    display:flex; align-items:center; gap:8px;
+    font-size:13px; font-weight:600; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 12px;
+  }
+  .group-label i{ font-size:15px; }
+
+  .panel{
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    padding: 22px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .node-row{ display:flex; gap: 12px; flex-wrap: wrap; }
+  .node-col{ display:flex; flex-direction: column; gap: 12px; }
+
+  .node{
+    border-radius: 10px;
+    padding: 12px 14px;
+    display:flex; align-items:center; gap: 10px;
+    font-size: 13px; font-weight: 500;
+    background: color-mix(in srgb, var(--c) 10%, var(--panel));
+    border: 1px solid color-mix(in srgb, var(--c) 45%, transparent);
+    color: var(--text-primary);
+    flex: 1; min-width: 0;
+    position: relative;
+    z-index: 2;
+  }
+  .node i{ font-size: 17px; color: var(--c); flex-shrink: 0; }
+  .node .sub{ display:block; font-size: 11px; font-weight: 400; color: var(--text-secondary); margin-top: 2px; }
+  .node.wide{ width:100%; }
+
+  .range{
+    display:flex; gap:6px; flex-wrap:wrap;
+    margin-top: 6px;
+  }
+  .range span{
+    font-size: 10.5px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 5px;
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+  .range .good{ background: rgba(93,202,165,0.13); color:#8fe0bf; }
+  .range .watch{ background: rgba(250,199,117,0.14); color:#f2c877; }
+  .range .bad{ background: rgba(224,75,74,0.14); color:#ef9797; }
+  .range .neutral{ background: rgba(154,152,144,0.14); color: var(--text-secondary); }
+
+  .task-def-inner{
+    border: 1px dashed var(--panel-border);
+    border-radius: 10px;
+    padding: 14px;
+    margin-top: 14px;
+  }
+  .task-def-inner .mini-label{ font-size: 11px; color: var(--text-muted); margin-bottom: 10px; display:flex; align-items:center; gap:6px; }
+
+  .inline-connector{
+    display:flex; align-items:center; gap:6px;
+    font-size: 11px; color: var(--text-muted);
+    margin: 10px 2px;
+  }
+  .inline-connector i{ font-size: 14px; }
+
+  .fix-note{
+    max-width: 1180px;
+    margin: 44px auto 0;
+    border-left: 2px solid var(--teal);
+    padding: 4px 0 4px 16px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .fix-note b{ color: var(--text-primary); font-weight: 500; }
+
+  /* ---------- Top Site Nav ---------- */
+  .site-nav{
+    position:sticky; top:0; z-index:40;
+    backdrop-filter:blur(12px);
+    background:rgba(18,18,20,0.85);
+    border-bottom:1px solid var(--panel-border);
+    margin: -48px -32px 40px -32px;
+  }
+  .site-nav-inner{
+    max-width:1180px; margin:0 auto; padding:14px 32px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .site-nav a.back-link{
+    font-size:13px; font-weight:500;
+    color:var(--text-secondary); text-decoration:none;
+    display:flex; align-items:center; gap:6px;
+    transition:color .15s;
+  }
+  .site-nav a.back-link:hover{ color:var(--text-primary); }
+  .site-nav-pills{
+    display:flex; gap:14px; font-size:12px; font-weight:500;
+  }
+  .site-nav-pills a{
+    color:var(--text-muted); text-decoration:none; transition:color .15s;
+  }
+  .site-nav-pills a:hover{ color:var(--text-primary); }
+  .site-nav-pills a.active{ color:var(--purple); font-weight:600; }
+  @media(max-width:640px){.site-nav-pills{display:none;}}
+</style>
+</head>
+<body>
+
+  <nav class="site-nav">
+    <div class="site-nav-inner">
+      <a href="../index.html" class="back-link">← Back to Notes Library</a>
+      <div class="site-nav-pills">
+        <a href="Load-testing-foundations Part 1.html">Part 1</a>
+        <a href="Load-testing-foundations-part2.html">Part 2</a>
+        <a href="load-testing-foundations-part3.html">Part 3</a>
+        <a href="throttle-explainer.html">Throttle Simulation</a>
+        <a href="load-test-architecture.html" class="active">Architecture Map</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-head">
+    <h1>Load test architecture — corrected</h1>
+    <p>Traffic flows into the application, which is handled by the server's workers, sized from an independent CPU/memory task definition. That flow produces two distinct kinds of signal: what the machine is doing, and what the client experiences. Arrows below show exactly what causes what.</p>
+    <div class="legend">
+      <div class="legend-item"><span class="swatch" style="background:var(--purple)"></span>Server / compute</div>
+      <div class="legend-item"><span class="swatch" style="background:var(--blue)"></span>Traffic / client</div>
+      <div class="legend-item"><span class="swatch" style="background:var(--teal)"></span>System signals</div>
+      <div class="legend-item"><span class="swatch" style="background:var(--coral)"></span>Client signals</div>
+      <div class="legend-item"><span class="swatch line" style="background:var(--text-muted)"></span>solid = direct relationship</div>
+      <div class="legend-item"><span class="swatch line" style="background:var(--text-muted); background-image:linear-gradient(90deg, var(--text-muted) 50%, transparent 50%); background-size: 6px 2px;"></span>dashed = shares/draws from</div>
+      <div class="legend-item"><span class="swatch" style="background:#8fe0bf"></span>good range</div>
+      <div class="legend-item"><span class="swatch" style="background:#f2c877"></span>watch</div>
+      <div class="legend-item"><span class="swatch" style="background:#ef9797"></span>bad range</div>
+    </div>
+  </div>
+
+  <div class="board" id="board">
+    <svg id="connections"><defs>
+      <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </marker>
+    </defs></svg>
+
+    <!-- SERVER -->
+    <div>
+      <div class="group-label" style="color:var(--purple)"><i class="ti ti-server-2"></i>Server</div>
+      <div class="panel" id="panel-server" style="--c:var(--purple)">
+        <div class="node-row">
+          <div class="node wide" id="n-taskdef" style="--c:var(--purple)">
+            <i class="ti ti-file-settings"></i>
+            <div>Task definition<span class="sub">Two independent resources — not one deriving the other</span></div>
+          </div>
+        </div>
+        <div class="task-def-inner">
+          <div class="mini-label"><i class="ti ti-git-branch"></i>Configured independently</div>
+          <div class="node-row">
+            <div class="node" id="n-cpu" style="--c:var(--purple)">
+              <i class="ti ti-cpu"></i>
+              <div>CPU units<span class="sub">1024 units = 1 vCPU</span></div>
+            </div>
+            <div class="node" id="n-memory" style="--c:var(--purple)">
+              <i class="ti ti-database"></i>
+              <div>Memory (MiB)<span class="sub">RAM ceiling, not "CPU memory"</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="inline-connector"><i class="ti ti-arrow-down"></i><span>draws CPU time from the quota above</span></div>
+        <div class="node-row">
+          <div class="node wide" id="n-workers" style="--c:var(--purple)">
+            <i class="ti ti-users-group"></i>
+            <div>Workers<span class="sub">Software — borrows vCPU time, doesn't own it</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRAFFIC -->
+    <div>
+      <div class="group-label" style="color:var(--blue)"><i class="ti ti-antenna-bars-5"></i>Traffic</div>
+      <div class="panel" id="panel-traffic" style="--c:var(--blue)">
+        <div class="node-col" id="n-users-group">
+          <div class="node" style="--c:var(--blue)"><i class="ti ti-user"></i>Users</div>
+          <div class="node" style="--c:var(--blue)"><i class="ti ti-user"></i>Users</div>
+          <div class="node" style="--c:var(--blue)"><i class="ti ti-user"></i>Users</div>
+        </div>
+        <div class="node-row" style="margin-top:12px">
+          <div class="node wide" id="n-app" style="--c:var(--blue)">
+            <i class="ti ti-apps"></i>
+            <div>Application<span class="sub">Receives offered load, runs on the server's resources</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SYSTEM METRICS -->
+    <div>
+      <div class="group-label" style="color:var(--teal)"><i class="ti ti-chart-bar"></i>System &amp; CPU signals</div>
+      <div class="panel" id="panel-system" style="--c:var(--teal)">
+        <div class="node-col">
+          <div class="node wide" style="--c:var(--teal)">
+            <i class="ti ti-cpu-2"></i>
+            <div>CPU utilization
+              <div class="range">
+                <span class="watch">&lt;50% over-provisioned</span>
+                <span class="good">60–80% healthy</span>
+                <span class="bad">~100% + throttling = starved</span>
+              </div>
+            </div>
+          </div>
+          <div class="node wide" style="--c:var(--teal)">
+            <i class="ti ti-hourglass-low"></i>
+            <div>Throttle (paused periods)
+              <div class="range">
+                <span class="good">rare, isolated</span>
+                <span class="bad">frequent, sustained</span>
+              </div>
+            </div>
+          </div>
+          <div class="node wide" style="--c:var(--teal)">
+            <i class="ti ti-percentage"></i>
+            <div>Throttle ratio
+              <div class="range">
+                <span class="good">0–5% healthy</span>
+                <span class="watch">5–20% moderate</span>
+                <span class="bad">&gt;20% severe</span>
+              </div>
+            </div>
+          </div>
+          <div class="node wide" style="--c:var(--teal)">
+            <i class="ti ti-brand-databricks"></i>
+            <div>Memory usage
+              <div class="range">
+                <span class="good">rises w/ load, drops after</span>
+                <span class="bad">keeps climbing → OOM kill</span>
+              </div>
+            </div>
+          </div>
+          <div class="node wide" style="--c:var(--teal)">
+            <i class="ti ti-list-details"></i>
+            <div>Backlog / queue depth
+              <div class="range">
+                <span class="good">stable, drains after spikes</span>
+                <span class="bad">growing without bound</span>
+              </div>
+            </div>
+          </div>
+          <div class="node wide" style="--c:var(--teal)">
+            <i class="ti ti-chart-line"></i>
+            <div>Achieved throughput
+              <div class="range">
+                <span class="good">tracks offered load 1:1</span>
+                <span class="bad">flattens while offered climbs ("the knee")</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLIENT METRICS -->
+    <div>
+      <div class="group-label" style="color:var(--coral)"><i class="ti ti-device-analytics"></i>Client / traffic signals</div>
+      <div class="panel" id="panel-client" style="--c:var(--coral)">
+        <div class="node-col">
+          <div class="node wide" style="--c:var(--coral)">
+            <i class="ti ti-gauge"></i>
+            <div>Incoming RPS
+              <div class="range"><span class="neutral">the input, not a health signal — everything else reacts to this</span></div>
+            </div>
+          </div>
+          <div class="node wide" style="--c:var(--coral)">
+            <i class="ti ti-clock-exclamation"></i>
+            <div>Latency — p99
+              <div class="range">
+                <span class="good">stays close to p50</span>
+                <span class="bad">detaches, runs away from p50</span>
+              </div>
+            </div>
+          </div>
+          <div class="node wide" style="--c:var(--coral)">
+            <i class="ti ti-alert-triangle"></i>
+            <div>Error rate
+              <div class="range">
+                <span class="good">~0%</span>
+                <span class="bad">nonzero and climbing</span>
+              </div>
+            </div>
+          </div>
+          <div class="node wide" style="--c:var(--coral)">
+            <i class="ti ti-circle-check"></i>
+            <div>Success rate
+              <div class="range">
+                <span class="good">~100%</span>
+                <span class="bad">dropping alongside rising errors</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="fix-note">
+    <b>Corrected from the original sketch:</b> "CPU memory" isn't a real resource — CPU units and memory (RAM) are configured independently, so they're now siblings under one task definition instead of one flowing into the other. <b>Workers</b> were added — the piece that actually consumes CPU quota. <b>Incoming RPS</b> moved out of the system-metrics group into client/traffic signals, since it describes offered load, not server behavior — while throughput, throttle ratio, and backlog stayed with system signals, since they're effects of how the server handles that load. <b>Arrows now show real relationships</b> instead of just grouping boxes: requests flow from users through the application into workers, workers draw from the shared CPU quota, and both the server and the application produce their own downstream metrics. <b>Good/watch/bad ranges</b> were added to each metric — note none of these mean much read alone: CPU high + throttle high + latency climbing means genuinely CPU-bound; CPU low + latency climbing means the bottleneck is downstream (a slow DB, a lock, GC), not compute.
+  </div>
+
+<script>
+(function(){
+  var svgns = "http://www.w3.org/2000/svg";
+  var board = document.getElementById('board');
+  var svg = document.getElementById('connections');
+
+  function rectOf(el, boardRect){
+    var r = el.getBoundingClientRect();
+    return {
+      left: r.left - boardRect.left, right: r.right - boardRect.left,
+      top: r.top - boardRect.top, bottom: r.bottom - boardRect.top,
+      cx: (r.left + r.right)/2 - boardRect.left,
+      cy: (r.top + r.bottom)/2 - boardRect.top
+    };
+  }
+
+  function drawConnection(boardRect, fromId, toId, opts){
+    opts = opts || {};
+    var fromEl = document.getElementById(fromId);
+    var toEl = document.getElementById(toId);
+    if(!fromEl || !toEl) return;
+    var a = rectOf(fromEl, boardRect);
+    var b = rectOf(toEl, boardRect);
+    var dx = b.cx - a.cx, dy = b.cy - a.cy;
+    var x1,y1,x2,y2,d;
+
+    if (Math.abs(dy) >= Math.abs(dx)) {
+      if (dy >= 0) { x1=a.cx; y1=a.bottom; x2=b.cx; y2=b.top; }
+      else { x1=a.cx; y1=a.top; x2=b.cx; y2=b.bottom; }
+      var midy = (y1+y2)/2;
+      d = "M "+x1+" "+y1+" C "+x1+" "+midy+", "+x2+" "+midy+", "+x2+" "+y2;
+    } else {
+      if (dx >= 0) { x1=a.right; y1=a.cy; x2=b.left; y2=b.cy; }
+      else { x1=a.left; y1=a.cy; x2=b.right; y2=b.cy; }
+      var midx = (x1+x2)/2;
+      d = "M "+x1+" "+y1+" C "+midx+" "+y1+", "+midx+" "+y2+", "+x2+" "+y2;
+    }
+
+    var path = document.createElementNS(svgns, 'path');
+    path.setAttribute('d', d);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', opts.color || '#6b6a64');
+    path.setAttribute('stroke-width', opts.width || 1.6);
+    if (opts.dashed) path.setAttribute('stroke-dasharray', '4 4');
+    path.setAttribute('opacity', opts.opacity || 0.85);
+    path.setAttribute('marker-end', 'url(#arrowhead)');
+    svg.appendChild(path);
+
+    if (opts.label){
+      var lx = (x1+x2)/2, ly = (y1+y2)/2 - 6;
+      var textW = opts.label.length * 5.6 + 10;
+      var bg = document.createElementNS(svgns, 'rect');
+      bg.setAttribute('class', 'label-bg');
+      bg.setAttribute('x', lx - textW/2);
+      bg.setAttribute('y', ly - 12);
+      bg.setAttribute('width', textW);
+      bg.setAttribute('height', 15);
+      bg.setAttribute('rx', 3);
+      svg.appendChild(bg);
+
+      var text = document.createElementNS(svgns, 'text');
+      text.setAttribute('x', lx);
+      text.setAttribute('y', ly);
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('fill', opts.color || '#9a9890');
+      text.textContent = opts.label;
+      svg.appendChild(text);
+    }
+  }
+
+  function render(){
+    svg.querySelectorAll('path, text, rect.label-bg').forEach(function(el){ el.remove(); });
+    var boardRect = board.getBoundingClientRect();
+    svg.setAttribute('width', boardRect.width);
+    svg.setAttribute('height', boardRect.height);
+
+    drawConnection(boardRect, 'n-users-group', 'n-app', { color:'#378ADD', label:'sends requests' });
+    drawConnection(boardRect, 'n-app', 'n-workers', { color:'#378ADD', label:'handled by' });
+    drawConnection(boardRect, 'panel-server', 'panel-system', { color:'#1D9E75', label:'produces' });
+    drawConnection(boardRect, 'n-app', 'panel-client', { color:'#D85A30', label:'produces' });
+  }
+
+  window.addEventListener('load', render);
+  var resizeTimer;
+  window.addEventListener('resize', function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(render, 120);
+  });
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(render);
+  }
+  setTimeout(render, 50);
+})();
+</script>
+
+</body>
+</html>
