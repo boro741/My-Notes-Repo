@@ -1,0 +1,1051 @@
+const fs = require('fs');
+const path = require('path');
+
+// ── Known folder configurations with custom branding ──
+const FOLDER_CONFIGS = {
+  'AWS Learning': {
+    id: 'section-aws',
+    title: 'AWS Certified Solutions Architect & Developer',
+    icon: '☁️',
+    theme: 'theme-orange',
+    order: 1
+  },
+  'New AWS Learning Blog': {
+    id: 'section-aws-blog',
+    title: 'New AWS Learning Blog',
+    icon: '🚀',
+    theme: 'theme-orange',
+    order: 2
+  },
+  'Load Testing Foundation': {
+    id: 'section-load-testing',
+    title: 'Load Testing Foundation',
+    icon: '🧪',
+    theme: 'theme-pink',
+    order: 3
+  },
+  'The Visual MBA': {
+    id: 'section-visual-mba',
+    title: 'The Visual MBA',
+    icon: '📚',
+    theme: 'theme-blue',
+    order: 4,
+    extraHeaderHtml: ' • <a href="The Visual MBA/index.html" style="color: #a8a1ff; text-decoration: underline;">Open Master Visual Hub 🗺️</a>'
+  },
+  'Udemy A Comprehensive Entrepreneurship Course to Find, Evaluate and Launch Innovative Business Ideas with the help of ChatGPT': {
+    id: 'section-entrepreneurship',
+    title: 'Entrepreneurship Course (Udemy)',
+    icon: '🚀',
+    theme: 'theme-purple',
+    order: 5
+  },
+  'Misc': {
+    id: 'section-misc',
+    title: 'Miscellaneous Guides & Architectures',
+    icon: '⚡',
+    theme: 'theme-blue',
+    order: 6
+  },
+  'Youtube Videos': {
+    id: 'section-youtube',
+    title: 'YouTube Video Notes',
+    icon: '▶️',
+    theme: 'theme-green',
+    order: 7
+  }
+};
+
+const THEME_PALETTE = ['theme-purple', 'theme-orange', 'theme-green', 'theme-pink', 'theme-blue', 'theme-teal', 'theme-amber', 'theme-indigo'];
+const FOLDER_ICONS = ['📁', '📘', '💡', '🛠️', '🧭', '🔥', '✨', '📦', '🎯', '🏷️'];
+
+// ── Smart icon picker based on filename and title keywords ──
+function detectIcon(filename, title, content = '') {
+  const lower = (filename + ' ' + title + ' ' + content.slice(0, 500)).toLowerCase();
+  if (lower.includes('s3') || lower.includes('bucket') || lower.includes('storage')) return '🪣';
+  if (lower.includes('ec2') || lower.includes('instance') || lower.includes('compute')) return '🖥️';
+  if (lower.includes('vpc') || lower.includes('route 53') || lower.includes('dns') || lower.includes('network')) return '🌐';
+  if (lower.includes('iam') || lower.includes('security') || lower.includes('encryption') || lower.includes('kms') || lower.includes('acm') || lower.includes('tls') || lower.includes('auth')) return '🔒';
+  if (lower.includes('dynamodb') || lower.includes('rds') || lower.includes('database') || lower.includes('aurora') || lower.includes('sql') || lower.includes('athena')) return '🗄️';
+  if (lower.includes('lambda') || lower.includes('serverless') || lower.includes('appsync') || lower.includes('step function')) return '⚡';
+  if (lower.includes('container') || lower.includes('docker') || lower.includes('ecs') || lower.includes('k8s') || lower.includes('kubernetes') || lower.includes('fargate')) return '🐳';
+  if (lower.includes('kafka') || lower.includes('queue') || lower.includes('sqs') || lower.includes('sns') || lower.includes('kinesis') || lower.includes('messaging')) return '📨';
+  if (lower.includes('cloudwatch') || lower.includes('x-ray') || lower.includes('monitoring') || lower.includes('audit') || lower.includes('opensearch') || lower.includes('search')) return '🔍';
+  if (lower.includes('cicd') || lower.includes('pipeline') || lower.includes('cdk') || lower.includes('cloudformation') || lower.includes('sam')) return '⚙️';
+  if (lower.includes('load test') || lower.includes('throttle') || lower.includes('bottleneck') || lower.includes('benchmark')) return '⏱️';
+  if (lower.includes('architecture') || lower.includes('decision guide') || lower.includes('tree') || lower.includes('map')) return '🗺️';
+  if (lower.includes('finance') || lower.includes('accounting') || lower.includes('money') || lower.includes('invest') || lower.includes('balance sheet') || lower.includes('vc') || lower.includes('pitch')) return '📊';
+  if (lower.includes('product') || lower.includes('psychology') || lower.includes('behavior')) return '🧠';
+  if (lower.includes('real estate') || lower.includes('property') || lower.includes('housing')) return '🏠';
+  if (lower.includes('os') || lower.includes('operating system') || lower.includes('kernel') || lower.includes('linux')) return '💻';
+  if (lower.includes('distribution') || lower.includes('audience') || lower.includes('marketing') || lower.includes('growth')) return '📢';
+  if (lower.includes('beauty') || lower.includes('brand') || lower.includes('cosmetics')) return '💄';
+  if (lower.includes('startup') || lower.includes('entrepreneur') || lower.includes('lean') || lower.includes('idea') || lower.includes('fit')) return '🚀';
+  if (lower.includes('chapter') || lower.includes('book') || lower.includes('mba')) return '📖';
+  return '📄';
+}
+
+// ── Extract metadata from an HTML file ──
+function extractHtmlMetadata(filePath, relPath) {
+  const content = fs.readFileSync(filePath, 'utf8');
+  const filename = path.basename(filePath, '.html');
+
+  // Title extraction
+  let title = '';
+  const metaTitleMatch = content.match(/<meta\s+property=["']og:title["']\s+content=["'](.*?)["']/i);
+  const titleTagMatch = content.match(/<title[^>]*>(.*?)<\/title>/i);
+  const h1Match = content.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+
+  if (metaTitleMatch && metaTitleMatch[1].trim()) {
+    title = metaTitleMatch[1].trim();
+  } else if (titleTagMatch && titleTagMatch[1].trim()) {
+    title = titleTagMatch[1].trim();
+  } else if (h1Match && h1Match[1].trim()) {
+    title = h1Match[1].replace(/<[^>]+>/g, '').trim();
+  } else {
+    title = filename.replace(/[-_]/g, ' ');
+  }
+
+  // Clean HTML entities in title
+  title = title.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+
+  // Subtitle / Description extraction
+  let subtitle = '';
+  const metaDescMatch = content.match(/<meta\s+name=["']description["']\s+content=["'](.*?)["']/i);
+  const ogDescMatch = content.match(/<meta\s+property=["']og:description["']\s+content=["'](.*?)["']/i);
+  const dekMatch = content.match(/<(?:p|div)\s+class=["'][^"']*\b(?:dek|lede|card-sub|subtitle|lead)\b[^"']*["'][^>]*>([\s\S]*?)<\/(?:p|div)>/i);
+
+  if (metaDescMatch && metaDescMatch[1].trim()) {
+    subtitle = metaDescMatch[1].trim();
+  } else if (ogDescMatch && ogDescMatch[1].trim()) {
+    subtitle = ogDescMatch[1].trim();
+  } else if (dekMatch && dekMatch[1].trim()) {
+    subtitle = dekMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  } else {
+    // Look for first non-empty paragraph
+    const pMatch = content.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+    if (pMatch && pMatch[1].trim()) {
+      subtitle = pMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    }
+  }
+
+  if (subtitle.length > 100) {
+    subtitle = subtitle.slice(0, 97).trim() + '...';
+  }
+
+  const icon = detectIcon(filename, title, content);
+
+  return { title, subtitle, icon, relPath, filename };
+}
+
+// ── Natural sort comparator (Section 1, Section 2, Section 10, Part 1, Part 2, etc.) ──
+function naturalCompare(a, b) {
+  return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+}
+
+// ── Read existing curated cards from current index.html to preserve handcrafted copy ──
+function parseExistingIndexHtml(indexHtmlPath) {
+  if (!fs.existsSync(indexHtmlPath)) return {};
+  const html = fs.readFileSync(indexHtmlPath, 'utf8');
+  const existingCards = {};
+
+  const cardRegex = /<a\s+class="card"\s+href="([^"]+)"\s+data-card>([\s\S]*?)<\/a>/g;
+  let match;
+  let idx = 0;
+  while ((match = cardRegex.exec(html)) !== null) {
+    const href = match[1].replace(/&amp;/g, '&');
+    const cardContent = match[2];
+
+    const iconMatch = cardContent.match(/<div\s+class="card-icon">([\s\S]*?)<\/div>/i);
+    const titleMatch = cardContent.match(/<div\s+class="card-title">([\s\S]*?)<\/div>/i);
+    const subMatch = cardContent.match(/<div\s+class="card-sub">([\s\S]*?)<\/div>/i);
+
+    existingCards[href] = {
+      orderIndex: idx++,
+      icon: iconMatch ? iconMatch[1].trim() : null,
+      title: titleMatch ? titleMatch[1].trim() : null,
+      subtitle: subMatch ? subMatch[1].trim() : null
+    };
+  }
+
+  return existingCards;
+}
+
+// ── Main Build Function ──
+function buildIndex() {
+  const rootDir = path.resolve(__dirname, '..');
+  const indexHtmlPath = path.join(rootDir, 'index.html');
+  const existingCards = parseExistingIndexHtml(indexHtmlPath);
+
+  // Scan directories
+  const entries = fs.readdirSync(rootDir, { withFileTypes: true });
+  const folders = [];
+
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    if (entry.name.startsWith('.') || entry.name === 'node_modules' || entry.name === 'scripts' || entry.name === '.github') continue;
+
+    const folderPath = path.join(rootDir, entry.name);
+    const htmlFiles = fs.readdirSync(folderPath).filter(f => f.endsWith('.html'));
+
+    // Exclude sub-index files like "The Visual MBA/index.html" from being a card
+    const noteFiles = htmlFiles.filter(f => {
+      if (entry.name === 'The Visual MBA' && f.toLowerCase() === 'index.html') return false;
+      return true;
+    });
+
+    if (noteFiles.length > 0) {
+      // Sort: existing cards in their original order, new files sorted naturally at end
+      noteFiles.sort((a, b) => {
+        const relA = `${entry.name}/${a}`;
+        const relB = `${entry.name}/${b}`;
+        const idxA = existingCards[relA]?.orderIndex ?? (10000 + naturalCompare(a, b));
+        const idxB = existingCards[relB]?.orderIndex ?? (10000 + naturalCompare(a, b));
+        if (typeof idxA === 'number' && typeof idxB === 'number') {
+          return idxA - idxB;
+        }
+        return naturalCompare(a, b);
+      });
+
+      folders.push({
+        folderName: entry.name,
+        folderPath: folderPath,
+        files: noteFiles
+      });
+    }
+  }
+
+  // Sort folders based on configured order or alphabetically
+  folders.sort((a, b) => {
+    const orderA = FOLDER_CONFIGS[a.folderName]?.order ?? 999;
+    const orderB = FOLDER_CONFIGS[b.folderName]?.order ?? 999;
+    if (orderA !== orderB) return orderA - orderB;
+    return naturalCompare(a.folderName, b.folderName);
+  });
+
+  let totalNotesCount = 0;
+  let totalFoldersCount = folders.length;
+  const sectionsHtml = [];
+
+  folders.forEach((folder, idx) => {
+    const config = FOLDER_CONFIGS[folder.folderName] || {};
+    const safeId = config.id || `section-${folder.folderName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+    const sectionTitle = config.title || folder.folderName.replace(/[-_]/g, ' ');
+    const folderIcon = config.icon || FOLDER_ICONS[idx % FOLDER_ICONS.length];
+    const theme = config.theme || THEME_PALETTE[idx % THEME_PALETTE.length];
+    const extraHeader = config.extraHeaderHtml || '';
+    const noteCount = folder.files.length;
+    totalNotesCount += noteCount;
+
+    const cardsHtml = folder.files.map(file => {
+      const fullPath = path.join(folder.folderPath, file);
+      const relPath = `${folder.folderName}/${file}`;
+      const href = relPath.replace(/&/g, '&amp;');
+
+      // Use existing handcrafted card metadata if available, otherwise extract
+      let meta = existingCards[relPath] || existingCards[href];
+      if (!meta || !meta.title || !meta.subtitle) {
+        const extracted = extractHtmlMetadata(fullPath, relPath);
+        meta = {
+          icon: meta?.icon || extracted.icon,
+          title: meta?.title || extracted.title,
+          subtitle: meta?.subtitle || extracted.subtitle || `${sectionTitle} note`
+        };
+      }
+
+      return `        <a class="card" href="${href}" data-card>
+          <div class="card-icon">${meta.icon}</div>
+          <div class="card-body">
+            <div class="card-title">${meta.title}</div>
+            <div class="card-sub">${meta.subtitle}</div>
+          </div>
+          <span class="card-arrow">→</span>
+        </a>`;
+    }).join('\n\n');
+
+    sectionsHtml.push(`    <!-- ── ${sectionTitle} ── -->
+    <section class="section ${theme}" id="${safeId}" data-section>
+      <div class="section-header" role="button" tabindex="0" aria-expanded="true">
+        <div class="section-header-left">
+          <div class="folder-icon">${folderIcon}</div>
+          <div>
+            <div class="section-title">${sectionTitle}</div>
+            <div class="section-count">${noteCount} ${noteCount === 1 ? 'note' : 'notes'}${extraHeader}</div>
+          </div>
+        </div>
+        <div class="section-header-right">
+          <div class="chevron-icon" title="Toggle Section">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="cards-wrapper">
+        <div class="cards-wrapper-inner">
+          <div class="cards-grid">
+
+${cardsHtml}
+
+          </div>
+        </div>
+      </div>
+    </section>`);
+  });
+
+  const fullHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My HTML Notes — Knowledge Library</title>
+  <meta name="description" content="A personal knowledge library of HTML notes organized by topic — AWS, Entrepreneurship, YouTube insights, and more." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --surface2: #16161f;
+      --border: rgba(255,255,255,0.07);
+      --text: #e8e8f0;
+      --muted: #8888a8;
+      --accent1: #6c63ff;
+      --accent2: #ff6584;
+      --accent3: #43e97b;
+      --accent4: #f7971e;
+      --accent5: #38b2ff;
+      --glow1: rgba(108,99,255,0.25);
+      --glow2: rgba(255,101,132,0.15);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Animated mesh background ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(108,99,255,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(255,101,132,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 50% at 60% 30%, rgba(67,233,123,0.05) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 80px 24px 60px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(108,99,255,0.15);
+      border: 1px solid rgba(108,99,255,0.3);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #a8a1ff;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .hero-badge::before {
+      content: '';
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #6c63ff;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .hero h1 {
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #ffffff 0%, #a8a1ff 50%, #ff6584 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    .hero p {
+      margin-top: 16px;
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 540px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.7;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-top: 36px;
+      flex-wrap: wrap;
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #6c63ff, #43e97b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    /* ── Search & Controls ── */
+    .search-wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 620px;
+      margin: 0 auto 50px;
+      padding: 0 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      align-items: center;
+      animation: fadeUp 0.6s 0.35s ease both;
+    }
+
+    .search-inner {
+      position: relative;
+      width: 100%;
+    }
+
+    .search-box {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 20px 14px 48px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .search-box:focus {
+      border-color: rgba(108,99,255,0.5);
+      box-shadow: 0 0 0 3px rgba(108,99,255,0.12);
+    }
+
+    .search-box::placeholder { color: var(--muted); }
+
+    .search-icon {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .expand-controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-toggle-all {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--muted);
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
+    }
+
+    .btn-toggle-all:hover {
+      background: rgba(255, 255, 255, 0.09);
+      color: var(--text);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .btn-toggle-all:active {
+      transform: scale(0.97);
+    }
+
+    /* ── Main layout ── */
+    .main {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* ── Section (folder) ── */
+    .section {
+      margin-bottom: 44px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 20px;
+      margin-bottom: 16px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .section-header:hover {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .section-header:focus-visible {
+      outline: 2px solid var(--accent1);
+      outline-offset: 2px;
+    }
+
+    .section-header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .section-header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chevron-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s, color 0.2s;
+    }
+
+    .section-header:hover .chevron-icon {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+    }
+
+    .section.collapsed .chevron-icon {
+      transform: rotate(-90deg);
+    }
+
+    .folder-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .section-count {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    /* ── Accordion Cards Container ── */
+    .cards-wrapper {
+      display: grid;
+      grid-template-rows: 1fr;
+      transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+      opacity: 1;
+    }
+
+    .cards-wrapper-inner {
+      overflow: hidden;
+      padding: 6px 2px 16px 2px;
+    }
+
+    .section.collapsed .cards-wrapper {
+      grid-template-rows: 0fr;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .section.collapsed .cards-wrapper-inner {
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+
+    /* ── Cards grid ── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 22px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s, background 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.3s;
+      border-radius: 16px;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255,255,255,0.14);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+      background: var(--surface2);
+    }
+
+    .card:hover::before { opacity: 1; }
+
+    .card-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      transition: transform 0.2s;
+    }
+
+    .card:hover .card-icon { transform: scale(1.1) rotate(-3deg); }
+
+    .card-body { flex: 1; min-width: 0; }
+
+    .card-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.4;
+      letter-spacing: -0.01em;
+    }
+
+    .card-sub {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .card-arrow {
+      color: var(--muted);
+      font-size: 16px;
+      align-self: center;
+      transition: transform 0.2s, color 0.2s;
+      flex-shrink: 0;
+    }
+
+    .card:hover .card-arrow {
+      transform: translateX(4px);
+      color: var(--text);
+    }
+
+    /* ── No results ── */
+    .no-results {
+      display: none;
+      text-align: center;
+      color: var(--muted);
+      padding: 60px 24px;
+      font-size: 0.95rem;
+    }
+
+    .no-results span { font-size: 2rem; display: block; margin-bottom: 12px; }
+
+    /* ── Color themes per folder ── */
+    .theme-purple .folder-icon { background: rgba(108,99,255,0.15); }
+    .theme-purple .card-icon   { background: rgba(108,99,255,0.15); }
+    .theme-purple .card:hover  { box-shadow: 0 12px 40px rgba(108,99,255,0.15); border-color: rgba(108,99,255,0.3); }
+
+    .theme-orange .folder-icon { background: rgba(247,151,30,0.15); }
+    .theme-orange .card-icon   { background: rgba(247,151,30,0.15); }
+    .theme-orange .card:hover  { box-shadow: 0 12px 40px rgba(247,151,30,0.15); border-color: rgba(247,151,30,0.3); }
+
+    .theme-green .folder-icon  { background: rgba(67,233,123,0.12); }
+    .theme-green .card-icon    { background: rgba(67,233,123,0.12); }
+    .theme-green .card:hover   { box-shadow: 0 12px 40px rgba(67,233,123,0.12); border-color: rgba(67,233,123,0.3); }
+
+    .theme-pink .folder-icon   { background: rgba(255,101,132,0.12); }
+    .theme-pink .card-icon     { background: rgba(255,101,132,0.12); }
+    .theme-pink .card:hover    { box-shadow: 0 12px 40px rgba(255,101,132,0.12); border-color: rgba(255,101,132,0.3); }
+
+    .theme-blue .folder-icon   { background: rgba(56,178,255,0.12); }
+    .theme-blue .card-icon     { background: rgba(56,178,255,0.12); }
+    .theme-blue .card:hover    { box-shadow: 0 12px 40px rgba(56,178,255,0.12); border-color: rgba(56,178,255,0.3); }
+
+    .theme-teal .folder-icon   { background: rgba(29,158,117,0.15); }
+    .theme-teal .card-icon     { background: rgba(29,158,117,0.15); }
+    .theme-teal .card:hover    { box-shadow: 0 12px 40px rgba(29,158,117,0.15); border-color: rgba(29,158,117,0.3); }
+
+    .theme-amber .folder-icon  { background: rgba(255,180,84,0.15); }
+    .theme-amber .card-icon    { background: rgba(255,180,84,0.15); }
+    .theme-amber .card:hover   { box-shadow: 0 12px 40px rgba(255,180,84,0.15); border-color: rgba(255,180,84,0.3); }
+
+    .theme-indigo .folder-icon { background: rgba(127,119,221,0.15); }
+    .theme-indigo .card-icon   { background: rgba(127,119,221,0.15); }
+    .theme-indigo .card:hover  { box-shadow: 0 12px 40px rgba(127,119,221,0.15); border-color: rgba(127,119,221,0.3); }
+
+    /* ── Footer ── */
+    .footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .footer a { color: #a8a1ff; text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Hidden by search ── */
+    .card.hidden { display: none; }
+    .section.section-hidden { display: none; }
+
+    /* ══ RESPONSIVE ══ */
+    @media (max-width: 1024px) {
+      .cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 860px) {
+      .hero { padding: 64px 32px 48px; }
+      .main { padding: 0 20px 60px; }
+    }
+
+    @media (max-width: 480px) {
+      .hero { padding: 52px 20px 36px; }
+      .hero-badge { font-size: 11px; padding: 5px 13px; }
+      .hero p { font-size: 0.95rem; }
+      .stats-row { gap: 24px; margin-top: 28px; }
+      .stat-value { font-size: 1.5rem; }
+
+      .search-wrapper { padding: 0 16px; margin-bottom: 40px; }
+      .search-box { font-size: 1rem; padding: 15px 18px 15px 46px; border-radius: 12px; }
+
+      .main { padding: 0 16px 60px; }
+      .folder-icon { width: 40px; height: 40px; font-size: 18px; }
+      .section-title { font-size: 1rem; }
+      .section { margin-bottom: 36px; }
+
+      .cards-grid { grid-template-columns: 1fr; gap: 12px; }
+      .card { padding: 16px 18px; border-radius: 14px; transition: background 0.15s, border-color 0.15s; }
+      .card:active { background: var(--surface2); border-color: rgba(255,255,255,0.14); transform: scale(0.98); }
+      .card-icon { width: 36px; height: 36px; font-size: 16px; border-radius: 9px; }
+      .card-title { font-size: 0.875rem; }
+      .card-sub   { font-size: 0.72rem; }
+      .card-arrow { font-size: 14px; }
+
+      .footer { font-size: 0.75rem; padding: 20px 16px; }
+    }
+
+    @media (max-width: 360px) {
+      .hero { padding: 44px 16px 32px; }
+      .cards-grid { gap: 10px; }
+    }
+
+    @media (hover: none) {
+      .card:hover { transform: none; }
+      .card:hover .card-icon { transform: none; }
+      .card:hover .card-arrow { transform: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══ HERO ══ -->
+  <header class="hero">
+    <div class="hero-badge">📚 Personal Knowledge Library</div>
+    <h1>My HTML Notes</h1>
+    <p>All your notes, neatly organized by topic. Click any card to open the full HTML page.</p>
+
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-value" id="total-notes">${totalNotesCount}</div>
+        <div class="stat-label">Total Notes</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="total-folders">${totalFoldersCount}</div>
+        <div class="stat-label">Folders</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══ SEARCH & CONTROLS ══ -->
+  <div class="search-wrapper">
+    <div class="search-inner">
+      <svg class="search-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input
+        id="search"
+        class="search-box"
+        type="text"
+        placeholder="Search notes by title..."
+        autocomplete="off"
+        aria-label="Search notes"
+      />
+    </div>
+    <div class="expand-controls">
+      <button type="button" class="btn-toggle-all" id="btn-expand-all" title="Expand all sections">
+        <span>👇</span> Expand All
+      </button>
+      <button type="button" class="btn-toggle-all" id="btn-collapse-all" title="Collapse all sections">
+        <span>👆</span> Collapse All
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ CONTENT ══ -->
+  <main class="main">
+
+${sectionsHtml.join('\n\n')}
+
+    <div class="no-results" id="no-results">
+      <span>🔎</span>
+      No notes match your search. Try a different keyword.
+    </div>
+
+  </main>
+
+  <!-- ══ FOOTER ══ -->
+  <footer class="footer">
+    <p>My HTML Notes &mdash; Personal knowledge library hosted on
+      <a href="https://pages.github.com" target="_blank" rel="noopener">GitHub Pages</a>.
+      Auto-indexed via GitHub Actions on every commit.
+    </p>
+  </footer>
+
+  <script>
+    const searchInput = document.getElementById('search');
+    const noResults   = document.getElementById('no-results');
+    const sections    = document.querySelectorAll('[data-section]');
+    const STORAGE_KEY = 'my_html_notes_collapsed_sections';
+
+    // Auto-update header stats based on DOM
+    const totalNotesEl = document.getElementById('total-notes');
+    const totalFoldersEl = document.getElementById('total-folders');
+    if (totalNotesEl) totalNotesEl.textContent = document.querySelectorAll('[data-card]').length;
+    if (totalFoldersEl) totalFoldersEl.textContent = sections.length;
+
+    // ── LocalStorage state helpers ──
+    function getCollapsedSections() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveCollapsedSections(list) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+      } catch (e) {}
+    }
+
+    // ── Section Expand/Collapse Toggle ──
+    function toggleSection(section, forceState = null) {
+      const sectionId = section.id;
+      const isCurrentlyCollapsed = section.classList.contains('collapsed');
+      const shouldCollapse = (forceState !== null) ? forceState : !isCurrentlyCollapsed;
+
+      section.classList.toggle('collapsed', shouldCollapse);
+      const header = section.querySelector('.section-header');
+      if (header) {
+        header.setAttribute('aria-expanded', shouldCollapse ? 'false' : 'true');
+      }
+
+      // Save to localStorage unless search is active
+      if (!searchInput.value.trim() && sectionId) {
+        let collapsedList = getCollapsedSections();
+        if (shouldCollapse) {
+          if (!collapsedList.includes(sectionId)) collapsedList.push(sectionId);
+        } else {
+          collapsedList = collapsedList.filter(id => id !== sectionId);
+        }
+        saveCollapsedSections(collapsedList);
+      }
+    }
+
+    // Restore saved state from localStorage on load
+    const savedCollapsed = getCollapsedSections();
+    sections.forEach(section => {
+      if (section.id && savedCollapsed.includes(section.id)) {
+        toggleSection(section, true);
+      }
+    });
+
+    // Attach click and keyboard listeners to headers
+    document.querySelectorAll('.section-header').forEach(header => {
+      header.addEventListener('click', (e) => {
+        const link = e.target.closest('a[href]');
+        if (link) return;
+        const section = header.closest('[data-section]');
+        if (section) toggleSection(section);
+      });
+
+      header.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          const link = e.target.closest('a[href]');
+          if (link) return;
+          e.preventDefault();
+          const section = header.closest('[data-section]');
+          if (section) toggleSection(section);
+        }
+      });
+    });
+
+    // Expand All / Collapse All button listeners
+    const btnExpandAll = document.getElementById('btn-expand-all');
+    const btnCollapseAll = document.getElementById('btn-collapse-all');
+
+    if (btnExpandAll) {
+      btnExpandAll.addEventListener('click', () => {
+        sections.forEach(s => toggleSection(s, false));
+        saveCollapsedSections([]);
+      });
+    }
+
+    if (btnCollapseAll) {
+      btnCollapseAll.addEventListener('click', () => {
+        const allIds = Array.from(sections).map(s => s.id).filter(Boolean);
+        sections.forEach(s => toggleSection(s, true));
+        saveCollapsedSections(allIds);
+      });
+    }
+
+    // ── Live search integration ──
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.trim().toLowerCase();
+      let anyVisible = false;
+
+      sections.forEach(section => {
+        const cards = section.querySelectorAll('[data-card]');
+        let sectionHasVisible = false;
+
+        cards.forEach(card => {
+          const text = card.innerText.toLowerCase();
+          const match = !q || text.includes(q);
+          card.classList.toggle('hidden', !match);
+          if (match) sectionHasVisible = true;
+        });
+
+        section.classList.toggle('section-hidden', !sectionHasVisible);
+        if (sectionHasVisible) anyVisible = true;
+
+        if (q && sectionHasVisible) {
+          section.classList.remove('collapsed');
+          const header = section.querySelector('.section-header');
+          if (header) header.setAttribute('aria-expanded', 'true');
+        } else if (!q) {
+          const saved = getCollapsedSections();
+          const isCollapsed = section.id && saved.includes(section.id);
+          section.classList.toggle('collapsed', isCollapsed);
+          const header = section.querySelector('.section-header');
+          if (header) header.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+        }
+      });
+
+      noResults.style.display = anyVisible ? 'none' : 'block';
+    });
+
+    // ── Stagger section entrance animations ──
+    sections.forEach((s, i) => {
+      s.style.animationDelay = \`\${0.4 + i * 0.08}s\`;
+    });
+  </script>
+
+</body>
+</html>
+`;
+
+  fs.writeFileSync(indexHtmlPath, fullHtml, 'utf8');
+  console.log(`Successfully built index.html with ${totalNotesCount} notes across ${totalFoldersCount} folders.`);
+}
+
+if (require.main === module) {
+  buildIndex();
+}
+
+module.exports = { buildIndex };
