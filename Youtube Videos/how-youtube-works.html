@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How YouTube Actually Works — A Field Guide to Planet-Scale Video</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0a1a1c;
+    --bg-soft: #0e2124;
+    --panel: #12292c;
+    --line: rgba(148, 180, 178, 0.16);
+    --line-strong: rgba(148, 180, 178, 0.32);
+    --text: #e7f0ee;
+    --muted: #8fb0ac;
+    --muted-dim: #567d79;
+    --blue: #57acdc;
+    --blue-dim: rgba(87, 172, 220, 0.14);
+    --amber: #e7a94c;
+    --amber-dim: rgba(231, 169, 76, 0.14);
+    --serif: 'Source Serif 4', Georgia, serif;
+    --display: 'Space Grotesk', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+    --maxw: 720px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--serif);
+    font-size:19px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  ::selection{ background:var(--blue-dim); color:var(--text); }
+
+  a{ color:var(--blue); }
+
+  /* ---------- background texture: faint scanlines ---------- */
+  .grain{
+    position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      repeating-linear-gradient(180deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+    mix-blend-mode:overlay;
+    opacity:0.5;
+  }
+
+  /* ---------- side rail nav ---------- */
+  .rail{
+    position:fixed;
+    left:34px; top:50%; transform:translateY(-50%);
+    z-index:20;
+    display:flex; flex-direction:column; gap:18px;
+    font-family:var(--mono);
+  }
+  .rail-dot{
+    display:flex; align-items:center; gap:10px;
+    cursor:pointer; text-decoration:none;
+    opacity:0.5;
+    transition:opacity .25s ease;
+  }
+  .rail-dot:hover, .rail-dot.active{ opacity:1; }
+  .rail-dot .tick{
+    width:14px; height:2px; background:var(--muted-dim);
+    transition:all .25s ease;
+  }
+  .rail-dot.active .tick{ width:26px; background:var(--blue); box-shadow:0 0 8px var(--blue); }
+  .rail-dot .label{
+    font-size:10.5px; letter-spacing:0.06em; color:var(--muted-dim);
+    white-space:nowrap;
+    transition:color .25s ease;
+  }
+  .rail-dot.active .label{ color:var(--blue); }
+
+  @media (max-width: 1150px){ .rail{ display:none; } }
+
+  /* ---------- layout shell ---------- */
+  main{ position:relative; z-index:1; }
+  .wrap{ max-width:var(--maxw); margin:0 auto; padding:0 24px; }
+
+  /* ---------- hero ---------- */
+  .hero{
+    padding:120px 24px 90px;
+    border-bottom:1px solid var(--line);
+    position:relative;
+  }
+  .hero-inner{ max-width:var(--maxw); margin:0 auto; }
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:0.14em;
+    color:var(--amber);
+    text-transform:uppercase;
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:28px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:7px; height:7px; border-radius:50%;
+    background:var(--amber);
+    box-shadow:0 0 10px var(--amber);
+    animation:pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+
+  h1{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:clamp(38px, 6vw, 60px);
+    line-height:1.06;
+    letter-spacing:-0.01em;
+    margin:0 0 26px;
+    color:#f4f7f7;
+  }
+  .hero p.lede{
+    font-size:21px;
+    line-height:1.6;
+    color:var(--muted);
+    max-width:60ch;
+    margin:0 0 36px;
+  }
+  .meta-row{
+    display:flex; gap:28px; flex-wrap:wrap;
+    font-family:var(--mono); font-size:12.5px; color:var(--muted-dim);
+    letter-spacing:0.03em;
+  }
+  .meta-row span b{ color:var(--muted); font-weight:500; }
+
+  /* ---------- stat strip ---------- */
+  .statstrip{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    margin:56px auto 0;
+    max-width:var(--maxw);
+  }
+  .stat{
+    background:var(--bg-soft);
+    padding:22px 20px;
+  }
+  .stat .num{
+    font-family:var(--display); font-weight:600;
+    font-size:28px; color:var(--blue);
+    letter-spacing:-0.01em;
+  }
+  .stat .lab{
+    font-family:var(--mono); font-size:11px; color:var(--muted-dim);
+    letter-spacing:0.04em; margin-top:6px; text-transform:uppercase;
+  }
+
+  /* ---------- sections ---------- */
+  section{ padding:86px 0; border-bottom:1px solid var(--line); }
+  section:last-of-type{ border-bottom:none; }
+
+  .sec-head{ margin-bottom:34px; }
+  .sec-num{
+    font-family:var(--mono); font-size:12px; color:var(--amber);
+    letter-spacing:0.08em; margin-bottom:10px; display:block;
+  }
+  h2{
+    font-family:var(--display); font-weight:600;
+    font-size:clamp(26px, 3.6vw, 34px);
+    line-height:1.18;
+    color:#f4f7f7;
+    margin:0;
+    letter-spacing:-0.005em;
+  }
+  h3{
+    font-family:var(--display); font-weight:600;
+    font-size:19px; color:var(--text);
+    margin:36px 0 12px;
+  }
+
+  p{ margin:0 0 20px; color:#d5dcde; }
+  p.muted{ color:var(--muted); }
+
+  .drop::first-letter{
+    font-family:var(--display); font-weight:700;
+    font-size:3.4em; float:left; line-height:0.85;
+    padding:0.06em 0.1em 0 0; color:var(--blue);
+  }
+
+  /* pull quote */
+  blockquote{
+    margin:40px 0; padding:26px 30px;
+    border-left:2px solid var(--blue);
+    background:linear-gradient(90deg, var(--blue-dim), transparent 60%);
+    font-family:var(--display);
+    font-weight:500;
+    font-size:22px;
+    line-height:1.45;
+    color:#f0f4f5;
+  }
+  blockquote cite{
+    display:block; font-family:var(--mono); font-style:normal;
+    font-size:11.5px; color:var(--muted-dim); margin-top:14px;
+    letter-spacing:0.04em;
+  }
+
+  /* callout panel */
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:26px 28px;
+    margin:30px 0;
+  }
+  .panel .panel-title{
+    font-family:var(--mono); font-size:11px; color:var(--muted-dim);
+    letter-spacing:0.08em; text-transform:uppercase; margin-bottom:14px;
+  }
+  .panel ul{ margin:0; padding-left:20px; }
+  .panel li{ margin-bottom:10px; color:#d5dcde; }
+  .panel li:last-child{ margin-bottom:0; }
+  .panel li b{ color:var(--text); }
+
+  /* ---------- signature: the resolution ladder ---------- */
+  .ladder-block{ margin:44px 0 8px; }
+  .ladder-caption{
+    font-family:var(--mono); font-size:11.5px; color:var(--muted-dim);
+    letter-spacing:0.03em; margin-top:16px; text-align:center;
+  }
+  .ladder{
+    display:flex; align-items:flex-end; gap:6px;
+    height:170px;
+    padding:0 4px;
+    border-bottom:1px solid var(--line-strong);
+  }
+  .rung{
+    flex:1;
+    background:linear-gradient(180deg, var(--blue), rgba(87,172,220,0.25));
+    border-radius:2px 2px 0 0;
+    position:relative;
+    transform-origin:bottom;
+    transform:scaleY(0);
+    animation:rise 0.9s cubic-bezier(.2,.8,.2,1) forwards;
+    animation-delay:calc(var(--i) * 70ms);
+  }
+  @media (prefers-reduced-motion: reduce){
+    .rung{ animation:none; transform:scaleY(1); }
+  }
+  @keyframes rise{ to{ transform:scaleY(1); } }
+  .rung .tag{
+    position:absolute; bottom:-26px; left:50%; transform:translateX(-50%);
+    font-family:var(--mono); font-size:9.5px; color:var(--muted-dim);
+    white-space:nowrap;
+  }
+  .rung.hi{ background:linear-gradient(180deg, var(--amber), rgba(231,169,76,0.25)); }
+  .rung.hi .tag{ color:var(--amber); }
+
+  /* ---------- codec compute table ---------- */
+  .codec-rows{ margin:34px 0; }
+  .codec-row{
+    display:grid; grid-template-columns:90px 1fr 60px;
+    align-items:center; gap:16px;
+    padding:14px 0;
+    border-top:1px solid var(--line);
+  }
+  .codec-row:last-child{ border-bottom:1px solid var(--line); }
+  .codec-name{ font-family:var(--mono); font-size:13px; color:var(--text); }
+  .codec-bar-track{ background:var(--line); height:8px; border-radius:4px; overflow:hidden; }
+  .codec-bar{ height:100%; background:var(--blue); border-radius:4px; width:0; transition:width 1.1s ease; }
+  .codec-pct{ font-family:var(--mono); font-size:12px; color:var(--muted); text-align:right; }
+
+  /* ---------- two column feature ---------- */
+  .split{ display:grid; grid-template-columns:1fr; gap:28px; margin:34px 0; }
+  @media(min-width:640px){ .split{ grid-template-columns:1fr 1fr; } }
+  .card{
+    background:var(--bg-soft); border:1px solid var(--line);
+    padding:22px 24px; border-radius:3px;
+  }
+  .card h4{
+    font-family:var(--display); font-size:15.5px; color:var(--blue);
+    margin:0 0 10px; letter-spacing:0.01em;
+  }
+  .card p{ font-size:16.5px; color:var(--muted); margin:0; }
+
+  /* ---------- timeline / pipeline ---------- */
+  .pipeline{ margin:40px 0; }
+  .pipe-step{
+    display:grid; grid-template-columns:32px 1fr; gap:18px;
+    position:relative; padding-bottom:34px;
+  }
+  .pipe-step:last-child{ padding-bottom:0; }
+  .pipe-step::before{
+    content:""; position:absolute; left:15px; top:30px; bottom:0;
+    width:1px; background:var(--line-strong);
+  }
+  .pipe-step:last-child::before{ display:none; }
+  .pipe-dot{
+    width:32px; height:32px; border-radius:50%;
+    border:1px solid var(--blue); background:var(--bg);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono); font-size:12px; color:var(--blue);
+    z-index:1;
+  }
+  .pipe-body h4{ font-family:var(--display); font-size:16.5px; margin:2px 0 8px; color:var(--text); }
+  .pipe-body p{ margin:0; font-size:16.5px; color:var(--muted); }
+
+  /* ---------- takeaways ---------- */
+  .takeaway{
+    display:grid; grid-template-columns:52px 1fr; gap:20px;
+    padding:24px 0; border-top:1px solid var(--line);
+  }
+  .takeaway:last-child{ border-bottom:1px solid var(--line); }
+  .takeaway .idx{
+    font-family:var(--display); font-weight:700; font-size:26px; color:var(--amber);
+  }
+  .takeaway h4{ margin:0 0 8px; font-family:var(--display); font-size:17px; color:var(--text); }
+  .takeaway p{ margin:0; color:var(--muted); font-size:16.5px; }
+
+  /* ---------- footer ---------- */
+  footer{
+    padding:70px 24px 90px;
+    text-align:center;
+  }
+  footer .mark{
+    font-family:var(--mono); font-size:11.5px; color:var(--muted-dim);
+    letter-spacing:0.06em;
+  }
+
+  /* reveal-on-scroll */
+  .reveal{ opacity:0; transform:translateY(18px); transition:opacity .7s ease, transform .7s ease; }
+  .reveal.in{ opacity:1; transform:translateY(0); }
+  @media (prefers-reduced-motion: reduce){ .reveal{ opacity:1; transform:none; } }
+
+  @media (max-width:600px){
+    .hero{ padding:90px 20px 60px; }
+    section{ padding:60px 0; }
+    body{ font-size:17.5px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<nav class="rail" id="rail">
+  <a class="rail-dot" data-target="upload" href="#upload"><span class="tick"></span><span class="label">UPLOAD</span></a>
+  <a class="rail-dot" data-target="transcode" href="#transcode"><span class="tick"></span><span class="label">TRANSCODE</span></a>
+  <a class="rail-dot" data-target="silicon" href="#silicon"><span class="tick"></span><span class="label">SILICON</span></a>
+  <a class="rail-dot" data-target="metadata" href="#metadata"><span class="tick"></span><span class="label">DATABASE</span></a>
+  <a class="rail-dot" data-target="clocks" href="#clocks"><span class="tick"></span><span class="label">CONSISTENCY</span></a>
+  <a class="rail-dot" data-target="delivery" href="#delivery"><span class="tick"></span><span class="label">DELIVERY</span></a>
+  <a class="rail-dot" data-target="takeaways" href="#takeaways"><span class="tick"></span><span class="label">TAKEAWAYS</span></a>
+</nav>
+
+<main>
+
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">System Design — Video Infrastructure</div>
+      <h1>How YouTube Actually Works</h1>
+      <p class="lede">A billion hours watched every day, five billion views, and eight hours of fresh footage arriving every second. The hard part was never streaming the video — it's everything that happens in the seconds after someone clicks upload.</p>
+      <div class="meta-row">
+        <span><b>14 min read</b></span>
+        <span>Engineering deep dive</span>
+        <span>Sources: public engineering talks &amp; documentation</span>
+      </div>
+    </div>
+
+    <div class="statstrip">
+      <div class="stat"><div class="num">~1B</div><div class="lab">hours watched / day</div></div>
+      <div class="stat"><div class="num">2B+</div><div class="lab">users worldwide</div></div>
+      <div class="stat"><div class="num">500</div><div class="lab">hours uploaded / min</div></div>
+      <div class="stat"><div class="num">1,300+</div><div class="lab">cache cities</div></div>
+    </div>
+  </header>
+
+  <div class="wrap">
+
+    <section class="reveal">
+      <p class="drop">Right now, somewhere, a billion hours of video are being watched on YouTube today. Five billion views. Two billion people. Almost every country on the planet. And while you've been reading this sentence, creators have uploaded another few minutes of fresh footage — the platform takes in eight hours of new video every single second.</p>
+      <p>Here's the natural guess at what makes that hard: streaming all of it. Millions of people hitting play at once, video pouring out to every corner of the world. Reasonable guess. Wrong guess. That part is almost the easy part. The real fight happens earlier, in the two or three seconds after someone clicks <em>upload</em> — before anyone has watched a single frame, before the video even has a face to the outside world.</p>
+
+      <blockquote>
+        Compute once, serve forever. Do the expensive work exactly one time, so that pressing play — something that happens billions of times a day — costs almost nothing.
+      </blockquote>
+
+      <p>That's the whole trick, really. By the time your thumb taps a thumbnail, the video has already been sliced into a dozen different versions and quietly parked on a server a few miles from your house. You're not triggering any of the hard work. It already happened, hours ago, while you weren't looking.</p>
+    </section>
+
+    <section id="upload" class="reveal">
+      <div class="sec-head">
+        <span class="sec-num">01 — INGEST</span>
+        <h2>One file has to satisfy every screen on Earth</h2>
+      </div>
+      <p>A creator finishes editing and hits upload. What leaves their laptop is one file — one resolution, one format, whatever their camera happened to spit out. What's waiting on the other end is chaos. Someone's about to watch on a 75-inch 4K TV over gigabit fiber. Someone else has a five-year-old Android phone clinging to two bars of 3G in a village with spotty coverage. Same video, wildly different worlds. Send the phone that 4K file and it never finishes loading. Send the TV a potato-quality file and it looks like garbage on a wall-sized screen. One file was never going to work for everyone — and that mismatch is the whole reason the rest of this system exists.</p>
+
+      <p>But before any of that reformatting can start, the file has to actually survive getting to Google's servers in one piece — which is its own small drama.</p>
+
+      <div class="panel">
+        <div class="panel-title">Why uploads are chopped into pieces</div>
+        <ul>
+          <li>The app doesn't send one giant blob. It slices the file into <b>10–50 MB chunks</b> first.</li>
+          <li>Why bother? Because uploads fail constantly. Wi-Fi drops. You walk into an elevator. Your phone quietly switches to mobile data mid-upload. If you were sending one massive file and it died at 90%, you'd be starting over from zero — miserable.</li>
+          <li>Chop it into pieces, though, and only the one unlucky chunk needs a retry. Everything else that already made it across just... stays put.</li>
+          <li>That's a <b>resumable upload</b> — one that shrugs off a flaky connection instead of collapsing because of it. The chunks land at the nearest Google edge location, get stitched back into the original file, and a note gets dropped onto a queue: <em>this one needs processing.</em> Somewhere, a machine that's been idling, waiting for exactly this, picks it up.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="transcode" class="reveal">
+      <div class="sec-head">
+        <span class="sec-num">02 — TRANSCODING</span>
+        <h2>One upload becomes dozens of files</h2>
+      </div>
+      <p>Now the real work starts. That single uploaded file gets re-encoded into a whole ladder of resolutions, worst connection to best. An 8K upload doesn't turn into one processed video — it turns into nine, each a fully separate file built from the same source, climbing from something a 3G phone can chew on all the way up to something worthy of that 75-inch TV.</p>
+
+      <div class="ladder-block">
+        <div class="ladder">
+          <div class="rung" style="height:14%; --i:1"><span class="tag">144p</span></div>
+          <div class="rung" style="height:22%; --i:2"><span class="tag">240p</span></div>
+          <div class="rung" style="height:32%; --i:3"><span class="tag">360p</span></div>
+          <div class="rung" style="height:44%; --i:4"><span class="tag">480p</span></div>
+          <div class="rung" style="height:58%; --i:5"><span class="tag">720p</span></div>
+          <div class="rung" style="height:70%; --i:6"><span class="tag">1080p</span></div>
+          <div class="rung" style="height:80%; --i:7"><span class="tag">1440p</span></div>
+          <div class="rung hi" style="height:92%; --i:8"><span class="tag">2160p · 4K</span></div>
+          <div class="rung hi" style="height:100%; --i:9"><span class="tag">4320p · 8K</span></div>
+        </div>
+        <div class="ladder-caption">the encoding ladder — one upload, nine resolution tiers, before codecs even enter the picture</div>
+      </div>
+
+      <p style="margin-top:44px;">And resolution is only half the headache. Devices also can't agree on <em>codec</em> — the compression scheme doing the actual squeezing. Old hardware only speaks H.264. Newer phones understand the sharper, more efficient VP9. The newest devices can handle AV1, better still. So it's not nine resolutions. It's nine-ish resolutions, each one produced in several codecs, so that whatever device shows up — ancient or brand new — there's a version it can actually decode. Stack the audio tracks on top and one upload has quietly detonated into dozens of separate files.</p>
+
+      <h3>Why the good codecs are the expensive ones</h3>
+      <p>Here's the catch nobody escapes. A codec exists to make a file smaller without making it look worse — smaller means faster loading, cheaper bandwidth, happier viewers. But there's a tax on that: the smarter the compression, the harder the math, and the more raw compute it burns to produce.</p>
+
+      <div class="codec-rows">
+        <div class="codec-row">
+          <span class="codec-name">H.264</span>
+          <div class="codec-bar-track"><div class="codec-bar" data-w="20"></div></div>
+          <span class="codec-pct">baseline</span>
+        </div>
+        <div class="codec-row">
+          <span class="codec-name">VP9</span>
+          <div class="codec-bar-track"><div class="codec-bar" data-w="70"></div></div>
+          <span class="codec-pct">~5×</span>
+        </div>
+        <div class="codec-row">
+          <span class="codec-name">AV1</span>
+          <div class="codec-bar-track"><div class="codec-bar" data-w="100"></div></div>
+          <span class="codec-pct">even more</span>
+        </div>
+      </div>
+      <p class="muted" style="font-size:15px;">Relative encode-time compute cost. VP9 squeezes files noticeably tighter than H.264 — for roughly five times the compute. AV1 shrinks them further still, and costs more again to make.</p>
+      <p>So the format that saves the most bandwidth is exactly the one that costs the most to produce. Now multiply that by eight hours of fresh video landing every second, and you can see why this became one of the biggest computing problems on the planet.</p>
+
+      <h3>The trick: don't encode the video, encode the pieces</h3>
+      <p>Imagine transcoding a two-hour movie the obvious way — one machine, start to finish, frame by frame. You'd basically be re-watching it in real time just to process it. Nobody has that kind of patience at YouTube's scale. So instead, the file gets sliced into short pieces — ten-minute chunks, say — and thrown at a whole fleet of machines that all chew on their piece simultaneously. Twelve machines, ten minutes each, working at once, instead of one machine grinding through two hours alone. A job that would've taken hours is done in a fraction of the time.</p>
+      <p>Except cutting a video into pieces isn't free of consequences. A chunk can't see the frames just before its own starting point, and good compression <em>needs</em> to look at neighboring frames to do its job well. Cut cleanly, and you get faint quality glitches right at the seams. The fix is almost sly in its simplicity: let each chunk borrow a few extra frames from its neighbors, just enough for context, then quietly trim that overlap away once everything gets stitched back together.</p>
+    </section>
+
+    <section id="silicon" class="reveal">
+      <div class="sec-head">
+        <span class="sec-num">03 — CUSTOM HARDWARE</span>
+        <h2>When general-purpose CPUs stopped being enough</h2>
+      </div>
+      <p>Splitting work across more machines gets you a long way. But around 2015, YouTube did the math on where things were headed — more uploads, higher resolutions, newer codecs that cost five times the compute — and realized that just buying more regular servers, forever, was not a plan. It was a treadmill. General-purpose CPUs are jacks of all trades by design, which quietly means they're not truly great at any one thing. And transcoding video is about as specific a task as computing gets.</p>
+
+      <p>So they did something almost no company would consider: they designed their own chip. Not a server, not a GPU repurposed for the job — an actual custom piece of silicon with one purpose in life. They called it the <b>Argos VCU</b>, the video coding unit, built to do nothing but transcode video, and to do it extremely well.</p>
+
+      <div class="split">
+        <div class="card">
+          <h4>~20–23×</h4>
+          <p>more compute-efficient than a general-purpose CPU, once the full cost of designing and deploying the chip is accounted for.</p>
+        </div>
+        <div class="card">
+          <h4>10 cores / chip</h4>
+          <p>Each Argos chip carries ten dedicated encoding cores, each able to process 4K video in real time. Two chips sit on a single card.</p>
+        </div>
+      </div>
+
+      <p>One estimate put the total workload these chips have absorbed at something that would otherwise have taken on the order of <b>ten million CPUs</b>. Ten million. That's the size of the problem that got quietly folded into a card the size of a graphics card, slotted into racks by the thousand. It's the same instinct that pushed Dropbox to build its own storage hardware: understand a workload deeply enough, and owning the silicon beats renting general-purpose compute forever.</p>
+    </section>
+
+    <section id="metadata" class="reveal">
+      <div class="sec-head">
+        <span class="sec-num">04 — METADATA</span>
+        <h2>The boring database that scaled anyway</h2>
+      </div>
+      <p>A video is never just pixels. There's the title, the description, the channel, a view count ticking upward in real time, every comment and every reply to every comment, which playlists it's in, your subscriptions, your watch history. All of that is structured, relational data — rows that point to other rows. The obvious tool for that job is a relational database, and YouTube reached for the most unglamorous one imaginable: plain, boring, battle-tested <b>MySQL</b>. Not some exotic database purpose-built for this scale. The same thing a five-person startup might spin up on day one.</p>
+
+      <p>Which, predictably, ran into trouble. A single MySQL instance hits the same walls no matter who's running it:</p>
+      <div class="panel">
+        <ul>
+          <li><b>Connections</b> — every open connection eats memory. Get enough application servers hammering the database at once, and it can spend more effort just <em>holding connections open</em> than doing actual work.</li>
+          <li><b>The ceiling of one machine</b> — eventually your data and your traffic simply outgrow the biggest server anyone will sell you.</li>
+          <li><b>Sharding pain</b> — split the data across many machines and you've solved the size problem, but now your application code has to know exactly where every piece lives. Change anything, and it's fragile and terrifying.</li>
+          <li><b>Failover</b> — a server dies. Something has to notice, promote a backup, and reroute traffic — fast, cleanly, without losing data, and ideally without anyone getting paged at 3 a.m.</li>
+        </ul>
+      </div>
+
+      <p>YouTube didn't throw MySQL out and chase something trendier. They built a layer that absorbs all of this mess: <b>Vitess</b>, written in Go, sitting between the application and a whole fleet of MySQL servers, making hundreds of them look and feel like one single database. It started life inside YouTube, quietly ran all of its database traffic for years, and is now open source — running underneath Slack, Square, and GitHub too.</p>
+
+      <div class="pipeline">
+        <div class="pipe-step">
+          <div class="pipe-dot">1</div>
+          <div class="pipe-body">
+            <h4>VTGate — the router</h4>
+            <p>The application connects to VTGate believing it's talking to one ordinary MySQL server. Behind that illusion, VTGate is figuring out which of hundreds of real servers actually holds the answer, and quietly routing the query there. The app never finds out how the data is really split up.</p>
+          </div>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-dot">2</div>
+          <div class="pipe-body">
+            <h4>VTTablet — a bodyguard for every server</h4>
+            <p>One of these sits in front of every single MySQL instance. Think of it as a small bodyguard with three jobs. It funnels thousands of incoming app connections down onto maybe a hundred real ones, so the database isn't drowning in idle handshakes. It inspects every query before letting it through, ready to trim, block, or kill anything that looks like it's about to pull ten million rows and take the whole thing down. And when a viral video's view count gets hit by a thousand identical reads in the same instant, it collapses them into one real query and hands everyone the same answer at once.</p>
+          </div>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-dot">3</div>
+          <div class="pipe-body">
+            <h4>Live resharding — the hard one</h4>
+            <p>Here's the nightmare scenario: a shard gets too hot or too full, and you need to split it into smaller pieces — while the site is live, people are reading and writing the whole time, and you can't lose a single row or take anything down. Vitess automates the entire dance: bring up new shards, copy the data across while live changes keep streaming in, verify everything matches exactly, cut reads over first, prove that's safe, only <em>then</em> cut over writes. Anything looks off at any step, and it backs out cleanly. Nobody watching a video ever notices a thing happened.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="clocks" class="reveal">
+      <div class="sec-head">
+        <span class="sec-num">05 — GLOBAL CONSISTENCY</span>
+        <h2>Agreeing on what time it is, planet-wide</h2>
+      </div>
+      <p>YouTube's data doesn't live in one place. There's a copy in the US, a copy in Europe, a copy in Asia, and all of them need to agree on something that sounds trivially easy: which change happened first. On a single machine, that's nothing — one clock, one timeline, done. Spread across the planet, every machine keeps its own clock, and those clocks drift apart constantly. Sync them the normal way over a network and they can still land over a hundred milliseconds apart — nowhere near precise enough to say with confidence which of two near-simultaneous writes, one in New York and one in Tokyo, actually came first.</p>
+
+      <blockquote>
+        At planet scale, the database can't even agree on what time it is.
+      </blockquote>
+
+      <p>Google's fix sounds almost absurd until you think it through: they put actual atomic clocks and GPS receivers inside their data centers. The same technology that keeps official world time, sitting in server racks. On top of that hardware runs something called <b>TrueTime</b>, and its trick is refusing to lie. Instead of claiming to know the exact instant — a false precision no clock can truly promise — it hands back a window: <em>the real time is somewhere in here</em>, usually just a few milliseconds wide.</p>
+
+      <p>Then comes the clever part. When the database is about to commit a write, it deliberately sits and waits for that entire uncertainty window to pass before calling the write done. A few milliseconds of doing nothing, on purpose. But that tiny, intentional pause guarantees that any write happening afterward, anywhere on the planet, gets a timestamp that's provably later — no machine ever has to phone another one to ask what time it is. The whole planet agrees on the order of events, and the price is a few milliseconds tacked onto every single write. When the limit was physics, Google just changed the physics.</p>
+    </section>
+
+    <section id="delivery" class="reveal">
+      <div class="sec-head">
+        <span class="sec-num">06 — DELIVERY</span>
+        <h2>Getting the bytes the last few miles</h2>
+      </div>
+      <p>Picture every one of a billion daily viewing hours physically crossing an ocean to reach you. That's the alternative universe where none of this next part exists — slower, wildly expensive, groaning under its own weight. Instead, YouTube gets popular videos physically close to you <em>before you ever ask for them</em>. Google's version of a CDN is called <b>Global Cache</b>, and the idea is almost cheeky: put Google's own servers inside your internet provider's building.</p>
+
+      <p>Literally inside it. The company you pay for internet has racks of Google hardware sitting in its own network, preloaded with whatever's popular in your area — spread across more than <b>1,300 cities in 200-plus countries</b>. So when you stream something popular, the bytes usually never leave your ISP's own network. They're not crossing the country. They're coming from a machine a few miles from your house. Both sides win here — pulling data from outside costs an ISP real money, while traffic that stays local is nearly free, so hosting Google's cache cuts their bill. It works: these caches quietly serve somewhere around <b>98–99%</b> of popular-video requests without ever reaching back to a central server.</p>
+
+      <div class="split">
+        <div class="card">
+          <h4>Push, then pull</h4>
+          <p>Popular videos are pushed into regional caches ahead of demand. Rare videos are pulled in on the first request and cached for whoever asks next.</p>
+        </div>
+        <div class="card">
+          <h4>QUIC over TCP</h4>
+          <p>Old-school TCP delivers data strictly in order — lose one packet, and everything behind it stalls, waiting, even if it already arrived. One stuck car blocking the whole lane. QUIC, Google's protocol and the basis of HTTP/3, lets everything else keep moving while just the missing piece gets resent. On flaky mobile networks, that's the difference between a smooth watch and the spinning buffer icon.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="reveal">
+      <div class="sec-head">
+        <span class="sec-num">— PRINCIPLE</span>
+        <h2>Spend effort where demand actually is</h2>
+      </div>
+      <p>Here's a detail that ties the whole thing together. YouTube's library holds hundreds of millions of videos, and most of them will be watched by almost nobody — a handful of views, maybe none. Treating every single upload like it might be the next viral hit would be wildly wasteful. So the system doesn't. Popular videos get the widest distribution, the most aggressive caching, the deepest optimization. Everything else gets handled far more conservatively. The expense goes where the demand actually is, not where it might theoretically be.</p>
+    </section>
+
+    <section id="takeaways" class="reveal">
+      <div class="sec-head">
+        <span class="sec-num">SUMMARY</span>
+        <h2>Five ideas worth carrying elsewhere</h2>
+      </div>
+
+      <div class="takeaway">
+        <div class="idx">01</div>
+        <div>
+          <h4>Do the expensive work once</h4>
+          <p>Push all the cost to upload time so the common case — pressing play — is nearly free, and get the bytes near the viewer before they ask.</p>
+        </div>
+      </div>
+      <div class="takeaway">
+        <div class="idx">02</div>
+        <div>
+          <h4>Boring tools scale if you build around them</h4>
+          <p>Plain MySQL, not a trendy database, sits at the core — the engineering effort went into Vitess, the layer built to make it scale.</p>
+        </div>
+      </div>
+      <div class="takeaway">
+        <div class="idx">03</div>
+        <div>
+          <h4>Unglamorous mechanics hold up the whole system</h4>
+          <p>Connection pooling, query safety, and collapsing duplicate reads aren't exciting, but each one directly prevents a real failure mode.</p>
+        </div>
+      </div>
+      <div class="takeaway">
+        <div class="idx">04</div>
+        <div>
+          <h4>Own the stack when the problem is big and specific enough</h4>
+          <p>A custom transcoding chip and atomic clocks in data centers are both bets that paid off once the workload was well understood.</p>
+        </div>
+      </div>
+      <div class="takeaway">
+        <div class="idx">05</div>
+        <div>
+          <h4>At planet scale, ordering events is the hard part</h4>
+          <p>Consistency isn't free — you pay for it somewhere, whether that's specialized hardware, added latency, or giving up strict ordering entirely.</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>
+    <div class="mark">COMPUTE ONCE · SERVE FOREVER</div>
+  </footer>
+
+</main>
+
+<script>
+  // scroll-reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  revealEls.forEach(el=>io.observe(el));
+
+  // codec bars animate width once visible
+  const bars = document.querySelectorAll('.codec-bar');
+  const barIo = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.style.width = e.target.dataset.w + '%';
+        barIo.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.4 });
+  bars.forEach(b=>barIo.observe(b));
+
+  // rail active state
+  const sections = ['upload','transcode','silicon','metadata','clocks','delivery','takeaways']
+    .map(id=>document.getElementById(id)).filter(Boolean);
+  const dots = document.querySelectorAll('.rail-dot');
+  const railIo = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        const id = entry.target.id;
+        dots.forEach(d=>d.classList.toggle('active', d.dataset.target === id));
+      }
+    });
+  }, { rootMargin: '-45% 0px -50% 0px' });
+  sections.forEach(s=>railIo.observe(s));
+</script>
+
+</body>
+</html>
