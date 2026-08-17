@@ -2,8 +2,6 @@
 
 A personal knowledge library of HTML notes organized by topic, hosted on **GitHub Pages**.
 
-🌐 **Live site:** `https://<your-username>.github.io/my-html-notes/`
-
 ---
 
 ## 📁 Folder Structure
