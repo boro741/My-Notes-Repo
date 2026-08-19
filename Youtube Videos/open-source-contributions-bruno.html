@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to Actually Contribute to Open Source — Without Getting Lost in the Noise</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,450;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+  :root{
+    --paper:#F5F1E7;
+    --paper-deep:#EEE8D9;
+    --card:#FBF9F2;
+    --ink:#14181F;
+    --ink-soft:#4B5261;
+    --ink-faint:#8B8A7C;
+    --rule:#D9D1B8;
+    --brass:#A9793E;
+    --brass-deep:#8A5F2C;
+    --positive:#33573E;
+    --negative:#9B3B2C;
+    --paper-shadow: rgba(20,24,31,0.08);
+    --maxw: 780px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--brass); color:var(--paper); }
+
+  .grain{
+    position:fixed; inset:0; pointer-events:none; z-index:2;
+    opacity:0.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .topbar{
+    position:sticky; top:0; z-index:10;
+    background:rgba(245,241,231,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--rule);
+  }
+  .topbar-inner{
+    max-width:1040px; margin:0 auto; padding:14px 28px;
+    display:flex; align-items:center; justify-content:space-between; gap:20px;
+  }
+  .brandmark{
+    font-family:'Fraunces', serif; font-weight:600; font-size:15px;
+    letter-spacing:0.02em; color:var(--ink); text-decoration:none;
+    display:flex; align-items:center; gap:8px;
+  }
+  .brandmark .dot{width:7px;height:7px;border-radius:50%;background:var(--brass);display:inline-block;}
+  .navlinks{ display:flex; gap:26px; }
+  .navlinks a{
+    font-size:12.5px; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--ink-soft); text-decoration:none; font-weight:600;
+    border-bottom:1px solid transparent; padding-bottom:3px;
+    transition:border-color .2s ease, color .2s ease;
+  }
+  .navlinks a:hover{ color:var(--brass-deep); border-color:var(--brass); }
+  @media (max-width:720px){ .navlinks{display:none;} }
+
+  .hero{
+    max-width:920px; margin:0 auto; padding:86px 28px 40px;
+    text-align:left;
+  }
+  .kicker{
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px;
+    letter-spacing:0.14em; text-transform:uppercase; color:var(--brass-deep);
+    display:flex; align-items:center; gap:12px; margin-bottom:26px;
+  }
+  .kicker::before{ content:""; width:34px; height:1px; background:var(--brass-deep); display:inline-block;}
+  h1.headline{
+    font-family:'Fraunces', serif; font-weight:600; font-style:normal;
+    font-size:clamp(38px, 6.2vw, 68px); line-height:1.04; letter-spacing:-0.01em;
+    margin:0 0 26px;
+  }
+  h1.headline em{ font-style:italic; font-weight:450; color:var(--brass-deep); }
+  .dek{
+    font-size:19px; line-height:1.6; color:var(--ink-soft); max-width:640px;
+    margin:0 0 34px; font-weight:400;
+  }
+  .meta-row{
+    display:flex; flex-wrap:wrap; gap:22px; align-items:center;
+    padding-top:22px; border-top:1px solid var(--rule);
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--ink-faint);
+    letter-spacing:0.03em;
+  }
+  .meta-row b{ color:var(--ink-soft); font-weight:600; }
+
+  .equation-wrap{
+    max-width:920px; margin:44px auto 10px; padding:0 28px;
+  }
+  .equation{
+    background:var(--ink); color:var(--paper);
+    border-radius:2px; padding:30px 34px;
+    display:flex; align-items:center; justify-content:center; gap:22px;
+    flex-wrap:wrap;
+    font-family:'Fraunces', serif; font-size:clamp(18px,3.2vw,28px); font-weight:500;
+    position:relative; overflow:hidden;
+  }
+  .equation::before{
+    content:"THE OPEN SOURCE FILTER";
+    position:absolute; top:10px; left:20px;
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.16em;
+    color:rgba(245,241,231,0.4); text-transform:uppercase;
+  }
+  .equation .term{ padding:6px 4px; }
+  .equation .op{ color:var(--brass); font-size:0.7em; padding:0 4px; }
+  .equation .sub{ display:block; font-family:'IBM Plex Mono', monospace; font-size:10.5px; letter-spacing:0.08em; color:rgba(245,241,231,0.55); margin-top:6px; text-transform:uppercase; font-style:normal;}
+
+  article{ max-width:var(--maxw); margin:0 auto; padding:64px 28px 40px; }
+  .lede{
+    font-size:20px; line-height:1.75; color:var(--ink); margin-bottom:30px;
+  }
+  .lede::first-letter{
+    font-family:'Fraunces', serif; font-weight:600; font-size:3.6em; float:left;
+    line-height:0.82; padding:6px 10px 0 0; color:var(--brass-deep);
+  }
+  p{ font-size:17px; line-height:1.8; color:#282d36; margin:0 0 22px; }
+  p b, li b{ color:var(--ink); }
+  a.inline{ color:var(--brass-deep); text-decoration-color:var(--brass); text-underline-offset:3px;}
+
+  h2.section-title{
+    font-family:'Fraunces', serif; font-weight:600; font-size:clamp(28px,4vw,38px);
+    margin:64px 0 8px; letter-spacing:-0.01em; scroll-margin-top:90px;
+  }
+  .section-num{
+    font-family:'IBM Plex Mono', monospace; color:var(--brass); font-size:13px;
+    letter-spacing:0.1em; display:block; margin-bottom:10px;
+  }
+  h3.sub-title{
+    font-family:'Fraunces', serif; font-weight:600; font-size:23px; margin:38px 0 14px;
+  }
+
+  blockquote{
+    margin:38px 0; padding:4px 0 4px 26px; border-left:3px solid var(--brass);
+    font-family:'Fraunces', serif; font-style:italic; font-size:23px; line-height:1.5;
+    color:var(--ink);
+  }
+  blockquote cite{ display:block; font-family:'IBM Plex Mono', monospace; font-style:normal;
+    font-size:12px; color:var(--ink-faint); margin-top:12px; letter-spacing:0.04em;}
+
+  ul, ol{ padding-left:22px; margin:0 0 22px; }
+  li{ font-size:17px; line-height:1.8; color:#282d36; margin-bottom:8px; }
+
+  .ledger{
+    background:var(--card); border:1px solid var(--rule); border-radius:3px;
+    padding:26px 28px; margin:30px 0;
+    box-shadow:0 1px 0 var(--paper-shadow);
+    background-image:
+      linear-gradient(var(--rule) 1px, transparent 1px);
+    background-size: 100% 38px;
+    background-position: 0 60px;
+  }
+  .ledger-head{
+    display:flex; justify-content:space-between; align-items:baseline;
+    margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--ink);
+  }
+  .ledger-head h4{
+    font-family:'Fraunces', serif; font-size:18px; font-weight:600; margin:0;
+  }
+  .ledger-head span{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--ink-faint);
+    text-transform:uppercase; letter-spacing:0.06em;
+  }
+  .ledger-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:9px 0; font-family:'IBM Plex Mono', monospace; font-size:14.5px;
+  }
+  .ledger-row .label{ color:var(--ink-soft); }
+  .ledger-row .value{ font-weight:600; color:var(--ink); }
+  .ledger-row .value.hot{ color:var(--negative); }
+  .ledger-row .value.good{ color:var(--positive); }
+  .ledger-row.total{
+    border-top:1.5px solid var(--ink); margin-top:8px; padding-top:14px;
+    font-weight:700;
+  }
+  .ledger-foot{
+    margin-top:16px; padding-top:14px; border-top:1px dashed var(--rule);
+    font-size:14px; color:var(--ink-soft); font-family:'Inter',sans-serif; line-height:1.6;
+  }
+
+  .term-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:30px 0;
+  }
+  @media (max-width:600px){ .term-grid{ grid-template-columns:1fr; } }
+  .term-card{
+    background:var(--card); border:1px solid var(--rule); border-radius:3px;
+    padding:20px 22px;
+  }
+  .term-card .t{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--brass-deep);
+    text-transform:uppercase; letter-spacing:0.07em; margin-bottom:8px; display:block;
+  }
+  .term-card p{ font-size:15px; margin:0; line-height:1.65; color:#333844;}
+
+  .callout{
+    background:var(--ink); color:var(--paper); border-radius:3px;
+    padding:30px 32px; margin:38px 0;
+  }
+  .callout .t{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; letter-spacing:0.1em;
+    text-transform:uppercase; color:var(--brass); margin-bottom:12px; display:block;
+  }
+  .callout p{ color:rgba(245,241,231,0.88); font-size:16.5px; margin:0; }
+  .callout p + p{ margin-top:12px; }
+
+  .checklist{ margin:30px 0; border:1px solid var(--rule); border-radius:3px; overflow:hidden; background:var(--card);}
+  .check-item{
+    display:flex; gap:16px; padding:16px 20px; border-bottom:1px solid var(--rule);
+  }
+  .check-item:last-child{ border-bottom:none; }
+  .check-num{
+    font-family:'IBM Plex Mono', monospace; font-size:13px; color:var(--brass-deep);
+    font-weight:600; min-width:22px; padding-top:2px;
+  }
+  .check-item h5{ font-family:'Fraunces', serif; font-size:16.5px; margin:0 0 4px; }
+  .check-item p{ font-size:14.5px; margin:0; color:var(--ink-soft); line-height:1.6; }
+
+  .rule{ border:none; border-top:1px solid var(--rule); margin:52px 0; }
+  .rule.brass{ border-top:2px solid var(--brass); width:60px; margin:52px 0; }
+
+  figure.stat{
+    display:flex; gap:30px; flex-wrap:wrap; margin:34px 0; padding:26px 0;
+    border-top:1px solid var(--rule); border-bottom:1px solid var(--rule);
+  }
+  .stat-item{ flex:1; min-width:140px; }
+  .stat-item .big{ font-family:'Fraunces', serif; font-size:36px; font-weight:600; color:var(--brass-deep); line-height:1;}
+  .stat-item .lbl{ font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.05em; margin-top:8px; }
+
+  /* Tip / Bulb box */
+  .tip-box{
+    background:linear-gradient(135deg, #FBF9F2 0%, #F0E9D8 100%);
+    border:1px solid var(--rule);
+    border-left:4px solid var(--brass);
+    border-radius:3px;
+    padding:22px 24px;
+    margin:32px 0;
+    position:relative;
+  }
+  .tip-box .tip-label{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.1em;
+    text-transform:uppercase; color:var(--brass-deep); margin-bottom:8px; display:flex; align-items:center; gap:8px;
+  }
+  .tip-box .tip-label::before{ content:"💡"; font-size:14px; }
+  .tip-box p{ font-size:15.5px; margin:0; line-height:1.65; color:#333844; }
+
+  /* Step diagram */
+  .steps{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:32px 0;
+  }
+  @media (max-width:640px){ .steps{ grid-template-columns:1fr; } }
+  .step{
+    background:var(--card); border:1px solid var(--rule); border-radius:3px;
+    padding:20px 18px; text-align:center; position:relative;
+    transition:transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .step:hover{ transform:translateY(-3px); box-shadow:0 6px 18px var(--paper-shadow); }
+  .step .num{
+    font-family:'Fraunces', serif; font-size:28px; font-weight:600; color:var(--brass);
+    margin-bottom:8px;
+  }
+  .step h5{ font-family:'Fraunces', serif; font-size:16px; margin:0 0 6px; }
+  .step p{ font-size:13.5px; margin:0; color:var(--ink-soft); line-height:1.5; }
+
+  /* Quote highlight */
+  .quote-card{
+    background:var(--card); border:1px solid var(--rule); border-radius:3px;
+    padding:28px 30px; margin:34px 0; position:relative;
+  }
+  .quote-card::before{
+    content:"“"; font-family:'Fraunces', serif; font-size:72px; color:var(--brass);
+    position:absolute; top:8px; left:18px; opacity:0.35; line-height:1;
+  }
+  .quote-card p{ font-family:'Fraunces', serif; font-style:italic; font-size:20px; line-height:1.5; margin:0 0 12px; padding-left:20px; }
+  .quote-card .who{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--ink-faint); letter-spacing:0.04em; }
+
+  /* Flow arrows */
+  .flow-row{
+    display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;
+    margin:28px 0; font-family:'IBM Plex Mono', monospace; font-size:13px;
+  }
+  .flow-pill{
+    background:var(--ink); color:var(--paper); padding:10px 16px; border-radius:2px;
+  }
+  .flow-arrow{ color:var(--brass); font-size:18px; }
+
+  footer{
+    max-width:var(--maxw); margin:0 auto; padding:20px 28px 90px;
+  }
+  .signoff{
+    display:flex; gap:18px; align-items:center; padding:28px 0; border-top:1px solid var(--rule);
+  }
+  .avatar{
+    width:46px; height:46px; border-radius:50%; background:var(--brass);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces', serif; color:var(--paper); font-weight:600; font-size:17px;
+    flex-shrink:0;
+  }
+  .signoff .name{ font-family:'Fraunces', serif; font-size:17px; font-weight:600; }
+  .signoff .role{ font-size:13px; color:var(--ink-faint); margin-top:2px; }
+  .fine{ font-size:13px; color:var(--ink-faint); line-height:1.7; margin-top:14px; }
+
+  /* subtle fade-in on scroll feel */
+  .fade-section{ animation: fadeUp 0.6s ease both; }
+  @keyframes fadeUp{
+    from{ opacity:0; transform:translateY(12px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  </style>
+</head>
+<body>
+<div class="grain"></div>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <a class="brandmark" href="../index.html" title="Back to Notes Library"><span class="dot"></span>← Notes Library</a>
+    <nav class="navlinks">
+      <a href="#career">Career</a>
+      <a href="#pr-style">PR Style</a>
+      <a href="#ai-slop">AI &amp; Slop</a>
+      <a href="#trust">Trust</a>
+      <a href="#start">How to Start</a>
+    </nav>
+  </div>
+</div>
+
+<div id="top" class="hero">
+  <div class="kicker">Open Source · Real Talk with Bruno Schaatsbergen</div>
+  <h1 class="headline">Open source is not a<br>democracy. It is a<br><em>craft</em>.</h1>
+  <p class="dek">If you have ever thought about contributing but never started — or if you started and felt your pull request disappear into silence — this conversation with Bruno Schaatsbergen is for you. He went from consultant to HashiCorp engineer almost entirely through open source. Here is everything he shared.</p>
+  <div class="meta-row">
+    <span><b>Format</b> · Podcast notes, fully expanded</span>
+    <span><b>Reading time</b> · 16 min</span>
+    <span><b>Level</b> · No open-source experience needed</span>
+  </div>
+</div>
+
+<div class="equation-wrap">
+  <div class="equation">
+    <span class="term">Consistency<span class="sub">showing up again</span></span>
+    <span class="op">beats</span>
+    <span class="term">Intensity<span class="sub">one big splash</span></span>
+  </div>
+</div>
+
+<article>
+
+  <p class="lede">Bruno has not updated a resume in years. Most of the jobs he has landed came from people finding him on GitHub. That is not a flex. It is a quiet proof that open source can become the main signal of who you are as an engineer — if you treat it as craft, not as a resume item.</p>
+
+  <p>This piece walks through the entire conversation: how open source shaped his career, why so many pull requests sit forever, what AI is doing to the ecosystem right now, and the simple habits that make maintainers actually want to merge your work.</p>
+
+  <hr class="rule brass">
+
+  <h2 class="section-title" id="career"><span class="section-num">Part One</span>How Open Source Quietly Built a Career</h2>
+
+  <p>For Bruno, open source is a form of escapism. After a full day with customers, he puts on headphones and works on projects the way a chef might redesign their own pans and knives. Terraform and its wider ecosystem became that kitchen. The work eventually led him to leave his then-employer and join HashiCorp — the company behind Terraform itself.</p>
+
+  <p>He is an introvert. Clubs and bars never appealed. Shaping the tools that colleagues use every day did. The code is only part of the artifact. How you propose the change, how you write the description, even how many times you edit a GitHub comment — all of that is the real contribution.</p>
+
+  <div class="tip-box">
+    <div class="tip-label">What is a PR?</div>
+    <p>PR stands for Pull Request. It is the formal way you offer a change to someone else’s project on GitHub. You open a request, explain what you changed and why, and the project’s maintainers decide whether to accept it.</p>
+  </div>
+
+  <p>Why open source instead of private side projects? Because it creates a feedback loop. You give code to the community and get real reactions back. Companies that run “open core” models get free testing and rapid feedback the same way. Bruno likes that loop. He wants people to push on the things he builds.</p>
+
+  <div class="quote-card">
+    <p>I get to shape the tools that many of my colleagues work with. It’s quite rewarding… and it has allowed me to build up a lot of confidence in the pride I take in the work.</p>
+    <div class="who">— Bruno Schaatsbergen</div>
+  </div>
+
+  <h3 class="sub-title">The first contribution that changed everything</h3>
+
+  <p>It started at Adidas. They needed an AWS machine-learning platform. Several resources they required simply did not exist yet in the Terraform AWS provider. Bruno decided to try adding them. The first contribution got merged relatively quickly. He could walk into the customer meeting and say: “I unblocked you.” That feeling of usefulness was the spark. After that he just kept going.</p>
+
+  <hr class="rule brass">
+
+  <h2 class="section-title" id="pr-style"><span class="section-num">Part Two</span>Why Most Pull Requests Die — and How to Keep Yours Alive</h2>
+
+  <p>Almost everyone who tries open source for the first time hits the same wall. The pull request sits open for weeks or months. When feedback finally arrives it feels like nitpicking, or worse, the whole direction is rejected. The emotional investment drains away. Many people never come back.</p>
+
+  <p>Bruno hit that wall too. The fix he found is almost too simple: study the people who already get merged.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="num">01</div>
+      <h5>Find the active ones</h5>
+      <p>Look at the repository’s contributors. Sort by who actually ships code.</p>
+    </div>
+    <div class="step">
+      <div class="num">02</div>
+      <h5>Open their merged PRs</h5>
+      <p>Filter for pull requests that were accepted. Read the titles, the commit messages, the descriptions.</p>
+    </div>
+    <div class="step">
+      <div class="num">03</div>
+      <h5>Copy the style</h5>
+      <p>Speak the same language. Match the structure. Lower the mental work for the reviewer.</p>
+    </div>
+  </div>
+
+  <p>When a contribution does not match the project’s style or documentation, maintainers often “mentally park” it. They will come back later — if they have time. When you already write the way they write, the cognitive load drops. Suddenly your change is easier to understand and easier to say yes to.</p>
+
+  <div class="callout">
+    <span class="t">Know your audience</span>
+    <p>You are not writing for yourself. You are writing for the people who stand between your change and the main branch. Their language is the only language that matters for the merge.</p>
+  </div>
+
+  <h3 class="sub-title">Imposter syndrome is real — read more than you write</h3>
+
+  <p>Early in a career the public nature of open source can feel naked. “Am I good enough?” is a common question. Bruno’s advice is the same advice many senior engineers give, but he lives it: spend far more time reading code than writing it.</p>
+
+  <p>Find projects that keep a high bar in your niche. For him it was Terraform and the surrounding HashiCorp ecosystem. Mitchell Hashimoto, Armon Dadgar, Martin Atkins and the rest spent a decade building something excellent. Reading that code reshaped how Bruno writes Go today. The same thing happens, often without people noticing, when they contribute regularly.</p>
+
+  <div class="tip-box">
+    <div class="tip-label">A practical starting rule</div>
+    <p>For the first stretch, aim for a 3:1 or even 5:1 ratio of reading to writing. Open three or four high-quality projects in your area. Trace how they structure packages, name things, handle errors, and write tests. Then try a tiny change of your own.</p>
+  </div>
+
+  <hr class="rule brass">
+
+  <h2 class="section-title"><span class="section-num">Part Three</span>Does Contributing Make You a Better Engineer?</h2>
+
+  <p>Mitchell Hashimoto once said something Bruno strongly agrees with: some of the best engineers have quiet GitHub profiles. They do not context-switch every evening. They do not live on social media. Forcing yourself to contribute will not magically make you better if the work itself does not interest you.</p>
+
+  <p>The real value shows up in two places.</p>
+
+  <div class="term-grid">
+    <div class="term-card">
+      <span class="t">Understanding the tools</span>
+      <p>If you spend your day writing configuration files and calling APIs, contributing lets you peek behind the curtain. You stop treating Terraform or Kubernetes as black boxes.</p>
+    </div>
+    <div class="term-card">
+      <span class="t">The social side</span>
+      <p>Researching issues, writing a clear proposal, showing up in community hours, presenting your thinking — those skills transfer to almost any engineering job.</p>
+    </div>
+  </div>
+
+  <p>Bruno is a software engineer at heart who now mostly composes systems from existing pieces. Contributing to the pieces themselves restores the feeling of building something from the ground up.</p>
+
+  <hr class="rule brass">
+
+  <h2 class="section-title" id="ai-slop"><span class="section-num">Part Four</span>AI Is Flooding Open Source with “Slop”</h2>
+
+  <p>There has always been noise. Before AI, people opened trivial README changes just to get their name on the contributors list. That was already a problem. AI has lowered the barrier even further. Generating a pull request is now almost free. Making a pull request that is actually useful is still hard.</p>
+
+  <p>Bruno’s phrase for the current state is sharp: open source is being <b>killed with kindness and a lot of slop</b>.</p>
+
+  <div class="tip-box">
+    <div class="tip-label">What is “slop”?</div>
+    <p>Slop is low-effort, often AI-generated contribution that looks like work but adds little real value. It creates more review burden than benefit. Maintainers start treating new contributions as noise by default.</p>
+  </div>
+
+  <p>Curl recently closed its bug-bounty program because it was bombarded with attempts that made no sense. Many maintainers now operate on a simple rule: if you spent five minutes, I will spend five minutes. If the change looks generated and carelessly submitted, it gets closed.</p>
+
+  <h3 class="sub-title">How maintainers are fighting back</h3>
+
+  <p>Different projects are trying different filters.</p>
+
+  <div class="checklist">
+    <div class="check-item">
+      <span class="check-num">01</span>
+      <div>
+        <h5>Vouch (Mitchell’s approach at Ghostty)</h5>
+        <p>Reject by default. You must prove you are a trusted committer first. Slop gets auto-closed, and future attempts from the same person can be auto-closed too.</p>
+      </div>
+    </div>
+    <div class="check-item">
+      <span class="check-num">02</span>
+      <div>
+        <h5>Agent-assisted triage (Flux team)</h5>
+        <p>When someone reports a hard race condition, the maintainers throw agents at the issue to try to reproduce it. The human time is spent only on confirmed problems.</p>
+      </div>
+    </div>
+    <div class="check-item">
+      <span class="check-num">03</span>
+      <div>
+        <h5>Effort matching</h5>
+        <p>Many maintainers simply mirror the effort they see. Thin description, no research, no tests → quick close.</p>
+      </div>
+    </div>
+  </div>
+
+  <p>There is no single right answer yet. The common thread is that trust is no longer given freely.</p>
+
+  <h3 class="sub-title">How Bruno uses AI without losing himself</h3>
+
+  <p>He uses agents every day — as a pair programmer. He sometimes runs two in parallel and compares the output. He uses tools to explore deep code paths and larger codebases. But the final proposal is still his.</p>
+
+  <p>He might spend half a day or two days on the actual feature, then another full day polishing the code, understanding every line, and writing a careful pull-request description. He does not want agents to steal his identity.</p>
+
+  <div class="callout">
+    <span class="t">The ownership rule</span>
+    <p>Use the tools. Do not outsource your thinking. If you would not be willing to stand behind the change when something breaks, do not ship it. You are the author. The agent is not.</p>
+  </div>
+
+  <p>That sense of authorship is the difference between craft and noise. Not everyone feels the same pride. That is why the volume of generated code keeps rising while the volume of thoughtful review stays roughly the same.</p>
+
+  <hr class="rule brass">
+
+  <h2 class="section-title" id="trust"><span class="section-num">Part Five</span>Trust, Identity, and Why Open Source Is Not a Democracy</h2>
+
+  <p>Bruno treats himself as the author of every line he proposes — whether it is a README edit, a comment, a new struct, or a full feature. Ownership matters. Anonymous accounts can still land good patches, but permissions (the ability to triage issues, merge PRs, or hold higher roles) are earned rights. Those are often given after meeting people in person at conferences such as KubeCon or AWS re:Invent.</p>
+
+  <p>As an introvert he rarely starts with a video call. He builds asynchronous relationships on Slack first. People know each other by GitHub handles. Later, at a conference, the relationship becomes real. For one Kubernetes-related project he sat with the maintainers, learned what they needed, went back to the hotel, shipped the changes, and had them merged the next day. That is how trust is built.</p>
+
+  <div class="quote-card">
+    <p>Open source is built on trust.</p>
+    <div class="who">— Bruno</div>
+  </div>
+
+  <p>David Heinemeier Hansson (DHH) once said something Bruno finds powerful: never run an open-source project as a business, and remember that open source is neither a community nor a democracy. The maintainer decides what goes in. A hundred upvotes do not force a merge if the change fights the vision of the project.</p>
+
+  <div class="tip-box">
+    <div class="tip-label">Why this matters for you</div>
+    <p>When you contribute, you are offering a gift. The project does not owe you a merge. Approaching it with that mindset removes a lot of the frustration when a PR is closed or heavily reworked.</p>
+  </div>
+
+  <hr class="rule brass">
+
+  <h2 class="section-title"><span class="section-num">Part Six</span>Career Outcomes Without Expectations</h2>
+
+  <p>Open source can open doors. Bruno was offered a job at HashiCorp because he had already positioned himself inside that ecosystem — through pull requests, community hours, roadmap sessions, and multiple HashiConf visits. He has also received unexpected GitHub sponsorships from people he never spoke to.</p>
+
+  <p>Still, he is clear: do not start contributing with the assumption that a job will follow. That is like opening a business solely to become rich. Find something you actually enjoy, stay consistent, and let recognition (or not) be a side effect.</p>
+
+  <div class="flow-row">
+    <span class="flow-pill">Love the work</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-pill">Stay consistent</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-pill">Maybe recognition</span>
+  </div>
+
+  <p>He is a university dropout. Without a formal diploma he used open-source contributions as living proof of skill. Recruiters have even asked about quiet months on his profile. Life happens — house construction, engagement, conferences, holidays. Open source is not a job that demands you be always-on unless the project is yours.</p>
+
+  <p>There were seasons when contributor ranks and badges (Terraform core contributor, AWS CDK distinguished contributor) created pressure. The metrics are opaque. The badges are mostly t-shirts. The real reward, for him, remains the craft and the quiet network that forms around it.</p>
+
+  <hr class="rule brass">
+
+  <h2 class="section-title" id="start"><span class="section-num">Part Seven</span>How to Start Without Getting Lost</h2>
+
+  <p>If the entry barrier feels low right now, that is both true and misleading. AI makes the first commit easy. Getting a thoughtful change merged is still the real filter. Some projects may move toward ranking systems or vouch-style gates. The advice Bruno leaves is simple and consistent with everything above:</p>
+
+  <div class="checklist">
+    <div class="check-item">
+      <span class="check-num">01</span>
+      <div>
+        <h5>Read first, write second</h5>
+        <p>Spend serious time inside high-quality codebases in your niche before you open your first PR.</p>
+      </div>
+    </div>
+    <div class="check-item">
+      <span class="check-num">02</span>
+      <div>
+        <h5>Copy the local language</h5>
+        <p>Study merged PRs from active contributors. Match titles, commit messages, and description style.</p>
+      </div>
+    </div>
+    <div class="check-item">
+      <span class="check-num">03</span>
+      <div>
+        <h5>Put real effort into the proposal</h5>
+        <p>A clean description, research against existing issues, and clear reasoning signal that you respect the maintainers’ time.</p>
+      </div>
+    </div>
+    <div class="check-item">
+      <span class="check-num">04</span>
+      <div>
+        <h5>Use AI as a pair, not as a ghostwriter</h5>
+        <p>Let it explore and draft. Keep ownership of the final thinking and the final words.</p>
+      </div>
+    </div>
+    <div class="check-item">
+      <span class="check-num">05</span>
+      <div>
+        <h5>Show up consistently, not intensely</h5>
+        <p>One careful contribution that lands is worth more than ten rushed ones that create noise.</p>
+      </div>
+    </div>
+    <div class="check-item">
+      <span class="check-num">06</span>
+      <div>
+        <h5>Expect nothing, stay open to everything</h5>
+        <p>Jobs, sponsorships, and friendships can appear. They are side effects, not the reason.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <span class="t">Final note from Bruno</span>
+    <p>Generic tooling that generates code is amazing. It can help you take the first step. Just do not let it take away your personality and your craftsmanship. Maintainers love guiding beginners who put in real effort. Matching that effort is the quiet contract that keeps open source alive.</p>
+  </div>
+
+  <p>If you are still reading, the invitation is simple: pick one project you already use, read its recent merged pull requests, and try one small, careful change. Speak their language. Own the result. That is how the door opens.</p>
+
+</article>
+
+<footer>
+  <div class="signoff">
+    <div class="avatar">OS</div>
+    <div>
+      <div class="name">Open Source Field Notes</div>
+      <div class="role">Full notes from the conversation with Bruno Schaatsbergen</div>
+    </div>
+  </div>
+  <p class="fine">This article expands a full podcast transcript into readable form. Every major point Bruno shared — career path, PR tactics, AI impact, trust, and practical advice — is included so you get the same knowledge as watching the episode. Nothing here is career or financial advice; it is simply the distilled experience of one engineer who treated open source as craft.</p>
+</footer>
+
+</body>
+</html>
