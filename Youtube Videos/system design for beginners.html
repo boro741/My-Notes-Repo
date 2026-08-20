@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>System Design for Beginners — Explained Like You're Not a Computer</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    color-scheme: light;
+    --page:        #f9f9f7;
+    --surface:     #fcfcfb;
+    --ink:         #0b0b0b;
+    --ink-soft:    #52514e;
+    --muted:       #898781;
+    --hairline:    #e1e0d9;
+    --border:      rgba(11,11,11,0.10);
+    --accent:      #2a78d6;
+    --accent-ink:  #184f95;
+    --accent-soft: #eaf2fc;
+    --gold:        #eda100;
+    --gold-soft:   #fbf1dc;
+    --good:        #0ca30c;
+    --bad:         #ec835a;
+    --shadow: 0 1px 2px rgba(11,11,11,0.04), 0 8px 24px rgba(11,11,11,0.06);
+    --serif: ui-serif, Charter, "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  html[data-theme="dark"] {
+    color-scheme: dark;
+    --page:#0d0d0d; --surface:#1a1a19; --ink:#fff; --ink-soft:#c3c2b7; --muted:#898781;
+    --hairline:#2c2c2a; --border:rgba(255,255,255,0.10);
+    --accent:#3987e5; --accent-ink:#bcd6f7; --accent-soft:rgba(57,135,229,0.14);
+    --gold:#c98500; --gold-soft:rgba(201,133,0,0.16);
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--page); color: var(--ink); font-family: var(--sans);
+    line-height: 1.65; -webkit-font-smoothing: antialiased; transition: background .25s, color .25s;
+  }
+  #progress-bar { position: fixed; top:0; left:0; height:3px; width:0%; background: linear-gradient(90deg,var(--accent),var(--gold)); z-index:1000; }
+  .theme-toggle, .float-top {
+    position: fixed; z-index:999; width:44px; height:44px; border-radius:50%;
+    border:1px solid var(--border); background:var(--surface); color:var(--ink);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:var(--shadow); font-size:1.05rem;
+  }
+  .theme-toggle { top:16px; right:16px; }
+  .float-top { bottom:22px; right:16px; background:var(--ink); color:var(--page); border:none; opacity:0; transform:translateY(10px); pointer-events:none; transition:opacity .2s, transform .2s; }
+  .float-top.show { opacity:1; transform:translateY(0); pointer-events:auto; }
+  .wrap { max-width: 780px; margin:0 auto; padding:0 24px; }
+  header.hero { padding:88px 0 56px; position:relative; }
+  .kicker { font-size:0.78rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); font-weight:700; margin:0 0 18px; display:flex; align-items:center; gap:10px; }
+  .kicker::before { content:""; width:22px; height:2px; background:var(--accent); display:inline-block; border-radius:2px; }
+  h1.title { font-family:var(--serif); font-weight:600; font-size:clamp(2.1rem,7vw,3.4rem); line-height:1.1; letter-spacing:-0.01em; margin:0 0 20px; }
+  h1.title em { font-style:italic; color:var(--accent); }
+  .dek { font-size:clamp(1.05rem,2.6vw,1.25rem); color:var(--ink-soft); max-width:60ch; margin:0 0 28px; }
+  .byline { display:flex; align-items:center; gap:14px; font-size:0.88rem; color:var(--muted); padding-top:22px; border-top:1px solid var(--hairline); flex-wrap:wrap; }
+  .byline .dot { width:4px; height:4px; border-radius:50%; background:var(--muted); }
+  .avatar { width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--gold)); display:flex; align-items:center; justify-content:center; color:#fff; font-family:var(--serif); font-weight:700; }
+  .hero-quote { font-family:var(--serif); font-style:italic; font-size:clamp(1.1rem,3vw,1.4rem); line-height:1.5; margin:40px 0 0; padding:26px 0 0 24px; border-left:3px solid var(--gold); }
+  nav.toc { background:var(--surface); border:1px solid var(--hairline); border-radius:18px; padding:26px 26px 22px; margin:8px 0 64px; box-shadow:var(--shadow); }
+  nav.toc h2 { font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin:0 0 14px; font-weight:700; }
+  nav.toc ol { list-style:none; margin:0; padding:0; counter-reset:toc; }
+  nav.toc li { counter-increment:toc; margin-bottom:4px; }
+  nav.toc a { display:flex; align-items:baseline; gap:12px; color:var(--ink-soft); text-decoration:none; font-size:0.95rem; padding:7px 4px; border-radius:8px; }
+  nav.toc a::before { content:counter(toc,decimal-leading-zero); font-family:var(--serif); font-size:0.82rem; color:var(--muted); flex-shrink:0; }
+  nav.toc a:hover { color:var(--accent); background:var(--accent-soft); }
+  section.chapter { padding:44px 0 8px; scroll-margin-top:24px; }
+  section.chapter + section.chapter { border-top:1px solid var(--hairline); }
+  .chapter-num { font-family:var(--serif); font-style:italic; color:var(--gold); font-size:1rem; margin:0 0 10px; font-weight:600; }
+  h2.h { font-family:var(--serif); font-weight:600; font-size:clamp(1.5rem,4.4vw,2rem); line-height:1.18; margin:0 0 20px; }
+  h3.h3 { font-family:var(--serif); font-weight:600; font-size:clamp(1.1rem,3vw,1.3rem); margin:30px 0 12px; }
+  p.body-text { font-size:1.05rem; color:var(--ink); margin:0 0 18px; }
+  p.body-text.soft { color:var(--ink-soft); }
+  .lede { font-size:1.15rem; }
+  mark.hl { background:var(--gold-soft); color:var(--ink); padding:0.05em 0.15em; border-radius:4px; font-weight:600; }
+  blockquote.pull { font-family:var(--serif); font-style:italic; font-size:clamp(1.15rem,3.4vw,1.4rem); line-height:1.45; margin:34px 0; padding:0 0 0 24px; border-left:3px solid var(--accent); }
+  blockquote.pull cite { display:block; font-style:normal; font-family:var(--sans); font-size:0.82rem; color:var(--muted); margin-top:10px; }
+  .callout { background:var(--surface); border:1px solid var(--hairline); border-radius:16px; padding:22px 24px; margin:28px 0; box-shadow:var(--shadow); }
+  .callout h4 { margin:0 0 8px; font-size:0.98rem; font-weight:700; display:flex; align-items:center; gap:8px; }
+  .callout p { margin:0; color:var(--ink-soft); font-size:0.98rem; }
+  .callout.interview h4 { color: var(--accent-ink); }
+  .callout.warn h4 { color: #b5590f; }
+  ul.plain { padding-left: 1.2em; margin: 0 0 18px; color: var(--ink); }
+  ul.plain li { margin-bottom: 8px; }
+  .stat-row { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:30px 0; }
+  .stat-card { background:var(--surface); border:1px solid var(--hairline); border-radius:16px; padding:20px 12px; text-align:center; box-shadow:var(--shadow); }
+  .stat-num { font-family:var(--serif); font-weight:700; color:var(--accent); font-size:clamp(1.5rem,6vw,2rem); line-height:1; margin-bottom:6px; }
+  .stat-word { font-size:0.78rem; color:var(--muted); font-weight:600; }
+  .diagram-card { background:var(--surface); border:1px solid var(--hairline); border-radius:18px; padding:22px 16px; margin:30px 0; box-shadow:var(--shadow); text-align:center; overflow-x:auto; }
+  .diagram-label { font-size:0.74rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:12px; }
+  .diagram-caption { font-size:0.88rem; color:var(--ink-soft); margin-top:12px; text-align:left; }
+  table.cmp { width:100%; border-collapse:collapse; margin:24px 0; font-size:0.94rem; }
+  table.cmp th, table.cmp td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--hairline); }
+  table.cmp th { color:var(--muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; }
+  .closer { text-align:center; padding:70px 0 90px; }
+  .closer h2 { font-family:var(--serif); font-weight:600; font-style:italic; font-size:clamp(1.6rem,6vw,2.2rem); line-height:1.2; margin:0 0 18px; }
+  .closer p { color:var(--ink-soft); font-size:1.05rem; max-width:48ch; margin:0 auto; }
+  .signoff { margin-top:34px; font-family:var(--serif); font-style:italic; color:var(--muted); }
+  footer.site-footer { border-top:1px solid var(--hairline); padding:28px 0 40px; text-align:center; font-size:0.82rem; color:var(--muted); }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">◐</button>
+<button class="float-top" id="floatTop" aria-label="Back to top">↑</button>
+
+<div class="wrap">
+
+  <header class="hero">
+    <p class="kicker">System Design · Explained Simply</p>
+    <h1 class="title">System Design for Beginners: Building a Photo App That <em>Doesn't</em> Fall Over</h1>
+    <p class="dek">No jargon-first lectures. We start with one $10 server, watch it break in every possible way, and fix it one piece at a time — until we've quietly built the same architecture real apps like Instagram run on.</p>
+    <div class="byline">
+      <div class="avatar">SD</div>
+      <span>YouTube Summariser</span>
+      <span class="dot"></span>
+      <span>~16 min read</span>
+      <span class="dot"></span>
+      <span>16 chapters</span>
+    </div>
+    <blockquote class="hero-quote">
+      "System design isn't about memorizing diagrams. It's about watching things fail, and knowing exactly which small box fixes it."
+    </blockquote>
+  </header>
+
+  <nav class="toc">
+    <h2>In this piece</h2>
+    <ol>
+      <li><a href="#ch1">The one-server app, and how it dies</a></li>
+      <li><a href="#ch2">High-Level vs Low-Level Design</a></li>
+      <li><a href="#ch3">What should it do vs. how well should it do it</a></li>
+      <li><a href="#ch4">The 5 questions before you draw anything</a></li>
+      <li><a href="#ch5">Monolith or microservices?</a></li>
+      <li><a href="#ch6">Vertical vs horizontal scaling</a></li>
+      <li><a href="#ch7">What happens when you hit Enter</a></li>
+      <li><a href="#ch8">The load balancer</a></li>
+      <li><a href="#ch9">Stateless vs stateful servers</a></li>
+      <li><a href="#ch10">Data modeling: ask the questions first</a></li>
+      <li><a href="#ch11">SQL or NoSQL?</a></li>
+      <li><a href="#ch12">Indexing: the book's index trick</a></li>
+      <li><a href="#ch13">Caching, and the problems it creates</a></li>
+      <li><a href="#ch14">Replication: copies of your database</a></li>
+      <li><a href="#ch15">Sharding: when one machine isn't enough</a></li>
+      <li><a href="#ch16">The whole picture, zoomed out</a></li>
+    </ol>
+  </nav>
+
+  <!-- CHAPTER 1 -->
+  <section class="chapter" id="ch1">
+    <p class="chapter-num">Chapter One</p>
+    <h2 class="h">The one-server app, and how it dies</h2>
+    <p class="body-text lede">Imagine you built a photo-sharing app. You rented <mark class="hl">one server for $10 a month</mark> — think of a server as just a computer sitting in someone else's data center, whose only job is to answer requests from your users. The web app, the database, and every uploaded photo all live on this one machine.</p>
+    <p class="body-text soft">Honestly? This is a great way to start. It's simple, cheap, and easy to debug — if something breaks, there's only one place to look. Almost every real app in the world started exactly like this.</p>
+    <p class="body-text">Then one day your app gets featured somewhere, and <mark class="hl">10,000 people show up in a single day</mark>. Your one server starts falling apart in three specific ways — and every one of these failures has a name and a fix. That list of fixes is basically the entire field of system design.</p>
+
+    <div class="diagram-card">
+      <div class="diagram-label">Three ways a single server fails</div>
+      <pre class="mermaid">
+flowchart TD
+    A["10,000 users show up at once"] --> B["Failure 1: Server runs out of CPU/RAM<br/>Pages that took 200ms now take 10s"]
+    A --> C["Failure 2: Database gets hammered<br/>Same popular query, run again and again"]
+    A --> D["Failure 3: The machine just dies<br/>Disk fails, power goes, cable unplugged"]
+    B --> E["Fix: Add a 2nd server + Load Balancer"]
+    C --> F["Fix: Add a Cache in front of the DB"]
+    D --> G["Fix: Replicate DB + store photos in external storage (S3)"]
+      </pre>
+    </div>
+
+    <p class="body-text">Notice something important: at no point did we rewrite the app or make the code "smarter." We simply <mark class="hl">split the work across machines and decided where each piece should live</mark>. That's the real definition of system design. And every fix creates a brand new mini-problem of its own — the load balancer can die too, the cache can serve stale data, the replica can fall behind. That endless chain of "fix something → get a new problem → fix that" is exactly what the rest of this course (and this blog) is about.</p>
+
+    <div class="callout">
+      <h4>🧑‍💻 Junior vs Senior, in one line</h4>
+      <p>A junior engineer builds one known feature. A mid-level engineer is handed a problem and figures out how it fits the existing system. A senior engineer designs the system itself — deciding how the whole thing should work.</p>
+    </div>
+  </section>
+
+  <!-- CHAPTER 2 -->
+  <section class="chapter" id="ch2">
+    <p class="chapter-num">Chapter Two</p>
+    <h2 class="h">High-Level Design vs Low-Level Design (HLD vs LLD)</h2>
+    <p class="body-text">You'll hear these two terms constantly, so let's nail them down using our photo app.</p>
+    <ul class="plain">
+      <li><b>High-Level Design (HLD)</b> is the zoomed-out view — the big blocks: app servers, database, cache, queue, CDN, and how a request moves between them. When someone says "design Instagram," they usually want HLD: where does data live, what breaks first, how do we fix it.</li>
+      <li><b>Low-Level Design (LLD)</b> zooms into one small feature, like the "like" button. Which function handles the tap? How do we avoid counting the same user's like twice? This is about classes, functions, and data structures inside one box.</li>
+    </ul>
+    <div class="callout interview">
+      <h4>🎯 Interview tip</h4>
+      <p>The moment you're asked "design Instagram," say out loud: <em>"I'll stay at the high level — components, data flow, and trade-offs — and we can zoom into any one part later."</em> One sentence, and you've already shown you understand altitude. Interviewers say <mark class="hl">answering at the wrong altitude</mark> (going deep into code when they wanted the big picture, or vice versa) is one of the most common ways candidates quietly lose the interview — the interviewer often won't even stop you, they'll just let you spend 20 minutes at the wrong height.</p>
+    </div>
+  </section>
+
+  <!-- CHAPTER 3 -->
+  <section class="chapter" id="ch3">
+    <p class="chapter-num">Chapter Three</p>
+    <h2 class="h">What should it do vs. how well should it do it</h2>
+    <p class="body-text">Before designing anything, you must separate two very different questions.</p>
+    <table class="cmp">
+      <tr><th>Functional Requirements</th><th>Non-Functional Requirements</th></tr>
+      <tr><td>Sign up</td><td>Feed loads in &lt; 200ms, not 8 seconds</td></tr>
+      <tr><td>Upload a photo</td><td>Photo survives even if a disk fails</td></tr>
+      <tr><td>Follow a user</td><td>Works for 1 million users on a Saturday, not just 100</td></tr>
+      <tr><td>Scroll the feed</td><td>Stays affordable to run every month</td></tr>
+      <tr><td>Like / comment</td><td>Available even during a traffic spike</td></tr>
+    </table>
+    <p class="body-text soft">Here's the twist: a photo app you build for your family and Instagram can have <em>the exact same</em> functional requirements. What separates them entirely is the non-functional side — one serves 10 people who'll tolerate a slow day, the other serves a billion people who leave after 2 seconds of lag.</p>
+    <blockquote class="pull">
+      "Users never ask for a cache. Users ask for a fast app. The cache is just how you deliver that."
+    </blockquote>
+    <p class="body-text">And a fair warning: non-functional requirements <mark class="hl">fight each other</mark>. Faster usually costs more money. Never-goes-down needs idle backup machines sitting around, still costing you every month. You can't add everything — you decide what this app actually needs.</p>
+  </section>
+
+  <!-- CHAPTER 4 -->
+  <section class="chapter" id="ch4">
+    <p class="chapter-num">Chapter Four</p>
+    <h2 class="h">The 5 questions to ask before you draw a single box</h2>
+    <p class="body-text lede">Strong candidates (and good engineers) don't start sketching boxes immediately. They ask questions first.</p>
+    <ul class="plain">
+      <li><b>1. How many users, and how fast are they growing?</b> We'll design for the millions we're heading toward — 10,000 users today, doubling every few months.</li>
+      <li><b>2. Read-heavy or write-heavy?</b> People scroll hundreds of photos a month but post maybe five. So this app is heavily <b>read</b>-heavy — most of our effort goes into making the feed fast.</li>
+      <li><b>3. What can we never lose, vs. what can we afford to lose?</b> Losing someone's uploaded photo = losing them forever. A like-count being off by 3 for a few seconds? Nobody notices.</li>
+      <li><b>4. How much latency can we tolerate?</b> The feed must feel instant (under 200ms). An upload can take 2-3 seconds — people expect uploading to feel like "work."</li>
+      <li><b>5. What does it cost?</b> Every replica, every cache, every server is a monthly bill. The best design isn't the fanciest one — it's the cheapest one that still meets the first four answers.</li>
+    </ul>
+    <div class="callout interview">
+      <h4>🎯 Interview tip</h4>
+      <p>The first five minutes of a design interview aren't about design at all — they're about whether you ask these questions before you start drawing. Every component you add later, justify it with one of these answers: <em>"I'm adding a cache because we established reads dominate."</em> That's the sentence interviewers remember.</p>
+    </div>
+  </section>
+
+  <!-- CHAPTER 5 -->
+  <section class="chapter" id="ch5">
+    <p class="chapter-num">Chapter Five</p>
+    <h2 class="h">Should the app be a monolith or microservices?</h2>
+    <p class="body-text"><b>Monolith:</b> one codebase, one deployment, everything (signup, upload, feed, likes) bundled into a single program that talks to itself through plain function calls.</p>
+    <p class="body-text"><b>Microservices:</b> that one program is split into many small independent services (upload service, feed service, likes service, notifications service), each with its own codebase, deployed separately, talking to each other over the network.</p>
+
+    <div class="diagram-card">
+      <div class="diagram-label">Monolith vs Microservices</div>
+      <pre class="mermaid">
+flowchart LR
+    subgraph Monolith["Monolith: one codebase"]
+      direction TB
+      M1[Signup]
+      M2[Upload]
+      M3[Feed]
+      M4[Likes]
+      M1 --- M2 --- M3 --- M4
+    end
+    subgraph Micro["Microservices: separate services"]
+      direction TB
+      S1[Signup Service] -.network call.-> S3[Feed Service]
+      S2[Upload Service] -.network call.-> S3
+      S4[Likes Service] -.network call.-> S3
+    end
+      </pre>
+    </div>
+
+    <p class="body-text soft">For a photo app with a few thousand users, <b>monolith is the correct choice</b> — no network calls to fail, one thing to deploy, one place to look when something breaks. Teams split into microservices for two real reasons only: <b>independent scaling</b> (feed needs 10 servers, upload needs 2 — you shouldn't have to scale both together) and <b>team size</b> (40 engineers stepping on each other's code in one repo).</p>
+    <div class="callout warn">
+      <h4>⚠️ Don't cargo-cult microservices</h4>
+      <p>"I've seen a five-person startup run 30 microservices and spend more time debugging the network between services than building the actual product. Most companies you'll join run a monolith plus a handful of services that got split off for a good reason — not one giant program, not 300 tiny ones."</p>
+    </div>
+  </section>
+
+  <!-- CHAPTER 6 -->
+  <section class="chapter" id="ch6">
+    <p class="chapter-num">Chapter Six</p>
+    <h2 class="h">Two ways to get more power: vertical vs horizontal scaling</h2>
+    <p class="body-text"><b>Vertical scaling</b> = make your one server bigger (more CPU, RAM, faster disk). Zero code changes, and genuinely the right move for a while. But it has a ceiling — once you own the biggest machine on the market, you're stuck, prices stop scaling linearly, and it's still <em>one</em> server: a single point of failure.</p>
+    <p class="body-text"><b>Horizontal scaling</b> = run many small servers instead of one giant one. No upper limit (just add another machine), and no single point of failure (if one dies, the rest keep serving).</p>
+
+    <div class="diagram-card">
+      <div class="diagram-label">Vertical vs Horizontal Scaling</div>
+      <pre class="mermaid">
+flowchart TB
+    subgraph V["Vertical Scaling"]
+      direction TB
+      V1["Small Server"] --> V2["Bigger Server"] --> V3["Biggest Server<br/>(hits a ceiling)"]
+    end
+    subgraph H["Horizontal Scaling"]
+      direction LR
+      H1["Server 1"]
+      H2["Server 2"]
+      H3["Server 3"]
+      H4["...add Server N"]
+    end
+      </pre>
+    </div>
+    <p class="body-text soft">Rule of thumb: scale up vertically first (it's simple), then scale horizontally once you hit the ceiling or can't afford a single point of failure. But 10 servers running your app immediately raises a new question: <em>which of the 10 should answer a given user?</em> That's the load balancer — coming up in Chapter 8.</p>
+  </section>
+
+  <!-- CHAPTER 7 -->
+  <section class="chapter" id="ch7">
+    <p class="chapter-num">Chapter Seven</p>
+    <h2 class="h">What actually happens when you hit Enter</h2>
+    <p class="body-text">You type <code>photoapp.com</code> and hit enter. Here's the real journey:</p>
+
+    <div class="diagram-card">
+      <div class="diagram-label">From typing a URL to seeing the feed</div>
+      <pre class="mermaid">
+sequenceDiagram
+    participant Phone
+    participant DNS as DNS (Internet's Phone Book)
+    participant Server
+    Phone->>DNS: Where is photoapp.com?
+    DNS-->>Phone: Here's the IP address
+    Phone->>Server: HTTPS request: "get me the home feed"
+    Server-->>Phone: Response: feed data
+      </pre>
+    </div>
+
+    <ul class="plain">
+      <li><b>IP address</b> = the machine's phone number. Nobody types numbers, so we type names instead.</li>
+      <li><b>DNS (Domain Name System)</b> = the internet's phone book. It translates the name into the IP address.</li>
+      <li><b>HTTP</b> = the shared language phone and server use to talk. <b>HTTPS</b> adds the "S" for secure — without it, anyone on the same coffee-shop Wi-Fi can read your passwords in plain text; with it, the whole conversation is scrambled.</li>
+    </ul>
+    <p class="body-text">Two more terms that get mixed up constantly:</p>
+    <ul class="plain">
+      <li><b>Latency</b> — how long one round trip takes.</li>
+      <li><b>Bandwidth</b> — how much data you can push through at once (the width of the pipe).</li>
+    </ul>
+    <p class="body-text soft">A feed of 30 tiny thumbnails isn't slow because the images are big — they're small. It's slow because of <mark class="hl">30 separate round trips</mark> across the network. This is exactly why caches and CDNs exist later in this design — they exist to cut down round trips.</p>
+    <p class="body-text">But there's a hole in this story: DNS points to <em>one</em> address, and we just decided to run 10 servers. So which one does DNS actually point to?</p>
+  </section>
+
+  <!-- CHAPTER 8 -->
+  <section class="chapter" id="ch8">
+    <p class="chapter-num">Chapter Eight</p>
+    <h2 class="h">The load balancer: your traffic officer</h2>
+    <p class="body-text">Here's the trick: the IP address DNS returns doesn't point at any of your 10 app servers — it points at the <b>load balancer</b>. The load balancer is itself just a server running an application whose entire job is forwarding each request to one of your real servers.</p>
+
+    <div class="diagram-card">
+      <div class="diagram-label">Load balancer in the request path</div>
+      <pre class="mermaid">
+flowchart LR
+    U["User's Phone"] -->|DNS lookup| LB["Load Balancer<br/>(a reverse proxy)"]
+    LB --> S1["App Server 1"]
+    LB --> S2["App Server 2"]
+    LB --> S3["App Server 3"]
+    LB -.health check every few seconds.-> S1
+    LB -.health check.-> S2
+    LB -.health check.-> S3
+      </pre>
+    </div>
+
+    <p class="body-text">Any server that stands in front like this, taking requests on behalf of others, is generically called a <b>reverse proxy</b> — and a load balancer is the most common kind you'll meet. It does two jobs:</p>
+    <ul class="plain">
+      <li><b>Health checks</b> — it quietly pings each server every few seconds. If server 3 stops answering, the load balancer stops sending it traffic within seconds. Users never see an error.</li>
+      <li><b>Picking who gets the next request</b>, using strategies like:
+        <ul class="plain">
+          <li><b>Round robin</b> — server 1, then 2, then 3, then back to 1.</li>
+          <li><b>Least connections</b> — send to whichever server currently has the fewest pending requests.</li>
+          <li><b>Weighted distribution</b> — bigger servers get a bigger share of traffic.</li>
+        </ul>
+      </li>
+    </ul>
+    <p class="body-text soft">Most companies don't build their own — they use battle-tested ones like NGINX, HAProxy, or a cloud provider's managed load balancer (like AWS's Elastic Load Balancer). And yes, the load balancer itself can die — which is why real production systems run <em>multiple</em> load balancers, not just one.</p>
+  </section>
+
+  <!-- CHAPTER 9 -->
+  <section class="chapter" id="ch9">
+    <p class="chapter-num">Chapter Nine</p>
+    <h2 class="h">Stateless vs stateful: why users kept getting logged out</h2>
+    <p class="body-text lede">Here's a bug that shows up the moment you go from 1 server to many: users start getting randomly logged out, even though nobody changed any code.</p>
+    <p class="body-text">Here's why: when Allen logs in, server 1 might handle it and save his "login session" (a little note saying "Allen is logged in") <b>in its own memory</b>. A few minutes later, his next request lands on server 5 — which has never heard of Allen, so it says "please log in again."</p>
+
+    <div class="diagram-card">
+      <div class="diagram-label">Why the login-session bug happens</div>
+      <pre class="mermaid">
+flowchart TD
+    A["Allen logs in"] --> B["Load Balancer sends request to Server 1"]
+    B --> C["Server 1 saves session in its OWN memory"]
+    D["Allen opens another page"] --> E["Load Balancer sends request to Server 5"]
+    E --> F["Server 5 checks its own memory<br/>❌ No record of Allen"]
+    F --> G["Allen gets logged out"]
+      </pre>
+    </div>
+
+    <p class="body-text">A server that keeps memory of previous requests like this is called <b>stateful</b>. The fix: make servers <b>stateless</b> — they handle a request, reply, and forget everything. Any real state (like login sessions) moves to a <b>shared store</b> that every server can check.</p>
+
+    <div class="diagram-card">
+      <div class="diagram-label">The fix: a shared session store</div>
+      <pre class="mermaid">
+flowchart TD
+    A["Allen logs in on Server 1"] --> S["Shared Store (e.g. Redis)"]
+    B["Next request hits Server 5"] --> S
+    S --> C["Server 5 finds the session ✅<br/>Allen stays logged in"]
+      </pre>
+    </div>
+
+    <div class="callout warn">
+      <h4>⚠️ What about "sticky sessions"?</h4>
+      <p>One tempting fix is telling the load balancer to always send Allen to server 1. But this brings the exact problem back: if server 1 dies, Allen still loses his session, and the load balancer can no longer spread traffic evenly. Mentioning this trade-off <em>before</em> the interviewer asks earns real credit.</p>
+    </div>
+    <p class="body-text soft">Simple test for statefulness: "If this server vanished right now, would any user lose something?" If yes, that data doesn't belong on the server. Note: storing photos in a database or S3 does <em>not</em> make a server stateful — that data already lives outside the server.</p>
+  </section>
+
+  <!-- CHAPTER 10 -->
+  <section class="chapter" id="ch10">
+    <p class="chapter-num">Chapter Ten</p>
+    <h2 class="h">Data modeling: figure out the questions before the tables</h2>
+    <p class="body-text">Before picking a database, figure out the <b>access patterns</b> — the questions your users will ask the app thousands of times a day:</p>
+    <ul class="plain">
+      <li>Show me a user's profile</li>
+      <li>Show me all photos uploaded by a user</li>
+      <li>Show me my home feed</li>
+      <li>Upload a photo / Like a photo / Comment on a photo / Follow a user</li>
+    </ul>
+    <p class="body-text">From these, five simple data pieces emerge — and notice how connections are always just a pair of IDs plus a little extra info:</p>
+
+    <div class="diagram-card">
+      <div class="diagram-label">The photo app's data model</div>
+      <pre class="mermaid">
+erDiagram
+    USERS ||--o{ PHOTOS : posts
+    USERS ||--o{ LIKES : gives
+    USERS ||--o{ COMMENTS : writes
+    USERS ||--o{ FOLLOWS : follows
+    PHOTOS ||--o{ LIKES : receives
+    PHOTOS ||--o{ COMMENTS : receives
+
+    USERS {
+      id ID
+      name string
+      email string
+    }
+    PHOTOS {
+      id ID
+      posted_by ID
+      caption string
+      upload_time datetime
+      image_link string
+    }
+    LIKES {
+      user_id ID
+      photo_id ID
+      time datetime
+    }
+    COMMENTS {
+      user_id ID
+      photo_id ID
+      text string
+      time datetime
+    }
+    FOLLOWS {
+      follower_id ID
+      followed_id ID
+    }
+      </pre>
+    </div>
+    <p class="body-text soft">Notice: the actual image file is <em>never</em> stored inside the photo record — just a link to where it lives (like S3). And "show me my home feed" is the most revealing question: to build it, the app must find everyone Allen follows, fetch their recent photos, and sort by time. That single question touches two tables and needs sorting — you'd only discover this by starting from access patterns, not from picking a database first.</p>
+  </section>
+
+  <!-- CHAPTER 11 -->
+  <section class="chapter" id="ch11">
+    <p class="chapter-num">Chapter Eleven</p>
+    <h2 class="h">SQL or NoSQL?</h2>
+    <p class="body-text">It boils down to one question: is your data structured (same shape every time) or unstructured (different shape every time)?</p>
+    <table class="cmp">
+      <tr><th>SQL (e.g. Postgres, MySQL)</th><th>NoSQL (e.g. MongoDB, DynamoDB)</th></tr>
+      <tr><td>Fixed table shape (rows & columns)</td><td>Each record can look different</td></tr>
+      <tr><td>Great at joins / relationships</td><td>Built to spread across hundreds of machines</td></tr>
+      <tr><td>ACID transactions — all-or-nothing writes</td><td>Great for high-volume, loosely-structured data</td></tr>
+      <tr><td>Best for: users, photos, likes, follows</td><td>Best for: user preferences, behavior/analytics events</td></tr>
+    </table>
+    <p class="body-text soft">Since our photos, users, likes and follows are structured and full of relationships (we constantly join them to build a feed), we pick <b>Postgres (SQL)</b> for the core app, and keep a <b>MongoDB (NoSQL)</b> database on the side for loosely-structured stuff like user preferences. It's just an <code>if</code> condition in the app code deciding which database to query — nothing magical.</p>
+    <div class="callout interview">
+      <h4>🎯 Interview tip</h4>
+      <p>Never say "I'll use NoSQL because it scales" — the interviewer will immediately ask what exactly stops SQL from handling the load. Instead, derive your choice from access patterns: "My data is relational, I need joins to build the feed, so SQL. If I later add a high-volume piece with no relationships, like analytics events, that can go to NoSQL."</p>
+    </div>
+  </section>
+
+  <!-- CHAPTER 12 -->
+  <section class="chapter" id="ch12">
+    <p class="chapter-num">Chapter Twelve</p>
+    <h2 class="h">Indexing: the same trick as a book's index page</h2>
+    <p class="body-text">As your user base grows, some queries slow down. Finding "all photos by Allen" out of millions of rows means scanning every single row, one by one — painfully slow.</p>
+    <p class="body-text">The fix is the same trick as the index at the back of a textbook: instead of scanning the whole book, you look up "mitochondria" in the index and jump straight to page 100. We create a database <b>index</b> on the <code>posted_by</code> column, and the database can jump directly to Allen's rows instead of scanning everything.</p>
+    <div class="callout warn">
+      <h4>⚠️ Don't index everything</h4>
+      <p>Every index has to be updated on every new write — more indexes means more work on every insert. Rule of thumb: start with zero indexes, find your genuinely slow queries, then index only the columns those queries need. Most tables end up with 3–5 indexes, not 20.</p>
+    </div>
+    <p class="body-text soft">For our photo app: index <code>posted_by</code> (find a user's photos fast) and <code>upload_time</code> (sort the feed by newest first).</p>
+  </section>
+
+  <!-- CHAPTER 13 -->
+  <section class="chapter" id="ch13">
+    <p class="chapter-num">Chapter Thirteen</p>
+    <h2 class="h">Caching: don't ask the database the same question a million times</h2>
+    <p class="body-text lede">Picture a celebrity like Messi posting a photo. Millions of people ask for the exact same photo within seconds. Making the database run the identical query a million times is wasteful. Enter the <b>cache</b> — a small, blazing-fast store (like Redis) for popular items, sitting in front of the database. A cache read can respond in under 1ms vs 20-30ms from the database.</p>
+
+    <div class="diagram-card">
+      <div class="diagram-label">Cache hit vs cache miss</div>
+      <pre class="mermaid">
+flowchart TD
+    R["Request for trending photo"] --> C{Is it in Redis?}
+    C -->|Cache Hit| H["Return from Redis instantly<br/>DB never touched"]
+    C -->|Cache Miss| M["Fetch from Database"]
+    M --> W["Write result into Redis"]
+    W --> RT["Return to user"]
+      </pre>
+    </div>
+
+    <p class="body-text">Good cache candidates share one property: <mark class="hl">small, read constantly, changed rarely</mark> — trending photos, popular profile cards, and (as we saw in Chapter 9) login sessions.</p>
+    <p class="body-text">But now you have <b>two copies</b> of the same data — one in the cache, one in the database — and they can drift apart. If Messi edits his bio, the database updates instantly, but the cache keeps serving the old bio to everyone. Two tools fix this:</p>
+    <ul class="plain">
+      <li><b>TTL (Time To Live)</b> — write cache entries with an expiry, e.g. "good for 60 seconds." The lazy fix: it waits for data to expire, then re-fetches fresh data. Fine for a home feed (30s TTL) or trending list (60s TTL), never fine for privacy settings.</li>
+      <li><b>Active invalidation</b> — the moment data changes in the database, you immediately delete the old copy from the cache. More work per write, but zero tolerance for stale data — use this for anything security-shaped, like privacy settings.</li>
+    </ul>
+    <div class="callout warn">
+      <h4>⚠️ Cache stampede</h4>
+      <p>If a wildly popular entry expires and 10,000 requests miss the cache at the exact same moment, they all slam the database at once — a "cache stampede." Fixes: stagger TTLs so hot entries don't all expire together, let only one request rebuild the entry while others wait, or refresh hot entries just before they expire.</p>
+    </div>
+    <div class="callout interview">
+      <h4>🎯 Interview tip</h4>
+      <p>"Cache is full, what do you evict?" → <b>LRU (Least Recently Used)</b> — throw out whatever nobody's touched in the longest time. Bringing up "cache stampede" before the interviewer asks is a strong signal you think about failure, not just features.</p>
+    </div>
+  </section>
+
+  <!-- CHAPTER 14 -->
+  <section class="chapter" id="ch14">
+    <p class="chapter-num">Chapter Fourteen</p>
+    <h2 class="h">Replication: copies of your database</h2>
+    <p class="body-text">Right now we only have one database — a single point of failure. The industry standard fix: keep <b>two replicas</b> (copies) alongside the <b>primary</b> database — three copies total.</p>
+
+    <div class="diagram-card">
+      <div class="diagram-label">Primary-replica setup</div>
+      <pre class="mermaid">
+flowchart TD
+    App["App Servers"] -->|ALL writes| P["Primary Database"]
+    App -->|reads, load-balanced| RLB["Read Load Balancer"]
+    RLB --> P
+    RLB --> R1["Replica 1"]
+    RLB --> R2["Replica 2"]
+    P -.streams updates.-> R1
+    P -.streams updates.-> R2
+      </pre>
+    </div>
+
+    <p class="body-text">Key rule: <mark class="hl">all writes go to the primary only</mark> — never write to multiple places, or you'll get conflicting values with no way to know which is correct. Reads, however, get spread across all three copies (with their own load balancer) to reduce load.</p>
+    <p class="body-text">Since replicas copy data from the primary with a small delay, they're always slightly behind — this is called <b>replication lag</b>, and the state where copies aren't identical yet (but will be) is called <b>eventual consistency</b>.</p>
+    <p class="body-text soft">Real bug this causes: Allen uploads a photo (goes to primary), then instantly refreshes his own profile — that read might hit a replica that hasn't caught up yet, so his own new photo briefly appears missing. Fix: reads of your <em>own</em> recent data go straight to the primary (this is called <b>strong consistency</b>); everyone else's reads can go to replicas, since a half-second delay hurts nobody.</p>
+    <p class="body-text">Replication also gives you <b>failover</b>: if the primary dies, one replica gets promoted to become the new primary, and the app keeps running.</p>
+    <div class="callout warn">
+      <h4>⚠️ Replicas are not backups</h4>
+      <p>If someone runs a wrong DELETE on the primary, replicas copy that mistake within milliseconds — all three copies end up empty. Replication protects against hardware failure, not human error. That's why you also need real, separate <b>backups</b> (snapshots) you can restore from.</p>
+    </div>
+  </section>
+
+  <!-- CHAPTER 15 -->
+  <section class="chapter" id="ch15">
+    <p class="chapter-num">Chapter Fifteen</p>
+    <h2 class="h">Sharding: when the data itself is too big for one machine</h2>
+    <p class="body-text">Replicas don't help once your data is simply too big to fit on any single machine — every replica has to hold an <em>identical</em> full copy. At 50 million users, the fix is <b>sharding</b>: split the data itself across multiple databases, where each "shard" holds only a slice.</p>
+
+    <div class="diagram-card">
+      <div class="diagram-label">Sharding by user ID</div>
+      <pre class="mermaid">
+flowchart TD
+    K["Shard Key: user_id % 4"] --> S0["Shard 0"]
+    K --> S1["Shard 1"]
+    K --> S2["Shard 2"]
+    K --> S3["Shard 3"]
+    U1["Allen (id 10) → 10 % 4 = 2"] --> S2
+    U2["User (id 13) → 13 % 4 = 1"] --> S1
+      </pre>
+    </div>
+
+    <p class="body-text">We pick a <b>shard key</b> (here, user ID) and a rule (divide by number of shards, remainder = shard number) that tells every server exactly where to look, without searching all shards one by one.</p>
+    <p class="body-text">Two things can go wrong:</p>
+    <ul class="plain">
+      <li><b>Hot shard</b> — if by bad luck all the celebrity accounts land on the same shard, that one shard gets crushed. Fix: pick a shard key that spreads accounts evenly.</li>
+      <li><b>Adding a new shard breaks the math</b> — dividing by 4 vs by 5 changes almost everyone's remainder, meaning nearly all data would have to physically move. The industry fix is <b>consistent hashing</b>, where each shard owns a small range, and adding a new shard only moves a small slice of data from one neighbor — not everything.</li>
+    </ul>
+    <p class="body-text soft">Use sharding as late as possible — once data is split, joining it back together is the hardest thing to undo. (Good news: databases like MongoDB have sharding built in, so you rarely build this from scratch.)</p>
+  </section>
+
+  <!-- CHAPTER 16 -->
+  <section class="chapter" id="ch16">
+    <p class="chapter-num">Chapter Sixteen</p>
+    <h2 class="h">Zooming out: the complete design</h2>
+    <p class="body-text lede">Here's everything we built, piece by piece, purely by following what the app actually needed:</p>
+
+    <div class="diagram-card">
+      <div class="diagram-label">The full architecture</div>
+      <pre class="mermaid">
+flowchart TD
+    U["User's Phone"] -->|DNS lookup| LB["Load Balancer"]
+    LB --> AS1["Stateless App Server 1"]
+    LB --> AS2["Stateless App Server 2"]
+    LB --> AS3["...App Server N"]
+    AS1 --> Redis["Redis: Cache + Shared Sessions"]
+    AS2 --> Redis
+    AS3 --> Redis
+    Redis -->|cache miss| RLB["DB Read Load Balancer"]
+    RLB --> Primary["Postgres Primary<br/>(all writes, indexed)"]
+    RLB --> Rep1["Postgres Replica 1"]
+    RLB --> Rep2["Postgres Replica 2"]
+    Primary -.streams.-> Rep1
+    Primary -.streams.-> Rep2
+    AS1 --> Mongo["MongoDB<br/>(preferences, behavior)"]
+    Primary -.if too big.-> Shard["Sharded across machines"]
+      </pre>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-num">1→10</div><div class="stat-word">servers, via horizontal scaling</div></div>
+      <div class="stat-card"><div class="stat-num">2</div><div class="stat-word">DB replicas + 1 primary</div></div>
+      <div class="stat-card"><div class="stat-num">2</div><div class="stat-word">databases: Postgres + MongoDB</div></div>
+    </div>
+
+    <p class="body-text">Every single box in this diagram exists for a reason we discovered by hitting a real problem first — never because it "sounded advanced." That's the whole skill of system design: not memorizing this diagram, but knowing <em>why</em> each box is there, and what it costs you.</p>
+  </section>
+
+  <div class="closer">
+    <h2>"You don't learn system design by memorizing diagrams. You learn it by watching things fail — and knowing exactly which small fix comes next."</h2>
+    <p>Next time someone asks you to design an app, don't start drawing. Start asking the five questions.</p>
+    <p class="signoff">— summarised for easy reading, one server-crash at a time.</p>
+  </div>
+
+  <footer class="site-footer">Based on the YouTube video "System Design for Beginners" · Summary generated for the YouTube Summariser project</footer>
+
+</div>
+
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'default' });
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    bar.style.width = scrolled + '%';
+    document.getElementById('floatTop').classList.toggle('show', h.scrollTop > 400);
+  });
+  document.getElementById('floatTop').addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const html = document.documentElement;
+    const cur = html.getAttribute('data-theme');
+    html.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+  });
+</script>
+</body>
+</html>
