@@ -237,6 +237,7 @@
       <a href="#discovery">Discovery</a>
       <a href="#consul">Consul</a>
       <a href="#mesh">Service Mesh</a>
+      <a href="#depth">Deep Dive</a>
       <a href="#recap">Recap</a>
     </div>
   </div>
@@ -384,6 +385,66 @@
 
     <div style="text-align:center;margin-top:18px;">
       <span class="lock-badge">🔒 mTLS: both sides show ID, every hop</span>
+    </div>
+  </div>
+</section>
+
+<section id="depth">
+  <div class="wrap">
+    <div class="kicker">Going deeper</div>
+    <h2>"But couldn't I just use a URL and an ALB?"</h2>
+    <p>Yes — and plenty of ECS setups do exactly that. If a task definition holds an env var like <span class="mono">PAYMENTS_BASE_URL</span> pointing at an ALB or a Cloud Map DNS record, you already have a working form of service discovery. So it's worth being precise about what changes when Consul enters the picture, instead of treating it as magic.</p>
+
+    <div class="tabs" id="albTabs">
+      <button class="tab-btn active" data-target="alb">Booking → ALB → Payments</button>
+      <button class="tab-btn" data-target="sidecar">Booking → sidecar → sidecar → Payments</button>
+    </div>
+    <div class="diagram-box">
+      <svg id="albSvg" viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="diagram-caption" id="albCaption"></div>
+    </div>
+
+    <table>
+      <tr><th>Concern</th><th>ALB / Cloud Map + URL</th><th>Consul (with Connect)</th></tr>
+      <tr><td>Finds the right instance</td><td class="dim">Yes — DNS or target group</td><td class="dim">Yes — the catalog</td></tr>
+      <tr><td>Extra network hop for east-west calls</td><td class="dim">Yes, through the load balancer</td><td class="dim">No — sidecar to sidecar, direct</td></tr>
+      <tr><td>Encrypts traffic between services</td><td class="dim">Only if you configure TLS yourself, per service</td><td class="dim">Automatic mTLS, every hop, by default</td></tr>
+      <tr><td>Proves identity, not just address</td><td class="dim">No — anything that can reach the URL can call it</td><td class="dim">Yes — sidecars verify each other's certificate</td></tr>
+      <tr><td>"Who's allowed to call whom"</td><td class="dim">Security groups (coarse, IP/port level)</td><td class="dim">Intentions (per-service, e.g. "Search may not call Payments")</td></tr>
+      <tr><td>Health check depth</td><td class="dim">One HTTP check on an interval</td><td class="dim">Multiple checks per service, near-instant propagation</td></tr>
+      <tr><td>Shared config/flags across services</td><td class="dim">Usually Parameter Store / env vars per task</td><td class="dim">Built-in KV store, watchable for live changes</td></tr>
+      <tr><td>Cost per internal call</td><td class="dim">ALB pricing + slightly higher latency</td><td class="dim">No ALB in the path for internal traffic</td></tr>
+    </table>
+
+    <p>None of this makes the ALB approach wrong — it's simpler to reason about and it's what you already have. Consul earns its keep once you specifically need encrypted, identity-checked, access-controlled traffic <em>between your own services</em>, without paying an ALB hop for every internal call.</p>
+
+    <h2 style="margin-top:44px;">Intentions: who's allowed to call whom</h2>
+    <p>A security group says "anything on this port from this subnet may connect." An <strong>intention</strong> in Consul is far more specific — it operates on service identity, not IP ranges:</p>
+    <div class="callout">
+      <span class="lbl">Example intention</span>
+      <p class="mono" style="color:var(--green);margin-bottom:0;">allow: booking-svc → payments-svc<br>deny: search-svc → payments-svc</p>
+    </div>
+    <p>Even if <span class="mono">search-svc</span> and <span class="mono">payments-svc</span> sit on the same network and the same security group, the sidecar in front of Payments will refuse the connection from Search's sidecar — because Consul told it not to trust that identity. This is sometimes called <strong>zero-trust networking</strong>: nothing is trusted by default just because it's "inside the network."</p>
+
+    <h2 style="margin-top:44px;">The KV store, with an actual example</h2>
+    <p>Consul's key-value store isn't just a place to dump settings — the useful part is that services can <strong>watch</strong> a key and react the moment it changes, without redeploying. A common real use: a feature flag or a rate limit.</p>
+    <div class="callout blue">
+      <span class="lbl">Example</span>
+      <p class="mono" style="margin-bottom:0;">config/payments-svc/max-retries = 3<br>config/payments-svc/circuit-breaker-enabled = true</p>
+    </div>
+    <p>Flip <span class="mono">circuit-breaker-enabled</span> to <span class="mono">false</span> in the KV store during an incident, and every running instance of Payments picks it up within seconds — no redeploy, no restart. It plays a similar role to the shared master timetable in a railway control room: one source of truth every office reads from, updated once, seen everywhere instantly.</p>
+
+    <h2 style="margin-top:44px;">Agents, servers, and who's actually in charge</h2>
+    <p>Two different things both get called "Consul" and it's worth separating them:</p>
+    <ul style="color:var(--text-dim);padding-left:20px;margin-bottom:22px;">
+      <li style="margin-bottom:6px;"><strong style="color:var(--text)">Client agents</strong> — a lightweight process running on (or beside) every node/task. It's the local "station master": it registers local services, runs their health checks, and forwards queries to the server cluster.</li>
+      <li style="margin-bottom:6px;"><strong style="color:var(--text)">Server agents</strong> — a small cluster (typically 3 or 5 nodes) that holds the actual source of truth for the whole catalog. They use a consensus protocol called <strong>Raft</strong> to agree on "what's true right now," so the system keeps working correctly even if one server node goes down.</li>
+    </ul>
+    <p>You never talk to the server cluster directly for everyday lookups — every service goes through its local client agent, which is why discovery stays fast even with hundreds of services asking questions constantly.</p>
+
+    <div class="callout">
+      <span class="lbl">One more thing: multi-datacenter</span>
+      <p>Consul can federate multiple datacenters (or AWS regions) into one system, so a service in <span class="mono">ap-south-1</span> can discover and securely call a service in <span class="mono">us-east-1</span> using the same catalog and the same intentions. This is one of the harder things to replicate cleanly with ALB + Route53 alone, and it's a common reason larger, multi-region setups reach for Consul even if a single-region team wouldn't need it.</p>
     </div>
   </div>
 </section>
@@ -600,6 +661,55 @@ document.getElementById('failBtn').addEventListener('click', ()=>{
   status.textContent = 'Failing';
   setTimeout(()=>{ target.remove(); }, 1600);
 });
+
+// ---------- ALB vs Sidecar routing diagram ----------
+const albSvg = document.getElementById('albSvg');
+const albCaption = document.getElementById('albCaption');
+function drawAlb(){
+  albSvg.innerHTML = `
+    <rect x="30" y="80" width="110" height="40" rx="6" fill="#181C25" stroke="#3DDC84"/>
+    <text x="85" y="105" text-anchor="middle" fill="#3DDC84" font-family="IBM Plex Mono" font-size="11">Booking</text>
+
+    <rect x="265" y="80" width="110" height="40" rx="6" fill="#181C25" stroke="#5AA9E6" stroke-width="1.5"/>
+    <text x="320" y="100" text-anchor="middle" fill="#5AA9E6" font-family="IBM Plex Mono" font-size="10.5">ALB /</text>
+    <text x="320" y="113" text-anchor="middle" fill="#5AA9E6" font-family="IBM Plex Mono" font-size="10.5">Cloud Map</text>
+
+    <rect x="500" y="80" width="110" height="40" rx="6" fill="#181C25" stroke="#FF5A5F"/>
+    <text x="555" y="105" text-anchor="middle" fill="#FF5A5F" font-family="IBM Plex Mono" font-size="11">Payments</text>
+
+    <line x1="140" y1="100" x2="265" y2="100" stroke="#9AA3B2" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <line x1="375" y1="100" x2="500" y2="100" stroke="#9AA3B2" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="320" y="150" text-anchor="middle" fill="#9AA3B2" font-family="IBM Plex Mono" font-size="10">extra hop · unencrypted unless you add TLS yourself</text>
+    <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9AA3B2"/></marker></defs>
+  `;
+  albCaption.textContent = 'Every internal call pays for a hop through the load balancer.';
+}
+function drawSidecar(){
+  albSvg.innerHTML = `
+    <rect x="20" y="80" width="100" height="36" rx="6" fill="#181C25" stroke="#3DDC84"/>
+    <text x="70" y="103" text-anchor="middle" fill="#3DDC84" font-family="IBM Plex Mono" font-size="10.5">Booking</text>
+    <rect x="35" y="126" width="70" height="24" rx="5" fill="#0A0C10" stroke="#F2A93B"/>
+    <text x="70" y="142" text-anchor="middle" fill="#F2A93B" font-family="IBM Plex Mono" font-size="9">sidecar</text>
+
+    <rect x="520" y="80" width="100" height="36" rx="6" fill="#181C25" stroke="#FF5A5F"/>
+    <text x="570" y="103" text-anchor="middle" fill="#FF5A5F" font-family="IBM Plex Mono" font-size="10.5">Payments</text>
+    <rect x="535" y="126" width="70" height="24" rx="5" fill="#0A0C10" stroke="#F2A93B"/>
+    <text x="570" y="142" text-anchor="middle" fill="#F2A93B" font-family="IBM Plex Mono" font-size="9">sidecar</text>
+
+    <line x1="105" y1="138" x2="535" y2="138" stroke="#3DDC84" stroke-width="2" stroke-dasharray="6,5">
+      <animate attributeName="stroke-dashoffset" from="0" to="-22" dur="0.9s" repeatCount="indefinite"/>
+    </line>
+    <text x="320" y="170" text-anchor="middle" fill="#9AA3B2" font-family="IBM Plex Mono" font-size="10">direct hop · always mTLS · checked against intentions</text>
+
+    <rect x="260" y="20" width="120" height="30" rx="6" fill="#181C25" stroke="#5AA9E6"/>
+    <text x="320" y="40" text-anchor="middle" fill="#5AA9E6" font-family="IBM Plex Mono" font-size="10">Consul (control plane)</text>
+    <line x1="70" y1="126" x2="300" y2="50" stroke="#5AA9E6" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>
+    <line x1="570" y1="126" x2="340" y2="50" stroke="#5AA9E6" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>
+  `;
+  albCaption.textContent = 'No load balancer in the path — sidecars talk directly, encrypted, with Consul configuring the rules.';
+}
+wireTabs('albTabs', (t)=> t==='alb' ? drawAlb() : drawSidecar());
+drawAlb();
 
 // ---------- Mesh diagram ----------
 (function(){
