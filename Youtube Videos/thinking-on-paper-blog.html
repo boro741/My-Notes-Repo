@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Thinking on Paper: The Learning Principle That Cuts Study Time in Half</title>
+<style>
+
+  :root {
+    color-scheme: light;
+    --page:        #f9f9f7;
+    --surface:     #fcfcfb;
+    --ink:         #0b0b0b;
+    --ink-soft:    #52514e;
+    --muted:       #898781;
+    --hairline:    #e1e0d9;
+    --border:      rgba(11,11,11,0.10);
+    --accent:      #2a78d6;
+    --accent-ink:  #184f95;
+    --accent-soft: #eaf2fc;
+    --gold:        #eda100;
+    --gold-soft:   #fbf1dc;
+    --good:        #0ca30c;
+    --warn:        #fab219;
+    --bad:         #ec835a;
+
+    --s-blue:    #2a78d6;
+    --s-orange:  #eb6834;
+    --s-aqua:    #1baf7a;
+    --s-yellow:  #eda100;
+    --s-magenta: #e87ba4;
+
+    --shadow: 0 1px 2px rgba(11,11,11,0.04), 0 8px 24px rgba(11,11,11,0.06);
+    --serif: ui-serif, Charter, "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  html[data-theme="dark"] {
+    color-scheme: dark;
+    --page:        #0d0d0d;
+    --surface:     #1a1a19;
+    --ink:         #ffffff;
+    --ink-soft:    #c3c2b7;
+    --muted:       #898781;
+    --hairline:    #2c2c2a;
+    --border:      rgba(255,255,255,0.10);
+    --accent:      #3987e5;
+    --accent-ink:  #bcd6f7;
+    --accent-soft: rgba(57,135,229,0.14);
+    --gold:        #c98500;
+    --gold-soft:   rgba(201,133,0,0.16);
+    --good:        #0ca30c;
+    --warn:        #fab219;
+    --bad:         #ec835a;
+
+    --s-blue:    #3987e5;
+    --s-orange:  #d95926;
+    --s-aqua:    #199e70;
+    --s-yellow:  #c98500;
+    --s-magenta: #d55181;
+
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page:        #0d0d0d;
+      --surface:     #1a1a19;
+      --ink:         #ffffff;
+      --ink-soft:    #c3c2b7;
+      --muted:       #898781;
+      --hairline:    #2c2c2a;
+      --border:      rgba(255,255,255,0.10);
+      --accent:      #3987e5;
+      --accent-ink:  #bcd6f7;
+      --accent-soft: rgba(57,135,229,0.14);
+      --gold:        #c98500;
+      --gold-soft:   rgba(201,133,0,0.16);
+      --s-blue:    #3987e5;
+      --s-orange:  #d95926;
+      --s-aqua:    #199e70;
+      --s-yellow:  #c98500;
+      --s-magenta: #d55181;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+    }
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    transition: background 0.25s ease, color 0.25s ease;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  ::selection { background: var(--gold-soft); color: var(--ink); }
+
+  /* ---------- chrome: progress bar, theme toggle, top button ---------- */
+
+  #progress-bar {
+    position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    z-index: 1000; transition: width 0.1s ease-out;
+  }
+
+  .theme-toggle, .float-top {
+    position: fixed; z-index: 999;
+    width: 44px; height: 44px; border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface); color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: var(--shadow);
+    font-size: 1.05rem;
+    transition: transform 0.15s ease, background 0.25s ease;
+  }
+  .theme-toggle { top: calc(16px + env(safe-area-inset-top)); right: calc(16px + env(safe-area-inset-right)); }
+  .float-top {
+    bottom: calc(22px + env(safe-area-inset-bottom)); right: calc(16px + env(safe-area-inset-right));
+    background: var(--ink); color: var(--page); border: none;
+    opacity: 0; transform: translateY(10px); pointer-events: none;
+  }
+  .float-top.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .theme-toggle:active, .float-top:active { transform: scale(0.92); }
+
+  /* ---------- layout ---------- */
+
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+  .wrap-wide { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+  header.hero {
+    padding: calc(88px + env(safe-area-inset-top)) 0 56px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kicker {
+    font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700; margin: 0 0 18px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .kicker::before { content: ""; width: 22px; height: 2px; background: var(--accent); display: inline-block; border-radius: 2px; }
+
+  h1.title {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(2.1rem, 7vw, 3.6rem);
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    margin: 0 0 20px;
+  }
+  h1.title em { font-style: italic; color: var(--accent); }
+
+  .dek {
+    font-size: clamp(1.05rem, 2.6vw, 1.3rem);
+    color: var(--ink-soft);
+    max-width: 60ch;
+    margin: 0 0 28px;
+    font-weight: 400;
+  }
+
+  .byline {
+    display: flex; align-items: center; gap: 14px;
+    font-size: 0.88rem; color: var(--muted);
+    padding-top: 22px; border-top: 1px solid var(--hairline);
+  }
+  .byline .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--gold));
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-family: var(--serif); font-weight: 700; font-size: 1rem;
+  }
+
+  .hero-quote {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(1.15rem, 3vw, 1.5rem); line-height: 1.5;
+    color: var(--ink);
+    margin: 40px 0 0; padding: 26px 0 0 24px;
+    border-left: 3px solid var(--gold);
+  }
+
+  /* ---------- table of contents ---------- */
+
+  nav.toc {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 18px; padding: 26px 26px 22px; margin: 8px 0 64px;
+    box-shadow: var(--shadow);
+  }
+  nav.toc h2 {
+    font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 14px; font-weight: 700;
+  }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; }
+  nav.toc li {
+    counter-increment: toc; margin-bottom: 4px;
+  }
+  nav.toc a {
+    display: flex; align-items: baseline; gap: 12px;
+    color: var(--ink-soft); text-decoration: none;
+    font-size: 0.96rem; padding: 7px 4px; border-radius: 8px;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+  nav.toc a::before {
+    content: counter(toc, decimal-leading-zero);
+    font-family: var(--serif); font-size: 0.82rem; color: var(--muted); flex-shrink: 0;
+  }
+  nav.toc a:hover, nav.toc a.active { color: var(--accent); background: var(--accent-soft); }
+  nav.toc a.active::before { color: var(--accent); }
+
+  /* ---------- article sections ---------- */
+
+  section.chapter { padding: 44px 0 8px; scroll-margin-top: 24px; }
+  section.chapter + section.chapter { border-top: 1px solid var(--hairline); }
+
+  .chapter-num {
+    font-family: var(--serif); font-style: italic; color: var(--gold);
+    font-size: 1rem; margin: 0 0 10px; font-weight: 600;
+  }
+
+  h2.h {
+    font-family: var(--serif); font-weight: 600;
+    font-size: clamp(1.5rem, 4.4vw, 2.1rem);
+    line-height: 1.18; letter-spacing: -0.01em;
+    margin: 0 0 20px;
+  }
+  h3.h3 {
+    font-family: var(--serif); font-weight: 600;
+    font-size: clamp(1.15rem, 3vw, 1.4rem);
+    margin: 30px 0 12px;
+  }
+
+  p.body-text { font-size: 1.06rem; color: var(--ink); margin: 0 0 18px; }
+  p.body-text.soft { color: var(--ink-soft); }
+  .lede { font-size: 1.18rem; }
+
+  mark.hl {
+    background: var(--gold-soft); color: var(--ink);
+    padding: 0.05em 0.15em; border-radius: 4px; font-weight: 600;
+  }
+
+  blockquote.pull {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(1.2rem, 3.4vw, 1.6rem); line-height: 1.45;
+    color: var(--ink); margin: 34px 0; padding: 0 0 0 24px;
+    border-left: 3px solid var(--accent);
+  }
+  blockquote.pull cite {
+    display: block; font-style: normal; font-family: var(--sans);
+    font-size: 0.82rem; color: var(--muted); margin-top: 10px; letter-spacing: 0.02em;
+  }
+
+  .callout {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 16px; padding: 22px 24px; margin: 28px 0;
+    box-shadow: var(--shadow);
+  }
+  .callout h4 {
+    margin: 0 0 8px; font-size: 0.98rem; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .callout p { margin: 0; color: var(--ink-soft); font-size: 0.98rem; }
+
+  .callout.concept {
+    background: var(--accent-soft); border-color: var(--accent);
+  }
+  .callout.warning {
+    background: rgba(250, 178, 25, 0.08); border-color: var(--warn);
+  }
+
+  /* ---------- reveal-on-scroll ---------- */
+
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s cubic-bezier(.2,.7,.3,1), transform 0.7s cubic-bezier(.2,.7,.3,1); }
+  .reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+  /* ---------- diagrams ---------- */
+
+  .diagram { margin: 30px 0 8px; }
+  .diagram-card {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 20px; padding: 28px 20px 20px; box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .diagram-label {
+    font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); font-weight: 700; margin-bottom: 4px;
+  }
+  .diagram-caption { font-size: 0.92rem; color: var(--ink-soft); margin-top: 10px; }
+
+  /* problem curve diagram */
+  .problem-chart {
+    position: relative; width: 100%; height: 280px; margin: 20px 0;
+  }
+  .problem-chart svg {
+    width: 100%; height: 100%;
+  }
+
+  /* three principles cards */
+  .principles-grid {
+    display: grid; grid-template-columns: 1fr; gap: 18px; margin: 30px 0;
+  }
+  @media (min-width: 600px) {
+    .principles-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  .principle-card {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 16px; padding: 24px; box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .principle-num {
+    font-family: var(--serif); font-size: 2.8rem; font-weight: 700;
+    color: var(--accent); margin: 0 0 8px;
+  }
+  .principle-title {
+    font-size: 1.1rem; font-weight: 600; color: var(--ink);
+    margin: 0 0 12px;
+  }
+  .principle-desc {
+    font-size: 0.94rem; color: var(--ink-soft); line-height: 1.6;
+  }
+
+  /* process flow */
+  .process-flow {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 16px; padding: 28px 24px; margin: 30px 0;
+    box-shadow: var(--shadow);
+  }
+  .flow-step {
+    display: flex; gap: 16px; margin-bottom: 24px; align-items: flex-start;
+  }
+  .flow-step:last-child { margin-bottom: 0; }
+  .flow-num {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--accent-soft); color: var(--accent-ink);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; flex-shrink: 0;
+  }
+  .flow-content {
+    flex: 1;
+  }
+  .flow-content strong {
+    display: block; font-size: 1rem; margin-bottom: 4px; color: var(--ink);
+  }
+  .flow-content span {
+    font-size: 0.94rem; color: var(--ink-soft); line-height: 1.5;
+  }
+
+  /* two-column layout */
+  .two-col {
+    display: grid; grid-template-columns: 1fr; gap: 28px; margin: 30px 0;
+  }
+  @media (min-width: 700px) {
+    .two-col { grid-template-columns: 1fr 1fr; }
+  }
+  .two-col-item { }
+  .two-col-item h3 {
+    font-size: 1.1rem; margin-top: 0;
+  }
+
+  /* stat boxes */
+  .stat-boxes {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin: 28px 0;
+  }
+  .stat-box {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 14px; padding: 18px; text-align: center; box-shadow: var(--shadow);
+  }
+  .stat-big {
+    font-family: var(--serif); font-size: 1.8rem; font-weight: 700;
+    color: var(--accent); margin-bottom: 6px;
+  }
+  .stat-label {
+    font-size: 0.78rem; color: var(--muted); font-weight: 600; letter-spacing: 0.02em;
+  }
+
+  /* ---------- closing ---------- */
+
+  .closer {
+    text-align: center; padding: 70px 0 90px;
+  }
+  .closer h2 {
+    font-family: var(--serif); font-weight: 600; font-style: italic;
+    font-size: clamp(1.8rem, 6vw, 2.6rem); line-height: 1.2; margin: 0 0 18px;
+  }
+  .closer p { color: var(--ink-soft); font-size: 1.05rem; max-width: 46ch; margin: 0 auto; }
+  .signoff { margin-top: 34px; font-family: var(--serif); font-style: italic; color: var(--muted); }
+
+  footer.site-footer {
+    border-top: 1px solid var(--hairline); padding: 28px 0 calc(40px + env(safe-area-inset-bottom));
+    text-align: center; font-size: 0.82rem; color: var(--muted);
+  }
+
+  /* ---------- responsive ---------- */
+
+  @media (max-width: 480px) {
+    .principles-grid { grid-template-columns: 1fr; }
+    .stat-boxes { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { transition: none !important; }
+    html { scroll-behavior: auto; }
+  }
+
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">◐</button>
+<button class="float-top" id="floatTop" aria-label="Back to top">↑</button>
+
+<div class="wrap">
+
+  <header class="hero">
+    <p class="kicker">Learning Science · Productivity</p>
+    <h1 class="title">Thinking on <em>Paper</em></h1>
+    <p class="dek">The learning principle that cuts study time in half and transforms how you solve problems, make decisions, and retain information forever.</p>
+    <div class="byline">
+      <div class="avatar">TP</div>
+      <span>Learning Science Insights</span>
+      <span class="dot"></span>
+      <span>~12 min read</span>
+      <span class="dot"></span>
+      <span>7 chapters</span>
+    </div>
+    <blockquote class="hero-quote">
+      "Learning faster means solving problems faster. It means making decisions faster. It means not spending all your time relearning something you already learned 3 weeks ago."
+    </blockquote>
+  </header>
+
+  <nav class="toc reveal">
+    <h2>In this piece</h2>
+    <ol>
+      <li><a href="#ch1">The problem with learning in your head</a></li>
+      <li><a href="#ch2">What thinking on paper actually means</a></li>
+      <li><a href="#ch3">Principle 1: Make it wrong</a></li>
+      <li><a href="#ch4">Principle 2: Make it shorter</a></li>
+      <li><a href="#ch5">Principle 3: Make it again</a></li>
+      <li><a href="#ch6">Why this actually works</a></li>
+      <li><a href="#ch7">Start thinking on paper today</a></li>
+    </ol>
+  </nav>
+
+  <!-- ===================== CHAPTER 1 ===================== -->
+  <section class="chapter reveal" id="ch1">
+    <p class="chapter-num">Chapter One</p>
+    <h2 class="h">The problem with learning in your head</h2>
+    
+    <p class="body-text lede">Most people try to hold everything in their head. They read a book, listen to information, and try to keep all of it floating around mentally. This creates two serious problems — and the second one is actually something we create ourselves.</p>
+
+    <h3 class="h3">Problem #1: The confusion curve</h3>
+    
+    <p class="body-text">As you consume more information, something counterintuitive happens: your confusion actually increases alongside the information. Think about it. You're reading a dense book. Every new page adds another puzzle piece. Your brain is trying to hold 5 pieces, then 10, then 20. At some point, you're no longer learning — you're drowning.</p>
+
+    <div class="diagram reveal">
+      <div class="diagram-card">
+        <div class="diagram-label">The Learning Overwhelm Pattern</div>
+        <div class="problem-chart">
+          <svg viewBox="0 0 600 240" xmlns="http://www.w3.org/2000/svg">
+            <!-- Grid -->
+            <line x1="60" y1="200" x2="580" y2="200" stroke="var(--hairline)" stroke-width="1"/>
+            <line x1="60" y1="30" x2="60" y2="200" stroke="var(--hairline)" stroke-width="1"/>
+            
+            <!-- Axes labels -->
+            <text x="320" y="230" font-size="12" fill="var(--muted)" text-anchor="middle">Information Consumed</text>
+            <text x="20" y="120" font-size="12" fill="var(--muted)" text-anchor="middle" transform="rotate(-90 20 120)">Confusion Level</text>
+            
+            <!-- Information line (linear) -->
+            <path d="M 80 190 Q 320 150 580 50" stroke="var(--s-blue)" stroke-width="2.5" fill="none" stroke-dasharray="5,5" opacity="0.6"/>
+            
+            <!-- Confusion curve (exponential) -->
+            <path d="M 80 180 Q 200 160 320 140 Q 450 100 580 30" stroke="var(--bad)" stroke-width="3" fill="none"/>
+            
+            <!-- Legend -->
+            <circle cx="420" cy="60" r="4" fill="var(--s-blue)"/>
+            <text x="432" y="65" font-size="12" fill="var(--ink-soft)">Information input</text>
+            
+            <circle cx="420" cy="85" r="4" fill="var(--bad)"/>
+            <text x="432" y="90" font-size="12" fill="var(--ink-soft)">Confusion level</text>
+          </svg>
+        </div>
+        <p class="diagram-caption">As you learn more, your brain struggles to hold it all. The confusion doesn't just stay flat — it accelerates.</p>
+      </div>
+    </div>
+
+    <p class="body-text soft">What do most people do when they feel this overwhelm? They panic. They pull out a notebook and start writing everything down. This feels like a solution. Your anxiety drops. You have a record of the information now. But here's the trap...</p>
+
+    <h3 class="h3">Problem #2: The counterproductive response</h3>
+
+    <p class="body-text">When most people feel overwhelmed, their instinct is to write things down just to feel less panicked. But the way they write — trying to capture everything, trying to make it perfect, trying to organize it immediately — actually <mark class="hl">bypasses the very cognitive process that would create real learning</mark>.</p>
+
+    <div class="callout warning reveal">
+      <h4>⚠️ The Running Analogy</h4>
+      <p>Imagine going for a run to get fit. Halfway through, you feel tired, so you jump in a car and drive to the finish line. You're no longer tired, but you've defeated the entire purpose of exercise. That's what happens when you write notes just to feel less overwhelmed — you avoid the discomfort that's actually necessary for learning.</p>
+    </div>
+
+    <p class="body-text soft">The information needs to be organized and processed by your brain to become knowledge. When you skip that step by reflexively writing things down, you're outsourcing the thinking instead of doing the thinking. Your brain needs to wrestle with the material. That wrestling is where the learning happens.</p>
+
+  </section>
+
+  <!-- ===================== CHAPTER 2 ===================== -->
+  <section class="chapter reveal" id="ch2">
+    <p class="chapter-num">Chapter Two</p>
+    <h2 class="h">What thinking on paper actually means</h2>
+    
+    <p class="body-text lede">Thinking on paper is completely different from writing notes. It's a specific process where you externalize your thoughts <em>in order to organize them</em>, not to dump them. Your paper becomes a thinking tool, not a storage device.</p>
+
+    <div class="callout concept reveal">
+      <h4>💡 The Core Difference</h4>
+      <p><strong>Writing notes</strong> = getting it out of your head so you don't forget it. <strong>Thinking on paper</strong> = getting it out of your head so you can see patterns and figure it out.</p>
+    </div>
+
+    <p class="body-text">The goal is to reduce your confusion without bypassing the learning process. You want to ease the cognitive load on your brain while still letting your brain do the work of organizing and connecting ideas.</p>
+
+    <p class="body-text soft">Think of it like laying out jigsaw puzzle pieces on a table. You don't know how they fit together yet. That's why they're on the table — so you can see them, rotate them, find patterns, and eventually understand how they connect. If you just dumped all the pieces into a box and sealed it, you'd feel better (less visual chaos), but you'd have learned nothing.</p>
+
+    <h3 class="h3">The three principles of thinking on paper</h3>
+
+    <p class="body-text">There's a framework that makes this work reliably. Follow these three simple principles, and your learning speed will skyrocket:</p>
+
+    <div class="principles-grid reveal">
+      <div class="principle-card">
+        <div class="principle-num">1</div>
+        <div class="principle-title">Make it wrong</div>
+        <div class="principle-desc">Write down what you think. Don't wait for certainty. Get your guesses on paper.</div>
+      </div>
+      <div class="principle-card">
+        <div class="principle-num">2</div>
+        <div class="principle-title">Make it shorter</div>
+        <div class="principle-desc">Use keywords only. No full sentences. Strip it down to essentials.</div>
+      </div>
+      <div class="principle-card">
+        <div class="principle-num">3</div>
+        <div class="principle-title">Make it again</div>
+        <div class="principle-desc">When it gets messy, reorganize. Rearrange. Reconnect. Do it again.</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ===================== CHAPTER 3 ===================== -->
+  <section class="chapter reveal" id="ch3">
+    <p class="chapter-num">Chapter Three</p>
+    <h2 class="h">Principle 1: Make it wrong</h2>
+    
+    <p class="body-text lede"><mark class="hl">If what you write is right, you're doing it wrong.</mark> This is the hardest principle to embrace because perfectionism is deeply ingrained in how we learn. But the truth is radical: you need to write down wrong guesses to prime your brain for learning.</p>
+
+    <h3 class="h3">Why wrong guesses matter</h3>
+
+    <p class="body-text">When you encounter new information, you have many puzzle pieces. Your brain can't hold them all. So you put them on paper. But here's what happens: if you try to make sure every connection is correct, every grouping is perfect, and every relationship is accurate — you paralyze yourself. You stare at the pieces and think, "Where do I even start?"</p>
+
+    <p class="body-text soft">But the moment you make a guess — even if it's wrong — something shifts. Your brain gets engaged. You're hypothesizing. And the act of guessing actually primes your mind to absorb the correct information faster when you encounter it.</p>
+
+    <div class="callout reveal">
+      <h4>🧠 The Priming Effect</h4>
+      <p>Research shows that when you make a guess about something, even if it's completely wrong, your brain is better prepared to learn the correct answer later. The neural pathways light up and say "this matters." It's like warming up before exercise.</p>
+    </div>
+
+    <h3 class="h3">How to actually do it</h3>
+
+    <div class="process-flow reveal">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-content">
+          <strong>Extract keywords quickly</strong>
+          <span>As you read or listen, pick out words that represent the key ideas. Don't overthink it. If it feels like a keyword, write it down. Messy is fine.</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-content">
+          <strong>Look at what you've written</strong>
+          <span>Step back. Look at the keywords scattered on your page. Don't judge them yet.</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-content">
+          <strong>Make guesses about connections</strong>
+          <span>Which keywords might be related? Draw lines between them. Group them. Say "I think this connects to that." You might be totally wrong. That's the point.</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="body-text soft">The key here is developing awareness. If you notice yourself hesitating to write something because "it might be wrong" or "I'm not sure" — stop. Notice that perfectionism kicking in. That's the moment you need to push through. Write it down anyway. You're not creating a masterpiece. You're externalizing your thinking.</p>
+
+    <div class="callout warning reveal">
+      <h4>⚠️ Watch for Perfectionism Paralysis</h4>
+      <p>The biggest obstacle to this principle is your inner perfectionist. They'll whisper: "But what if you get it wrong?" That's the entire point. Wrong guesses are how you learn. Not having anything to guess at is how you stay confused.</p>
+    </div>
+
+  </section>
+
+  <!-- ===================== CHAPTER 4 ===================== -->
+  <section class="chapter reveal" id="ch4">
+    <p class="chapter-num">Chapter Four</p>
+    <h2 class="h">Principle 2: Make it shorter</h2>
+    
+    <p class="body-text lede">You don't have time to write copious notes. You don't have time to create perfect study guides. And more importantly, <mark class="hl">the more words you write, the less you actually learn</mark>. This is backed by research.</p>
+
+    <h3 class="h3">The word count paradox</h3>
+
+    <p class="body-text">There's a counterintuitive finding in learning science: as your word count goes up, your retention and depth of understanding go down. Why? Because when you write more, it usually means you're processing less. Summarizing a concept into one keyword takes more thinking than writing it out as a sentence. It's harder to be concise than to ramble.</p>
+
+    <p class="body-text soft">On top of that, when your notes are shorter, your brain can process them faster. If you have a page full of keywords, you can glance at them and spend most of your mental energy thinking about how they connect. If you have full sentences and paragraphs, you have to spend time reading before you can even start thinking about relationships.</p>
+
+    <h3 class="h3">How to make it shorter</h3>
+
+    <div class="two-col reveal">
+      <div class="two-col-item">
+        <h3 style="margin-top: 0;">❌ What NOT to do</h3>
+        <p class="body-text soft">Write full sentences like "Encoding is the process of converting information into a form that can be stored in memory." This forces your brain to parse language before it can think conceptually.</p>
+      </div>
+      <div class="two-col-item">
+        <h3 style="margin-top: 0;">✓ What to do</h3>
+        <p class="body-text soft">Write just keywords: "Encoding → storage" or even just "Encoding." When you see this keyword later, you'll know exactly what it means because you learned it. The keyword is the trigger.</p>
+      </div>
+    </div>
+
+    <p class="body-text">The notes don't need to be beautiful. They don't need to be for anyone else. They just need to trigger your memory of the concept. With AI now, you don't even need notes for reference anymore — you can upload the source material later and ask questions about it. So your notes can be maximally concise.</p>
+
+    <div class="stat-boxes reveal">
+      <div class="stat-box">
+        <div class="stat-big">⚡</div>
+        <div class="stat-label">No full sentences</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-big">🎯</div>
+        <div class="stat-label">Keywords only</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-big">🧠</div>
+        <div class="stat-label">Memory anchors, not full info</div>
+      </div>
+    </div>
+
+    <div class="callout concept reveal">
+      <h4>💡 The Rule</h4>
+      <p>If you're using full sentences, you're being too verbose. Push yourself to distill every concept down to one or two keywords. Yes, even for complex topics. Especially for complex topics.</p>
+    </div>
+
+  </section>
+
+  <!-- ===================== CHAPTER 5 ===================== -->
+  <section class="chapter reveal" id="ch5">
+    <p class="chapter-num">Chapter Five</p>
+    <h2 class="h">Principle 3: Make it again</h2>
+    
+    <p class="body-text lede">This third principle is where most of the actual learning happens. This is the step that separates people who genuinely understand things from people who think they do.</p>
+
+    <h3 class="h3">What happens as you learn more</h3>
+
+    <p class="body-text">Let's say you've been working with your keywords and connections for 15 or 20 minutes. You keep consuming information. You add more keywords to your page. You make more guesses about connections. And then something happens: it gets messy. Really messy. Random lines. Keywords scattered. Connections that cross over each other.</p>
+
+    <p class="body-text soft">At the same time, something else happens. Some of your original guesses were wrong. Now you have more information, and you realize: "Oh, that connection I made? That doesn't actually make sense." This is exactly what should happen. You took a guess, and the learning process corrected you.</p>
+
+    <h3 class="h3">Two problems emerge</h3>
+
+    <div class="two-col reveal">
+      <div class="two-col-item">
+        <strong>Problem 1: Messiness</strong>
+        <p class="body-text soft">Your map is getting too cluttered to follow. The visual organization is breaking down. It's hard to see the connections clearly anymore.</p>
+      </div>
+      <div class="two-col-item">
+        <strong>Problem 2: Mistakes</strong>
+        <p class="body-text soft">You realize some of your connections or groupings don't actually reflect what you now understand. They need to be reorganized.</p>
+      </div>
+    </div>
+
+    <p class="body-text">This is where Principle 3 comes in. You need to make it again. You reorganize everything.</p>
+
+    <h3 class="h3">What "making it again" means</h3>
+
+    <p class="body-text soft">Reorganizing has three components:</p>
+
+    <div class="process-flow reveal">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-content">
+          <strong>Regrouping</strong>
+          <span>Put ideas into different groups that you now think are more accurate. If you had memory, working memory, and long-term memory all grouped separately, maybe you now see they're all types of different aspects of the same system.</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-content">
+          <strong>Rearranging</strong>
+          <span>Physically move things around on your page so it looks cleaner and more organized. This isn't aesthetic — it's functional.</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-content">
+          <strong>Reconnecting</strong>
+          <span>Add new connections you now see, or remove connections that no longer make sense. Update your understanding based on what you've learned.</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="body-text">Here's the critical part: <mark class="hl">reorganizing doesn't involve learning new information, but it produces most of your actual learning</mark>. This is the step most people skip. They get overwhelmed by the mess and just give up, or they feel like they're "wasting time" reorganizing when they could be reading more. But you're not wasting time. This is where the magic happens.</p>
+
+    <div class="callout concept reveal">
+      <h4>💡 Memory Strengthening</h4>
+      <p>When you reorganize, you're consolidating your memory. You're rebuilding the structure you created, which forces your brain to engage with every concept again. That rebuilding process is what burns things into long-term memory.</p>
+    </div>
+
+    <p class="body-text soft">And importantly, you don't reorganize once and you're done. As you keep learning, it gets messy again. You reorganize again. This cycle is the actual learning process. Make it messy → clean it up → make it messy again → clean it up again. That cycle is what creates deep understanding.</p>
+
+  </section>
+
+  <!-- ===================== CHAPTER 6 ===================== -->
+  <section class="chapter reveal" id="ch6">
+    <p class="chapter-num">Chapter Six</p>
+    <h2 class="h">Why this actually works</h2>
+    
+    <p class="body-text lede">This method isn't just a nice study hack. It's rooted in how your brain actually learns and consolidates memory. Understanding why it works will help you trust the process even when it feels weird.</p>
+
+    <h3 class="h3">The cognitive overload problem</h3>
+
+    <p class="body-text">Your brain has limited working memory. When you try to hold 20 puzzle pieces in your head at once, you're overloading that system. Confusion isn't a sign that you're learning — it's a sign that you've exceeded your working memory capacity. The confusion isn't the learning. The confusion is the brake on learning.</p>
+
+    <p class="body-text soft">Thinking on paper solves this by externalizing the information. You're not trying to hold it all in your head anymore. But — and this is crucial — you're not just dumping it into a storage system either. You're creating an external workspace where your brain can still do the organizing work, just without the overload.</p>
+
+    <h3 class="h3">Processing vs. storage</h3>
+
+    <p class="body-text">There's a fundamental difference between storing information and processing it. When you reflexively write things down just to feel less overwhelmed, you're offloading storage. But learning isn't about storage — it's about processing. Your brain needs to:</p>
+
+    <div class="stat-boxes reveal">
+      <div class="stat-box">
+        <div class="stat-big">🔗</div>
+        <div class="stat-label">Connect concepts</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-big">🗂️</div>
+        <div class="stat-label">Organize information</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-big">🧩</div>
+        <div class="stat-label">Find patterns</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-big">✅</div>
+        <div class="stat-label">Test and correct</div>
+      </div>
+    </div>
+
+    <p class="body-text soft">Thinking on paper lets you do all of that work while keeping your working memory from overflowing. The paper is just the tool that lets you externalize without abdicating.</p>
+
+    <h3 class="h3">Where the retention comes from</h3>
+
+    <p class="body-text">Research on learning shows that retention comes from two things:</p>
+
+    <p class="body-text soft"><strong>Depth of processing.</strong> Shallow processing (just reading) creates weak memory. Deep processing (having to think about how concepts relate) creates strong memory. The effort of organizing and reorganizing forces deep processing.</p>
+
+    <p class="body-text soft"><strong>Retrieval practice.</strong> Every time you look at your notes and try to connect ideas, every time you reorganize, you're retrieving information from memory and working with it. That retrieval practice is what strengthens the memory trace.</p>
+
+    <p class="body-text">Thinking on paper creates both. You're forced to think deeply about how things relate (because you have to write it down), and you're constantly retrieving and reusing that information (because you keep reorganizing).</p>
+
+  </section>
+
+  <!-- ===================== CHAPTER 7 ===================== -->
+  <section class="chapter reveal" id="ch7">
+    <p class="chapter-num">Chapter Seven</p>
+    <h2 class="h">Start thinking on paper today</h2>
+    
+    <p class="body-text lede">This isn't a theoretical framework you need to understand perfectly before you start. You can begin using this today with any material you're trying to learn.</p>
+
+    <h3 class="h3">Where to use this</h3>
+
+    <p class="body-text">The beauty of thinking on paper is that it works everywhere:</p>
+
+    <div class="two-col reveal">
+      <div class="two-col-item">
+        <strong>Deep learning situations</strong>
+        <p class="body-text soft">Intensive study, reading dense books, learning new professional skills, mastering complex domains.</p>
+      </div>
+      <div class="two-col-item">
+        <strong>Real-time situations</strong>
+        <p class="body-text soft">Following ideas in busy meetings, listening to presentations, trying to understand complicated arguments.</p>
+      </div>
+    </div>
+
+    <p class="body-text soft">And even for solo thinking: when you're trying to work through a complicated problem, solve a business challenge, or make a major decision — the same three principles apply.</p>
+
+    <h3 class="h3">What to expect</h3>
+
+    <p class="body-text">When you do this right, you'll notice changes pretty quickly:</p>
+
+    <div class="stat-boxes reveal">
+      <div class="stat-box">
+        <div class="stat-big">⬇️</div>
+        <div class="stat-label">Less overwhelm</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-big">⬆️</div>
+        <div class="stat-label">More clarity</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-big">⚡</div>
+        <div class="stat-label">Faster learning</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-big">🧠</div>
+        <div class="stat-label">Better retention</div>
+      </div>
+    </div>
+
+    <p class="body-text soft">Difficult problems that other people don't know how to approach — you'll start seeing clarity through them faster. When you go through lots of new information, you'll have higher retention and deeper understanding than the people around you. That's not bragging. That's just what happens when you actually process information instead of just consuming it.</p>
+
+    <div class="callout concept reveal">
+      <h4>💡 The Meta-Skill</h4>
+      <p>Thinking on paper isn't just a learning tool. It's a thinking tool. It works for learning, problem-solving, decision-making, organizing projects, planning, creative work — anything that requires your brain to organize and process complexity.</p>
+    </div>
+
+    <h3 class="h3">The three-step summary</h3>
+
+    <div class="principles-grid reveal">
+      <div class="principle-card">
+        <div class="principle-num">1</div>
+        <div class="principle-title">Make it wrong</div>
+        <div class="principle-desc">Write down keywords and make guesses about connections. You're allowed to be wrong. That's the whole point.</div>
+      </div>
+      <div class="principle-card">
+        <div class="principle-num">2</div>
+        <div class="principle-title">Make it shorter</div>
+        <div class="principle-desc">Use only keywords. No full sentences. The shorter, the better. It forces deeper thinking.</div>
+      </div>
+      <div class="principle-card">
+        <div class="principle-num">3</div>
+        <div class="principle-title">Make it again</div>
+        <div class="principle-desc">When it gets messy, reorganize. That reorganization is where most of the learning actually happens.</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ===================== CLOSING ===================== -->
+  <section class="chapter reveal closer" id="closing">
+    <h2>The transformation is immediate</h2>
+    <p>You don't need to wait weeks or months to see the benefit of thinking on paper. The moment you start externalizing your thoughts in this way, your experience of learning changes. The overwhelm decreases. The clarity increases. And most importantly, what you learn actually sticks.</p>
+    <p class="signoff">Now go think on paper.</p>
+  </section>
+
+</div>
+
+<footer class="site-footer">
+  <div class="wrap">Learning science principles for rapid skill acquisition and deep understanding · think on paper</div>
+</footer>
+
+<script>
+(function () {
+  // theme toggle
+  var root = document.documentElement;
+  var btn = document.getElementById('themeToggle');
+  function currentTheme() {
+    if (root.getAttribute('data-theme')) return root.getAttribute('data-theme');
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  btn.addEventListener('click', function () {
+    var next = currentTheme() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    btn.textContent = next === 'dark' ? '☀' : '◐';
+  });
+  btn.textContent = currentTheme() === 'dark' ? '☀' : '◐';
+
+  // scroll progress
+  var bar = document.getElementById('progress-bar');
+  var floatTop = document.getElementById('floatTop');
+  function onScroll() {
+    var h = document.documentElement;
+    var scrolled = h.scrollTop || document.body.scrollTop;
+    var height = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
+    var pct = height > 0 ? (scrolled / height) * 100 : 0;
+    bar.style.width = pct + '%';
+    if (scrolled > 500) floatTop.classList.add('show'); else floatTop.classList.remove('show');
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  floatTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+  // reveal on scroll
+  var revealEls = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    revealEls.forEach(function (el) { io.observe(el); });
+  } else {
+    revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+  }
+
+  // TOC active link
+  var tocLinks = {};
+  document.querySelectorAll('nav.toc a').forEach(function (a) {
+    tocLinks[a.getAttribute('href').slice(1)] = a;
+  });
+  var chapters = document.querySelectorAll('section.chapter');
+  if ('IntersectionObserver' in window) {
+    var tocObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var link = tocLinks[entry.target.id];
+        if (!link) return;
+        if (entry.isIntersecting) {
+          Object.values(tocLinks).forEach(function (l) { l.classList.remove('active'); });
+          link.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-40% 0px -50% 0px' });
+    chapters.forEach(function (c) { if (c.id) tocObserver.observe(c); });
+  }
+})();
+</script>
+
+</body>
+</html>
