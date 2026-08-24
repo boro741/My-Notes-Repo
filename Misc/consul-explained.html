@@ -239,6 +239,7 @@
       <a href="#mesh">Service Mesh</a>
       <a href="#depth">Deep Dive</a>
       <a href="#recap">Recap</a>
+      <a href="#multicloud">Multi-Cloud Demo</a>
     </div>
   </div>
 </nav>
@@ -485,6 +486,114 @@
     <div class="callout blue" style="margin-top:26px;">
       <span class="lbl">One-line answer to your original question</span>
       <p>Consul solves "how do dozens of constantly-moving services find each other safely" — first by being the directory (service discovery), and optionally by also being the security and traffic layer between them (service mesh, via Connect). Everything else it does supports one of those two jobs.</p>
+    </div>
+  </div>
+</section>
+
+<section id="multicloud" style="border-top:1px solid var(--border);background:radial-gradient(ellipse at 50% 0%, rgba(90,169,230,0.06), transparent 55%);">
+  <div class="wide">
+    <div class="eyebrow" style="text-align:left;margin-bottom:14px;">Field notes · from a hands-on walkthrough</div>
+    <h2 style="font-size:30px;">A city of apartments, and a real failover across two clouds</h2>
+    <p style="color:var(--text-dim);max-width:640px;">Everything above is the mental model. This part is a second pass at the same ideas through a different analogy, plus a walkthrough of an actual demo: two Kubernetes clusters, on two different cloud providers, connected by Consul, with one service failing over to the other live.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">A different lens on the same idea</div>
+    <h2>The city, the apartments, and everyone's personal assistant</h2>
+    <p>Picture a city full of apartment buildings. Each building is a machine in your cluster. Each apartment is a pod. Each resident living in an apartment is a container — your actual microservice. Residents need to send messages to each other constantly: "update the stock count," "verify this user," "process this payment." Before any of this gets automated, every resident keeps their own personal address book of who lives where.</p>
+
+    <p>That's life without a mesh. It works, but it's fragile in exactly the ways we already covered: addresses go stale the moment someone moves apartments (a pod reschedules), and every resident is personally responsible for a pile of side-jobs that have nothing to do with their actual work — reporting their activity to the city's monitoring office, retrying messages that don't get a reply, handling the case where the recipient has gone quiet. Multiply that by dozens of residents, all doing this slightly differently, and the city's central monitoring office ends up with inconsistent, incomplete reports that don't stitch together cleanly.</p>
+
+    <div class="callout">
+      <span class="lbl">Then the city hires a personal assistant for every resident</span>
+      <p>This is the sidecar. Each assistant tells their resident: "Just write the name of who you want to reach on the envelope. I'll figure out the address, deliver it, and bring back the reply. You focus on your actual job." The resident never learns another apartment's address. They just hand off mail with a name on it.</p>
+    </div>
+
+    <p>In Consul, that assistant is a small Envoy proxy container that gets automatically injected into the same pod as your service — which is why, once Consul is running, you'll notice each pod shows <span class="mono">2/2</span> containers instead of <span class="mono">1/1</span>: your service, plus its assistant.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">What the assistants actually share</div>
+    <h2>A shared address book, encrypted mail, and a stamp nobody can forge</h2>
+    <p>The interesting part isn't that each resident gets an assistant — it's that all the assistants work for the same company and share resources. Three things get shared across every assistant in the city:</p>
+
+    <ol style="color:var(--text-dim);padding-left:20px;margin-bottom:22px;">
+      <li style="margin-bottom:14px;"><strong style="color:var(--text)">A shared, always-current address book.</strong> The moment a new pod shows up, its assistant announces itself to the network: "I'm here, this is who I'm assisting, this is how to reach me." Every other assistant can now route mail to it. When a resident moves out or falls sick (fails a health check), the book updates the same way — automatically, without anyone editing a file.</li>
+      <li style="margin-bottom:14px;"><strong style="color:var(--text)">Encryption, without the resident knowing it's happening.</strong> Every assistant carries a TLS certificate. Before mail leaves the building, the assistant seals it — encrypts it. It travels across the city unreadable to anyone who intercepts it. Only the receiving resident's assistant, holding the matching key, can open it and hand the plain message to its resident. The resident never touches encryption logic; they just write and receive plain messages, same as always.</li>
+      <li style="margin-bottom:14px;"><strong style="color:var(--text)">A stamp that proves who really sent it.</strong> This is the part worth sitting with: because every assistant's certificate is unique to the service it represents, that certificate doubles as an ID card. When mail arrives sealed with a specific certificate, the receiving assistant can check with the shared registry — "is this really who they claim to be, and is the stamp genuine?" That verified identity is what lets Consul enforce rules like <em>only checkout-service may write to payment-service</em>. This is called an <strong>intention</strong>, and it's enforced at the assistant level, before the message ever reaches your actual code.</li>
+    </ol>
+
+    <div class="callout blue">
+      <span class="lbl">Why this matters more than it sounds</span>
+      <p>Without a mesh, restricting "who can call the payment service" means a security group — coarse, IP-and-port based, and blind to identity. Two services in the same subnet look identical to a security group. To an assistant checking a certificate, they don't. This is what people mean by <strong>zero-trust</strong> or <strong>micro-segmentation</strong>: nothing is trusted just because it's inside the network perimeter — every single hop re-proves who's talking.</p>
+    </div>
+
+    <p>And because every assistant in the city is running the exact same software — Envoy — they all report their activity in the exact same format. That solves the "inconsistent handwriting" problem from before: metrics from fifty different services land in Prometheus or Grafana already speaking the same language, without any of the fifty teams writing a line of monitoring code themselves.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">Who runs the assistants</div>
+    <h2>Data plane vs. control plane</h2>
+    <p>All those assistants, exchanging mail and checking stamps with each other — that network of activity is called the <strong>data plane</strong>. But someone has to hire the assistants, hand them their certificates, and keep the shared address book up to date in the first place. That's a separate office in the city: the <strong>control plane</strong>. In Consul, this is the <strong>server</strong> cluster — typically 3 or 5 instances for production, so the office survives even if one location is unreachable.</p>
+
+    <table>
+      <tr><th>Term</th><th>What it is</th><th>City equivalent</th></tr>
+      <tr><td><strong>Data plane</strong></td><td class="dim">The live network of sidecar proxies actually forwarding, encrypting, and checking traffic</td><td class="dim">Every resident's personal assistant, doing their daily job</td></tr>
+      <tr><td><strong>Control plane</strong></td><td class="dim">The Consul server cluster — source of truth for the catalog, certificates, and rules</td><td class="dim">The assistants' head office, issuing instructions and ID cards</td></tr>
+      <tr><td><strong>Connect Inject</strong></td><td class="dim">The Consul component that automatically adds a sidecar to new pods</td><td class="dim">HR, assigning a new assistant the moment a resident moves in</td></tr>
+      <tr><td><strong>Mesh Gateway</strong></td><td class="dim">A proxy that sits at the edge of a cluster, routing traffic to other clusters</td><td class="dim">A guard posted at the city's gate</td></tr>
+    </table>
+
+    <p>Worth noting: the control plane doesn't even have to live in the same cluster. You can run a dedicated Kubernetes cluster purely for Consul's control plane and point several other "worker" clusters at it — one head office, many buildings, even across different cities entirely.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">Scaling the analogy up</div>
+    <h2>When your city needs allies — and when a "resident" lives on a VM</h2>
+    <p>Real systems rarely stay inside one cluster. A company starts in one AWS region, then expands to Europe and Asia for latency reasons. Then a cloud outage costs real business, so leadership decides to replicate onto a second cloud provider entirely, as insurance. Now you have multiple clusters that all need to talk to each other securely — this is the multi-cluster, multi-datacenter problem.</p>
+
+    <p>Consul's answer: think of each cluster as its own city, and let cities form alliances. At the edge of each city stands a guard — the <strong>mesh gateway</strong>. If a service in City A wants to reach a service living in City B, its assistant doesn't need to know that B is a different city at all. It just hands the message to the local guard, who carries it to City B's guard, who hands it to the destination's assistant. The calling service is completely unaware that the request just crossed a cloud provider boundary.</p>
+
+    <div class="diagram-box">
+      <svg id="peerSvg" viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="diagram-caption">Two independent clusters, peered through their mesh gateways. Neither service knows — or needs to know — which cloud the other one runs on.</div>
+    </div>
+
+    <p>One more real-world wrinkle the video covers well: not everything is Kubernetes. Plenty of established companies still run a company-wide database, or legacy services, directly on virtual machines — and migrating that to Kubernetes is often not worth the effort or risk. Consul treats a VM the same way it treats a pod: it's just another "house" in another "city," running a Consul client agent alongside the actual process, with its own mesh gateway at the edge. The database on a VM in an on-prem data center can be a first-class, securely-reachable member of the mesh — not a special case bolted on.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">Watching it actually happen</div>
+    <h2>The demo: two clusters, one dying service, zero downtime</h2>
+    <p>The video backs all of this up with a real deployment, and walking through what actually happened is more useful than the theory alone. Here's the shape of it, in order:</p>
+
+    <ol style="color:var(--text-dim);padding-left:20px;margin-bottom:22px;">
+      <li style="margin-bottom:14px;"><strong style="color:var(--text)">Stand up a real EKS cluster with Terraform.</strong> Nothing Consul-specific here except one detail: the worker nodes' security group needs specific ports opened so Consul's components can talk to each other, and the node role needs permission to provision EBS volumes — because the Consul server is a stateful application that needs persistent storage.</li>
+      <li style="margin-bottom:14px;"><strong style="color:var(--text)">Deploy an actual microservices app.</strong> The demo uses Google's open-source "Online Boutique" — a dozen-plus real services (frontend, cart, checkout, payment, recommendations, and more) talking to each other and a shared Redis cache. One service, payments, is deliberately left half-broken (missing an env var) to demonstrate how Consul surfaces a failing service later.</li>
+      <li style="margin-bottom:14px;"><strong style="color:var(--text)">Install Consul via its official Helm chart.</strong> The key configuration flags: <span class="mono">connectInject.enabled=true</span> with <span class="mono">default=true</span> (auto-inject a sidecar into every pod, no per-deployment annotation needed), <span class="mono">meshGateway.enabled=true</span> (needed later for cross-cluster traffic), and <span class="mono">ui.enabled=true</span> with a LoadBalancer type (a dashboard to actually see the mesh).</li>
+      <li style="margin-bottom:14px;"><strong style="color:var(--text)">Restart the app and watch pods go from 1/1 to 2/2 containers.</strong> The second container in each pod is the injected Envoy sidecar — Consul's "data plane." Checking its logs shows it registering its service with the control plane on startup.</li>
+      <li style="margin-bottom:14px;"><strong style="color:var(--text)">Open the Consul UI and see the topology.</strong> Every service shows up, along with the broken payment service — flagged as failing its health check, with its sidecar up but the application container crash-looping. Every other service can see that instantly, without ever sending it a request.</li>
+      <li style="margin-bottom:14px;"><strong style="color:var(--text)">Lock down the payment service with intentions.</strong> By default, every service can call every other service. The demo tightens this: only checkout-service is allowed to initiate a connection to payment-service; everything else is explicitly denied. This is configured declaratively as a small Kubernetes-native CRD (a <span class="mono">ServiceIntentions</span> resource) — the same "configuration as code" pattern as any other Kubernetes manifest.</li>
+      <li style="margin-bottom:14px;"><strong style="color:var(--text)">Stand up a second cluster on a completely different cloud (Linode Kubernetes Engine)</strong> and repeat steps 2–6 exactly, using the same Helm values, just with a different <span class="mono">datacenter</span> name. Same app, same Consul setup, second cloud provider.</li>
+      <li style="margin-bottom:14px;"><strong style="color:var(--text)">Peer the two clusters.</strong> First, both control planes are told to route peering traffic through their mesh gateways (a small <span class="mono">Mesh</span> CRD applied on each side). Then, from cluster A's Consul UI: generate a peering token, name the peer, done. From cluster B's UI: paste that token in as "establish peering." Both sides show the connection as active within seconds.</li>
+      <li style="margin-bottom:14px;"><strong style="color:var(--text)">Export one service across the peering connection.</strong> Cluster B's shipping-service gets explicitly exported to cluster A via an <span class="mono">ExportedServices</span> CRD — nothing is shared by default; you opt services in one at a time.</li>
+      <li style="margin-bottom:14px;"><strong style="color:var(--text)">Define a failover rule with a ServiceResolver.</strong> On cluster A, a small CRD says: "if the local shipping-service becomes unavailable, fail over to the peer's shipping-service instead."</li>
+      <li style="margin-bottom:14px;"><strong style="color:var(--text)">Kill the shipping-service pod in cluster A — and the app keeps working.</strong> Adding an item to cart, which depends on a shipping estimate, fails the moment the pod is deleted with no failover rule in place. The moment the ServiceResolver is applied and the pod is deleted again, the same action succeeds — silently served by cluster B's shipping-service, on a different cloud provider, without the frontend service or the user ever knowing anything failed over.</li>
+    </ol>
+
+    <div class="callout">
+      <span class="lbl">Why this demo is the whole point</span>
+      <p>Nothing in that failover step touched application code. No retry logic was written into the frontend service, no hardcoded fallback URL was added anywhere, and no human intervened when the pod died. The failover rule was declared once, centrally, as data — and every sidecar in the mesh enforced it consistently, immediately, and identically, regardless of which of the two clouds a request happened to be sitting in at the time.</p>
     </div>
   </div>
 </section>
@@ -745,6 +854,40 @@ drawAlb();
             </line>`;
   });
   meshSvg.innerHTML = svg;
+})();
+
+// ---------- Peering diagram ----------
+(function(){
+  const peerSvg = document.getElementById('peerSvg');
+  if(!peerSvg) return;
+  let svg = '';
+  // Cluster A box
+  svg += `<rect x="20" y="20" width="230" height="180" rx="10" fill="#181C25" stroke="#3DDC84" stroke-width="1.3"/>
+           <text x="135" y="42" text-anchor="middle" fill="#3DDC84" font-family="IBM Plex Mono" font-size="11">CLUSTER A · AWS EKS</text>
+           <rect x="45" y="60" width="80" height="34" rx="5" fill="#0A0C10" stroke="#3DDC84"/>
+           <text x="85" y="81" text-anchor="middle" fill="#E7E9EE" font-family="IBM Plex Mono" font-size="9">frontend</text>
+           <rect x="145" y="60" width="80" height="34" rx="5" fill="#0A0C10" stroke="#FF5A5F"/>
+           <text x="185" y="81" text-anchor="middle" fill="#E7E9EE" font-family="IBM Plex Mono" font-size="8.5">shipping ✕</text>
+           <rect x="45" y="115" width="180" height="40" rx="6" fill="#0A0C10" stroke="#5AA9E6"/>
+           <text x="135" y="139" text-anchor="middle" fill="#5AA9E6" font-family="IBM Plex Mono" font-size="10">mesh gateway (guard)</text>`;
+  // Cluster B box
+  svg += `<rect x="390" y="20" width="230" height="180" rx="10" fill="#181C25" stroke="#F2A93B" stroke-width="1.3"/>
+           <text x="505" y="42" text-anchor="middle" fill="#F2A93B" font-family="IBM Plex Mono" font-size="11">CLUSTER B · LINODE LKE</text>
+           <rect x="415" y="60" width="80" height="34" rx="5" fill="#0A0C10" stroke="#3DDC84"/>
+           <text x="455" y="81" text-anchor="middle" fill="#E7E9EE" font-family="IBM Plex Mono" font-size="8.5">shipping ✓</text>
+           <rect x="515" y="60" width="80" height="34" rx="5" fill="#0A0C10" stroke="#3DDC84"/>
+           <text x="555" y="81" text-anchor="middle" fill="#E7E9EE" font-family="IBM Plex Mono" font-size="9">payment</text>
+           <rect x="415" y="115" width="180" height="40" rx="6" fill="#0A0C10" stroke="#5AA9E6"/>
+           <text x="505" y="139" text-anchor="middle" fill="#5AA9E6" font-family="IBM Plex Mono" font-size="10">mesh gateway (guard)</text>`;
+  // peering line between gateways
+  svg += `<line x1="225" y1="135" x2="415" y2="135" stroke="#5AA9E6" stroke-width="2" stroke-dasharray="6,5">
+            <animate attributeName="stroke-dashoffset" from="0" to="-22" dur="0.9s" repeatCount="indefinite"/>
+          </line>`;
+  svg += `<text x="320" y="122" text-anchor="middle" fill="#5AA9E6" font-family="IBM Plex Mono" font-size="9">peering connection</text>`;
+  // failover arc from frontend A to shipping B
+  svg += `<path d="M225,77 C300,10 340,10 415,77" stroke="#F2A93B" stroke-width="1.5" fill="none" stroke-dasharray="4,4"/>`;
+  svg += `<text x="320" y="30" text-anchor="middle" fill="#F2A93B" font-family="IBM Plex Mono" font-size="9">failover: A's shipping is down, route to B</text>`;
+  peerSvg.innerHTML = svg;
 })();
 </script>
 </body>
