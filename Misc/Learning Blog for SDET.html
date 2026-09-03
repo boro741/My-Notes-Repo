@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Stop Binge-Learning: A Note to Myself</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink-soft:#52514e; --muted:#898781;
+    --hairline:#e1e0d9; --border:rgba(11,11,11,0.10);
+    --accent:#2a78d6; --accent-ink:#184f95; --accent-soft:#eaf2fc;
+    --gold:#eda100; --gold-soft:#fbf1dc; --good:#0ca30c; --warn:#fab219; --bad:#ec835a;
+    --shadow:0 1px 2px rgba(11,11,11,0.04), 0 8px 24px rgba(11,11,11,0.06);
+    --serif: ui-serif, Charter, "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  html[data-theme="dark"] {
+    color-scheme: dark;
+    --page:#0d0d0d; --surface:#1a1a19; --ink:#ffffff; --ink-soft:#c3c2b7; --muted:#898781;
+    --hairline:#2c2c2a; --border:rgba(255,255,255,0.10);
+    --accent:#3987e5; --accent-ink:#bcd6f7; --accent-soft:rgba(57,135,229,0.14);
+    --gold:#c98500; --gold-soft:rgba(201,133,0,0.16);
+    --shadow:0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+  }
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page:#0d0d0d; --surface:#1a1a19; --ink:#ffffff; --ink-soft:#c3c2b7; --muted:#898781;
+      --hairline:#2c2c2a; --border:rgba(255,255,255,0.10);
+      --accent:#3987e5; --accent-ink:#bcd6f7; --accent-soft:rgba(57,135,229,0.14);
+      --gold:#c98500; --gold-soft:rgba(201,133,0,0.16);
+      --shadow:0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+    }
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; background:var(--page); color:var(--ink); font-family:var(--sans); line-height:1.65; -webkit-font-smoothing:antialiased; transition:background .25s, color .25s; padding-left:env(safe-area-inset-left); padding-right:env(safe-area-inset-right); }
+  ::selection { background:var(--gold-soft); color:var(--ink); }
+
+  #progress-bar { position:fixed; top:0; left:0; height:3px; width:0%; background:var(--accent); z-index:1000; transition:width .1s ease-out; }
+  .theme-toggle, .float-top { position:fixed; z-index:999; width:44px; height:44px; border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--ink); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:var(--shadow); font-size:1.05rem; transition:transform .15s, background .25s; }
+  .theme-toggle { top:calc(16px + env(safe-area-inset-top)); right:calc(16px + env(safe-area-inset-right)); }
+  .float-top { bottom:calc(22px + env(safe-area-inset-bottom)); right:calc(16px + env(safe-area-inset-right)); background:var(--ink); color:var(--page); border:none; opacity:0; transform:translateY(10px); pointer-events:none; }
+  .float-top.show { opacity:1; transform:translateY(0); pointer-events:auto; }
+
+  .wrap { max-width:760px; margin:0 auto; padding:0 24px; }
+  header.hero { padding:calc(88px + env(safe-area-inset-top)) 0 56px; }
+  .kicker { font-size:.78rem; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); font-weight:700; margin:0 0 18px; display:flex; align-items:center; gap:10px; }
+  .kicker::before { content:""; width:22px; height:2px; background:var(--accent); display:inline-block; }
+  h1.title { font-family:var(--serif); font-weight:600; font-size:clamp(2.1rem,7vw,3.6rem); line-height:1.08; letter-spacing:-.01em; margin:0 0 20px; }
+  h1.title em { font-style:italic; color:var(--accent); }
+  .dek { font-size:clamp(1.05rem,2.6vw,1.3rem); color:var(--ink-soft); max-width:60ch; margin:0 0 28px; }
+  .byline { display:flex; align-items:center; gap:14px; font-size:.88rem; color:var(--muted); padding-top:22px; border-top:1px solid var(--hairline); flex-wrap:wrap; }
+  .byline .dot { width:4px; height:4px; border-radius:50%; background:var(--muted); }
+  .avatar { width:38px; height:38px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; color:#fff; font-family:var(--serif); font-weight:700; }
+  .hero-quote { font-family:var(--serif); font-style:italic; font-size:clamp(1.15rem,3vw,1.5rem); line-height:1.5; margin:40px 0 0; padding:26px 0 0 24px; border-left:3px solid var(--gold); }
+
+  nav.toc { background:var(--surface); border:1px solid var(--hairline); border-radius:18px; padding:26px 26px 22px; margin:8px 0 64px; box-shadow:var(--shadow); }
+  nav.toc h2 { font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:0 0 14px; font-weight:700; }
+  nav.toc ol { list-style:none; margin:0; padding:0; counter-reset:toc; }
+  nav.toc li { counter-increment:toc; margin-bottom:4px; }
+  nav.toc a { display:flex; align-items:baseline; gap:12px; color:var(--ink-soft); text-decoration:none; font-size:.96rem; padding:7px 4px; border-radius:8px; transition:color .15s, background .15s; }
+  nav.toc a::before { content:counter(toc, decimal-leading-zero); font-family:var(--serif); font-size:.82rem; color:var(--muted); flex-shrink:0; }
+  nav.toc a:hover, nav.toc a.active { color:var(--accent); background:var(--accent-soft); }
+
+  section.chapter { padding:44px 0 8px; scroll-margin-top:24px; }
+  section.chapter + section.chapter { border-top:1px solid var(--hairline); }
+  .chapter-num { font-family:var(--serif); font-style:italic; color:var(--gold); font-size:1rem; margin:0 0 10px; font-weight:600; }
+  h2.h { font-family:var(--serif); font-weight:600; font-size:clamp(1.5rem,4.4vw,2.1rem); line-height:1.18; margin:0 0 20px; }
+  h3.h3 { font-family:var(--serif); font-weight:600; font-size:clamp(1.15rem,3vw,1.4rem); margin:30px 0 12px; }
+  p.body-text { font-size:1.06rem; margin:0 0 18px; }
+  p.body-text.soft { color:var(--ink-soft); }
+  .lede { font-size:1.18rem; }
+  mark.hl { background:var(--gold-soft); color:var(--ink); padding:.05em .15em; border-radius:4px; font-weight:600; }
+  blockquote.pull { font-family:var(--serif); font-style:italic; font-size:clamp(1.2rem,3.4vw,1.6rem); line-height:1.45; margin:34px 0; padding:0 0 0 24px; border-left:3px solid var(--accent); }
+  blockquote.pull cite { display:block; font-style:normal; font-family:var(--sans); font-size:.82rem; color:var(--muted); margin-top:10px; }
+  .callout { background:var(--surface); border:1px solid var(--hairline); border-radius:16px; padding:22px 24px; margin:28px 0; box-shadow:var(--shadow); }
+  .callout h4 { margin:0 0 8px; font-size:.98rem; font-weight:700; }
+  .callout p { margin:0; color:var(--ink-soft); font-size:.98rem; }
+  .callout.gold { border-color:var(--gold); background:var(--gold-soft); }
+  .callout ul { margin:8px 0 0; padding-left:20px; color:var(--ink-soft); font-size:.98rem; }
+  .callout li { margin-bottom:6px; }
+
+  .reveal { opacity:0; transform:translateY(18px); transition:opacity .7s cubic-bezier(.2,.7,.3,1), transform .7s cubic-bezier(.2,.7,.3,1); }
+  .reveal.is-visible { opacity:1; transform:translateY(0); }
+
+  .ladder { display:flex; flex-direction:column-reverse; gap:10px; margin:30px 0; }
+  .rung { display:flex; align-items:center; gap:16px; background:var(--surface); border:1px solid var(--hairline); border-radius:14px; padding:14px 18px; opacity:.35; transform:translateX(-10px); transition:opacity .5s, transform .5s, border-color .5s, background .5s; }
+  .ladder.is-visible .rung { opacity:1; transform:translateX(0); }
+  .ladder.is-visible .rung:nth-child(1) { transition-delay:.4s; }
+  .ladder.is-visible .rung:nth-child(2) { transition-delay:.3s; }
+  .ladder.is-visible .rung:nth-child(3) { transition-delay:.2s; }
+  .ladder.is-visible .rung:nth-child(4) { transition-delay:.1s; border-color:var(--gold); background:var(--gold-soft); }
+  .rung-step { width:30px; height:30px; border-radius:50%; flex-shrink:0; background:var(--accent-soft); color:var(--accent-ink); display:flex; align-items:center; justify-content:center; font-family:var(--serif); font-weight:700; font-size:.9rem; }
+  .ladder.is-visible .rung:nth-child(4) .rung-step { background:var(--gold); color:#fff; }
+  .rung-body b { display:block; font-size:.98rem; }
+  .rung-body span { font-size:.85rem; color:var(--muted); }
+
+  .stat-row { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin:30px 0; }
+  .stat-card { background:var(--surface); border:1px solid var(--hairline); border-radius:16px; padding:22px 14px; text-align:center; box-shadow:var(--shadow); }
+  .stat-num { font-family:var(--serif); font-weight:700; font-size:clamp(1.8rem,6vw,2.4rem); line-height:1; margin-bottom:6px; font-variant-numeric:tabular-nums; }
+  .stat-num.blue { color:var(--accent); }
+  .stat-num.gold { color:var(--gold); }
+  .stat-word { font-size:.8rem; color:var(--muted); font-weight:600; }
+
+  .chart-card { background:var(--surface); border:1px solid var(--hairline); border-radius:18px; padding:26px 22px 20px; margin:30px 0; box-shadow:var(--shadow); }
+  .chart-title { font-size:.82rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:22px; }
+  .bar-row { margin-bottom:18px; }
+  .bar-label { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; gap:10px; }
+  .bar-label .name { font-size:.92rem; font-weight:600; }
+  .bar-label .val { font-size:.86rem; color:var(--ink-soft); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .bar-track { position:relative; height:12px; background:var(--hairline); border-radius:6px; }
+  .bar-fill { position:absolute; left:0; top:0; height:100%; border-radius:6px; width:0%; transition:width 1.4s cubic-bezier(.16,.9,.2,1); }
+  .is-visible .bar-fill { width:var(--w); }
+  .chart-note { font-size:.84rem; color:var(--muted); margin-top:14px; }
+
+  .gauge-track { position:relative; height:40px; border-radius:10px; background:var(--hairline); overflow:hidden; margin:10px 0 6px; display:flex; }
+  .gauge-zone { height:100%; flex-shrink:0; display:flex; align-items:center; justify-content:center; color:#fff; font-size:.74rem; font-weight:700; transform:scaleX(0); transform-origin:left; transition:transform 1.1s cubic-bezier(.2,.8,.2,1); }
+  .is-visible .gauge-zone { transform:scaleX(1); }
+  .gauge-zone:nth-child(1) { width:80%; background:#184f95; }
+  .gauge-zone:nth-child(2) { width:15%; background:#3987e5; transition-delay:.15s; }
+  .gauge-zone:nth-child(3) { width:5%; background:#eda100; transition-delay:.3s; }
+  .gauge-legend { display:flex; justify-content:space-between; font-size:.74rem; color:var(--muted); gap:8px; }
+
+  .tshape { margin:26px 0; border:1px solid var(--hairline); border-radius:16px; overflow:hidden; background:var(--surface); }
+  .tshape-row { display:grid; grid-template-columns:1fr; }
+  .tshape-row + .tshape-row { border-top:1px solid var(--hairline); }
+  .tshape-cell { padding:16px 18px; font-size:.92rem; }
+  .tshape-cell.head { font-weight:700; font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); background:var(--page); }
+  .tshape-cell.topic { font-weight:700; font-family:var(--serif); font-size:1.05rem; }
+  .tshape-cell.deep { color:var(--ink); border-left:3px solid var(--accent); }
+  .tshape-cell.shallow { color:var(--ink-soft); border-left:3px solid var(--gold); }
+  .tshape-cell ul { margin:6px 0 0; padding-left:18px; }
+  .tshape-cell li { margin-bottom:4px; }
+  .tshape-cell .tag { display:block; font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; font-weight:700; margin-bottom:4px; }
+  .deep .tag { color:var(--accent); }
+  .shallow .tag { color:var(--gold); }
+  @media (min-width:640px) {
+    .tshape-row { grid-template-columns:1.1fr 2fr 2fr; }
+    .tshape-cell + .tshape-cell { border-left:1px solid var(--hairline); }
+    .tshape-cell.deep { border-left:1px solid var(--hairline); }
+    .tshape-cell.shallow { border-left:1px solid var(--hairline); }
+  }
+
+  .prompt { background:var(--page); border:1px solid var(--hairline); border-radius:12px; padding:16px 18px; margin:14px 0; font-size:.94rem; }
+  .prompt b { display:block; font-size:.76rem; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin-bottom:6px; }
+  .prompt code { font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:.88rem; color:var(--ink); white-space:pre-wrap; display:block; line-height:1.55; }
+
+  .steps { counter-reset:step; margin:30px 0; padding:0; list-style:none; }
+  .steps li { counter-increment:step; display:flex; gap:16px; padding:18px 0; border-top:1px solid var(--hairline); }
+  .steps li:last-child { border-bottom:1px solid var(--hairline); }
+  .steps li::before { content:counter(step); flex-shrink:0; width:34px; height:34px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-family:var(--serif); font-weight:700; }
+  .steps b { display:block; font-size:1.02rem; margin-bottom:4px; }
+  .steps span { font-size:.95rem; color:var(--ink-soft); }
+  .steps small { display:block; margin-top:6px; font-size:.82rem; color:var(--muted); }
+
+  .checklist { margin:20px 0; padding:0; list-style:none; }
+  .checklist li { display:flex; gap:12px; align-items:flex-start; padding:12px 0; border-bottom:1px solid var(--hairline); font-size:1rem; }
+  .checklist li::before { content:"✓"; color:var(--good); font-weight:700; flex-shrink:0; }
+  .checklist li.no::before { content:"✕"; color:var(--bad); }
+
+  .closer { text-align:center; padding:70px 0 90px; }
+  .closer h2 { font-family:var(--serif); font-weight:600; font-style:italic; font-size:clamp(1.8rem,6vw,2.6rem); line-height:1.2; margin:0 0 18px; }
+  .closer p { color:var(--ink-soft); font-size:1.05rem; max-width:46ch; margin:0 auto 12px; }
+  .signoff { margin-top:34px; font-family:var(--serif); font-style:italic; color:var(--muted); }
+  footer.site-footer { border-top:1px solid var(--hairline); padding:28px 0 calc(40px + env(safe-area-inset-bottom)); text-align:center; font-size:.82rem; color:var(--muted); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal, .rung, .bar-fill, .gauge-zone { transition:none !important; }
+    html { scroll-behavior:auto; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">◐</button>
+<button class="float-top" id="floatTop" aria-label="Back to top">↑</button>
+
+<div class="wrap">
+
+  <header class="hero">
+    <p class="kicker">Personal Notes · Learning</p>
+    <h1 class="title">Stop Binge-Learning. <em>Start Learning on Demand.</em></h1>
+    <p class="dek">A note to myself on why I keep jumping between YouTube videos, blogs and courses — why that feels productive but isn't — and a simple system I can actually follow as an SDET.</p>
+    <div class="byline">
+      <div class="avatar">Me</div>
+      <span>Written for me, by me (with AI help)</span>
+      <span class="dot"></span>
+      <span>~12 min read</span>
+      <span class="dot"></span>
+      <span>8 chapters</span>
+    </div>
+    <blockquote class="hero-quote">
+      "I was right about the problem. Watching a lot of videos is like watching a lot of cooking shows — you feel like a chef, but you still can't cook."
+    </blockquote>
+  </header>
+
+  <nav class="toc reveal">
+    <h2>In this note</h2>
+    <ol>
+      <li><a href="#ch1">What I noticed about myself</a></li>
+      <li><a href="#ch2">Why watching feels like learning (but isn't)</a></li>
+      <li><a href="#ch3">The Harvard experiment that proves it</a></li>
+      <li><a href="#ch4">Why I forget that 1-month course</a></li>
+      <li><a href="#ch5">The 4 levels of learning</a></li>
+      <li><a href="#ch6">My T-shape: what to go deep on, what to just "know"</a></li>
+      <li><a href="#ch7">Using AI as my tutor — the right way</a></li>
+      <li><a href="#ch8">My actual plan: 80 / 15 / 5 and the 5-step loop</a></li>
+    </ol>
+  </nav>
+
+  <!-- CH 1 -->
+  <section class="chapter reveal" id="ch1">
+    <p class="chapter-num">Chapter One</p>
+    <h2 class="h">What I noticed about myself</h2>
+    <p class="body-text lede">I'm an SDET. My real job is quality — test automation, frameworks, making sure things don't break. But I keep drifting into Developer stuff, then Data Engineering, then DevOps. One video leads to another. One blog leads to a full course.</p>
+    <p class="body-text soft">And here's the honest part: most of it I never use at work. So even after spending a month on a course, it fades away. I end up "knowing about" a lot of things but not being <em>deep</em> in anything.</p>
+    <p class="body-text">I also had a suspicion: YouTube is deciding what I learn. It works exactly like product marketing. I didn't need the product, but the ad made me want it. Same with a video titled "Every Engineer MUST know Kafka in 2026" — I didn't need it, but now I feel I do.</p>
+
+    <div class="callout gold reveal">
+      <h4>The good news</h4>
+      <p>My gut feeling was correct. The research below (Harvard, Kahneman, memory science) says exactly this. So this note is not about being hard on myself — it's about replacing a bad habit with a system that actually works.</p>
+    </div>
+  </section>
+
+  <!-- CH 2 -->
+  <section class="chapter reveal" id="ch2">
+    <p class="chapter-num">Chapter Two</p>
+    <h2 class="h">Why watching feels like learning (but isn't)</h2>
+    <p class="body-text lede">There's a name for what happens to me: the <mark class="hl">"illusion of competence"</mark>. In plain words — the video is so smooth and clear that my brain thinks, "I get it, I know this now." But I don't.</p>
+    <p class="body-text soft">Why? Because the person in the video already did all the hard work. They figured out the confusing parts, fixed the errors, and arranged everything neatly. I'm just watching the final, polished result. It's like watching Virat Kohli bat in highlights — it looks easy, but that's because you're only seeing the end product of years of practice.</p>
+
+    <h3 class="h3">The brain's shortcut (Kahneman)</h3>
+    <p class="body-text">Daniel Kahneman (a famous psychologist) found that when we face a hard question, our brain quietly swaps it with an easier one and answers that instead. So:</p>
+    <div class="callout reveal">
+      <h4>The swap that fools me</h4>
+      <p><b>Hard question:</b> "Can I set this up, debug it, and make it work by myself?"<br>
+      <b>Easy question my brain answers instead:</b> "Can I follow what this guy is saying?"<br><br>
+      The answer to the easy one is "yes", so I feel confident. But nobody asked the hard question.</p>
+    </div>
+
+    <h3 class="h3">Recognising vs. Recalling</h3>
+    <p class="body-text">Two different things happen in the brain:</p>
+    <ul class="checklist">
+      <li><b>Recognising</b> — "Oh yes, I've seen this before." This is what videos train. It's like recognising a face in a crowd. Easy.</li>
+      <li><b>Recalling</b> — Pulling the whole thing out of your own head with no hints, and doing it. This is like drawing that face from memory. Hard — and this is the one that matters at work.</li>
+    </ul>
+    <p class="body-text soft">Videos only train the first one. So I feel smart but freeze when I open a blank editor.</p>
+  </section>
+
+  <!-- CH 3 -->
+  <section class="chapter reveal" id="ch3">
+    <p class="chapter-num">Chapter Three</p>
+    <h2 class="h">The Harvard experiment that proves it</h2>
+    <p class="body-text lede">Researchers at Harvard (Deslauriers and team) taught the same topic to two groups. One group got a polished lecture from an expert. The other group had to actually solve problems themselves — messy and uncomfortable.</p>
+    <p class="body-text">Then they asked both groups: "How much do you feel you learned?" And separately, they tested them.</p>
+
+    <div class="chart-card reveal">
+      <div class="chart-title">How much they FELT they learned (out of 5)</div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="name">Watched the expert lecture</span><span class="val">3.9 / 5</span></div>
+        <div class="bar-track"><div class="bar-fill" style="--w:78%; background:var(--gold);"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="name">Solved problems themselves</span><span class="val">2.9 / 5</span></div>
+        <div class="bar-track"><div class="bar-fill" style="--w:58%; background:var(--accent);"></div></div>
+      </div>
+      <div class="chart-title" style="margin-top:28px;">How much they ACTUALLY learned (test score)</div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="name">Watched the expert lecture</span><span class="val">Lower</span></div>
+        <div class="bar-track"><div class="bar-fill" style="--w:55%; background:var(--gold);"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span class="name">Solved problems themselves</span><span class="val">Higher (+6% to +12%)</span></div>
+        <div class="bar-track"><div class="bar-fill" style="--w:75%; background:var(--accent);"></div></div>
+      </div>
+      <div class="chart-note">Source: Deslauriers et al., Harvard University. The results were the exact opposite of the feelings.</div>
+    </div>
+
+    <p class="body-text">The video-watchers <em>felt</em> they learned more but scored lower. The problem-solvers <em>felt</em> they learned less but scored higher.</p>
+    <blockquote class="pull">
+      "The struggle I feel when doing it myself is not a sign I'm failing. It's the actual feeling of learning happening."
+      <cite>— The one line I need to remember</cite>
+    </blockquote>
+    <p class="body-text soft">Why does the brain prefer videos? Because the brain uses about 20% of the body's energy while doing nothing. It's lazy by design — it always picks the easy road. Watching is easy. Debugging is hard. So the brain nudges me to click "next video".</p>
+  </section>
+
+  <!-- CH 4 -->
+  <section class="chapter reveal" id="ch4">
+    <p class="chapter-num">Chapter Four</p>
+    <h2 class="h">Why I forget that 1-month course</h2>
+    <p class="body-text lede">A scientist named Ebbinghaus discovered the "forgetting curve" long ago: anything you learn but don't use starts disappearing fast — within days.</p>
+
+    <div class="stat-row reveal">
+      <div class="stat-card">
+        <div class="stat-num gold">~80%</div>
+        <div class="stat-word">of unused details gone within one week</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num blue">~0</div>
+        <div class="stat-word">gap between learning and using, when learnt on-the-job</div>
+      </div>
+    </div>
+
+    <p class="body-text">Think of it like a prepaid recharge. If I learn something and don't use it, the "balance" expires. Using it at work is like a recharge — it keeps the balance alive.</p>
+
+    <h3 class="h3">Two ways of learning: "Just in Case" vs "Just in Time"</h3>
+    <div class="tshape reveal">
+      <div class="tshape-row">
+        <div class="tshape-cell head"></div>
+        <div class="tshape-cell head">Just in Case (what I do now)</div>
+        <div class="tshape-cell head">Just in Time (what I should do)</div>
+      </div>
+      <div class="tshape-row">
+        <div class="tshape-cell topic">Why I start</div>
+        <div class="tshape-cell shallow">A video looked interesting. Hype. Fear of missing out.</div>
+        <div class="tshape-cell deep">Something at work is blocked or broken and I need to fix it.</div>
+      </div>
+      <div class="tshape-row">
+        <div class="tshape-cell topic">What sticks</div>
+        <div class="tshape-cell shallow">Loose facts with no place to attach. Forgotten in weeks.</div>
+        <div class="tshape-cell deep">Knowledge tied to a real problem I solved. Stays for years.</div>
+      </div>
+      <div class="tshape-row">
+        <div class="tshape-cell topic">Result</div>
+        <div class="tshape-cell shallow">Feel confident, but freeze when asked to actually do it.</div>
+        <div class="tshape-cell deep">Can do it, and each fix builds on the last one.</div>
+      </div>
+    </div>
+
+    <p class="body-text soft">Just-in-Time learning is like buying vegetables when you're cooking tonight — fresh and used. Just-in-Case is like filling the fridge with things "I might cook someday". Half of it rots.</p>
+  </section>
+
+  <!-- CH 5 -->
+  <section class="chapter reveal" id="ch5">
+    <p class="chapter-num">Chapter Five</p>
+    <h2 class="h">The 4 levels of learning</h2>
+    <p class="body-text lede">Researchers Chi and Wylie made a simple ladder called ICAP. The higher I climb, the more actually sticks. Where am I most of the time? The bottom rung.</p>
+
+    <div class="ladder">
+      <div class="rung">
+        <div class="rung-step">1</div>
+        <div class="rung-body"><b>Passive — Watching / reading</b><span>Video courses, blogs. Roughly 5–10% sticks. This is my default.</span></div>
+      </div>
+      <div class="rung">
+        <div class="rung-step">2</div>
+        <div class="rung-body"><b>Active — Typing along</b><span>Copying the tutorial code line by line, highlighting docs. A bit better, but still not mine.</span></div>
+      </div>
+      <div class="rung">
+        <div class="rung-step">3</div>
+        <div class="rung-body"><b>Constructive — Making something new</b><span>Writing my own summary, drawing a flow, designing a test matrix. This is where real understanding starts.</span></div>
+      </div>
+      <div class="rung">
+        <div class="rung-step">4</div>
+        <div class="rung-body"><b>Interactive — Discussing and defending</b><span>Explaining to someone (or an AI) who pushes back and asks "but why?". Roughly 75–90% sticks. This is the goal.</span></div>
+      </div>
+    </div>
+
+    <p class="body-text">This is exactly why my idea of "having a conversation with AI like it's an expert" is a good one. It moves me from rung 1 straight to rung 4. But — only if I do it correctly (Chapter 7).</p>
+
+    <h3 class="h3">Two more proofs that "doing" beats "watching"</h3>
+    <div class="stat-row reveal">
+      <div class="stat-card">
+        <div class="stat-num blue">61%</div>
+        <div class="stat-word">remembered after 1 week — by people who tested themselves</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num gold">40%</div>
+        <div class="stat-word">remembered after 1 week — by people who just re-read</div>
+      </div>
+    </div>
+    <p class="body-text soft"><b>The Generation Effect:</b> if I produce something myself (write the script, explain the idea), it sticks far better than reading it. <b>The Testing Effect</b> (Roediger & Karpicke): quizzing yourself isn't for checking learning — quizzing <em>is</em> the learning. Just like school board exam prep: the students who solved past papers did better than those who re-read the textbook five times.</p>
+  </section>
+
+  <!-- CH 6 -->
+  <section class="chapter reveal" id="ch6">
+    <p class="chapter-num">Chapter Six</p>
+    <h2 class="h">My T-shape: what to go deep on, what to just "know"</h2>
+    <p class="body-text lede">Yes, as an SDET I need to know Dev, Data and DevOps things. But there's a difference between <mark class="hl">going deep</mark> and <mark class="hl">knowing enough to test it</mark>.</p>
+    <p class="body-text">Picture the letter <b>T</b>. The tall vertical line is my deep skill — quality engineering, automation frameworks, making systems testable. The wide horizontal bar is the surrounding stuff I only need to <em>understand</em>, not build from scratch.</p>
+    <p class="body-text soft">Simple rule: for any neighbouring field, I ask <b>"how can this break?"</b> — not <b>"how do I build this?"</b></p>
+
+    <div class="tshape reveal">
+      <div class="tshape-row">
+        <div class="tshape-cell head">Area</div>
+        <div class="tshape-cell head">Go deep — hands-on (my vertical line)</div>
+        <div class="tshape-cell head">Just understand — via AI chat (horizontal bar)</div>
+      </div>
+      <div class="tshape-row">
+        <div class="tshape-cell topic">DevOps</div>
+        <div class="tshape-cell deep"><span class="tag">Do it myself</span>
+          <ul><li>Run my test suites in Docker / Docker Compose</li><li>Build CI/CD quality gates (GitHub Actions, GitLab CI)</li><li>Debug why a test runner failed, timed out, or what the logs say</li></ul></div>
+        <div class="tshape-cell shallow"><span class="tag">Only know the idea</span>
+          <ul><li>Writing big Terraform infrastructure</li><li>Configuring production Kubernetes ingress / service mesh</li><li>Load balancer and kernel tuning</li></ul></div>
+      </div>
+      <div class="tshape-row">
+        <div class="tshape-cell topic">Data Engineering</div>
+        <div class="tshape-cell deep"><span class="tag">Do it myself</span>
+          <ul><li>Validate schemas (JSON Schema, Avro, Protobuf) and how they change</li><li>Check Kafka message order, duplicates, offsets</li><li>Verify data pipelines: counts match, nulls, drift</li></ul></div>
+        <div class="tshape-cell shallow"><span class="tag">Only know the idea</span>
+          <ul><li>Writing production Spark / Databricks jobs</li><li>Designing a data warehouse</li><li>Tuning Iceberg / Parquet storage</li></ul></div>
+      </div>
+      <div class="tshape-row">
+        <div class="tshape-cell topic">Backend Dev</div>
+        <div class="tshape-cell deep"><span class="tag">Do it myself</span>
+          <ul><li>Contract tests (Pact), API integration tests</li><li>Mocks, stubs, service virtualisation, fault injection</li><li>Test DB rollbacks and concurrent writes</li></ul></div>
+        <div class="tshape-cell shallow"><span class="tag">Only know the idea</span>
+          <ul><li>Writing the core business-logic microservices</li><li>Database internals (storage engines, query planners)</li><li>Domain-driven design boundaries</li></ul></div>
+      </div>
+    </div>
+
+    <div class="callout reveal">
+      <h4>Before I open any video, ask:</h4>
+      <p>"Which column does this fall in?" If it's the <b>left</b> column — worth deep, hands-on time. If it's the <b>right</b> column — a 30-second AI summary is enough. Close the tab.</p>
+    </div>
+  </section>
+
+  <!-- CH 7 -->
+  <section class="chapter reveal" id="ch7">
+    <p class="chapter-num">Chapter Seven</p>
+    <h2 class="h">Using AI as my tutor — the right way</h2>
+    <p class="body-text lede">In 1984, Benjamin Bloom showed that a student with a personal one-on-one tutor performs way above a student in a normal classroom (about "2 sigma" — roughly, an average student becomes a top-2% student). AI gives me a personal tutor for free. That's huge.</p>
+    <p class="body-text">So my instinct — "ask AI instead of watching videos" — is right. It moves me to rung 4 of the ladder. But there are two traps.</p>
+
+    <h3 class="h3">Trap 1: Letting AI do all the thinking</h3>
+    <p class="body-text soft">If I ask AI to write the code, explain the error, and fix it — the work gets done, but the <em>skill</em> stays with the tool, not me. Like using Google Maps for years and still not knowing the roads in my own city.</p>
+
+    <h3 class="h3">Trap 2: The "No-Wall" trap</h3>
+    <p class="body-text soft">In old-school learning, I eventually hit a wall — a blank editor, a weird error, no idea what to do. That wall is painful but it's where real learning happens. With AI, I may never hit the wall. Everything works, and I feel great, but I learned nothing.</p>
+
+    <h3 class="h3">Using AI summaries to filter — yes, do this</h3>
+    <p class="body-text">Most videos have 5 minutes of intro, 10 minutes of setup, and 3 minutes of actual content. Getting an AI summary first lets me check in 30 seconds: "Is this in my left column or right column?" If right column, the summary alone is enough — skip the video.</p>
+
+    <h3 class="h3">Prompts that make me think (not offload)</h3>
+    <p class="body-text soft">Don't ask "write me the code". Ask things like these:</p>
+
+    <div class="prompt reveal">
+      <b>1. Build the mental model (no code)</b>
+      <code>I'm an SDET trying to understand [Technology, e.g. Kafka consumer groups]. What problem did this solve that older systems couldn't? Explain with an analogy to [something I know, e.g. a message queue / a ticket counter]. Don't give me code.</code>
+    </div>
+    <div class="prompt reveal">
+      <b>2. Find the corners (where it breaks)</b>
+      <code>What are the 3 most common ways [Technology] breaks, fails silently, or gives wrong data? What do senior engineers watch out for that juniors miss?</code>
+    </div>
+    <div class="prompt reveal">
+      <b>3. Quiz me (Socratic mode)</b>
+      <code>Act as a strict Principal Quality Architect. Don't give me answers. Quiz me on how [System] handles [scenario, e.g. duplicate messages under load]. One question at a time. Evaluate my answer and challenge my assumptions.</code>
+    </div>
+    <div class="prompt reveal">
+      <b>4. Check my own explanation</b>
+      <code>Here's my 3-sentence explanation of how [Thing] works: [my own words]. Point out the gaps, mistakes and things I've assumed without knowing.</code>
+    </div>
+
+    <div class="callout gold reveal">
+      <h4>One strict rule</h4>
+      <p>Never copy-paste AI text into my notes. Writing it in my own words <em>is</em> the learning. Copying is back to rung 1.</p>
+    </div>
+  </section>
+
+  <!-- CH 8 -->
+  <section class="chapter reveal" id="ch8">
+    <p class="chapter-num">Chapter Eight</p>
+    <h2 class="h">My actual plan: 80 / 15 / 5 and the 5-step loop</h2>
+    <p class="body-text lede">Curiosity is not the problem. Unlimited curiosity is. So I give it a budget — like a monthly budget where 80% goes to needs, 15% to savings, and 5% is "fun money".</p>
+
+    <div class="chart-card reveal">
+      <div class="chart-title">How I split my learning attention</div>
+      <div class="gauge-track">
+        <div class="gauge-zone">80%</div>
+        <div class="gauge-zone">15%</div>
+        <div class="gauge-zone">5%</div>
+      </div>
+      <div class="gauge-legend"><span>Core work</span><span>Go deeper in SDET</span><span>Curiosity</span></div>
+    </div>
+
+    <ul class="checklist">
+      <li><b>80% — My actual work.</b> Sprint tasks, the test framework, team commitments. This keeps my job and my core skill strong.</li>
+      <li><b>15% — Getting deeper in my own field.</b> Not repetitive automation — improving things: refactoring the framework into clean modules, building better mocks, making tests run faster in parallel. This turns daily work into practice.</li>
+      <li><b>5% — Curiosity window.</b> About 25–30 minutes a day (one Pomodoro). Data pipelines, DevOps, whatever's interesting. Timer ends, I stop. No more 3-hour YouTube rabbit holes.</li>
+    </ul>
+
+    <h3 class="h3">The 5-step loop for anything new</h3>
+    <p class="body-text soft">When something new catches my eye during the curiosity window, I run this loop instead of just watching:</p>
+
+    <ol class="steps">
+      <li><div><b>Filter with AI summary</b><span>Summarise the video/blog first. Left column or right column of my T-shape? If right column — read the summary, done, close the tab.</span></div></li>
+      <li><div><b>Watch/read for 15–20 minutes max</b><span>Set a timer. When it rings, close every tab and video. No notes yet.</span></div></li>
+      <li><div><b>Blind recall — write from memory</b><span>Blank editor. Explain in simple words: why does this exist, what problem does it solve, how does it break? Write it like I'm explaining to a junior — no buzzwords.</span><small>This is the Generation Effect doing its work.</small></div></li>
+      <li><div><b>Let AI poke holes</b><span>Paste my explanation and ask it to find gaps and wrong assumptions. Then go back to the docs only for those specific gaps — not the whole thing again.</span><small>Never copy AI's text into my notes.</small></div></li>
+      <li><div><b>Build it and break it (left column only)</b><span>Type the test harness / Docker config / assertion myself, no copy-paste. Then deliberately break it — bad schema, dropped connection, race condition — and fix it by hand.</span><small>Hitting this wall is what makes it real skill.</small></div></li>
+    </ol>
+
+    <div class="callout reveal">
+      <h4>Quick self-check before any video</h4>
+      <ul>
+        <li>Is there a real problem at work pushing me to learn this? (Just-in-Time?)</li>
+        <li>Is it in my left column (deep) or right column (just know)?</li>
+        <li>Am I inside my 5% window, or am I stealing from the 80%?</li>
+        <li>Will I write something from memory after this, or just move to the next video?</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- CLOSING -->
+  <section class="chapter reveal closer" id="ch-close">
+    <p class="chapter-num" style="text-align:center;">Closing</p>
+    <h2>Curiosity is fine. Binge-watching is not.</h2>
+    <p>Being curious about Dev, Data and DevOps is a good thing — modern systems need an SDET who understands the whole picture. The mistake was <em>how</em> I learnt: passively, speculatively, endlessly.</p>
+    <p>From now: learn when work demands it. Go deep only in my own lane. Use AI as a tutor who quizzes me, not a servant who does my work. And keep curiosity to a 30-minute window.</p>
+    <p class="signoff">— Note to self, September 2026</p>
+  </section>
+
+</div>
+
+<footer class="site-footer">
+  <div class="wrap">Personal learning notes · based on research by Deslauriers et al., Kahneman, Ebbinghaus, Chi & Wylie, Roediger & Karpicke, Bloom</div>
+</footer>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var btn = document.getElementById('themeToggle');
+  function currentTheme() {
+    if (root.getAttribute('data-theme')) return root.getAttribute('data-theme');
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  btn.addEventListener('click', function () {
+    var next = currentTheme() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    btn.textContent = next === 'dark' ? '☀' : '◐';
+  });
+  btn.textContent = currentTheme() === 'dark' ? '☀' : '◐';
+
+  var bar = document.getElementById('progress-bar');
+  var floatTop = document.getElementById('floatTop');
+  function onScroll() {
+    var h = document.documentElement;
+    var scrolled = h.scrollTop || document.body.scrollTop;
+    var height = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
+    bar.style.width = (height > 0 ? (scrolled / height) * 100 : 0) + '%';
+    if (scrolled > 500) floatTop.classList.add('show'); else floatTop.classList.remove('show');
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  floatTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+  var revealEls = document.querySelectorAll('.reveal, .ladder');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) { entry.target.classList.add('is-visible'); io.unobserve(entry.target); }
+      });
+    }, { threshold: 0.1 });
+    revealEls.forEach(function (el) { io.observe(el); });
+  } else {
+    revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+  }
+
+  var tocLinks = {};
+  document.querySelectorAll('nav.toc a').forEach(function (a) { tocLinks[a.getAttribute('href').slice(1)] = a; });
+  var chapters = document.querySelectorAll('section.chapter');
+  if ('IntersectionObserver' in window) {
+    var tocObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var link = tocLinks[entry.target.id];
+        if (!link) return;
+        if (entry.isIntersecting) {
+          Object.values(tocLinks).forEach(function (l) { l.classList.remove('active'); });
+          link.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-40% 0px -50% 0px' });
+    chapters.forEach(function (c) { if (c.id) tocObserver.observe(c); });
+  }
+})();
+</script>
+</body>
+</html>
