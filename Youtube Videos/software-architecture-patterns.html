@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>9 Software Architecture Patterns Every Developer Should Know</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+
+  :root {
+    color-scheme: light;
+    --page:        #f8f9fb;
+    --surface:     #fcfdfe;
+    --ink:         #0c0d10;
+    --ink-soft:    #4c505c;
+    --muted:       #888e9c;
+    --hairline:    #e2e5ec;
+    --border:      rgba(12,13,16,0.10);
+    --accent:      #5b5fef;
+    --accent-ink:  #3c3fb0;
+    --accent-soft: #eceeff;
+    --gold:        #0fada0;
+    --gold-soft:   #e2f7f4;
+    --good:        #16a34a;
+    --warn:        #f0a020;
+    --bad:         #e0584f;
+
+    --s-blue:    #5b5fef;
+    --s-orange:  #f0793f;
+    --s-aqua:    #0fada0;
+    --s-yellow:  #e0a320;
+    --s-magenta: #d1549e;
+
+    --shadow: 0 1px 2px rgba(12,13,16,0.04), 0 8px 24px rgba(12,13,16,0.06);
+    --serif: 'Newsreader', ui-serif, Charter, "Iowan Old Style", Georgia, "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  html[data-theme="dark"] {
+    color-scheme: dark;
+    --page:        #0c0d11;
+    --surface:     #17181d;
+    --ink:         #f5f6f8;
+    --ink-soft:    #c1c4cf;
+    --muted:       #888e9c;
+    --hairline:    #2a2c33;
+    --border:      rgba(255,255,255,0.10);
+    --accent:      #7d80ff;
+    --accent-ink:  #c6c7ff;
+    --accent-soft: rgba(125,128,255,0.14);
+    --gold:        #2fd1c2;
+    --gold-soft:   rgba(47,209,194,0.14);
+    --good:        #16a34a;
+    --warn:        #f0a020;
+    --bad:         #e0584f;
+
+    --s-blue:    #7d80ff;
+    --s-orange:  #f28a54;
+    --s-aqua:    #2fd1c2;
+    --s-yellow:  #e6b64a;
+    --s-magenta: #e07cb4;
+
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page:        #0c0d11;
+      --surface:     #17181d;
+      --ink:         #f5f6f8;
+      --ink-soft:    #c1c4cf;
+      --muted:       #888e9c;
+      --hairline:    #2a2c33;
+      --border:      rgba(255,255,255,0.10);
+      --accent:      #7d80ff;
+      --accent-ink:  #c6c7ff;
+      --accent-soft: rgba(125,128,255,0.14);
+      --gold:        #2fd1c2;
+      --gold-soft:   rgba(47,209,194,0.14);
+      --s-blue:    #7d80ff;
+      --s-orange:  #f28a54;
+      --s-aqua:    #2fd1c2;
+      --s-yellow:  #e6b64a;
+      --s-magenta: #e07cb4;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+    }
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    transition: background 0.25s ease, color 0.25s ease;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  ::selection { background: var(--gold-soft); color: var(--ink); }
+
+  /* ---------- chrome ---------- */
+
+  #progress-bar {
+    position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    z-index: 1000; transition: width 0.1s ease-out;
+  }
+
+  .theme-toggle, .float-top {
+    position: fixed; z-index: 999;
+    width: 44px; height: 44px; border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface); color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: var(--shadow);
+    font-size: 1.05rem;
+    transition: transform 0.15s ease, background 0.25s ease;
+  }
+  .theme-toggle { top: calc(16px + env(safe-area-inset-top)); right: calc(16px + env(safe-area-inset-right)); }
+  .float-top {
+    bottom: calc(22px + env(safe-area-inset-bottom)); right: calc(16px + env(safe-area-inset-right));
+    background: var(--ink); color: var(--page); border: none;
+    opacity: 0; transform: translateY(10px); pointer-events: none;
+  }
+  .float-top.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .theme-toggle:active, .float-top:active { transform: scale(0.92); }
+
+  /* ---------- layout ---------- */
+
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+
+  header.hero {
+    padding: calc(88px + env(safe-area-inset-top)) 0 56px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kicker {
+    font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700; margin: 0 0 18px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .kicker::before { content: ""; width: 22px; height: 2px; background: var(--accent); display: inline-block; border-radius: 2px; }
+
+  h1.title {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(2.1rem, 7vw, 3.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin: 0 0 20px;
+  }
+  h1.title em { font-style: italic; color: var(--accent); }
+
+  .dek {
+    font-size: clamp(1.05rem, 2.6vw, 1.3rem);
+    color: var(--ink-soft);
+    max-width: 62ch;
+    margin: 0 0 28px;
+    font-weight: 400;
+  }
+
+  .byline {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    font-size: 0.88rem; color: var(--muted);
+    padding-top: 22px; border-top: 1px solid var(--hairline);
+  }
+  .byline .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--gold));
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-family: var(--serif); font-weight: 700; font-size: 1rem;
+  }
+
+  .hero-quote {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(1.1rem, 3vw, 1.4rem); line-height: 1.5;
+    color: var(--ink);
+    margin: 40px 0 0; padding: 26px 0 0 24px;
+    border-left: 3px solid var(--gold);
+  }
+
+  /* ---------- table of contents ---------- */
+
+  nav.toc {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 18px; padding: 26px 26px 22px; margin: 8px 0 64px;
+    box-shadow: var(--shadow);
+  }
+  nav.toc h2 {
+    font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 14px; font-weight: 700;
+  }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; }
+  nav.toc li { counter-increment: toc; margin-bottom: 4px; }
+  nav.toc a {
+    display: flex; align-items: baseline; gap: 12px;
+    color: var(--ink-soft); text-decoration: none;
+    font-size: 0.96rem; padding: 7px 4px; border-radius: 8px;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+  nav.toc a::before {
+    content: counter(toc, decimal-leading-zero);
+    font-family: var(--serif); font-size: 0.82rem; color: var(--muted); flex-shrink: 0;
+  }
+  nav.toc a:hover, nav.toc a.active { color: var(--accent); background: var(--accent-soft); }
+  nav.toc a.active::before { color: var(--accent); }
+
+  /* ---------- article sections ---------- */
+
+  section.chapter { padding: 44px 0 8px; scroll-margin-top: 24px; }
+  section.chapter + section.chapter { border-top: 1px solid var(--hairline); }
+
+  .chapter-num {
+    font-family: var(--serif); font-style: italic; color: var(--gold);
+    font-size: 1rem; margin: 0 0 10px; font-weight: 600;
+  }
+
+  h2.h {
+    font-family: var(--serif); font-weight: 600;
+    font-size: clamp(1.5rem, 4.4vw, 2.1rem);
+    line-height: 1.18; letter-spacing: -0.01em;
+    margin: 0 0 20px;
+  }
+  h3.h3 {
+    font-family: var(--serif); font-weight: 600;
+    font-size: clamp(1.1rem, 3vw, 1.3rem);
+    margin: 30px 0 12px;
+  }
+
+  p.body-text { font-size: 1.06rem; color: var(--ink); margin: 0 0 18px; }
+  p.body-text.soft { color: var(--ink-soft); }
+  .lede { font-size: 1.18rem; }
+
+  mark.hl {
+    background: var(--gold-soft); color: var(--ink);
+    padding: 0.05em 0.15em; border-radius: 4px; font-weight: 600;
+  }
+
+  code.inline {
+    font-family: var(--mono); font-size: 0.88em;
+    background: var(--accent-soft); color: var(--accent-ink);
+    padding: 0.1em 0.4em; border-radius: 5px;
+  }
+
+  blockquote.pull {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(1.15rem, 3.2vw, 1.5rem); line-height: 1.45;
+    color: var(--ink); margin: 34px 0; padding: 0 0 0 24px;
+    border-left: 3px solid var(--accent);
+  }
+
+  /* ---------- callout / tip boxes ---------- */
+
+  .callout {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 16px; padding: 22px 24px; margin: 28px 0;
+    box-shadow: var(--shadow);
+  }
+  .callout h4 {
+    margin: 0 0 8px; font-size: 0.98rem; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .callout p { margin: 0; color: var(--ink-soft); font-size: 0.98rem; }
+
+  .tip {
+    background: var(--gold-soft); border: 1px solid var(--hairline);
+    border-left: 3px solid var(--gold);
+    border-radius: 12px; padding: 16px 20px; margin: 24px 0;
+  }
+  .tip .tip-label {
+    font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 6px; display:flex; align-items:center; gap:6px;
+  }
+  html[data-theme="dark"] .tip .tip-label,
+  @media (prefers-color-scheme: dark) { .tip .tip-label { color: var(--gold); } }
+  .tip p { margin: 0; color: var(--ink-soft); font-size: 0.94rem; }
+  .tip strong { color: var(--ink); }
+
+  /* ---------- reveal-on-scroll ---------- */
+
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s cubic-bezier(.2,.7,.3,1), transform 0.7s cubic-bezier(.2,.7,.3,1); }
+  .reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+  /* ---------- diagram shell (reused for every diagram) ---------- */
+
+  .diagram { margin: 30px 0 8px; }
+  .diagram-card {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 20px; padding: 28px 20px 20px; box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .diagram-label {
+    font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); font-weight: 700; margin-bottom: 18px;
+  }
+  .diagram-caption { font-size: 0.92rem; color: var(--ink-soft); margin-top: 16px; }
+
+  /* ================= layer stack (chapter 1) ================= */
+
+  .stack { display: flex; flex-direction: column; gap: 10px; max-width: 440px; margin: 0 auto; }
+  .stack .rung {
+    display: flex; align-items: center; gap: 16px;
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 14px; padding: 16px 18px;
+    opacity: 0.3; transform: translateY(-12px);
+    transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.5s ease, background 0.5s ease;
+    text-align: left;
+  }
+  .stack.is-visible .rung { opacity: 1; transform: translateY(0); }
+  .stack.is-visible .rung:nth-child(1) { transition-delay: 0s; }
+  .stack.is-visible .rung:nth-child(2) { transition-delay: 0.15s; }
+  .stack.is-visible .rung:nth-child(3) { transition-delay: 0.3s; }
+  .rung-step {
+    width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+  }
+  .rung-body b { display: block; font-size: 0.98rem; }
+  .rung-body span { font-size: 0.85rem; color: var(--muted); }
+
+  /* ================= rings (onion + clean architecture) ================= */
+
+  .rings-wrap { position: relative; width: 240px; height: 240px; margin: 10px auto 24px; }
+  .ring {
+    position: absolute; left: 50%; top: 50%; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border);
+    opacity: 0; transform: translate(-50%,-50%) scale(0.7);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+    font-family: var(--serif); font-weight: 700; color: #fff;
+    text-align: center; padding: 6px;
+  }
+  .is-visible .ring { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  .is-visible .ring-1 { transition-delay: 0s; }
+  .is-visible .ring-2 { transition-delay: 0.15s; }
+  .is-visible .ring-3 { transition-delay: 0.3s; }
+  .is-visible .ring-4 { transition-delay: 0.45s; }
+
+  .ring-legend { max-width: 460px; margin: 0 auto; text-align: left; }
+  .ring-legend .leg-row { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+  .ring-legend .leg-row:last-child { margin-bottom: 0; }
+  .ring-legend .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .ring-legend b { display: block; font-size: 0.95rem; }
+  .ring-legend span { font-size: 0.86rem; color: var(--muted); }
+
+  /* ================= core + flow (hexagonal / microkernel / SOA) ================= */
+
+  .core-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--gold));
+    color: #fff; padding: 11px 22px; border-radius: 30px;
+    font-weight: 700; font-size: 0.92rem; margin: 0 auto 4px;
+  }
+  .flow-arrow {
+    font-size: 1.4rem; color: var(--muted); margin: 6px 0 14px;
+    animation: arrow-bounce 1.6s ease-in-out infinite;
+  }
+  @keyframes arrow-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(5px); }
+  }
+
+  .tile-row { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 4px 0 0; }
+  @media (min-width: 460px) { .tile-row.cols-2 { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 560px) { .tile-row.cols-3 { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 560px) { .tile-row.cols-4 { grid-template-columns: repeat(4, 1fr); } }
+  .tile {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface); border: 1px solid var(--hairline); border-radius: 14px;
+    padding: 14px 16px; text-align: left;
+  }
+  .tile-icon { font-size: 1.3rem; flex-shrink: 0; }
+  .tile b { display: block; font-size: 0.92rem; }
+  .tile span { font-size: 0.78rem; color: var(--muted); }
+
+  /* ================= CQRS split ================= */
+
+  .split-row { display: grid; grid-template-columns: 1fr; gap: 16px; margin: 26px 0; }
+  @media (min-width: 560px) { .split-row { grid-template-columns: 1fr 1fr; } }
+  .split-col {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 16px; padding: 20px 22px; box-shadow: var(--shadow);
+  }
+  .split-col h4 { margin: 0 0 8px; font-size: 0.98rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .split-col p { margin: 0; color: var(--ink-soft); font-size: 0.92rem; }
+  .split-shared {
+    text-align: center; font-size: 0.82rem; color: var(--muted);
+    margin: -8px 0 20px; font-weight: 600; letter-spacing: 0.02em;
+  }
+
+  /* ================= gauge (reused for event fan-out) ================= */
+
+  .gauge-track { position: relative; height: 40px; border-radius: 10px; background: var(--hairline); overflow: hidden; margin: 10px 0 6px; display: flex; }
+  .gauge-zone { height: 100%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.68rem; font-weight: 700; padding: 0 4px; transform: scaleX(0); transform-origin: left; transition: transform 1.1s cubic-bezier(.2,.8,.2,1); }
+  .is-visible .gauge-zone { transform: scaleX(1); }
+  .gauge-zone:nth-child(1) { width: 34%; background: var(--s-blue); transition-delay: 0s; }
+  .gauge-zone:nth-child(2) { width: 33%; background: var(--s-aqua); transition-delay: 0.15s; }
+  .gauge-zone:nth-child(3) { width: 33%; background: var(--s-magenta); transition-delay: 0.3s; }
+  .gauge-legend { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--muted); gap: 8px; }
+
+  /* ================= case-style card ================= */
+
+  .case-card {
+    background: linear-gradient(160deg, var(--surface), var(--accent-soft));
+    border: 1px solid var(--hairline); border-radius: 20px; padding: 28px 24px;
+    margin: 30px 0; box-shadow: var(--shadow);
+  }
+  .case-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--accent); background: var(--surface); padding: 5px 10px; border-radius: 20px;
+    border: 1px solid var(--border); margin-bottom: 14px;
+  }
+  .case-stats { display: flex; gap: 26px; margin-top: 18px; flex-wrap: wrap; }
+  .case-stats div b { display: block; font-family: var(--serif); font-size: 1.4rem; }
+  .case-stats div span { font-size: 0.78rem; color: var(--muted); }
+
+  /* ================= stat cards ================= */
+
+  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 30px 0; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px;
+    padding: 22px 12px; text-align: center; box-shadow: var(--shadow);
+  }
+  .stat-num {
+    font-family: var(--serif); font-weight: 700; color: var(--ink);
+    font-size: clamp(1.5rem, 6vw, 2rem); line-height: 1; margin-bottom: 6px;
+  }
+  .stat-word { font-size: 0.76rem; color: var(--muted); font-weight: 600; letter-spacing: 0.02em; }
+
+  /* ================= summary grid (closing) ================= */
+
+  .summary-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 30px 0; }
+  @media (min-width: 620px) { .summary-grid { grid-template-columns: 1fr 1fr; } }
+  .summary-card {
+    background: var(--surface); border: 1px solid var(--hairline); border-radius: 14px;
+    padding: 16px 18px;
+  }
+  .summary-card b { display: block; font-size: 0.92rem; margin-bottom: 3px; }
+  .summary-card span { font-size: 0.84rem; color: var(--muted); }
+
+  /* ---------- closing ---------- */
+
+  .closer { text-align: center; padding: 70px 0 90px; }
+  .closer h2 {
+    font-family: var(--serif); font-weight: 600; font-style: italic;
+    font-size: clamp(1.8rem, 6vw, 2.6rem); line-height: 1.2; margin: 0 0 18px;
+  }
+  .closer p { color: var(--ink-soft); font-size: 1.05rem; max-width: 48ch; margin: 0 auto; }
+  .signoff { margin-top: 34px; font-family: var(--serif); font-style: italic; color: var(--muted); }
+
+  footer.site-footer {
+    border-top: 1px solid var(--hairline); padding: 28px 0 calc(40px + env(safe-area-inset-bottom));
+    text-align: center; font-size: 0.82rem; color: var(--muted);
+  }
+
+  /* ---------- responsive ---------- */
+
+  @media (max-width: 480px) {
+    .stat-row { gap: 10px; }
+    .stat-card { padding: 16px 8px; }
+    .case-stats { gap: 18px; }
+    .rings-wrap { width: 200px; height: 200px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal, .rung, .ring, .bar-fill, .gauge-zone, .flow-arrow { transition: none !important; animation: none !important; }
+    html { scroll-behavior: auto; }
+  }
+
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">◐</button>
+<button class="float-top" id="floatTop" aria-label="Back to top">↑</button>
+
+<div class="wrap">
+
+  <header class="hero">
+    <p class="kicker">Software Architecture · Beginner's Guide</p>
+    <h1 class="title">9 Software Architecture Patterns Every <em>Developer</em> Should Know</h1>
+    <p class="dek">You don't need a computer science degree to understand this. Just nine simple ideas about how to organize code — explained with everyday examples, so you never have to look anything up mid-sentence.</p>
+    <div class="byline">
+      <div class="avatar">SA</div>
+      <span>Software Architecture 101</span>
+      <span class="dot"></span>
+      <span>~16 min read</span>
+      <span class="dot"></span>
+      <span>9 chapters</span>
+    </div>
+    <blockquote class="hero-quote">
+      "Architecture is the stuff you can't easily change later. Get the shape of your house right before you start hanging pictures."
+    </blockquote>
+  </header>
+
+  <nav class="toc reveal">
+    <h2>In this piece</h2>
+    <ol>
+      <li><a href="#ch1">Layered Architecture — organizing your app like a cake</a></li>
+      <li><a href="#ch2">Onion Architecture — protecting your core logic</a></li>
+      <li><a href="#ch3">Hexagonal Architecture — swappable parts, via ports & adapters</a></li>
+      <li><a href="#ch4">Modular Architecture — self-contained building blocks</a></li>
+      <li><a href="#ch5">Microkernel Architecture — start small, add plugins</a></li>
+      <li><a href="#ch6">Event-Driven Architecture — reacting to what just happened</a></li>
+      <li><a href="#ch7">CQRS — splitting reading from writing</a></li>
+      <li><a href="#ch8">Service-Oriented Architecture — independent services, working together</a></li>
+      <li><a href="#ch9">Clean Architecture — logic that never has to change</a></li>
+    </ol>
+  </nav>
+
+  <!-- ===================== INTRO STATS ===================== -->
+  <div class="stat-row reveal">
+    <div class="stat-card">
+      <div class="stat-num">9</div>
+      <div class="stat-word">Patterns covered</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">0</div>
+      <div class="stat-word">Prior knowledge needed</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">1</div>
+      <div class="stat-word">Big idea behind all of them</div>
+    </div>
+  </div>
+
+  <p class="body-text soft" style="margin-bottom:40px;">Before we dive in, here's the one idea that ties every pattern in this piece together: <mark class="hl">a good architecture keeps the parts of your app that change a lot separate from the parts that barely change at all.</mark> Everything else — layers, onions, hexagons, plugins — is just a different way of drawing that line. Once you see that, all nine patterns start to feel like variations on a theme instead of nine unrelated things to memorize.</p>
+
+  <!-- ===================== CHAPTER 1 ===================== -->
+  <section class="chapter reveal" id="ch1">
+    <p class="chapter-num">Chapter One</p>
+    <h2 class="h">Layered architecture — organizing your app like a cake</h2>
+    <p class="body-text lede">This is the pattern almost everyone meets first — you might also hear it called <strong>n-tier architecture</strong>. The idea is refreshingly simple: <mark class="hl">organize your app into logical layers, where each layer has one clear job.</mark> Think of it like slicing a system into bite-sized chunks, each one doing a single thing well.</p>
+
+    <div class="tip">
+      <div class="tip-label">💡 quick definition</div>
+      <p><strong>"Layer"</strong> here just means a group of code that's responsible for one kind of work — like a department in a company. The sales department doesn't do accounting, and the accounting department doesn't do sales. Each layer only talks to the layer right next to it.</p>
+    </div>
+
+    <p class="body-text soft">Most apps you'll build use three main layers:</p>
+
+    <div class="diagram">
+      <div class="diagram-card">
+        <div class="diagram-label">The Three Classic Layers</div>
+        <div class="stack reveal">
+          <div class="rung">
+            <div class="rung-step" style="background:var(--accent-soft); color:var(--accent-ink);">🖥️</div>
+            <div class="rung-body"><b>Presentation Layer</b><span>Your user interface or APIs — what the user actually sees and clicks.</span></div>
+          </div>
+          <div class="rung">
+            <div class="rung-step" style="background:var(--gold-soft); color:var(--gold);">⚙️</div>
+            <div class="rung-body"><b>Business Logic Layer</b><span>Handles the core rules and decisions your app makes.</span></div>
+          </div>
+          <div class="rung">
+            <div class="rung-step" style="background:var(--accent-soft); color:var(--accent-ink);">🗄️</div>
+            <div class="rung-body"><b>Data Access Layer</b><span>Manages talking to your database — reading and saving information.</span></div>
+          </div>
+        </div>
+        <p class="diagram-caption">Each layer only knows about the one directly below it. Change one, and the others stay untouched.</p>
+      </div>
+    </div>
+
+    <div class="tip">
+      <div class="tip-label">💡 what's "business logic"?</div>
+      <p>It's just the rulebook your app follows to make decisions — things like "apply a 10% discount if the cart is over ₹2,000" or "reject the order if the item is out of stock." It's the actual thinking your app does, separate from how it looks or where it stores data.</p>
+    </div>
+
+    <p class="body-text soft">Let's make this concrete. Say you're building an e-commerce site. The <strong>presentation layer</strong> is responsible for displaying the product pages you scroll through. The <strong>business logic layer</strong> takes care of things like calculating discounts or processing an order. And the <strong>data access layer</strong>? That's your connection to the product and inventory database — the part that actually fetches "is this in stock?"</p>
+
+    <p class="body-text soft">This pattern is fantastic for large, enterprise-style systems. It keeps things modular, and if you need to change something in one layer — say, redesign the checkout page — the other layers stay completely intact. It also makes life easier when different teams own different layers: the frontend team lives in the presentation layer, the backend team lives in business logic, and the database team owns data access, all without stepping on each other's toes.</p>
+
+    <p class="body-text soft">That said, it's not perfect for everything. As your system grows more complex, a strict layer-by-layer setup can start to feel rigid — sometimes a request has to pass through every single layer just to do something simple, which adds unnecessary overhead.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 2 ===================== -->
+  <section class="chapter reveal" id="ch2">
+    <p class="chapter-num">Chapter Two</p>
+    <h2 class="h">Onion architecture — protecting your core logic</h2>
+    <p class="body-text lede">Picture an actual onion: multiple layers wrapped around a core, right in the center. That's the whole metaphor. <mark class="hl">The idea is to keep your business logic isolated at the very center</mark>, protected by outer layers like infrastructure and APIs.</p>
+
+    <p class="body-text soft">The golden rule of onion architecture: <strong>everything depends on the core, but the core depends on nothing outside of it.</strong> The center doesn't know or care that a database exists, or that there's a website calling it. It just does its job.</p>
+
+    <div class="diagram">
+      <div class="diagram-card">
+        <div class="diagram-label">Onion Architecture</div>
+        <div class="rings-wrap reveal">
+          <div class="ring ring-3" style="width:240px; height:240px; background:var(--accent-soft);"></div>
+          <div class="ring ring-2" style="width:165px; height:165px; background:var(--accent);"></div>
+          <div class="ring ring-1" style="width:90px; height:90px; background:linear-gradient(135deg,var(--gold),var(--accent)); font-size:0.72rem;">CORE</div>
+        </div>
+        <div class="ring-legend">
+          <div class="leg-row"><span class="dot" style="background:linear-gradient(135deg,var(--gold),var(--accent));"></span><div><b>Core (center)</b><span>Pure business logic — e.g. transaction processing, account management. Zero outside dependencies.</span></div></div>
+          <div class="leg-row"><span class="dot" style="background:var(--accent);"></span><div><b>Middle layer</b><span>Rules about how the core gets used — application-specific logic.</span></div></div>
+          <div class="leg-row"><span class="dot" style="background:var(--accent-soft); border:1px solid var(--hairline);"></span><div><b>Outer layer</b><span>APIs, databases, and the website or app that people actually interact with.</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="body-text soft">Imagine you're building a banking app. At the very center of the onion, you have <strong>transaction processing</strong> and <strong>account management</strong> — the pure business logic. The outer layers handle everything else: how that logic gets exposed through APIs, how data gets saved to a database, or how it's presented on a website.</p>
+
+    <p class="body-text soft">The major advantage here is that your core logic becomes easy to <strong>test, extend, and refactor.</strong> You can swap out an entire database — say, move from one provider to another — without touching a single line of your core business logic. This pattern shines when your application needs to keep evolving and changing over time, but you want the heart of it to stay rock-solid and stable.</p>
+
+    <div class="callout">
+      <h4>🧅 Why the "no outward dependency" rule matters</h4>
+      <p>If your core logic secretly depends on, say, a specific database library, then upgrading or replacing that library forces you to touch your most important code — the part you least want to break. Onion architecture makes that impossible by design.</p>
+    </div>
+  </section>
+
+  <!-- ===================== CHAPTER 3 ===================== -->
+  <section class="chapter reveal" id="ch3">
+    <p class="chapter-num">Chapter Three</p>
+    <h2 class="h">Hexagonal architecture — swappable parts, via ports & adapters</h2>
+    <p class="body-text lede">Hexagonal architecture is a close cousin of onion architecture, but it takes the idea one step further. <mark class="hl">Your core business logic shouldn't directly depend on external systems</mark> — like a database or an outside API — at all.</p>
+
+    <p class="body-text soft">Instead, the core talks to the outside world through <strong>ports</strong> (interfaces — basically a contract saying "here's what I need") and <strong>adapters</strong> (the actual implementations that plug into those ports and handle real communication).</p>
+
+    <div class="tip">
+      <div class="tip-label">💡 ports & adapters, in plain english</div>
+      <p>A <strong>port</strong> is like a wall socket — it defines the shape of the plug, nothing more. An <strong>adapter</strong> is the actual appliance you plug in — a lamp today, a phone charger tomorrow. As long as the plug shape (the port) stays the same, you can swap what's plugged in without rewiring the wall.</p>
+    </div>
+
+    <p class="body-text soft">Say you're building a payment system. The core handles the actual payment logic — validating card numbers, calculating totals, and so on. But it interacts with external payment providers like Stripe or PayPal <em>through a port</em>. So if you ever need to swap Stripe for PayPal, you just plug in a different adapter — the core logic never even notices the change.</p>
+
+    <div class="diagram">
+      <div class="diagram-card">
+        <div class="diagram-label">Payment System, Hexagonal Style</div>
+        <div class="core-pill">💳 Core: validate card, calculate total</div>
+        <div class="flow-arrow">↓ &nbsp; via ports (interfaces) &nbsp; ↓</div>
+        <div class="tile-row cols-4">
+          <div class="tile"><span class="tile-icon">🅿️</span><div><b>Stripe adapter</b><span>Handles real API calls</span></div></div>
+          <div class="tile"><span class="tile-icon">💰</span><div><b>PayPal adapter</b><span>Swap in anytime</span></div></div>
+          <div class="tile"><span class="tile-icon">🗄️</span><div><b>Database adapter</b><span>Saves the receipt</span></div></div>
+          <div class="tile"><span class="tile-icon">📧</span><div><b>Email adapter</b><span>Sends confirmation</span></div></div>
+        </div>
+        <p class="diagram-caption">Swap any adapter without touching the core in the middle.</p>
+      </div>
+    </div>
+
+    <p class="body-text soft">Hexagonal architecture is ideal for applications that plug into multiple external systems, or need to evolve over time. The separation guarantees your core business logic stays pure and testable, while every external dependency gets swapped in and out cleanly, one adapter at a time.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 4 ===================== -->
+  <section class="chapter reveal" id="ch4">
+    <p class="chapter-num">Chapter Four</p>
+    <h2 class="h">Modular architecture — self-contained building blocks</h2>
+    <p class="body-text lede">Here the idea is to break your application into <strong>self-contained modules.</strong> Each module owns one specific slice of your app's functionality, and modules talk to each other only through well-defined interfaces — never by reaching into each other's internals.</p>
+
+    <div class="tip">
+      <div class="tip-label">💡 what's an "interface" here?</div>
+      <p>An interface is simply an agreed set of rules for how two pieces of code talk to each other — like a restaurant menu. You don't need to know how the kitchen cooks the dish; you just need to know what you can order and what you'll get back.</p>
+    </div>
+
+    <p class="body-text soft">Picture a Content Management System (CMS) — the kind of software that powers a blog or a company website. You might have separate modules for <strong>user management</strong>, <strong>content creation</strong>, and <strong>SEO optimization</strong>. Each module operates independently, but they can integrate whenever needed — for instance, the SEO module might reach into the content module to apply SEO rules to a blog post before it's published.</p>
+
+    <div class="diagram">
+      <div class="diagram-card">
+        <div class="diagram-label">Inside a CMS</div>
+        <div class="tile-row cols-3">
+          <div class="tile"><span class="tile-icon">👤</span><div><b>User Management</b><span>Logins, roles, permissions</span></div></div>
+          <div class="tile"><span class="tile-icon">✍️</span><div><b>Content Creation</b><span>Writing & publishing posts</span></div></div>
+          <div class="tile"><span class="tile-icon">🔍</span><div><b>SEO Optimization</b><span>Applies rules to published posts</span></div></div>
+        </div>
+        <p class="diagram-caption">Each module can be built and shipped on its own — they only meet at agreed interfaces.</p>
+      </div>
+    </div>
+
+    <p class="body-text soft">By keeping your code modular, you make it far easier to extend and maintain. Each module can be developed, tested, and deployed independently — which means different teams can work in parallel without blocking each other. And as your system grows, it stays manageable, because no single module ever becomes a tangled, overgrown mess on its own.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 5 ===================== -->
+  <section class="chapter reveal" id="ch5">
+    <p class="chapter-num">Chapter Five</p>
+    <h2 class="h">Microkernel architecture — start small, add plugins</h2>
+    <p class="body-text lede">Also called <strong>plug-in architecture</strong>. This pattern starts with a minimal, bare-bones core system, and you add features by developing plugins or extensions on top of it. <mark class="hl">The core provides only the essentials; plugins handle the specialized stuff.</mark></p>
+
+    <p class="body-text soft">Think about a code editor like Eclipse or IntelliJ. The core system provides basic text editing and project management — nothing fancy. But if you want to develop in Java, you add a Java plugin. Want to connect to a database? Install a database plugin. Every feature gets added only when it's actually needed, without bloating the core.</p>
+
+    <div class="diagram">
+      <div class="diagram-card">
+        <div class="diagram-label">A Code Editor's Microkernel</div>
+        <div class="core-pill">🧩 Core: text editing + project management</div>
+        <div class="flow-arrow">＋</div>
+        <div class="tile-row cols-3">
+          <div class="tile"><span class="tile-icon">☕</span><div><b>Java Plugin</b><span>Adds Java-specific tools</span></div></div>
+          <div class="tile"><span class="tile-icon">🗃️</span><div><b>Database Plugin</b><span>Connects to your DB</span></div></div>
+          <div class="tile"><span class="tile-icon">🐞</span><div><b>Debugger Plugin</b><span>Step through your code</span></div></div>
+        </div>
+        <p class="diagram-caption">Nobody is forced to install a plugin they don't need — the core stays light.</p>
+      </div>
+    </div>
+
+    <p class="body-text soft">Microkernel architecture is great whenever you need <strong>extensibility</strong> — systems that grow over time, or whose features vary a lot between different users. IDEs and CMS platforms both benefit hugely from this: you start small, and only add functionality as it's actually needed, one plugin at a time.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 6 ===================== -->
+  <section class="chapter reveal" id="ch6">
+    <p class="chapter-num">Chapter Six</p>
+    <h2 class="h">Event-driven architecture — reacting to what just happened</h2>
+    <p class="body-text lede">This pattern is built for systems that need to react in real time. Instead of one service directly calling another and waiting for a reply, <mark class="hl">services produce "events" whenever something important happens, and other services independently consume those events — asynchronously.</mark></p>
+
+    <div class="tip">
+      <div class="tip-label">💡 "event" and "asynchronously", decoded</div>
+      <p>An <strong>event</strong> is just an announcement — "hey, this thing just happened." <strong>Asynchronously</strong> means the services reacting to it don't have to do it immediately, in lockstep, or in any guaranteed order — they each react in their own time, independently, like people reading a group announcement whenever they happen to check their phone.</p>
+    </div>
+
+    <p class="body-text soft">Take an e-commerce system. When a customer places an order, an event fires: <code class="inline">order_placed</code>. Nobody had to tell the inventory service, the notification service, and the analytics service to run one after another — they each independently notice the event and react on their own schedule.</p>
+
+    <div class="case-card reveal">
+      <span class="case-tag">Example · One Order Event</span>
+      <p class="body-text" style="margin-bottom:0;">A single <strong>"order placed"</strong> event quietly triggers three completely independent reactions, each handled by a different service, with none of them waiting on each other.</p>
+      <div class="case-stats">
+        <div><b>📦 Stock</b><span>Inventory service updates count</span></div>
+        <div><b>📧 Email</b><span>Notification service confirms order</span></div>
+        <div><b>📊 Sale</b><span>Analytics service logs the sale</span></div>
+      </div>
+    </div>
+
+    <p class="body-text soft">This one event fans out to independent listeners, none of which are blocking each other:</p>
+
+    <div class="diagram">
+      <div class="diagram-card">
+        <div class="diagram-label">Event Fan-Out</div>
+        <div class="gauge-track reveal">
+          <div class="gauge-zone">Inventory</div>
+          <div class="gauge-zone">Notification</div>
+          <div class="gauge-zone">Analytics</div>
+        </div>
+        <div class="gauge-legend">
+          <span>updates stock</span>
+          <span>sends email</span>
+          <span>tracks sale</span>
+        </div>
+        <p class="diagram-caption">Each service works independently, simply by reacting to the same event.</p>
+      </div>
+    </div>
+
+    <p class="body-text soft">Event-driven architecture is ideal for creating <strong>decoupled</strong> systems that scale easily — "decoupled" just means the services aren't tightly wired to each other, so any one of them can fail, get updated, or get replaced without breaking the rest. This is exactly how real-time giants like Uber and Netflix structure huge portions of their systems.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 7 ===================== -->
+  <section class="chapter reveal" id="ch7">
+    <p class="chapter-num">Chapter Seven</p>
+    <h2 class="h">CQRS — splitting reading from writing</h2>
+    <p class="body-text lede">CQRS stands for <strong>Command Query Responsibility Segregation</strong> — a mouthful, but the idea is simple. It <mark class="hl">splits your application's write operations ("commands") from its read operations ("queries")</mark>, so each side can be optimized completely independently.</p>
+
+    <div class="tip">
+      <div class="tip-label">💡 command vs. query</div>
+      <p>A <strong>command</strong> changes something — "update this account," "place this order." A <strong>query</strong> just asks for information — "show me this balance." In most apps these get mixed together in the same code path. CQRS says: keep them apart on purpose.</p>
+    </div>
+
+    <p class="body-text soft">In a banking app, the <strong>command side</strong> handles account updates and processes transactions. The <strong>query side</strong> handles showing you your transaction history or your account balance. Because these are split, you can tune each one separately — for example, making the read side lightning-fast for the millions of people just checking their balance, while keeping the write side extra careful and consistent for actual money movement.</p>
+
+    <div class="diagram">
+      <div class="diagram-card" style="text-align:left;">
+        <div class="diagram-label" style="text-align:center;">CQRS in a Banking App</div>
+        <div class="split-row">
+          <div class="split-col">
+            <h4>✏️ Command (Write)</h4>
+            <p>Update account, process a transaction. Optimized to be safe and correct, even if it's a little slower.</p>
+          </div>
+          <div class="split-col">
+            <h4>👁️ Query (Read)</h4>
+            <p>Show balance, show transaction history. Optimized to be fast, since it's requested constantly.</p>
+          </div>
+        </div>
+        <p class="split-shared">both sides ultimately stay in sync with the same underlying data</p>
+      </div>
+    </div>
+
+    <p class="body-text soft">This separation lets you improve scalability by optimizing reads and writes on their own terms. CQRS is particularly useful when <strong>reads far outweigh writes</strong> — which is true for most apps, since people check things far more often than they change them — or when different parts of your system are fine with <strong>eventual consistency</strong>, meaning the read side might lag the write side by a moment, but it'll catch up.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 8 ===================== -->
+  <section class="chapter reveal" id="ch8">
+    <p class="chapter-num">Chapter Eight</p>
+    <h2 class="h">Service-oriented architecture (SOA) — independent services, working together</h2>
+    <p class="body-text lede">In SOA, your application is made up of <strong>services</strong> that communicate over a network — usually using the <strong>SOAP</strong> or <strong>REST</strong> protocols. <mark class="hl">Each service represents one specific business function</mark>, like billing, inventory, or customer management.</p>
+
+    <div class="tip">
+      <div class="tip-label">💡 "protocol" and "SOAP / REST"</div>
+      <p>A <strong>protocol</strong> is just an agreed set of rules for how two computers talk to each other — like a shared language. <strong>SOAP</strong> and <strong>REST</strong> are two common "languages" services use to send requests and responses over the internet. REST is the far more common one today, and it's the same style your browser uses to load most websites.</p>
+    </div>
+
+    <p class="body-text soft">Picture a large retail company. Its SOA setup might include separate services for <strong>inventory management</strong>, <strong>order processing</strong>, and <strong>billing</strong>. These services are <strong>loosely coupled</strong> — meaning they don't depend heavily on each other's internal details — and they interact over a shared <strong>service bus</strong>, a kind of central highway that routes messages between services.</p>
+
+    <div class="diagram">
+      <div class="diagram-card">
+        <div class="diagram-label">A Retail Company's SOA</div>
+        <div class="core-pill">🚌 Service Bus (SOAP / REST)</div>
+        <div class="flow-arrow">↕</div>
+        <div class="tile-row cols-3">
+          <div class="tile"><span class="tile-icon">📦</span><div><b>Inventory</b><span>Tracks stock levels</span></div></div>
+          <div class="tile"><span class="tile-icon">🧾</span><div><b>Order Processing</b><span>Handles new orders</span></div></div>
+          <div class="tile"><span class="tile-icon">💳</span><div><b>Billing</b><span>Charges the customer</span></div></div>
+        </div>
+        <p class="diagram-caption">Each service can be scaled, updated, or replaced entirely on its own.</p>
+      </div>
+    </div>
+
+    <p class="body-text soft">This allows each service to scale independently — if billing suddenly needs more computing power during a sale, you can scale just that one service. SOA is perfect for enterprise systems with many interdependent components, since each service is autonomous, which makes the overall system more flexible and easier to scale as a whole.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 9 ===================== -->
+  <section class="chapter reveal" id="ch9">
+    <p class="chapter-num">Chapter Nine</p>
+    <h2 class="h">Clean architecture — logic that never has to change</h2>
+    <p class="body-text lede">Clean architecture was popularized by <strong>Robert C. Martin</strong> — better known in the developer world as "Uncle Bob." The goal here is to ensure your business logic is completely <mark class="hl">independent of external frameworks, the UI, and databases.</mark></p>
+
+    <div class="tip">
+      <div class="tip-label">💡 what's a "framework"?</div>
+      <p>A framework is a pre-built toolkit that gives your app a head start — think React for building interfaces, or Django for building web servers. Frameworks are incredibly useful, but they also change and get replaced over time. Clean architecture makes sure your most important code doesn't get glued to whichever framework happens to be popular today.</p>
+    </div>
+
+    <p class="body-text soft">Just like onion architecture, dependencies flow <em>inward</em> — everything points toward the core, and the core points to nothing. This keeps your most important logic completely isolated from the churn happening around it.</p>
+
+    <div class="diagram">
+      <div class="diagram-card">
+        <div class="diagram-label">Clean Architecture</div>
+        <div class="rings-wrap reveal">
+          <div class="ring ring-4" style="width:240px; height:240px; background:var(--accent-soft);"></div>
+          <div class="ring ring-3" style="width:185px; height:185px; background:var(--accent);"></div>
+          <div class="ring ring-2" style="width:130px; height:130px; background:var(--gold);"></div>
+          <div class="ring ring-1" style="width:72px; height:72px; background:linear-gradient(135deg,var(--gold),var(--accent)); font-size:0.6rem;">ENTITIES</div>
+        </div>
+        <div class="ring-legend">
+          <div class="leg-row"><span class="dot" style="background:linear-gradient(135deg,var(--gold),var(--accent));"></span><div><b>Entities (core)</b><span>The most fundamental business rules — e.g. "a task can be created, updated, or deleted."</span></div></div>
+          <div class="leg-row"><span class="dot" style="background:var(--gold);"></span><div><b>Use cases</b><span>The specific application logic that uses those rules.</span></div></div>
+          <div class="leg-row"><span class="dot" style="background:var(--accent);"></span><div><b>Interface adapters</b><span>Translates between use cases and the outside world.</span></div></div>
+          <div class="leg-row"><span class="dot" style="background:var(--accent-soft); border:1px solid var(--hairline);"></span><div><b>Frameworks & drivers</b><span>UI, databases, web frameworks — the most replaceable layer.</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="body-text soft">In a task management app, the core handles the fundamentals — creating, updating, or deleting a task. The external layers handle everything else: how the UI looks, or how data actually gets saved. So if you switch from a relational database to a NoSQL one, or even rebuild the whole thing as a mobile app instead of a website, your business logic doesn't have to change at all.</p>
+
+    <p class="body-text soft">That's the real strength of clean architecture: your core functionality stays stable, no matter how much the external world evolves around it. It's perfect when you want a system that's easy to maintain and adapt over time — your core logic stays untouched, even as the UI or infrastructure changes underneath it.</p>
+  </section>
+
+  <!-- ===================== CLOSING ===================== -->
+  <section class="chapter reveal closer" id="closing">
+    <p class="chapter-num" style="text-align:center;">The Recap</p>
+    <h2>Nine patterns. One question to ask yourself.</h2>
+    <p>Before picking a pattern, just ask: "which part of my app is likely to change, and which part do I want to protect from that change?" Your answer usually points straight at the right pattern.</p>
+
+    <div class="summary-grid reveal">
+      <div class="summary-card"><b>Layered</b><span>Organizes code into clean, logical layers.</span></div>
+      <div class="summary-card"><b>Onion</b><span>Keeps core business logic separate from everything external.</span></div>
+      <div class="summary-card"><b>Hexagonal</b><span>Lets your system adapt easily to new technologies.</span></div>
+      <div class="summary-card"><b>Modular</b><span>Breaks the system into self-contained modules.</span></div>
+      <div class="summary-card"><b>Microkernel</b><span>Starts with a simple core, then adds plugins as needed.</span></div>
+      <div class="summary-card"><b>Event-Driven</b><span>Perfect for real-time events in decoupled systems.</span></div>
+      <div class="summary-card"><b>CQRS</b><span>Separates commands and queries for better performance.</span></div>
+      <div class="summary-card"><b>SOA</b><span>Independent services that work together seamlessly.</span></div>
+      <div class="summary-card"><b>Clean</b><span>Keeps business logic stable, even as external systems change.</span></div>
+    </div>
+
+    <p>These aren't just theory — they're practical tools you reach for once you know what problem each one solves. Most real systems actually mix a few of these together: an onion core, wrapped in a layered API, occasionally firing events. Once the individual ideas click, combining them starts to feel natural.</p>
+    <p class="signoff">— That's the foundation. Everything else you build sits on top of it.</p>
+  </section>
+
+</div>
+
+<footer class="site-footer">
+  <div class="wrap">A beginner's field guide to software architecture patterns · read on any device</div>
+</footer>
+
+<script>
+(function () {
+  // theme toggle
+  var root = document.documentElement;
+  var btn = document.getElementById('themeToggle');
+  function currentTheme() {
+    if (root.getAttribute('data-theme')) return root.getAttribute('data-theme');
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  btn.addEventListener('click', function () {
+    var next = currentTheme() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    btn.textContent = next === 'dark' ? '☀' : '◐';
+  });
+  btn.textContent = currentTheme() === 'dark' ? '☀' : '◐';
+
+  // scroll progress
+  var bar = document.getElementById('progress-bar');
+  var floatTop = document.getElementById('floatTop');
+  function onScroll() {
+    var h = document.documentElement;
+    var scrolled = h.scrollTop || document.body.scrollTop;
+    var height = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
+    var pct = height > 0 ? (scrolled / height) * 100 : 0;
+    bar.style.width = pct + '%';
+    if (scrolled > 500) floatTop.classList.add('show'); else floatTop.classList.remove('show');
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  floatTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+  // reveal on scroll
+  var revealEls = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    revealEls.forEach(function (el) { io.observe(el); });
+  } else {
+    revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+  }
+
+  // TOC active link
+  var tocLinks = {};
+  document.querySelectorAll('nav.toc a').forEach(function (a) {
+    tocLinks[a.getAttribute('href').slice(1)] = a;
+  });
+  var chapters = document.querySelectorAll('section.chapter');
+  if ('IntersectionObserver' in window) {
+    var tocObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var link = tocLinks[entry.target.id];
+        if (!link) return;
+        if (entry.isIntersecting) {
+          Object.values(tocLinks).forEach(function (l) { l.classList.remove('active'); });
+          link.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-40% 0px -50% 0px' });
+    chapters.forEach(function (c) { if (c.id) tocObserver.observe(c); });
+  }
+})();
+</script>
+
+</body>
+</html>
