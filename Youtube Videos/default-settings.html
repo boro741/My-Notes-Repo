@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>You Are Better Than Your Default Settings</title>
+<style>
+
+  :root {
+    color-scheme: light;
+    --page:        #f9f9f7;
+    --surface:     #fcfcfb;
+    --ink:         #0b0b0b;
+    --ink-soft:    #52514e;
+    --muted:       #898781;
+    --hairline:    #e1e0d9;
+    --border:      rgba(11,11,11,0.10);
+    --accent:      #2a78d6;
+    --accent-ink:  #184f95;
+    --accent-soft: #eaf2fc;
+    --gold:        #eda100;
+    --gold-soft:   #fbf1dc;
+    --good:        #0ca30c;
+    --warn:        #fab219;
+    --bad:         #ec835a;
+
+    --s-blue:    #2a78d6;
+    --s-orange:  #eb6834;
+    --s-aqua:    #1baf7a;
+    --s-yellow:  #eda100;
+    --s-magenta: #e87ba4;
+
+    --shadow: 0 1px 2px rgba(11,11,11,0.04), 0 8px 24px rgba(11,11,11,0.06);
+    --serif: ui-serif, Charter, "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Consolas, monospace;
+  }
+
+  html[data-theme="dark"] {
+    color-scheme: dark;
+    --page:        #0d0d0d;
+    --surface:     #1a1a19;
+    --ink:         #ffffff;
+    --ink-soft:    #c3c2b7;
+    --muted:       #898781;
+    --hairline:    #2c2c2a;
+    --border:      rgba(255,255,255,0.10);
+    --accent:      #3987e5;
+    --accent-ink:  #bcd6f7;
+    --accent-soft: rgba(57,135,229,0.14);
+    --gold:        #c98500;
+    --gold-soft:   rgba(201,133,0,0.16);
+    --good:        #0ca30c;
+    --warn:        #fab219;
+    --bad:         #ec835a;
+
+    --s-blue:    #3987e5;
+    --s-orange:  #d95926;
+    --s-aqua:    #199e70;
+    --s-yellow:  #c98500;
+    --s-magenta: #d55181;
+
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page:        #0d0d0d;
+      --surface:     #1a1a19;
+      --ink:         #ffffff;
+      --ink-soft:    #c3c2b7;
+      --muted:       #898781;
+      --hairline:    #2c2c2a;
+      --border:      rgba(255,255,255,0.10);
+      --accent:      #3987e5;
+      --accent-ink:  #bcd6f7;
+      --accent-soft: rgba(57,135,229,0.14);
+      --gold:        #c98500;
+      --gold-soft:   rgba(201,133,0,0.16);
+      --s-blue:    #3987e5;
+      --s-orange:  #d95926;
+      --s-aqua:    #199e70;
+      --s-yellow:  #c98500;
+      --s-magenta: #d55181;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+    }
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    transition: background 0.25s ease, color 0.25s ease;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  ::selection { background: var(--gold-soft); color: var(--ink); }
+
+  /* ---------- chrome ---------- */
+
+  #progress-bar {
+    position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    z-index: 1000; transition: width 0.1s ease-out;
+  }
+
+  .theme-toggle, .float-top {
+    position: fixed; z-index: 999;
+    width: 44px; height: 44px; border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface); color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: var(--shadow);
+    font-size: 1.05rem;
+    transition: transform 0.15s ease, background 0.25s ease;
+  }
+  .theme-toggle { top: calc(16px + env(safe-area-inset-top)); right: calc(16px + env(safe-area-inset-right)); }
+  .float-top {
+    bottom: calc(22px + env(safe-area-inset-bottom)); right: calc(16px + env(safe-area-inset-right));
+    background: var(--ink); color: var(--page); border: none;
+    opacity: 0; transform: translateY(10px); pointer-events: none;
+  }
+  .float-top.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .theme-toggle:active, .float-top:active { transform: scale(0.92); }
+
+  /* ---------- layout ---------- */
+
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+  .wrap-wide { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+  header.hero {
+    padding: calc(88px + env(safe-area-inset-top)) 0 56px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kicker {
+    font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700; margin: 0 0 18px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .kicker::before { content: ""; width: 22px; height: 2px; background: var(--accent); display: inline-block; border-radius: 2px; }
+
+  h1.title {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(2.1rem, 7vw, 3.6rem);
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    margin: 0 0 20px;
+  }
+  h1.title em { font-style: italic; color: var(--accent); }
+
+  .dek {
+    font-size: clamp(1.05rem, 2.6vw, 1.3rem);
+    color: var(--ink-soft);
+    max-width: 62ch;
+    margin: 0 0 28px;
+    font-weight: 400;
+  }
+
+  .byline {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    font-size: 0.88rem; color: var(--muted);
+    padding-top: 22px; border-top: 1px solid var(--hairline);
+  }
+  .byline .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--gold));
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-family: var(--serif); font-weight: 700; font-size: 1rem;
+  }
+
+  .hero-quote {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(1.15rem, 3vw, 1.5rem); line-height: 1.5;
+    color: var(--ink);
+    margin: 40px 0 0; padding: 26px 0 0 24px;
+    border-left: 3px solid var(--gold);
+  }
+
+  /* ---------- table of contents ---------- */
+
+  nav.toc {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 18px; padding: 26px 26px 22px; margin: 8px 0 64px;
+    box-shadow: var(--shadow);
+  }
+  nav.toc h2 {
+    font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 14px; font-weight: 700;
+  }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; }
+  nav.toc li { counter-increment: toc; margin-bottom: 4px; }
+  nav.toc a {
+    display: flex; align-items: baseline; gap: 12px;
+    color: var(--ink-soft); text-decoration: none;
+    font-size: 0.96rem; padding: 7px 4px; border-radius: 8px;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+  nav.toc a::before {
+    content: counter(toc, decimal-leading-zero);
+    font-family: var(--serif); font-size: 0.82rem; color: var(--muted); flex-shrink: 0;
+  }
+  nav.toc a:hover, nav.toc a.active { color: var(--accent); background: var(--accent-soft); }
+  nav.toc a.active::before { color: var(--accent); }
+
+  /* ---------- article sections ---------- */
+
+  section.chapter { padding: 44px 0 8px; scroll-margin-top: 24px; }
+  section.chapter + section.chapter { border-top: 1px solid var(--hairline); }
+
+  .chapter-num {
+    font-family: var(--serif); font-style: italic; color: var(--gold);
+    font-size: 1rem; margin: 0 0 10px; font-weight: 600;
+  }
+
+  h2.h {
+    font-family: var(--serif); font-weight: 600;
+    font-size: clamp(1.5rem, 4.4vw, 2.1rem);
+    line-height: 1.18; letter-spacing: -0.01em;
+    margin: 0 0 20px;
+  }
+  h3.h3 {
+    font-family: var(--serif); font-weight: 600;
+    font-size: clamp(1.15rem, 3vw, 1.4rem);
+    margin: 30px 0 12px;
+  }
+
+  p.body-text { font-size: 1.06rem; color: var(--ink); margin: 0 0 18px; }
+  p.body-text.soft { color: var(--ink-soft); }
+  .lede { font-size: 1.18rem; }
+
+  mark.hl {
+    background: var(--gold-soft); color: var(--ink);
+    padding: 0.05em 0.15em; border-radius: 4px; font-weight: 600;
+  }
+
+  blockquote.pull {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(1.2rem, 3.4vw, 1.6rem); line-height: 1.45;
+    color: var(--ink); margin: 34px 0; padding: 0 0 0 24px;
+    border-left: 3px solid var(--accent);
+  }
+  blockquote.pull cite {
+    display: block; font-style: normal; font-family: var(--sans);
+    font-size: 0.82rem; color: var(--muted); margin-top: 10px; letter-spacing: 0.02em;
+  }
+
+  .callout {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 16px; padding: 22px 24px; margin: 28px 0;
+    box-shadow: var(--shadow);
+  }
+  .callout h4 {
+    margin: 0 0 8px; font-size: 0.98rem; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .callout p { margin: 0; color: var(--ink-soft); font-size: 0.98rem; }
+
+  /* tip box - distinct from callout, used for jargon/definitions */
+  .tip {
+    background: var(--accent-soft); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px 20px; margin: 22px 0;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .tip .tip-icon { font-size: 1.15rem; line-height: 1.5; flex-shrink: 0; }
+  .tip .tip-body b { display: block; font-size: 0.88rem; color: var(--accent-ink); margin-bottom: 3px; }
+  .tip .tip-body span { font-size: 0.92rem; color: var(--ink-soft); }
+
+  /* ---------- reveal-on-scroll ---------- */
+
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s cubic-bezier(.2,.7,.3,1), transform 0.7s cubic-bezier(.2,.7,.3,1); }
+  .reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+  /* ================= generic diagram card ================= */
+
+  .diagram { margin: 30px 0 8px; }
+  .diagram-card {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 20px; padding: 28px 20px 20px; box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .diagram-label {
+    font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); font-weight: 700; margin-bottom: 4px;
+  }
+  .diagram-caption { font-size: 0.92rem; color: var(--ink-soft); margin-top: 10px; }
+
+  /* ================= DIAGRAM: notification slot machine ================= */
+
+  .phone-mock { width: 100%; max-width: 220px; margin: 10px auto 0; }
+  .phone-mock svg { width: 100%; height: auto; }
+  .ping-dot {
+    opacity: 0; animation: ping-pop 3s ease-in-out infinite;
+    transform-origin: center;
+  }
+  .ping-dot:nth-child(2) { animation-delay: 1s; }
+  .ping-dot:nth-child(3) { animation-delay: 2s; }
+  @keyframes ping-pop {
+    0%, 10% { opacity: 0; transform: scale(0.3); }
+    18% { opacity: 1; transform: scale(1.15); }
+    26% { opacity: 1; transform: scale(1); }
+    70%, 100% { opacity: 0; transform: scale(1); }
+  }
+
+  /* ================= VIP list widget ================= */
+
+  .vip-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 6px 0 4px; }
+  .vip-count { display: flex; align-items: baseline; gap: 8px; }
+  .vip-count .big { font-family: var(--serif); font-weight: 700; font-size: 3rem; color: var(--accent); line-height: 1; }
+  .vip-count .of { font-size: 1rem; color: var(--muted); }
+  .vip-avatars { display: flex; gap: -8px; }
+  .vip-avatars span {
+    width: 30px; height: 30px; border-radius: 50%; margin-left: -8px;
+    background: var(--accent-soft); border: 2px solid var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 700; color: var(--accent-ink); font-family: var(--serif);
+  }
+  .vip-avatars span:first-child { margin-left: 0; }
+
+  /* ================= grayscale phone diagram ================= */
+
+  .gray-compare { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 6px; }
+  .gray-panel { flex: 1; min-width: 130px; max-width: 160px; }
+  .gray-panel .swatch-row { display: flex; gap: 5px; margin-bottom: 10px; justify-content: center; }
+  .gray-panel .swatch { width: 22px; height: 22px; border-radius: 6px; }
+  .gray-panel .swatch-row.color .swatch:nth-child(1) { background: var(--s-blue); }
+  .gray-panel .swatch-row.color .swatch:nth-child(2) { background: var(--s-orange); }
+  .gray-panel .swatch-row.color .swatch:nth-child(3) { background: var(--s-aqua); }
+  .gray-panel .swatch-row.color .swatch:nth-child(4) { background: var(--s-magenta); }
+  .gray-panel .swatch-row.gray .swatch { background: #9a9a96; }
+  .gray-panel .gray-tag { font-size: 0.82rem; color: var(--muted); font-weight: 600; }
+
+  /* ================= single vs split focus ================= */
+
+  .focus-split { display: flex; align-items: stretch; gap: 12px; margin: 18px 0 4px; }
+  .focus-col { flex: 1; background: var(--page); border: 1px solid var(--hairline); border-radius: 14px; padding: 16px 10px; text-align: center; }
+  .focus-col .pct { font-family: var(--serif); font-weight: 700; font-size: 1.5rem; }
+  .focus-col .lbl { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+  .focus-col.full .pct { color: var(--good); }
+  .focus-col.split .pct { color: var(--warn); }
+
+  /* ================= 4-7-11-style stat cards ================= */
+
+  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 30px 0; }
+  .stat-row.two { grid-template-columns: repeat(2, 1fr); }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px;
+    padding: 22px 14px; text-align: center; box-shadow: var(--shadow);
+  }
+  .stat-icon { margin: 0 auto 10px; width: 34px; height: 34px; color: var(--accent); }
+  .stat-num {
+    font-family: var(--serif); font-weight: 700; color: var(--ink);
+    font-size: clamp(1.8rem, 6vw, 2.4rem); line-height: 1; margin-bottom: 6px;
+  }
+  .stat-word { font-size: 0.8rem; color: var(--muted); font-weight: 600; letter-spacing: 0.02em; }
+
+  /* ================= chart card / bar rows ================= */
+
+  .chart-card {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 18px; padding: 26px 22px 20px; margin: 30px 0; box-shadow: var(--shadow);
+  }
+  .chart-title { font-size: 0.82rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 22px; }
+  .bar-row { margin-bottom: 18px; }
+  .bar-row:last-child { margin-bottom: 4px; }
+  .bar-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; gap: 10px; }
+  .bar-label .name { font-size: 0.92rem; font-weight: 600; color: var(--ink); }
+  .bar-label .val { font-size: 0.86rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .bar-track { position: relative; height: 12px; background: var(--hairline); border-radius: 6px; overflow: visible; }
+  .bar-fill {
+    position: absolute; left: 0; top: 0; height: 100%; border-radius: 6px; width: 0%;
+    transition: width 1.4s cubic-bezier(.16,.9,.2,1);
+  }
+  .is-visible .bar-fill { width: var(--w); }
+
+  /* ================= focus sprint step list ================= */
+
+  .ladder { display: flex; flex-direction: column; gap: 10px; margin: 30px 0; }
+  .rung {
+    display: flex; align-items: center; gap: 16px;
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 14px; padding: 14px 18px;
+    opacity: 0.35; transform: translateX(-10px);
+    transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.5s ease, background 0.5s ease;
+  }
+  .ladder.is-visible .rung { opacity: 1; transform: translateX(0); }
+  .ladder.is-visible .rung:nth-child(1) { transition-delay: 0.05s; }
+  .ladder.is-visible .rung:nth-child(2) { transition-delay: 0.15s; }
+  .ladder.is-visible .rung:nth-child(3) { transition-delay: 0.25s; }
+  .ladder.is-visible .rung:nth-child(4) { transition-delay: 0.35s; }
+  .ladder.is-visible .rung:nth-child(5) { transition-delay: 0.45s; }
+  .rung-step {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    background: var(--accent-soft); color: var(--accent-ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-weight: 700; font-size: 0.9rem;
+  }
+  .rung-body b { display: block; font-size: 0.98rem; }
+  .rung-body span { font-size: 0.85rem; color: var(--muted); }
+
+  /* ================= chronotype energy curve ================= */
+
+  .curve-card { padding: 26px 20px 18px; }
+  .curve-svg { width: 100%; height: auto; max-width: 460px; margin: 0 auto; display: block; }
+  .curve-path {
+    stroke-dasharray: 900; stroke-dashoffset: 900;
+    transition: stroke-dashoffset 1.6s cubic-bezier(.2,.8,.2,1);
+  }
+  .is-visible .curve-path { stroke-dashoffset: 0; }
+  .curve-area { opacity: 0; transition: opacity 1.2s ease 0.4s; }
+  .is-visible .curve-area { opacity: 1; }
+  .curve-legend { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--muted); margin-top: 4px; padding: 0 4px; }
+
+  .chrono-tiles { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 22px 0; }
+  @media (min-width: 560px) { .chrono-tiles { grid-template-columns: repeat(3, 1fr); } }
+  .chrono-tile {
+    background: var(--surface); border: 1px solid var(--hairline); border-radius: 14px;
+    padding: 16px 16px;
+  }
+  .chrono-tile .pct { font-family: var(--serif); font-weight: 700; font-size: 1.3rem; color: var(--accent); }
+  .chrono-tile b { display: block; font-size: 0.94rem; margin: 4px 0 3px; }
+  .chrono-tile span { font-size: 0.82rem; color: var(--muted); }
+
+  .mini-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 24px 0; }
+  .mini-stat { background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px; padding: 20px; box-shadow: var(--shadow); }
+  .mini-stat .num { font-family: var(--serif); font-size: clamp(1.6rem, 5vw, 2rem); font-weight: 700; color: var(--accent); }
+  .mini-stat .lbl { font-size: 0.82rem; color: var(--ink-soft); margin-top: 4px; }
+
+  /* ================= case-style highlight card ================= */
+
+  .case-card {
+    background: linear-gradient(160deg, var(--surface), var(--accent-soft));
+    border: 1px solid var(--hairline); border-radius: 20px; padding: 28px 24px;
+    margin: 30px 0; box-shadow: var(--shadow);
+  }
+  .case-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--accent); background: var(--surface); padding: 5px 10px; border-radius: 20px;
+    border: 1px solid var(--border); margin-bottom: 14px;
+  }
+  .case-stats { display: flex; gap: 26px; margin-top: 18px; flex-wrap: wrap; }
+  .case-stats div b { display: block; font-family: var(--serif); font-size: 1.5rem; }
+  .case-stats div span { font-size: 0.78rem; color: var(--muted); }
+
+  /* ================= closing ================= */
+
+  .closer { text-align: center; padding: 70px 0 90px; }
+  .closer h2 {
+    font-family: var(--serif); font-weight: 600; font-style: italic;
+    font-size: clamp(1.8rem, 6vw, 2.6rem); line-height: 1.2; margin: 0 0 18px;
+  }
+  .closer p { color: var(--ink-soft); font-size: 1.05rem; max-width: 46ch; margin: 0 auto; }
+  .signoff { margin-top: 34px; font-family: var(--serif); font-style: italic; color: var(--muted); }
+
+  footer.site-footer {
+    border-top: 1px solid var(--hairline); padding: 28px 0 calc(40px + env(safe-area-inset-bottom));
+    text-align: center; font-size: 0.82rem; color: var(--muted);
+  }
+
+  /* ================= responsive ================= */
+
+  @media (max-width: 480px) {
+    .stat-row { gap: 10px; }
+    .stat-card { padding: 16px 8px; }
+    .case-stats { gap: 18px; }
+    .gray-compare { gap: 10px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal, .rung, .bar-fill, .curve-path, .curve-area, .ping-dot { transition: none !important; animation: none !important; }
+    html { scroll-behavior: auto; }
+  }
+
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">◐</button>
+<button class="float-top" id="floatTop" aria-label="Back to top">↑</button>
+
+<div class="wrap">
+
+  <header class="hero">
+    <p class="kicker">Focus &amp; Attention · Neuroscience Notes</p>
+    <h1 class="title">You Are Better Than Your <em>Default Settings</em></h1>
+    <p class="dek">A Berkeley neuroscientist who once got recruited to make apps more addictive explains why your phone always wins the fight for your attention — and six specific setting changes that hand the controls back to you.</p>
+    <div class="byline">
+      <div class="avatar">SY</div>
+      <span>Dr. Sahar Yousef · Cognitive Neuroscientist, UC Berkeley</span>
+      <span class="dot"></span>
+      <span>~10 min read</span>
+      <span class="dot"></span>
+      <span>8 chapters</span>
+    </div>
+    <blockquote class="hero-quote">
+      "Every default setting on that phone of yours was picked intentionally to support their goals, their bottom line — not yours."
+    </blockquote>
+  </header>
+
+  <nav class="toc reveal">
+    <h2>In this piece</h2>
+    <ol>
+      <li><a href="#ch1">The job offer that still gives her the ick</a></li>
+      <li><a href="#ch2">Change one — declare war on notifications</a></li>
+      <li><a href="#ch3">Change two — kill the color, hide the phone</a></li>
+      <li><a href="#ch4">Change three — stop being a passenger in your own day</a></li>
+      <li><a href="#ch5">Change four — stop trying to multitask</a></li>
+      <li><a href="#ch6">Change five — run a real focus sprint</a></li>
+      <li><a href="#ch7">Change six — respect your biological clock</a></li>
+      <li><a href="#ch8">You're in charge</a></li>
+    </ol>
+  </nav>
+
+  <!-- ===================== CHAPTER 1 ===================== -->
+  <section class="chapter reveal" id="ch1">
+    <p class="chapter-num">Chapter One</p>
+    <h2 class="h">The job offer that still gives her the ick</h2>
+    <p class="body-text lede">In 2012, Dr. Sahar Yousef got a job offer that she now cringes at. A company she's legally not allowed to name started emailing her, trying to hire her — not to build their product, but to make it <mark class="hl">impossible to put down</mark>.</p>
+
+    <div class="tip reveal">
+      <div class="tip-icon">💡</div>
+      <div class="tip-body">
+        <b>Cognitive neuroscientist</b>
+        <span>A scientist who studies how the brain actually works — attention, memory, habits, decision-making — usually by running experiments, not just theorizing.</span>
+      </div>
+    </div>
+
+    <p class="body-text soft">At the time, she worked in an addiction research lab, studying exactly how a brain gets hooked in the first place. Tech companies were quietly poaching people from labs just like hers, one researcher at a time. She still has the emails. They say things like: "We want to increase engagement. We want to make our product more sticky."</p>
+
+    <blockquote class="pull">"Sticky is a very politically correct way of saying addictive. And it's not that slick."</blockquote>
+
+    <p class="body-text soft">Here's what she wants you to know before anything else: the reason you can't focus — the reason you sit down to do one important thing and look up two hours later having done everything <em>except</em> that thing — does not mean you're lazy or broken. You just have an old brain, like a piece of ancient hardware, trying to run software that people like her were paid to engineer specifically to beat your biology.</p>
+
+    <div class="callout reveal">
+      <h4>📱 A quiet detail worth sitting with</h4>
+      <p>The very first iPhone had no app notifications. None. You had to remember to open an app yourself to check for a new message. That wasn't good for a business built on ad revenue — people simply forgot to come back. So after months of research, the notification was born, built on the same psychological principles as a slot machine, and placed directly in your pocket.</p>
+    </div>
+
+    <p class="body-text soft">None of that is your fault. You were handed a machine built by people who optimize for your attention professionally. So the plan here is simple: fight fire with fire. Six specific changes, starting tonight.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 2 ===================== -->
+  <section class="chapter reveal" id="ch2">
+    <p class="chapter-num">Chapter Two</p>
+    <h2 class="h">Change one — declare war on notifications</h2>
+    <p class="body-text lede">Tonight, open your phone settings, go to notifications, and question every single one like it owes you money.</p>
+
+    <div class="diagram reveal">
+      <div class="diagram-card">
+        <div class="diagram-label">What A Notification Actually Is</div>
+        <div class="phone-mock">
+          <svg viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="6" width="140" height="208" rx="24" stroke="var(--ink-soft)" stroke-width="3" fill="var(--surface)"/>
+            <rect x="24" y="24" width="112" height="172" rx="6" fill="var(--page)" stroke="var(--hairline)" stroke-width="1.5"/>
+            <circle class="ping-dot" cx="100" cy="52" r="14" fill="var(--gold)"/>
+            <circle class="ping-dot" cx="55" cy="98" r="10" fill="var(--accent)"/>
+            <circle class="ping-dot" cx="90" cy="150" r="12" fill="var(--s-magenta)"/>
+            <circle cx="80" cy="210" r="4" fill="var(--ink-soft)"/>
+          </svg>
+        </div>
+        <p class="diagram-caption">Every ping is built on the same science as a slot machine: a small, unpredictable reward that keeps you pulling the lever — or in this case, unlocking the screen.</p>
+      </div>
+    </div>
+
+    <p class="body-text soft">Do you have news alerts turned on? Unless you're in law enforcement or journalism, turn them off. You can check the news. The news doesn't need to check you.</p>
+
+    <p class="body-text soft">And don't panic — you won't lose the people who matter. You're going to build what she calls a <strong>VIP list</strong>: your partner, your kids' school, a handful of key clients, your boss, your mom. Whoever genuinely needs to reach you at any hour.</p>
+
+    <div class="tip reveal">
+      <div class="tip-icon">💡</div>
+      <div class="tip-body">
+        <b>VIP list</b>
+        <span>A setting hidden in your phone and email that lets specific contacts break through "Do Not Disturb" mode, while everyone else's notifications wait.</span>
+      </div>
+    </div>
+
+    <div class="diagram reveal">
+      <div class="diagram-card">
+        <div class="diagram-label">Your VIP List</div>
+        <div class="vip-wrap">
+          <div class="vip-count"><span class="big">15</span><span class="of">people, max</span></div>
+          <div class="vip-avatars">
+            <span>👪</span><span>🏫</span><span>💼</span><span>👔</span><span>❤️</span>
+          </div>
+        </div>
+        <p class="diagram-caption">Both your phone and your email have VIP settings hidden inside them. Add the people who truly need to reach you — anyone else can wait 30 minutes on your own terms.</p>
+      </div>
+    </div>
+
+    <p class="body-text soft">15 people, max. Any more than that and, honestly, who do you think you are — Madonna? Everyone outside that list can wait half an hour while you finish what you're doing. Say it out loud if it helps: <em>I am better than the default settings. I deserve better than the default settings.</em></p>
+  </section>
+
+  <!-- ===================== CHAPTER 3 ===================== -->
+  <section class="chapter reveal" id="ch3">
+    <p class="chapter-num">Chapter Three</p>
+    <h2 class="h">Change two — kill the color, hide the phone</h2>
+    <p class="body-text lede">Two tiny tweaks that are far more powerful than they sound.</p>
+
+    <h3 class="h3">Tweak one: turn your phone gray</h3>
+    <p class="body-text soft">Every bit of color and brightness on your screen was tuned to keep your eyes glued to it. Switch your display to grayscale, and the phone goes a little dead in your hand — which breaks the habit of <strong>app cycling</strong>: email, texts, WhatsApp, Instagram, back to email, riding the same loop over and over the second you finish a task.</p>
+
+    <div class="diagram reveal">
+      <div class="diagram-card">
+        <div class="diagram-label">Color vs. Grayscale</div>
+        <div class="gray-compare">
+          <div class="gray-panel">
+            <div class="swatch-row color">
+              <div class="swatch"></div><div class="swatch"></div><div class="swatch"></div><div class="swatch"></div>
+            </div>
+            <div class="gray-tag">Full color</div>
+          </div>
+          <div class="gray-panel">
+            <div class="swatch-row gray">
+              <div class="swatch"></div><div class="swatch"></div><div class="swatch"></div><div class="swatch"></div>
+            </div>
+            <div class="gray-tag">Grayscale</div>
+          </div>
+        </div>
+        <p class="diagram-caption">Removing color breaks the visual reward loop that pulls you back into the app cycle — no willpower required.</p>
+      </div>
+    </div>
+
+    <div class="mini-stats reveal">
+      <div class="mini-stat"><div class="num">1 hr</div><div class="lbl">less phone time per day, on average, once color is removed</div></div>
+      <div class="mini-stat"><div class="num">7 hrs</div><div class="lbl">given back to you every single week</div></div>
+    </div>
+
+    <p class="body-text soft">Yes, the phone will look ugly. She gets hate mail about this one constantly. People write in three days later saying they paid a thousand dollars for a phone that now looks like garbage. You'll survive. Seven hours a week back in your hands is worth the ugly screen.</p>
+
+    <h3 class="h3">Tweak two: out of sight, out of mind</h3>
+    <p class="body-text soft">When you truly need 100% of your focus — your full cognitive power — put your phone in another room. If you can't, because you need to hear it in case of an emergency, at least put it behind you, far out of reach.</p>
+
+    <div class="callout reveal">
+      <h4>🧠 The study that still unsettles her</h4>
+      <p>Researchers at UT Austin gave people cognitive tests with their phone completely off — not silenced, not on airplane mode, fully dead. Simply having the phone in the room, turned off, made people measurably dumber on the test. Your whole life lives inside that rectangle, so part of your brain is always half-listening to it, quietly checking whether something more interesting is about to arrive. That's roughly 20% of your attention, gone, to a device doing absolutely nothing.</p>
+    </div>
+
+    <div class="focus-split reveal">
+      <div class="focus-col full">
+        <div class="pct">100%</div>
+        <div class="lbl">focus available, phone in another room</div>
+      </div>
+      <div class="focus-col split">
+        <div class="pct">~80%</div>
+        <div class="lbl">focus available, phone dead but visible</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CHAPTER 4 ===================== -->
+  <section class="chapter reveal" id="ch4">
+    <p class="chapter-num">Chapter Four</p>
+    <h2 class="h">Change three — stop being a passenger in your own day</h2>
+    <p class="body-text lede">Most of us wake up and reach for the phone — often because it's the alarm. Which means the very first thing loading into your brain, before your feet even hit the floor, is a flood of everyone else's messages and priorities.</p>
+
+    <p class="body-text soft">You get launched onto a roller coaster you never agreed to ride. Busy, reacting, moving. Then at 2 p.m. you look up and think: <em>where did my day go?</em> You weren't slacking — you were slammed all day — but you never touched the one thing that actually mattered. That feeling is called being a <strong>passenger in your own day</strong>, and your old brain loves it, because it's wired for quick wins, not for big things that aren't due for another two weeks.</p>
+
+    <div class="tip reveal">
+      <div class="tip-icon">💡</div>
+      <div class="tip-body">
+        <b>MITs (Most Important Tasks)</b>
+        <span>A short, deliberately small list — one to three items — of the tasks that would make today genuinely worthwhile, written down before the day's noise takes over.</span>
+      </div>
+    </div>
+
+    <p class="body-text soft">None of that is a character flaw. It's old wiring in a very modern world. So climb back into the driver's seat every morning — or better, the night before. Pick your MITs: one to three tasks maximum. Not seventeen. Otherwise you'll finish seven of them and still feel disappointed about the ten that are left.</p>
+
+    <div class="callout reveal">
+      <h4>✍️ The exercise, step by step</h4>
+      <p>Grab actual paper and a pen — a whiteboard works too. At the top, write the question she and her husband keep on theirs: <em>"What will my future self thank me for?"</em> Then physically write the task down. Handwriting activates brain regions that make you more likely to remember the task and stay motivated to finish it, even with everything else competing for your attention. At the end of the day, rip the page up. Don't carry yesterday's unfinished business into tomorrow — some days are a dumpster fire, and that's allowed. Tomorrow gets a clean slate.</p>
+    </div>
+  </section>
+
+  <!-- ===================== CHAPTER 5 ===================== -->
+  <section class="chapter reveal" id="ch5">
+    <p class="chapter-num">Chapter Five</p>
+    <h2 class="h">Change four — stop trying to multitask</h2>
+    <p class="body-text lede">You can't multitask. Not "you're bad at it" — you physically cannot. The brain is a focus machine. It does one thing at a time. What feels like multitasking is actually rapid <strong>task switching</strong>, and you pay a tax on every single switch, in both time and mental energy.</p>
+
+    <div class="tip reveal">
+      <div class="tip-icon">💡</div>
+      <div class="tip-body">
+        <b>Task-switching cost</b>
+        <span>The extra time and mental effort your brain burns every time it drops one task and picks up another — even for a few seconds.</span>
+      </div>
+    </div>
+
+    <div class="callout reveal">
+      <h4>✏️ Try this yourself</h4>
+      <p>Grab paper. Write "I am a great multitasker," then underneath write the numbers 1 through 20 as fast as you can. Maybe 20 seconds. Now do it again, but alternate: letter I, number 1, letter A, number 2 — dragging your attention between the two lines every time. Same output, wildly different experience. This version takes most people 50–100% longer, and it feels genuinely stressful. That drag is a real biological tax, not a mood.</p>
+    </div>
+
+    <div class="diagram reveal">
+      <div class="diagram-card">
+        <div class="diagram-label">Round One vs. Round Two</div>
+        <div class="chart-card" style="margin:6px 0 0; box-shadow:none; border:none; background:transparent; padding:0;">
+          <div class="bar-row">
+            <div class="bar-label"><span class="name">One task at a time</span><span class="val">~20 sec</span></div>
+            <div class="bar-track"><div class="bar-fill" style="--w:35%; background:var(--s-aqua);"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label"><span class="name">Switching every line</span><span class="val">30–40 sec</span></div>
+            <div class="bar-track"><div class="bar-fill" style="--w:65%; background:var(--s-orange);"></div></div>
+          </div>
+        </div>
+        <p class="diagram-caption">Same task, same output — the only difference is how many times your attention had to jump.</p>
+      </div>
+    </div>
+
+    <p class="body-text soft">You already know this in your body. Driving home while listening to a podcast, then missing your exit — what do you instinctively do? Turn the podcast down, so you get your full attention back to deal with the road. The best you can ever do is split focus: maybe 75% on the podcast, 25% on the road. You cannot give both 100%.</p>
+
+    <blockquote class="pull">"You can either whole-ass one thing, or half-ass two things — but you cannot whole-ass two things at once."</blockquote>
+
+    <div class="mini-stats reveal">
+      <div class="mini-stat"><div class="num">2+ hrs</div><div class="lbl">lost every day by knowledge workers to unnecessary switch costs</div></div>
+      <div class="mini-stat"><div class="num">5→7pm</div><div class="lbl">the difference between logging off on time and working late for no reason</div></div>
+    </div>
+
+    <p class="body-text soft">You'll still switch a hundred times a day — that's just life. Just don't add a hundred more switches on top of that, out of habit, that you don't actually need.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 6 ===================== -->
+  <section class="chapter reveal" id="ch6">
+    <p class="chapter-num">Chapter Six</p>
+    <h2 class="h">Change five — run a real focus sprint</h2>
+    <p class="body-text lede">Done properly, people get roughly twice as much done in the same block of time when they work in a real focus sprint. But every step matters — skip one and it falls apart.</p>
+
+    <div class="ladder reveal">
+      <div class="rung">
+        <div class="rung-step">1</div>
+        <div class="rung-body"><b>Schedule it ahead of time</b><span>Your body has an anticipatory system — knowing a sprint is coming triggers cortisol and adrenaline before you even sit down, priming you to execute.</span></div>
+      </div>
+      <div class="rung">
+        <div class="rung-step">2</div>
+        <div class="rung-body"><b>Outline the steps first</b><span>Break the task into small chunks: "first 5 minutes, this; next 10 minutes, that." A scary mountain of a task becomes a set of small hills.</span></div>
+      </div>
+      <div class="rung">
+        <div class="rung-step">3</div>
+        <div class="rung-body"><b>Cut every distraction</b><span>One screen, one task. Phone in another room, notifications off, no email or Slack open on the side. Keep a "parking lot" notepad nearby for stray thoughts.</span></div>
+      </div>
+      <div class="rung">
+        <div class="rung-step">4</div>
+        <div class="rung-body"><b>Set a timer</b><span>You work measurably faster when you know there's a deadline for finishing.</span></div>
+      </div>
+      <div class="rung">
+        <div class="rung-step">5</div>
+        <div class="rung-body"><b>Take a real brain break</b><span>No email, no scrolling, no input of any kind. It's a sprint, not a jog — you need genuine rest to recover before the next one.</span></div>
+      </div>
+    </div>
+
+    <div class="tip reveal">
+      <div class="tip-icon">💡</div>
+      <div class="tip-body">
+        <b>The "parking lot" notepad</b>
+        <span>A blank notepad next to you during a sprint. When your brain interrupts with "did we run out of milk?" or "did John email back?", you write it down instead of acting on it — then let it go and return to the task. Fighting the thought just feeds it; writing it down releases it.</span>
+      </div>
+    </div>
+
+    <p class="body-text soft">Your brain will keep producing these interruptive ideas — that's a healthy brain doing its job, reminding you of things on your mental to-do list. Don't fight it, and don't chase it either. Just park it and get back to work.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 7 ===================== -->
+  <section class="chapter reveal" id="ch7">
+    <p class="chapter-num">Chapter Seven</p>
+    <h2 class="h">Change six — respect your biological clock</h2>
+    <p class="body-text lede">An hour is not an hour is not an hour. We treat ourselves like laptops — plugged in, therefore 100% all the time. That's not how bodies work. We're bags of blood, guts, and chemicals, and your focus at 9 a.m. is a genuinely different animal from your focus at 2 p.m. or 10 p.m.</p>
+
+    <div class="tip reveal">
+      <div class="tip-icon">💡</div>
+      <div class="tip-body">
+        <b>Chronotype</b>
+        <span>Your genetically preset internal clock — whether your body is naturally wired to peak in the morning, the evening, or twice across the day. In 2017, the Nobel Prize in Medicine went to researchers who proved this clock is biological, not a matter of discipline.</span>
+      </div>
+    </div>
+
+    <div class="diagram reveal">
+      <div class="diagram-card curve-card">
+        <div class="diagram-label">A Biphasic Day: Energy Over Time</div>
+        <svg class="curve-svg" viewBox="0 0 460 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="curveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.28"/>
+              <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <line x1="20" y1="170" x2="440" y2="170" stroke="var(--hairline)" stroke-width="1.5"/>
+          <path class="curve-area" d="M20,150 C60,60 100,40 140,55 C180,72 200,140 230,150 C260,158 290,80 330,55 C365,35 400,60 440,90 L440,170 L20,170 Z" fill="url(#curveGrad)"/>
+          <path class="curve-path" d="M20,150 C60,60 100,40 140,55 C180,72 200,140 230,150 C260,158 290,80 330,55 C365,35 400,60 440,90" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="100" cy="40" r="4" fill="var(--gold)"/>
+          <circle cx="330" cy="55" r="4" fill="var(--gold)"/>
+          <circle cx="230" cy="150" r="4" fill="var(--bad)"/>
+        </svg>
+        <div class="curve-legend">
+          <span>Wake</span>
+          <span>Morning peak</span>
+          <span>Afternoon dip</span>
+          <span>Second peak</span>
+          <span>Wind down</span>
+        </div>
+        <p class="diagram-caption">Biphasic people wake up a little groggy, hit a first peak after about an hour, dip hard after lunch — harder than any other chronotype — then rally for a second peak later in the day.</p>
+      </div>
+    </div>
+
+    <div class="chrono-tiles reveal">
+      <div class="chrono-tile"><div class="pct">~25%</div><b>AM-shifted</b><span>Wake up bright-eyed and bushy-tailed. Peak early, fade earlier.</span></div>
+      <div class="chrono-tile"><div class="pct">Majority</div><b>Biphasic</b><span>Two daily peaks with a steep afternoon dip. Most people — and probably you — fall here.</span></div>
+      <div class="chrono-tile"><div class="pct">Minority</div><b>PM-shifted</b><span>Night owls. Historically, the ones who kept watch over the tribe while everyone else slept.</span></div>
+    </div>
+
+    <p class="body-text soft">Every one of us gets a two-to-three-hour window each day where we're genuinely at our cognitive best. McKinsey has data showing people report being up to <strong>five times</strong> more productive inside that window — not 5%, not 20%, five times over.</p>
+
+    <div class="callout reveal">
+      <h4>⚠️ Why the "wake up at 4 a.m." advice is bad for most people</h4>
+      <p>That hustle-culture routine — 4 a.m. wake-up, a cold plunge, lemon water with cayenne, meditation, then your hardest work before dawn — is genuinely great advice, but only if you're genetically AM-shifted and already asleep by 9 p.m. For anyone else, it's just sleep deprivation dressed up as discipline, and you'll be useless by 10 a.m. Find your real two-to-three-hour peak, whenever it naturally falls, and defend it like your best work depends on it — because it does.</p>
+    </div>
+
+    <p class="body-text soft">If you don't know your own chronotype, an assessment exists to help you find it — worth doing once, since it shapes how you should structure every single day going forward.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 8 / CLOSING ===================== -->
+  <section class="chapter reveal closer" id="ch8">
+    <p class="chapter-num" style="text-align:center;">Chapter Eight</p>
+    <h2>You're in charge.</h2>
+    <p>Notifications. Grayscale and distance. Your MITs. Single-tasking. Real focus sprints. Your chronotype's peak window. Six changes, and not one of them is about doing more, grinding harder, or squeezing extra hours out of your day. Every single one is about doing less — and getting back the evenings, the attention, and the quiet that were quietly being taken from you one notification at a time.</p>
+    <p style="margin-top:18px;">You were handed a device, and a default way of living, and both were built around someone else's goals. You get to change the settings — the ones on the phone, and the ones in your own head.</p>
+
+    <div class="callout reveal" style="text-align:left; margin-top:32px;">
+      <h4>🔧 One honest caveat</h4>
+      <p>These six changes clear the noise so your brain can finally focus. What they don't do is rebuild an attention span that years of scrolling have already worn down. Actually repairing focus so it holds for longer than 90 seconds at a stretch is its own separate science — a next step, once the noise is gone.</p>
+    </div>
+
+    <p class="signoff">— Notes from Dr. Sahar Yousef's talk on focus and attention.</p>
+  </section>
+
+</div>
+
+<footer class="site-footer">
+  <div class="wrap">Notes from a talk on attention, notifications &amp; the biology of focus · read on any device</div>
+</footer>
+
+<script>
+(function () {
+  // theme toggle
+  var root = document.documentElement;
+  var btn = document.getElementById('themeToggle');
+  function currentTheme() {
+    if (root.getAttribute('data-theme')) return root.getAttribute('data-theme');
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  btn.addEventListener('click', function () {
+    var next = currentTheme() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    btn.textContent = next === 'dark' ? '☀' : '◐';
+  });
+  btn.textContent = currentTheme() === 'dark' ? '☀' : '◐';
+
+  // scroll progress
+  var bar = document.getElementById('progress-bar');
+  var floatTop = document.getElementById('floatTop');
+  function onScroll() {
+    var h = document.documentElement;
+    var scrolled = h.scrollTop || document.body.scrollTop;
+    var height = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
+    var pct = height > 0 ? (scrolled / height) * 100 : 0;
+    bar.style.width = pct + '%';
+    if (scrolled > 500) floatTop.classList.add('show'); else floatTop.classList.remove('show');
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  floatTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+  // reveal on scroll
+  var revealEls = document.querySelectorAll('.reveal, .ladder');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    revealEls.forEach(function (el) { io.observe(el); });
+  } else {
+    revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+  }
+
+  // TOC active link
+  var tocLinks = {};
+  document.querySelectorAll('nav.toc a').forEach(function (a) {
+    tocLinks[a.getAttribute('href').slice(1)] = a;
+  });
+  var chapters = document.querySelectorAll('section.chapter');
+  if ('IntersectionObserver' in window) {
+    var tocObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var link = tocLinks[entry.target.id];
+        if (!link) return;
+        if (entry.isIntersecting) {
+          Object.values(tocLinks).forEach(function (l) { l.classList.remove('active'); });
+          link.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-40% 0px -50% 0px' });
+    chapters.forEach(function (c) { if (c.id) tocObserver.observe(c); });
+  }
+})();
+</script>
+
+</body>
+</html>
