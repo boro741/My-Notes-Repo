@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>30 System Design Concepts Every Engineer Should Know</title>
+<style>
+
+  :root {
+    color-scheme: light;
+    --page:        #f9f9f7;
+    --surface:     #fcfcfb;
+    --ink:         #0b0b0b;
+    --ink-soft:    #52514e;
+    --muted:       #898781;
+    --hairline:    #e1e0d9;
+    --border:      rgba(11,11,11,0.10);
+    --accent:      #2a78d6;
+    --accent-ink:  #184f95;
+    --accent-soft: #eaf2fc;
+    --gold:        #eda100;
+    --gold-soft:   #fbf1dc;
+    --good:        #0ca30c;
+    --warn:        #fab219;
+    --bad:         #ec835a;
+
+    --s-blue:    #2a78d6;
+    --s-orange:  #eb6834;
+    --s-aqua:    #1baf7a;
+    --s-yellow:  #eda100;
+    --s-magenta: #e87ba4;
+
+    --shadow: 0 1px 2px rgba(11,11,11,0.04), 0 8px 24px rgba(11,11,11,0.06);
+    --serif: ui-serif, Charter, "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "JetBrains Mono", "SF Mono", Consolas, monospace;
+  }
+
+  html[data-theme="dark"] {
+    color-scheme: dark;
+    --page:        #0d0d0d;
+    --surface:     #1a1a19;
+    --ink:         #ffffff;
+    --ink-soft:    #c3c2b7;
+    --muted:       #898781;
+    --hairline:    #2c2c2a;
+    --border:      rgba(255,255,255,0.10);
+    --accent:      #3987e5;
+    --accent-ink:  #bcd6f7;
+    --accent-soft: rgba(57,135,229,0.14);
+    --gold:        #c98500;
+    --gold-soft:   rgba(201,133,0,0.16);
+    --good:        #0ca30c;
+    --warn:        #fab219;
+    --bad:         #ec835a;
+
+    --s-blue:    #3987e5;
+    --s-orange:  #d95926;
+    --s-aqua:    #199e70;
+    --s-yellow:  #c98500;
+    --s-magenta: #d55181;
+
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page:        #0d0d0d;
+      --surface:     #1a1a19;
+      --ink:         #ffffff;
+      --ink-soft:    #c3c2b7;
+      --muted:       #898781;
+      --hairline:    #2c2c2a;
+      --border:      rgba(255,255,255,0.10);
+      --accent:      #3987e5;
+      --accent-ink:  #bcd6f7;
+      --accent-soft: rgba(57,135,229,0.14);
+      --gold:        #c98500;
+      --gold-soft:   rgba(201,133,0,0.16);
+      --s-blue:    #3987e5;
+      --s-orange:  #d95926;
+      --s-aqua:    #199e70;
+      --s-yellow:  #c98500;
+      --s-magenta: #d55181;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+    }
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    transition: background 0.25s ease, color 0.25s ease;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  ::selection { background: var(--gold-soft); color: var(--ink); }
+
+  /* ---------- chrome ---------- */
+
+  #progress-bar {
+    position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    z-index: 1000; transition: width 0.1s ease-out;
+  }
+
+  .theme-toggle, .float-top {
+    position: fixed; z-index: 999;
+    width: 44px; height: 44px; border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface); color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: var(--shadow);
+    font-size: 1.05rem;
+    transition: transform 0.15s ease, background 0.25s ease;
+  }
+  .theme-toggle { top: calc(16px + env(safe-area-inset-top)); right: calc(16px + env(safe-area-inset-right)); }
+  .float-top {
+    bottom: calc(22px + env(safe-area-inset-bottom)); right: calc(16px + env(safe-area-inset-right));
+    background: var(--ink); color: var(--page); border: none;
+    opacity: 0; transform: translateY(10px); pointer-events: none;
+  }
+  .float-top.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .theme-toggle:active, .float-top:active { transform: scale(0.92); }
+
+  /* ---------- layout ---------- */
+
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+  .wrap-wide { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+  header.hero {
+    padding: calc(88px + env(safe-area-inset-top)) 0 56px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kicker {
+    font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700; margin: 0 0 18px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .kicker::before { content: ""; width: 22px; height: 2px; background: var(--accent); display: inline-block; border-radius: 2px; }
+
+  h1.title {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(2.1rem, 7vw, 3.6rem);
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    margin: 0 0 20px;
+  }
+  h1.title em { font-style: italic; color: var(--accent); }
+
+  .dek {
+    font-size: clamp(1.05rem, 2.6vw, 1.3rem);
+    color: var(--ink-soft);
+    max-width: 60ch;
+    margin: 0 0 28px;
+    font-weight: 400;
+  }
+
+  .byline {
+    display: flex; align-items: center; gap: 14px;
+    font-size: 0.88rem; color: var(--muted);
+    padding-top: 22px; border-top: 1px solid var(--hairline);
+    flex-wrap: wrap;
+  }
+  .byline .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--gold));
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-family: var(--serif); font-weight: 700; font-size: 1rem;
+  }
+
+  .hero-quote {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(1.15rem, 3vw, 1.5rem); line-height: 1.5;
+    color: var(--ink);
+    margin: 40px 0 0; padding: 26px 0 0 24px;
+    border-left: 3px solid var(--gold);
+  }
+
+  /* ---------- toc ---------- */
+
+  nav.toc {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 18px; padding: 26px 26px 22px; margin: 8px 0 64px;
+    box-shadow: var(--shadow);
+  }
+  nav.toc h2 {
+    font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 14px; font-weight: 700;
+  }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; column-count: 1; }
+  nav.toc li { counter-increment: toc; margin-bottom: 4px; }
+  nav.toc a {
+    display: flex; align-items: baseline; gap: 12px;
+    color: var(--ink-soft); text-decoration: none;
+    font-size: 0.96rem; padding: 7px 4px; border-radius: 8px;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+  nav.toc a::before {
+    content: counter(toc, decimal-leading-zero);
+    font-family: var(--serif); font-size: 0.82rem; color: var(--muted); flex-shrink: 0;
+  }
+  nav.toc a:hover, nav.toc a.active { color: var(--accent); background: var(--accent-soft); }
+  nav.toc a.active::before { color: var(--accent); }
+
+  /* ---------- sections ---------- */
+
+  section.chapter { padding: 44px 0 8px; scroll-margin-top: 24px; }
+  section.chapter + section.chapter { border-top: 1px solid var(--hairline); }
+
+  .chapter-num {
+    font-family: var(--serif); font-style: italic; color: var(--gold);
+    font-size: 1rem; margin: 0 0 10px; font-weight: 600;
+  }
+
+  h2.h {
+    font-family: var(--serif); font-weight: 600;
+    font-size: clamp(1.5rem, 4.4vw, 2.1rem);
+    line-height: 1.18; letter-spacing: -0.01em;
+    margin: 0 0 20px;
+  }
+  h3.h3 {
+    font-family: var(--serif); font-weight: 600;
+    font-size: clamp(1.15rem, 3vw, 1.4rem);
+    margin: 30px 0 12px;
+  }
+
+  p.body-text { font-size: 1.06rem; color: var(--ink); margin: 0 0 18px; }
+  p.body-text.soft { color: var(--ink-soft); }
+  .lede { font-size: 1.18rem; }
+
+  mark.hl {
+    background: var(--gold-soft); color: var(--ink);
+    padding: 0.05em 0.15em; border-radius: 4px; font-weight: 600;
+  }
+
+  code.inline {
+    font-family: var(--mono); font-size: 0.86em;
+    background: var(--accent-soft); color: var(--accent-ink);
+    padding: 0.1em 0.4em; border-radius: 5px;
+  }
+
+  blockquote.pull {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(1.2rem, 3.4vw, 1.6rem); line-height: 1.45;
+    color: var(--ink); margin: 34px 0; padding: 0 0 0 24px;
+    border-left: 3px solid var(--accent);
+  }
+
+  /* ---------- tip box ---------- */
+
+  .tip {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: var(--accent-soft); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px 18px; margin: 22px 0;
+  }
+  .tip .icon { font-size: 1.3rem; line-height: 1; flex-shrink: 0; margin-top: 1px; }
+  .tip .body b { display: block; font-size: 0.92rem; color: var(--accent-ink); margin-bottom: 3px; }
+  .tip .body span { font-size: 0.94rem; color: var(--ink-soft); }
+
+  .callout {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 16px; padding: 22px 24px; margin: 28px 0;
+    box-shadow: var(--shadow);
+  }
+  .callout h4 {
+    margin: 0 0 8px; font-size: 0.98rem; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .callout p { margin: 0; color: var(--ink-soft); font-size: 0.98rem; }
+
+  .callout.warn { border-color: rgba(250,178,25,0.4); background: var(--gold-soft); }
+  .callout.warn h4, .callout.warn p { color: var(--ink); }
+
+  /* ---------- reveal ---------- */
+
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s cubic-bezier(.2,.7,.3,1), transform 0.7s cubic-bezier(.2,.7,.3,1); }
+  .reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+  /* ---------- diagram card shell ---------- */
+
+  .diagram { margin: 30px 0 8px; }
+  .diagram-card {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 20px; padding: 28px 20px 20px; box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .diagram-label {
+    font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); font-weight: 700; margin-bottom: 4px;
+  }
+  .diagram-caption { font-size: 0.92rem; color: var(--ink-soft); margin-top: 10px; text-align: left; }
+
+  /* ---------- client/server request-response diagram ---------- */
+
+  .cs-svg { width: 100%; max-width: 420px; height: auto; }
+  .cs-packet {
+    stroke-dasharray: 6 6;
+    animation: dash-move 2.4s linear infinite;
+  }
+  @keyframes dash-move { to { stroke-dashoffset: -24; } }
+  .cs-dot { animation: cs-travel 3.2s ease-in-out infinite; }
+  @keyframes cs-travel {
+    0%   { transform: translateX(0); opacity: 0; }
+    8%   { opacity: 1; }
+    45%  { transform: translateX(210px); opacity: 1; }
+    50%  { opacity: 0; }
+    55%  { transform: translateX(210px); opacity: 0; }
+    58%  { opacity: 1; }
+    92%  { transform: translateX(0); opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* ---------- DNS lookup steps ---------- */
+
+  .flow-steps { display: flex; flex-direction: column; gap: 10px; margin: 22px 0; }
+  .flow-step {
+    display: flex; align-items: flex-start; gap: 14px;
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 14px; padding: 14px 16px;
+  }
+  .flow-step .num {
+    width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+    background: var(--accent-soft); color: var(--accent-ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-weight: 700; font-size: 0.85rem;
+  }
+  .flow-step .txt b { display: block; font-size: 0.96rem; margin-bottom: 2px; }
+  .flow-step .txt span { font-size: 0.86rem; color: var(--muted); }
+
+  /* ---------- comparison grid ---------- */
+
+  .vs-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin: 26px 0; }
+  @media (min-width: 620px) { .vs-grid { grid-template-columns: 1fr 1fr; } }
+  .vs-card {
+    background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px;
+    padding: 20px 20px 18px; box-shadow: var(--shadow);
+  }
+  .vs-card .vs-title {
+    font-family: var(--serif); font-weight: 700; font-size: 1.15rem; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .vs-card.blue .vs-title { color: var(--s-blue); }
+  .vs-card.orange .vs-title { color: var(--s-orange); }
+  .vs-card ul { margin: 0; padding-left: 20px; color: var(--ink-soft); font-size: 0.94rem; }
+  .vs-card li { margin-bottom: 6px; }
+  .vs-vs {
+    text-align: center; font-family: var(--serif); font-style: italic; color: var(--muted);
+    font-size: 0.9rem; margin: -6px 0;
+  }
+
+  /* ---------- stat cards ---------- */
+
+  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 30px 0; }
+  @media (max-width: 480px) { .stat-row { grid-template-columns: 1fr 1fr; } }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px;
+    padding: 22px 14px; text-align: center; box-shadow: var(--shadow);
+  }
+  .stat-num {
+    font-family: var(--serif); font-weight: 700; color: var(--ink);
+    font-size: clamp(1.6rem, 6vw, 2.2rem); line-height: 1; margin-bottom: 6px;
+  }
+  .stat-word { font-size: 0.8rem; color: var(--muted); font-weight: 600; letter-spacing: 0.02em; }
+
+  /* ---------- ladder / trust-ladder style step list ---------- */
+
+  .ladder { display: flex; flex-direction: column; gap: 10px; margin: 26px 0; }
+  .rung {
+    display: flex; align-items: center; gap: 16px;
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 14px; padding: 14px 18px;
+    opacity: 0.35; transform: translateX(-10px);
+    transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.5s ease, background 0.5s ease;
+  }
+  .ladder.is-visible .rung { opacity: 1; transform: translateX(0); }
+  .ladder.is-visible .rung:nth-child(1) { transition-delay: 0.05s; }
+  .ladder.is-visible .rung:nth-child(2) { transition-delay: 0.12s; }
+  .ladder.is-visible .rung:nth-child(3) { transition-delay: 0.19s; }
+  .ladder.is-visible .rung:nth-child(4) { transition-delay: 0.26s; }
+  .ladder.is-visible .rung:nth-child(5) { transition-delay: 0.33s; }
+  .rung-step {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    background: var(--accent-soft); color: var(--accent-ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-weight: 700; font-size: 0.9rem;
+  }
+  .rung-body b { display: block; font-size: 0.98rem; }
+  .rung-body span { font-size: 0.85rem; color: var(--muted); }
+
+  /* ---------- bar chart ---------- */
+
+  .chart-card {
+    background: var(--surface); border: 1px solid var(--hairline);
+    border-radius: 18px; padding: 26px 22px 20px; margin: 30px 0; box-shadow: var(--shadow);
+  }
+  .chart-title { font-size: 0.82rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 22px; }
+  .bar-row { margin-bottom: 18px; }
+  .bar-row:last-child { margin-bottom: 4px; }
+  .bar-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; gap: 10px; }
+  .bar-label .name { font-size: 0.92rem; font-weight: 600; color: var(--ink); }
+  .bar-label .val { font-size: 0.86rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .bar-track { position: relative; height: 12px; background: var(--hairline); border-radius: 6px; overflow: visible; }
+  .bar-fill {
+    position: absolute; left: 0; top: 0; height: 100%; border-radius: 6px; width: 0%;
+    transition: width 1.4s cubic-bezier(.16,.9,.2,1);
+  }
+  .is-visible .bar-fill { width: var(--w); }
+
+  /* ---------- tile row ---------- */
+
+  .tile-row { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 22px 0; }
+  @media (min-width: 560px) { .tile-row { grid-template-columns: repeat(2, 1fr); } }
+  .tile {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface); border: 1px solid var(--hairline); border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .tile-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .tile b { display: block; font-size: 0.94rem; }
+  .tile span { font-size: 0.8rem; color: var(--muted); }
+
+  /* ---------- mini stats ---------- */
+
+  .mini-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 24px 0; }
+  .mini-stat { background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px; padding: 20px; box-shadow: var(--shadow); }
+  .mini-stat .num { font-family: var(--serif); font-size: clamp(1.4rem, 5vw, 1.8rem); font-weight: 700; color: var(--accent); }
+  .mini-stat .lbl { font-size: 0.82rem; color: var(--ink-soft); margin-top: 4px; }
+
+  /* ---------- case card ---------- */
+
+  .case-card {
+    background: linear-gradient(160deg, var(--surface), var(--accent-soft));
+    border: 1px solid var(--hairline); border-radius: 20px; padding: 28px 24px;
+    margin: 30px 0; box-shadow: var(--shadow);
+  }
+  .case-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--accent); background: var(--surface); padding: 5px 10px; border-radius: 20px;
+    border: 1px solid var(--border); margin-bottom: 14px;
+  }
+
+  /* ---------- scaling diagram (boxes) ---------- */
+
+  .box-row { display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap; margin: 20px 0; }
+  .srv-box {
+    width: 56px; height: 56px; border-radius: 12px;
+    background: var(--accent-soft); border: 1.5px solid var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; color: var(--accent-ink); flex-shrink: 0;
+  }
+  .srv-box.big { width: 84px; height: 84px; font-size: 1.9rem; }
+  .arrow-right { font-size: 1.4rem; color: var(--muted); }
+
+  /* ---------- CAP triangle ---------- */
+
+  .cap-svg { width: 100%; max-width: 300px; height: auto; }
+
+  /* ---------- indexing book diagram ---------- */
+
+  .index-demo { display: flex; gap: 18px; justify-content: center; align-items: flex-start; flex-wrap: wrap; margin: 20px 0; }
+  .index-col { text-align: left; }
+  .index-col h5 { margin: 0 0 8px; font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .index-rows { display: flex; flex-direction: column; gap: 4px; }
+  .index-row { padding: 5px 10px; font-size: 0.8rem; font-family: var(--mono); border-radius: 6px; background: var(--hairline); color: var(--ink-soft); }
+  .index-row.hit { background: var(--gold-soft); color: var(--ink); font-weight: 700; border: 1px solid var(--gold); }
+
+  /* ---------- replication diagram ---------- */
+
+  .repl-svg { width: 100%; max-width: 460px; height: auto; }
+  .repl-pulse { animation: repl-flow 2.6s linear infinite; }
+  @keyframes repl-flow { to { stroke-dashoffset: -20; } }
+
+  /* ---------- closing ---------- */
+
+  .closer { text-align: center; padding: 70px 0 90px; }
+  .closer h2 {
+    font-family: var(--serif); font-weight: 600; font-style: italic;
+    font-size: clamp(1.8rem, 6vw, 2.6rem); line-height: 1.2; margin: 0 0 18px;
+  }
+  .closer p { color: var(--ink-soft); font-size: 1.05rem; max-width: 46ch; margin: 0 auto; }
+  .signoff { margin-top: 34px; font-family: var(--serif); font-style: italic; color: var(--muted); }
+
+  footer.site-footer {
+    border-top: 1px solid var(--hairline); padding: 28px 0 calc(40px + env(safe-area-inset-bottom));
+    text-align: center; font-size: 0.82rem; color: var(--muted);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal, .rung, .bar-fill { transition: none !important; }
+    .cs-dot, .cs-packet, .repl-pulse { animation: none !important; }
+    html { scroll-behavior: auto; }
+  }
+
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">◐</button>
+<button class="float-top" id="floatTop" aria-label="Back to top">↑</button>
+
+<div class="wrap">
+
+  <header class="hero">
+    <p class="kicker">System Design · Foundations</p>
+    <h1 class="title">30 System Design Concepts That Take You From <em>Junior</em> to Senior Engineer</h1>
+    <p class="dek">Every big-tech interview and every large-scale system you'll ever touch is built from the same handful of Lego bricks. Learn these once, and you can reason about almost anything — from a to-do app to a system that serves a billion requests a day.</p>
+    <div class="byline">
+      <div class="avatar">SD</div>
+      <span>System Design Field Notes</span>
+      <span class="dot"></span>
+      <span>~22 min read</span>
+      <span class="dot"></span>
+      <span>14 chapters</span>
+    </div>
+    <blockquote class="hero-quote">
+      "You don't need ten years of experience to think like a senior engineer. You need to understand how the pieces fit together — then everything else is just a variation on a theme."
+    </blockquote>
+  </header>
+
+  <nav class="toc reveal">
+    <h2>In this piece</h2>
+    <ol>
+      <li><a href="#ch1">Client-server, IP addresses & DNS</a></li>
+      <li><a href="#ch2">Proxies and the latency problem</a></li>
+      <li><a href="#ch3">Speaking the same language: HTTP & HTTPS</a></li>
+      <li><a href="#ch4">APIs: REST vs. GraphQL</a></li>
+      <li><a href="#ch5">Where data lives: SQL vs. NoSQL</a></li>
+      <li><a href="#ch6">Scaling servers: vertical, horizontal & load balancers</a></li>
+      <li><a href="#ch7">Scaling databases: indexing & replication</a></li>
+      <li><a href="#ch8">Splitting data: sharding & vertical partitioning</a></li>
+      <li><a href="#ch9">Speed tricks: caching & denormalization</a></li>
+      <li><a href="#ch10">The CAP theorem</a></li>
+      <li><a href="#ch11">Storing & delivering files: blob storage & CDNs</a></li>
+      <li><a href="#ch12">Real-time systems: WebSockets & webhooks</a></li>
+      <li><a href="#ch13">Breaking apart monoliths: microservices & message queues</a></li>
+      <li><a href="#ch14">Guarding the front door: rate limiting, API gateways & idempotency</a></li>
+    </ol>
+  </nav>
+
+  <!-- ===================== CHAPTER 1 ===================== -->
+  <section class="chapter reveal" id="ch1">
+    <p class="chapter-num">Chapter One</p>
+    <h2 class="h">Client-server, IP addresses & DNS</h2>
+    <p class="body-text lede">Nearly every app you've ever used — the one on your phone right now included — is built on one simple idea: <mark class="hl">client-server architecture</mark>.</p>
+    <p class="body-text soft">On one side sits the <b>client</b> — a browser, a mobile app, anything with a screen. On the other sits the <b>server</b> — a machine that runs around the clock, waiting patiently for work to arrive. The client sends a request ("give me my messages," "save this photo"), the server does the work, and sends a response back.</p>
+
+    <div class="diagram reveal">
+      <div class="diagram-card">
+        <div class="diagram-label">Client ↔ Server</div>
+        <svg class="cs-svg" viewBox="0 0 320 140" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="45" width="70" height="50" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+          <text x="45" y="75" text-anchor="middle" font-size="22" fill="var(--accent-ink)">🖥️</text>
+          <text x="45" y="112" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--sans)">Client</text>
+
+          <rect x="240" y="45" width="70" height="50" rx="10" fill="var(--gold-soft)" stroke="var(--gold)" stroke-width="1.5"/>
+          <text x="275" y="75" text-anchor="middle" font-size="22" fill="var(--ink)">🗄️</text>
+          <text x="275" y="112" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--sans)">Server</text>
+
+          <line x1="85" y1="58" x2="235" y2="58" stroke="var(--hairline)" stroke-width="2" class="cs-packet"/>
+          <line x1="85" y1="85" x2="235" y2="85" stroke="var(--hairline)" stroke-width="2" class="cs-packet"/>
+          <circle cx="90" cy="58" r="5" fill="var(--accent)" class="cs-dot"/>
+        </svg>
+        <p class="diagram-caption">The client sends a request. The server processes it and sends a response. That round trip is the heartbeat of almost every application on the internet.</p>
+      </div>
+    </div>
+
+    <p class="body-text soft">That raises an obvious question: how does the client know <em>where</em> the server actually is?</p>
+
+    <div class="tip">
+      <div class="icon">💡</div>
+      <div class="body"><b>IP address</b><span>Every server has a unique numeric address on the internet — something like <code class="inline">142.250.71.14</code> — that works exactly like a phone number. It's how one machine finds another among billions.</span></div>
+    </div>
+
+    <p class="body-text soft">Nobody wants to memorize strings of numbers, though — which is why we type <code class="inline">google.com</code> instead of an IP address. Something has to translate the friendly name into the numeric address, and that something is <mark class="hl">DNS</mark>.</p>
+
+    <div class="tip">
+      <div class="icon">💡</div>
+      <div class="body"><b>DNS (Domain Name System)</b><span>Think of DNS as the internet's phone book. It maps easy-to-remember names like <code class="inline">algomaster.io</code> to the actual IP address of the server hosting that site.</span></div>
+    </div>
+
+    <div class="flow-steps reveal">
+      <div class="flow-step"><div class="num">1</div><div class="txt"><b>You type a URL</b><span>e.g. algomaster.io, into your browser.</span></div></div>
+      <div class="flow-step"><div class="num">2</div><div class="txt"><b>Your computer asks a DNS server</b><span>"What's the IP address for this name?"</span></div></div>
+      <div class="flow-step"><div class="num">3</div><div class="txt"><b>DNS responds with an IP address</b><span>The phone-book lookup completes.</span></div></div>
+      <div class="flow-step"><div class="num">4</div><div class="txt"><b>Your browser connects to that IP</b><span>And the actual request-response conversation begins.</span></div></div>
+    </div>
+
+    <div class="callout reveal">
+      <h4>🔧 Try it yourself</h4>
+      <p>You can see this translation happen on your own machine using the <code class="inline">ping</code> command in a terminal — it will show you the IP address behind any domain name.</p>
+    </div>
+  </section>
+
+  <!-- ===================== CHAPTER 2 ===================== -->
+  <section class="chapter reveal" id="ch2">
+    <p class="chapter-num">Chapter Two</p>
+    <h2 class="h">Proxies and the latency problem</h2>
+    <p class="body-text lede">Your request doesn't always travel straight from your device to the destination server. Often it passes through a middleman first.</p>
+
+    <div class="vs-grid reveal">
+      <div class="vs-card blue">
+        <div class="vs-title">🕵️ Proxy server</div>
+        <ul>
+          <li>Sits between your device and the internet</li>
+          <li>Forwards your request, retrieves the response, hands it back to you</li>
+          <li>Hides your IP address — keeps your identity and location private</li>
+        </ul>
+      </div>
+      <div class="vs-card orange">
+        <div class="vs-title">🔀 Reverse proxy</div>
+        <ul>
+          <li>Sits in front of one or more backend servers</li>
+          <li>Intercepts client requests and routes them onward</li>
+          <li>Decides which server should actually handle the work</li>
+        </ul>
+      </div>
+    </div>
+    <p class="body-text soft">Same basic idea, opposite direction: a proxy protects the identity of the <em>client</em>; a reverse proxy protects and manages the <em>server</em>.</p>
+
+    <h3 class="h3">Why every millisecond matters: latency</h3>
+    <p class="body-text soft">Whenever a client talks to a server, there's always some delay. The single biggest cause is physical distance.</p>
+
+    <div class="tip">
+      <div class="icon">💡</div>
+      <div class="body"><b>Latency</b><span>The round-trip delay between sending a request and receiving a response. If your server sits in New York and a user is in India, the data has to physically travel there and back — and that trip takes time.</span></div>
+    </div>
+
+    <div class="callout reveal">
+      <h4>🌍 The fix: multi-region deployment</h4>
+      <p>Instead of running one server in one location, companies deploy copies of their service across data centers worldwide. A user then connects to the nearest one — cutting the physical distance the data has to travel, and cutting latency along with it.</p>
+    </div>
+  </section>
+
+  <!-- ===================== CHAPTER 3 ===================== -->
+  <section class="chapter reveal" id="ch3">
+    <p class="chapter-num">Chapter Three</p>
+    <h2 class="h">Speaking the same language: HTTP & HTTPS</h2>
+    <p class="body-text lede">Once a connection is made, how do a client and server actually talk to each other? They follow a shared set of rules called <mark class="hl">HTTP</mark> — HyperText Transfer Protocol. It's the reason nearly every web address starts with <code class="inline">http</code>.</p>
+
+    <p class="body-text soft">A typical exchange looks like this: the client sends a request containing a <b>header</b> (request type, browser info, cookies) and sometimes a <b>body</b> (form data, for example). The server processes it and replies with an HTTP response — either the data you asked for, or an error if something went wrong.</p>
+
+    <div class="callout warn reveal">
+      <h4>⚠️ HTTP's big flaw</h4>
+      <p>Plain HTTP sends everything as readable text. Anyone intercepting the connection can read — or even alter — what's inside.</p>
+    </div>
+
+    <div class="tip">
+      <div class="icon">💡</div>
+      <div class="body"><b>HTTPS</b><span>The secure version of HTTP. It encrypts all data using the SSL/TLS protocol, so even if someone intercepts your request, all they see is scrambled noise — not your password or your payment details.</span></div>
+    </div>
+
+    <p class="body-text soft">But HTTP is only a transport protocol — it doesn't say how a request should be structured, what format a response should take, or how a client should ask for exactly the data it wants. That's a separate job, handled by <b>APIs</b>, which is where we go next.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 4 ===================== -->
+  <section class="chapter reveal" id="ch4">
+    <p class="chapter-num">Chapter Four</p>
+    <h2 class="h">APIs: REST vs. GraphQL</h2>
+    <p class="body-text lede">Think of an <mark class="hl">API</mark> (Application Programming Interface) as a well-defined middleman. The client sends a request to the API; the API — hosted on a server — talks to databases or other services, prepares an answer, and sends it back in a structured format the client understands, usually <b>JSON</b> or <b>XML</b>.</p>
+
+    <p class="body-text soft">Two styles dominate how APIs are designed today: REST and GraphQL.</p>
+
+    <div class="vs-grid reveal">
+      <div class="vs-card blue">
+        <div class="vs-title">🧱 REST</div>
+        <ul>
+          <li>Everything is modeled as a <b>resource</b> — users, orders, products</li>
+          <li>Stateless: every request stands on its own</li>
+          <li>Uses standard HTTP verbs: <code class="inline">GET</code>, <code class="inline">POST</code>, <code class="inline">PUT</code>, <code class="inline">DELETE</code></li>
+          <li>Simple, scalable, easy to cache</li>
+          <li>Downside: can over-fetch or under-fetch data, needing multiple round trips</li>
+        </ul>
+      </div>
+      <div class="vs-card orange">
+        <div class="vs-title">🎯 GraphQL</div>
+        <ul>
+          <li>Introduced by Facebook in 2015</li>
+          <li>Client asks for exactly the fields it needs — nothing more</li>
+          <li>One query can combine what would be several REST calls</li>
+          <li>Downside: more processing work on the server, and harder to cache</li>
+        </ul>
+      </div>
+    </div>
+    <p class="body-text soft">Example: to show a user's profile plus their recent posts, REST might mean two separate calls to two different endpoints. GraphQL lets you ask for both in a single query, and the server returns only the fields you actually requested.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 5 ===================== -->
+  <section class="chapter reveal" id="ch5">
+    <p class="chapter-num">Chapter Five</p>
+    <h2 class="h">Where data lives: SQL vs. NoSQL</h2>
+    <p class="body-text lede">A client request usually wants to store or fetch data — but where does that data actually live? For tiny amounts, you could keep it in memory or a file. Real applications, though, deal in volumes far beyond what memory can hold, so they rely on a dedicated <mark class="hl">database</mark>.</p>
+
+    <div class="tip">
+      <div class="icon">💡</div>
+      <div class="body"><b>Database</b><span>A dedicated system for storing, retrieving, and managing data efficiently — while keeping it secure, consistent, and durable.</span></div>
+    </div>
+
+    <p class="body-text soft">Databases generally split into two camps:</p>
+
+    <div class="vs-grid reveal">
+      <div class="vs-card blue">
+        <div class="vs-title">🗂️ SQL databases</div>
+        <ul>
+          <li>Data lives in tables with a strict, predefined schema</li>
+          <li>Follow <b>ACID</b> properties — strong guarantees on correctness</li>
+          <li>Ideal for structured, relational data — think banking systems</li>
+        </ul>
+      </div>
+      <div class="vs-card orange">
+        <div class="vs-title">🧩 NoSQL databases</div>
+        <ul>
+          <li>No fixed schema — flexible by design</li>
+          <li>Built for high scalability and performance</li>
+          <li>Comes in several flavors: key-value stores, document stores, graph databases, wide-column stores</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tip">
+      <div class="icon">💡</div>
+      <div class="body"><b>ACID</b><span>A set of guarantees (Atomicity, Consistency, Isolation, Durability) that ensure a database transaction either completes fully or doesn't happen at all — critical for something like a bank transfer.</span></div>
+    </div>
+
+    <p class="body-text soft">Need strong consistency and structured relationships? Reach for SQL. Need to scale massively with a flexible schema? Reach for NoSQL. In practice, most large applications quietly use both, side by side, for different jobs.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 6 ===================== -->
+  <section class="chapter reveal" id="ch6">
+    <p class="chapter-num">Chapter Six</p>
+    <h2 class="h">Scaling servers: vertical, horizontal & load balancers</h2>
+    <p class="body-text lede">As your user base grows, so does the number of requests hitting your servers. There are two fundamentally different ways to cope.</p>
+
+    <h3 class="h3">Vertical scaling — make one machine bigger</h3>
+    <p class="body-text soft">The quickest fix is to upgrade your existing server: more CPU, more RAM, more storage. This is called <mark class="hl">vertical scaling</mark>, or "scaling up."</p>
+
+    <div class="box-row reveal">
+      <div class="srv-box">🖥️</div>
+      <div class="arrow-right">→</div>
+      <div class="srv-box big">🖥️</div>
+    </div>
+
+    <div class="callout warn reveal">
+      <h4>⚠️ The ceiling</h4>
+      <p>You can't upgrade a single machine forever — every server has a maximum capacity. Bigger machines get exponentially more expensive, and worst of all: if that one server crashes, your entire system goes down with it.</p>
+    </div>
+
+    <h3 class="h3">Horizontal scaling — add more machines</h3>
+    <p class="body-text soft">Instead of making one server bigger, <mark class="hl">horizontal scaling</mark> ("scaling out") spreads the workload across many servers. More servers means more total capacity, and if one goes down, the others keep the system running.</p>
+
+    <div class="box-row reveal">
+      <div class="srv-box">🖥️</div>
+      <div class="srv-box">🖥️</div>
+      <div class="srv-box">🖥️</div>
+      <div class="srv-box">🖥️</div>
+    </div>
+
+    <p class="body-text soft">But this creates a new problem: with many servers available, how does a client know which one to talk to?</p>
+
+    <div class="tip">
+      <div class="icon">💡</div>
+      <div class="body"><b>Load balancer</b><span>A traffic manager that sits between clients and your fleet of servers, spreading incoming requests across them. If one server crashes, the load balancer quietly redirects traffic to a healthy one.</span></div>
+    </div>
+
+    <p class="body-text soft">How does it decide who gets the next request? Using a <b>load balancing algorithm</b> — common choices include <b>round robin</b> (take turns), <b>least connections</b> (send it to whoever's least busy), and <b>IP hashing</b> (always send a given client to the same server).</p>
+  </section>
+
+  <!-- ===================== CHAPTER 7 ===================== -->
+  <section class="chapter reveal" id="ch7">
+    <p class="chapter-num">Chapter Seven</p>
+    <h2 class="h">Scaling databases: indexing & replication</h2>
+    <p class="body-text lede">Servers aren't the only thing that needs to scale — as traffic grows, so does the volume of data. Databases can be scaled vertically too, but they hit the same ceiling. Here are two techniques built specifically for databases.</p>
+
+    <h3 class="h3">Indexing — the shortcut for reads</h3>
+    <p class="body-text soft">Think of the index at the back of a textbook. Instead of flipping through every page to find "mitochondria," you jump straight to page 214. A database <mark class="hl">index</mark> works the same way.</p>
+
+    <div class="diagram reveal">
+      <div class="diagram-card">
+        <div class="diagram-label">Scanning vs. Indexing</div>
+        <div class="index-demo">
+          <div class="index-col">
+            <h5>Without index — scan everything</h5>
+            <div class="index-rows">
+              <div class="index-row">row 1: id=104</div>
+              <div class="index-row">row 2: id=812</div>
+              <div class="index-row">row 3: id=317</div>
+              <div class="index-row hit">row 4: id=592 ✓</div>
+              <div class="index-row">row 5: id=201</div>
+            </div>
+          </div>
+          <div class="index-col">
+            <h5>With index — jump directly</h5>
+            <div class="index-rows">
+              <div class="index-row hit">id=592 → row 4 ✓</div>
+            </div>
+          </div>
+        </div>
+        <p class="diagram-caption">An index stores column values alongside pointers to their actual rows, so the database can find matches without scanning the whole table.</p>
+      </div>
+    </div>
+
+    <div class="callout warn reveal">
+      <h4>⚠️ The trade-off</h4>
+      <p>Indexes speed up reads, but they slow down writes — every insert or update has to also update the index. That's why you should only index columns you query frequently: primary keys, foreign keys, and columns used often in <code class="inline">WHERE</code> clauses.</p>
+    </div>
+
+    <h3 class="h3">Replication — copies for reads</h3>
+    <p class="body-text soft">If indexing alone isn't enough and a single database can't keep up with read traffic, the next move is <mark class="hl">replication</mark>: creating copies of your database across multiple servers, the same instinct as adding more application servers.</p>
+
+    <div class="diagram reveal">
+      <div class="diagram-card">
+        <div class="diagram-label">Primary → Replicas</div>
+        <svg class="repl-svg" viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">
+          <rect x="160" y="10" width="80" height="46" rx="10" fill="var(--gold-soft)" stroke="var(--gold)" stroke-width="1.5"/>
+          <text x="200" y="38" text-anchor="middle" font-size="11" font-family="var(--sans)" fill="var(--ink)">Primary</text>
+
+          <rect x="30" y="120" width="80" height="46" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+          <text x="70" y="148" text-anchor="middle" font-size="10" font-family="var(--sans)" fill="var(--accent-ink)">Replica A</text>
+
+          <rect x="160" y="120" width="80" height="46" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+          <text x="200" y="148" text-anchor="middle" font-size="10" font-family="var(--sans)" fill="var(--accent-ink)">Replica B</text>
+
+          <rect x="290" y="120" width="80" height="46" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+          <text x="330" y="148" text-anchor="middle" font-size="10" font-family="var(--sans)" fill="var(--accent-ink)">Replica C</text>
+
+          <line x1="180" y1="56" x2="75" y2="118" stroke="var(--hairline)" stroke-width="2" stroke-dasharray="5 5" class="repl-pulse"/>
+          <line x1="200" y1="56" x2="200" y2="118" stroke="var(--hairline)" stroke-width="2" stroke-dasharray="5 5" class="repl-pulse"/>
+          <line x1="220" y1="56" x2="325" y2="118" stroke="var(--hairline)" stroke-width="2" stroke-dasharray="5 5" class="repl-pulse"/>
+        </svg>
+        <p class="diagram-caption">The <b>primary replica</b> handles all writes. Every write is copied out to the <b>read replicas</b>, which handle read traffic. If the primary fails, a replica can be promoted to take its place — improving both performance and availability.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CHAPTER 8 ===================== -->
+  <section class="chapter reveal" id="ch8">
+    <p class="chapter-num">Chapter Eight</p>
+    <h2 class="h">Splitting data: sharding & vertical partitioning</h2>
+    <p class="body-text lede">Replication is great for read-heavy traffic — but what happens when your database itself has grown to terabytes of data, or writes have become the bottleneck? You split it up.</p>
+
+    <h3 class="h3">Sharding (horizontal partitioning)</h3>
+    <div class="tip">
+      <div class="icon">💡</div>
+      <div class="body"><b>Sharding</b><span>Splitting a database into smaller pieces called <em>shards</em>, each holding a subset of the total rows, distributed across multiple servers based on a "sharding key" — for example, user ID.</span></div>
+    </div>
+    <p class="body-text soft">Because each shard only handles a slice of the total data, both read and write performance improve — no single server is doing all the work. Since it splits data by <em>rows</em>, this is also called horizontal partitioning.</p>
+
+    <div class="tile-row reveal">
+      <div class="tile"><div class="tile-dot" style="background:var(--s-blue);"></div><div><b>Shard 1</b><span>Users A–H</span></div></div>
+      <div class="tile"><div class="tile-dot" style="background:var(--s-orange);"></div><div><b>Shard 2</b><span>Users I–P</span></div></div>
+      <div class="tile"><div class="tile-dot" style="background:var(--s-aqua);"></div><div><b>Shard 3</b><span>Users Q–Z</span></div></div>
+      <div class="tile"><div class="tile-dot" style="background:var(--s-yellow);"></div><div><b>Sharding key</b><span>e.g. user ID decides which shard</span></div></div>
+    </div>
+
+    <h3 class="h3">Vertical partitioning</h3>
+    <p class="body-text soft">Sometimes the problem isn't too many rows — it's too many <em>columns</em>. Imagine a user table storing profile details, login history, and billing information all together. As it grows, every query has to scan past columns it doesn't even need.</p>
+    <div class="tip">
+      <div class="icon">💡</div>
+      <div class="body"><b>Vertical partitioning</b><span>Splitting one wide table into several smaller, more focused tables grouped by usage pattern — so a query only touches the columns it actually needs, cutting unnecessary disk I/O.</span></div>
+    </div>
+  </section>
+
+  <!-- ===================== CHAPTER 9 ===================== -->
+  <section class="chapter reveal" id="ch9">
+    <p class="chapter-num">Chapter Nine</p>
+    <h2 class="h">Speed tricks: caching & denormalization</h2>
+    <p class="body-text lede">No matter how much you optimize a database, reading from disk is always slower than reading from memory. So — what if the most frequently requested data just lived in memory?</p>
+
+    <div class="tip">
+      <div class="icon">💡</div>
+      <div class="body"><b>Caching</b><span>Storing frequently accessed data in fast memory instead of repeatedly hitting the database for it.</span></div>
+    </div>
+
+    <h3 class="h3">The cache-aside pattern</h3>
+    <div class="flow-steps reveal">
+      <div class="flow-step"><div class="num">1</div><div class="txt"><b>Check the cache first</b><span>The application looks for the data in the cache.</span></div></div>
+      <div class="flow-step"><div class="num">2</div><div class="txt"><b>Cache hit → return instantly</b><span>No database call needed at all.</span></div></div>
+      <div class="flow-step"><div class="num">3</div><div class="txt"><b>Cache miss → fetch from the database</b><span>Then store a copy in the cache for next time.</span></div></div>
+      <div class="flow-step"><div class="num">4</div><div class="txt"><b>Next request is served from cache</b><span>Much faster, on every subsequent read.</span></div></div>
+    </div>
+
+    <div class="tip">
+      <div class="icon">💡</div>
+      <div class="body"><b>TTL (Time To Live)</b><span>A timer set on cached data so it automatically expires after a while — preventing users from being served stale, outdated information forever.</span></div>
+    </div>
+
+    <h3 class="h3">Denormalization</h3>
+    <p class="body-text soft">Most relational databases follow <b>normalization</b> — breaking data into many small, non-repeating tables to avoid duplication. That's tidy, but it means retrieving related data (like a user's orders) often requires expensive <b>join</b> operations across tables.</p>
+    <div class="tip">
+      <div class="icon">💡</div>
+      <div class="body"><b>Denormalization</b><span>Deliberately combining related data into a single table — even if it means some duplication — so common queries can skip the join and run faster.</span></div>
+    </div>
+    <p class="body-text soft">Instead of separate <code class="inline">users</code> and <code class="inline">orders</code> tables joined at query time, you might keep a combined <code class="inline">user_orders</code> table. Fetching order history becomes a single, fast lookup. The trade-off: more storage used, and updates get more complex since the same data may need to change in more than one place.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 10 ===================== -->
+  <section class="chapter reveal" id="ch10">
+    <p class="chapter-num">Chapter Ten</p>
+    <h2 class="h">The CAP theorem</h2>
+    <p class="body-text lede">Once your system spans multiple servers, databases, and data centers, you've entered the world of <b>distributed systems</b> — and one law governs everything you can and can't guarantee there: the <mark class="hl">CAP theorem</mark>.</p>
+
+    <div class="diagram reveal">
+      <div class="diagram-card">
+        <div class="diagram-label">Pick Two</div>
+        <svg class="cap-svg" viewBox="0 0 280 240" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="140,20 20,210 260,210" fill="none" stroke="var(--hairline)" stroke-width="2"/>
+          <circle cx="140" cy="20" r="34" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+          <text x="140" y="24" text-anchor="middle" font-size="10.5" font-family="var(--sans)" font-weight="700" fill="var(--accent-ink)">Consistency</text>
+          <circle cx="20" cy="210" r="34" fill="var(--gold-soft)" stroke="var(--gold)" stroke-width="1.5"/>
+          <text x="20" y="207" text-anchor="middle" font-size="10.5" font-family="var(--sans)" font-weight="700" fill="var(--ink)">Availa-</text>
+          <text x="20" y="219" text-anchor="middle" font-size="10.5" font-family="var(--sans)" font-weight="700" fill="var(--ink)">bility</text>
+          <circle cx="260" cy="210" r="34" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+          <text x="260" y="207" text-anchor="middle" font-size="9.5" font-family="var(--sans)" font-weight="700" fill="var(--accent-ink)">Partition</text>
+          <text x="260" y="219" text-anchor="middle" font-size="9.5" font-family="var(--sans)" font-weight="700" fill="var(--accent-ink)">Tolerance</text>
+        </svg>
+        <p class="diagram-caption">No distributed system can guarantee all three of Consistency, Availability, and Partition tolerance at once. Since network failures are inevitable, you're really choosing between <b>consistency + partition tolerance</b> or <b>availability + partition tolerance</b>.</p>
+      </div>
+    </div>
+
+    <div class="tile-row reveal">
+      <div class="tile"><div class="tile-dot" style="background:var(--s-blue);"></div><div><b>Consistency</b><span>Every read gets the latest write, everywhere</span></div></div>
+      <div class="tile"><div class="tile-dot" style="background:var(--gold);"></div><div><b>Availability</b><span>Every request gets a response, even if not the latest</span></div></div>
+      <div class="tile"><div class="tile-dot" style="background:var(--s-aqua);"></div><div><b>Partition tolerance</b><span>The system keeps working even if the network between nodes breaks</span></div></div>
+    </div>
+    <p class="body-text soft">Because network partitions <em>will</em> happen eventually, partition tolerance isn't really optional — so in practice, the real-world choice comes down to consistency versus availability during a failure.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 11 ===================== -->
+  <section class="chapter reveal" id="ch11">
+    <p class="chapter-num">Chapter Eleven</p>
+    <h2 class="h">Storing & delivering files: blob storage & CDNs</h2>
+    <p class="body-text lede">Modern apps don't just store rows of text — they handle images, videos, PDFs. Traditional databases aren't built to store large unstructured files efficiently, so we reach for something else.</p>
+
+    <div class="tip">
+      <div class="icon">💡</div>
+      <div class="body"><b>Blob storage</b><span>A service like Amazon S3 built specifically for storing large files ("blobs") inside logical containers called buckets. Every file gets a unique URL, making it easy to fetch over the web.</span></div>
+    </div>
+
+    <div class="mini-stats reveal">
+      <div class="mini-stat"><div class="num">📈</div><div class="lbl">Scales automatically as files grow</div></div>
+      <div class="mini-stat"><div class="num">💳</div><div class="lbl">Pay-as-you-go pricing model</div></div>
+      <div class="mini-stat"><div class="num">🔁</div><div class="lbl">Automatic replication for durability</div></div>
+      <div class="mini-stat"><div class="num">🔗</div><div class="lbl">Simple, direct URL-based access</div></div>
+    </div>
+
+    <p class="body-text soft">But streaming a video straight from blob storage can be painfully slow if that storage is far away — imagine watching a video hosted in California from India. The data has to cross the globe, causing buffering.</p>
+
+    <div class="tip">
+      <div class="icon">💡</div>
+      <div class="body"><b>CDN (Content Delivery Network)</b><span>A global network of servers positioned around the world that cache and serve web content — HTML, JavaScript, images, video — from whichever location is physically closest to the user.</span></div>
+    </div>
+    <p class="body-text soft">Because content is served from the nearest CDN server rather than the original one, users get faster load times and far less buffering.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 12 ===================== -->
+  <section class="chapter reveal" id="ch12">
+    <p class="chapter-num">Chapter Twelve</p>
+    <h2 class="h">Real-time systems: WebSockets & webhooks</h2>
+    <p class="body-text lede">Regular HTTP follows a request-response model — the client always has to ask first. That's fine for a static webpage, but far too slow for a live chat app, a stock ticker, or a multiplayer game.</p>
+
+    <p class="body-text soft">Without a better tool, the only option is <b>polling</b> — repeatedly asking the server "anything new?" every few seconds. It works, but it's wasteful: most of those responses come back empty, burning server resources and bandwidth for nothing.</p>
+
+    <div class="tip">
+      <div class="icon">💡</div>
+      <div class="body"><b>WebSockets</b><span>A protocol that opens one persistent, two-way connection between client and server. Once it's open, the server can push updates to the client instantly — no repeated asking required — and the client can send messages back just as fast.</span></div>
+    </div>
+
+    <div class="vs-grid reveal">
+      <div class="vs-card orange">
+        <div class="vs-title">🔁 Polling</div>
+        <ul>
+          <li>Client repeatedly asks "anything new?"</li>
+          <li>Most responses are empty — wasted bandwidth</li>
+          <li>Simple to build, inefficient at scale</li>
+        </ul>
+      </div>
+      <div class="vs-card blue">
+        <div class="vs-title">⚡ WebSockets</div>
+        <ul>
+          <li>One connection stays open both ways</li>
+          <li>Server pushes updates the instant they happen</li>
+          <li>Ideal for chat, live scores, multiplayer games</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 class="h3">Webhooks — servers notifying servers</h3>
+    <p class="body-text soft">WebSockets solve real-time updates between a client and a server. But what if one <em>server</em> needs to notify another server the moment something happens — like a payment gateway telling your app "the payment just went through"?</p>
+    <div class="tip">
+      <div class="icon">💡</div>
+      <div class="body"><b>Webhook</b><span>Instead of your app constantly polling an API asking "did the payment happen yet?", the provider sends an HTTP POST request straight to a URL you registered, the instant the event occurs.</span></div>
+    </div>
+    <p class="body-text soft">You register a "webhook URL" with the provider ahead of time. When the event fires, the provider hits that URL with the event details — saving both sides from wasteful, constant checking.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 13 ===================== -->
+  <section class="chapter reveal" id="ch13">
+    <p class="chapter-num">Chapter Thirteen</p>
+    <h2 class="h">Breaking apart monoliths: microservices & message queues</h2>
+    <p class="body-text lede">Traditionally, applications were built as a <mark class="hl">monolith</mark> — every feature living inside one large codebase. That's fine for small apps, but at scale, monoliths become hard to manage, deploy, and grow.</p>
+
+    <div class="tip">
+      <div class="icon">💡</div>
+      <div class="body"><b>Microservices</b><span>Breaking one large application into smaller, independent services, where each one owns a single responsibility, has its own database and logic, and can be scaled and deployed on its own.</span></div>
+    </div>
+    <p class="body-text soft">These services talk to each other over APIs — or, when a direct call isn't the right fit, through message queues.</p>
+
+    <h3 class="h3">Message queues — asynchronous communication</h3>
+    <p class="body-text soft">Calling another service directly and waiting for an immediate answer (synchronous communication) doesn't scale well when the two sides don't need to move in lockstep.</p>
+    <div class="tip">
+      <div class="icon">💡</div>
+      <div class="body"><b>Message queue</b><span>A buffer that lets services communicate asynchronously. A "producer" drops a message into the queue; the queue holds it; a "consumer" picks it up and processes it whenever it's ready — without blocking anyone.</span></div>
+    </div>
+
+    <div class="flow-steps reveal">
+      <div class="flow-step"><div class="num">1</div><div class="txt"><b>Producer</b><span>Places a message into the queue.</span></div></div>
+      <div class="flow-step"><div class="num">2</div><div class="txt"><b>Queue</b><span>Temporarily holds the message safely.</span></div></div>
+      <div class="flow-step"><div class="num">3</div><div class="txt"><b>Consumer</b><span>Retrieves and processes the message when ready.</span></div></div>
+    </div>
+    <p class="body-text soft">Message queues decouple services from each other, improve scalability, and prevent one slow or overloaded service from taking down everything upstream of it.</p>
+  </section>
+
+  <!-- ===================== CHAPTER 14 ===================== -->
+  <section class="chapter reveal" id="ch14">
+    <p class="chapter-num">Chapter Fourteen</p>
+    <h2 class="h">Guarding the front door: rate limiting, API gateways & idempotency</h2>
+    <p class="body-text lede">Message queues protect services from each other internally — but what protects your public APIs from the outside world?</p>
+
+    <div class="tip">
+      <div class="icon">💡</div>
+      <div class="body"><b>Rate limiting</b><span>Restricting how many requests a client or IP address can send within a given time window — say, 100 requests per minute. Exceed the limit, and the server temporarily blocks further requests. Without it, a bot firing thousands of requests a second could crash your servers.</span></div>
+    </div>
+    <p class="body-text soft">Common rate-limiting algorithms include <b>fixed window</b>, <b>sliding window</b>, and <b>token bucket</b> — each trading off simplicity against fairness under bursty traffic.</p>
+
+    <h3 class="h3">API gateway</h3>
+    <p class="body-text soft">You rarely have to build rate limiting from scratch — it's usually handled by an <mark class="hl">API gateway</mark>.</p>
+    <div class="tip">
+      <div class="icon">💡</div>
+      <div class="body"><b>API gateway</b><span>A single, centralized entry point for all client requests in a microservices system. It handles authentication, rate limiting, logging, monitoring, and routing each request to the right microservice — before sending the response back through itself to the client.</span></div>
+    </div>
+
+    <h3 class="h3">Idempotency — surviving retries safely</h3>
+    <p class="body-text soft">In distributed systems, network failures and retries are a fact of life. If a user nervously refreshes a payment page, the server might receive the exact same payment request twice.</p>
+    <div class="tip">
+      <div class="icon">💡</div>
+      <div class="body"><b>Idempotency</b><span>A guarantee that making the same request multiple times produces the exact same result as making it once — so a duplicate payment request doesn't charge the user twice.</span></div>
+    </div>
+
+    <div class="flow-steps reveal">
+      <div class="flow-step"><div class="num">1</div><div class="txt"><b>Assign a unique ID</b><span>Every request gets a unique identifier before processing.</span></div></div>
+      <div class="flow-step"><div class="num">2</div><div class="txt"><b>Check for duplicates</b><span>The system checks if that ID has already been handled.</span></div></div>
+      <div class="flow-step"><div class="num">3</div><div class="txt"><b>Ignore or process</b><span>Already handled? Ignore the repeat. New? Process it normally.</span></div></div>
+    </div>
+
+    <div class="callout reveal">
+      <h4>🧩 Putting it all together</h4>
+      <p>A client hits the API gateway, which checks rate limits and routes the request to the right microservice. That service reads or writes to a sharded, replicated, cached database, and the whole exchange rides on HTTPS, guarded by idempotency in case anything gets retried. That's a real system design interview answer — built entirely from the 30 pieces you've just walked through.</p>
+    </div>
+  </section>
+
+  <section class="chapter reveal closer" id="closing">
+    <p class="chapter-num" style="text-align:center;">Chapter Fifteen</p>
+    <h2>Now go build something.</h2>
+    <p>None of these concepts are complicated in isolation. The skill that actually separates a junior developer from a senior engineer is knowing which of these thirty tools to reach for, and when — and that only comes from applying them, again and again, to real problems.</p>
+    <p class="signoff">— Keep shipping.</p>
+  </section>
+
+</div>
+
+<footer class="site-footer">
+  <div class="wrap">Field notes on the 30 core system design concepts · read on any device</div>
+</footer>
+
+<script>
+(function () {
+  // theme toggle
+  var root = document.documentElement;
+  var btn = document.getElementById('themeToggle');
+  function currentTheme() {
+    if (root.getAttribute('data-theme')) return root.getAttribute('data-theme');
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  btn.addEventListener('click', function () {
+    var next = currentTheme() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    btn.textContent = next === 'dark' ? '☀' : '◐';
+  });
+  btn.textContent = currentTheme() === 'dark' ? '☀' : '◐';
+
+  // scroll progress
+  var bar = document.getElementById('progress-bar');
+  var floatTop = document.getElementById('floatTop');
+  function onScroll() {
+    var h = document.documentElement;
+    var scrolled = h.scrollTop || document.body.scrollTop;
+    var height = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
+    var pct = height > 0 ? (scrolled / height) * 100 : 0;
+    bar.style.width = pct + '%';
+    if (scrolled > 500) floatTop.classList.add('show'); else floatTop.classList.remove('show');
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  floatTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+  // reveal on scroll
+  var revealEls = document.querySelectorAll('.reveal, .ladder');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    revealEls.forEach(function (el) { io.observe(el); });
+  } else {
+    revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+  }
+
+  // TOC active link
+  var tocLinks = {};
+  document.querySelectorAll('nav.toc a').forEach(function (a) {
+    tocLinks[a.getAttribute('href').slice(1)] = a;
+  });
+  var chapters = document.querySelectorAll('section.chapter');
+  if ('IntersectionObserver' in window) {
+    var tocObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var link = tocLinks[entry.target.id];
+        if (!link) return;
+        if (entry.isIntersecting) {
+          Object.values(tocLinks).forEach(function (l) { l.classList.remove('active'); });
+          link.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-40% 0px -50% 0px' });
+    chapters.forEach(function (c) { if (c.id) tocObserver.observe(c); });
+  }
+})();
+</script>
+
+</body>
+</html>
