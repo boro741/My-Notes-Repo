@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>The Learning Trap</title>
+<style>
+
+:root {
+color-scheme: light;
+--page: #f9f9f7;
+--surface: #fcfcfb;
+--ink: #0b0b0b;
+--ink-soft: #52514e;
+--muted: #898781;
+--hairline: #e1e0d9;
+--border: rgba(11,11,11,0.10);
+--accent: #2a78d6;
+--accent-ink: #184f95;
+--accent-soft: #eaf2fc;
+--gold: #eda100;
+--gold-soft: #fbf1dc;
+--good: #0ca30c;
+--warn: #fab219;
+--bad: #ec835a;
+
+--s-blue: #2a78d6;
+--s-orange: #eb6834;
+--s-aqua: #1baf7a;
+--s-yellow: #eda100;
+--s-magenta: #e87ba4;
+
+--shadow: 0 1px 2px rgba(11,11,11,0.04), 0 8px 24px rgba(11,11,11,0.06);
+--serif: ui-serif, Charter, "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+--sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+html[data-theme="dark"] {
+color-scheme: dark;
+--page: #0d0d0d;
+--surface: #1a1a19;
+--ink: #ffffff;
+--ink-soft: #c3c2b7;
+--muted: #898781;
+--hairline: #2c2c2a;
+--border: rgba(255,255,255,0.10);
+--accent: #3987e5;
+--accent-ink: #bcd6f7;
+--accent-soft: rgba(57,135,229,0.14);
+--gold: #c98500;
+--gold-soft: rgba(201,133,0,0.16);
+--good: #0ca30c;
+--warn: #fab219;
+--bad: #ec835a;
+
+--s-blue: #3987e5;
+--s-orange: #d95926;
+--s-aqua: #199e70;
+--s-yellow: #c98500;
+--s-magenta: #d55181;
+
+--shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+}
+
+@media (prefers-color-scheme: dark) {
+html:not([data-theme="light"]) {
+color-scheme: dark;
+--page: #0d0d0d;
+--surface: #1a1a19;
+--ink: #ffffff;
+--ink-soft: #c3c2b7;
+--muted: #898781;
+--hairline: #2c2c2a;
+--border: rgba(255,255,255,0.10);
+--accent: #3987e5;
+--accent-ink: #bcd6f7;
+--accent-soft: rgba(57,135,229,0.14);
+--gold: #c98500;
+--gold-soft: rgba(201,133,0,0.16);
+--s-blue: #3987e5;
+--s-orange: #d95926;
+--s-aqua: #199e70;
+--s-yellow: #c98500;
+--s-magenta: #d55181;
+--shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+}
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+
+body {
+margin: 0;
+background: var(--page);
+color: var(--ink);
+font-family: var(--sans);
+line-height: 1.65;
+-webkit-font-smoothing: antialiased;
+text-rendering: optimizeLegibility;
+transition: background 0.25s ease, color 0.25s ease;
+padding-left: env(safe-area-inset-left);
+padding-right: env(safe-area-inset-right);
+}
+
+::selection { background: var(--gold-soft); color: var(--ink); }
+
+#progress-bar {
+position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+background: linear-gradient(90deg, var(--accent), var(--gold));
+z-index: 1000; transition: width 0.1s ease-out;
+}
+
+.theme-toggle, .float-top {
+position: fixed; z-index: 999;
+width: 44px; height: 44px; border-radius: 50%;
+border: 1px solid var(--border);
+background: var(--surface); color: var(--ink);
+display: flex; align-items: center; justify-content: center;
+cursor: pointer; box-shadow: var(--shadow);
+font-size: 1.05rem;
+transition: transform 0.15s ease, background 0.25s ease;
+}
+.theme-toggle { top: calc(16px + env(safe-area-inset-top)); right: calc(16px + env(safe-area-inset-right)); }
+.float-top {
+bottom: calc(22px + env(safe-area-inset-bottom)); right: calc(16px + env(safe-area-inset-right));
+background: var(--ink); color: var(--page); border: none;
+opacity: 0; transform: translateY(10px); pointer-events: none;
+}
+.float-top.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.theme-toggle:active, .float-top:active { transform: scale(0.92); }
+
+.wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+.wrap-wide { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+header.hero {
+padding: calc(88px + env(safe-area-inset-top)) 0 56px;
+position: relative;
+overflow: hidden;
+}
+.kicker {
+font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
+color: var(--accent); font-weight: 700; margin: 0 0 18px;
+display: flex; align-items: center; gap: 10px;
+}
+.kicker::before { content: ""; width: 22px; height: 2px; background: var(--accent); display: inline-block; border-radius: 2px; }
+
+h1.title {
+font-family: var(--serif);
+font-weight: 600;
+font-size: clamp(2.1rem, 7vw, 3.6rem);
+line-height: 1.08;
+letter-spacing: -0.01em;
+margin: 0 0 20px;
+}
+h1.title em { font-style: italic; color: var(--accent); }
+
+.dek {
+font-size: clamp(1.05rem, 2.6vw, 1.3rem);
+color: var(--ink-soft);
+max-width: 60ch;
+margin: 0 0 28px;
+font-weight: 400;
+}
+
+.byline {
+display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+font-size: 0.88rem; color: var(--muted);
+padding-top: 22px; border-top: 1px solid var(--hairline);
+}
+.byline .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); }
+.avatar {
+width: 38px; height: 38px; border-radius: 50%;
+background: linear-gradient(135deg, var(--accent), var(--gold));
+display: flex; align-items: center; justify-content: center;
+color: #fff; font-family: var(--serif); font-weight: 700; font-size: 1rem;
+}
+
+.hero-quote {
+font-family: var(--serif); font-style: italic;
+font-size: clamp(1.15rem, 3vw, 1.5rem); line-height: 1.5;
+color: var(--ink);
+margin: 40px 0 0; padding: 26px 0 0 24px;
+border-left: 3px solid var(--gold);
+}
+
+nav.toc {
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 18px; padding: 26px 26px 22px; margin: 8px 0 64px;
+box-shadow: var(--shadow);
+}
+nav.toc h2 {
+font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+color: var(--muted); margin: 0 0 14px; font-weight: 700;
+}
+nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; }
+nav.toc li {
+counter-increment: toc; margin-bottom: 4px;
+}
+nav.toc a {
+display: flex; align-items: baseline; gap: 12px;
+color: var(--ink-soft); text-decoration: none;
+font-size: 0.96rem; padding: 7px 4px; border-radius: 8px;
+transition: color 0.15s ease, background 0.15s ease;
+}
+nav.toc a::before {
+content: counter(toc, decimal-leading-zero);
+font-family: var(--serif); font-size: 0.82rem; color: var(--muted); flex-shrink: 0;
+}
+nav.toc a:hover, nav.toc a.active { color: var(--accent); background: var(--accent-soft); }
+nav.toc a.active::before { color: var(--accent); }
+
+section.chapter { padding: 44px 0 8px; scroll-margin-top: 24px; }
+section.chapter + section.chapter { border-top: 1px solid var(--hairline); }
+
+.chapter-num {
+font-family: var(--serif); font-style: italic; color: var(--gold);
+font-size: 1rem; margin: 0 0 10px; font-weight: 600;
+}
+
+h2.h {
+font-family: var(--serif); font-weight: 600;
+font-size: clamp(1.5rem, 4.4vw, 2.1rem);
+line-height: 1.18; letter-spacing: -0.01em;
+margin: 0 0 20px;
+}
+h3.h3 {
+font-family: var(--serif); font-weight: 600;
+font-size: clamp(1.15rem, 3vw, 1.4rem);
+margin: 30px 0 12px;
+}
+
+p.body-text { font-size: 1.06rem; color: var(--ink); margin: 0 0 18px; }
+p.body-text.soft { color: var(--ink-soft); }
+.lede { font-size: 1.18rem; }
+
+mark.hl {
+background: var(--gold-soft); color: var(--ink);
+padding: 0.05em 0.15em; border-radius: 4px; font-weight: 600;
+}
+
+blockquote.pull {
+font-family: var(--serif); font-style: italic;
+font-size: clamp(1.2rem, 3.4vw, 1.6rem); line-height: 1.45;
+color: var(--ink); margin: 34px 0; padding: 0 0 0 24px;
+border-left: 3px solid var(--accent);
+}
+blockquote.pull cite {
+display: block; font-style: normal; font-family: var(--sans);
+font-size: 0.82rem; color: var(--muted); margin-top: 10px; letter-spacing: 0.02em;
+}
+
+.callout {
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 16px; padding: 22px 24px; margin: 28px 0;
+box-shadow: var(--shadow);
+}
+.callout h4 {
+margin: 0 0 8px; font-size: 0.98rem; font-weight: 700;
+display: flex; align-items: center; gap: 8px;
+}
+.callout p { margin: 0; color: var(--ink-soft); font-size: 0.98rem; }
+
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s cubic-bezier(.2,.7,.3,1), transform 0.7s cubic-bezier(.2,.7,.3,1); }
+.reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+/* ================= loop comparison diagram ================= */
+
+.loop-grid { display: grid; grid-template-columns: 1fr; gap: 22px; }
+@media (min-width: 640px) { .loop-grid { grid-template-columns: 1fr 1fr; } }
+.loop-col { display: flex; flex-direction: column; align-items: center; }
+.loop-col-title {
+font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+color: var(--muted); margin-bottom: 16px; text-align: center;
+}
+.loop-col.old .loop-col-title { color: var(--bad); }
+.loop-col.new .loop-col-title { color: var(--good); }
+.pill-chain { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; }
+.pill {
+background: var(--accent-soft); color: var(--accent-ink);
+border: 1px solid var(--border); border-radius: 999px;
+padding: 10px 16px; font-size: 0.86rem; font-weight: 600;
+text-align: center; width: 100%; max-width: 240px;
+}
+.loop-col.old .pill { background: var(--gold-soft); color: var(--ink); }
+.loop-col.new .pill:last-child { background: var(--good); color: #fff; border-color: transparent; }
+.pill-arrow { color: var(--muted); font-size: 1rem; line-height: 1; margin: 2px 0; }
+.loop-col.old .pill-arrow.escape { color: var(--bad); font-size: 0.72rem; font-weight: 700; text-align:center; max-width:200px; }
+
+/* ================= ring widget (struggle tolerance) ================= */
+
+.luck-widget { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 0; }
+.luck-ring-wrap { position: relative; width: 168px; height: 168px; }
+.luck-ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.luck-ring-bg { fill: none; stroke: var(--hairline); stroke-width: 10; }
+.luck-ring-fg {
+fill: none; stroke: url(#luckGrad); stroke-width: 10; stroke-linecap: round;
+stroke-dasharray: 440; stroke-dashoffset: 440;
+transition: stroke-dashoffset 1.8s cubic-bezier(.2,.8,.2,1);
+}
+.is-visible .luck-ring-fg { stroke-dashoffset: 110; }
+.luck-number {
+position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+font-family: var(--serif); font-weight: 700; font-size: 2.3rem; color: var(--ink);
+}
+.luck-labels { display: flex; gap: 26px; margin-top: 6px; font-size: 0.85rem; color: var(--muted); }
+.luck-labels b { color: var(--ink); }
+
+/* ================= skill ladder ================= */
+
+.ladder { display: flex; flex-direction: column-reverse; gap: 10px; margin: 30px 0; }
+.rung {
+display: flex; align-items: center; gap: 16px;
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 14px; padding: 14px 18px;
+opacity: 0.35; transform: translateX(-10px);
+transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.5s ease, background 0.5s ease;
+}
+.ladder.is-visible .rung { opacity: 1; transform: translateX(0); }
+.ladder.is-visible .rung:nth-child(1) { transition-delay: 0.5s; }
+.ladder.is-visible .rung:nth-child(2) { transition-delay: 0.4s; }
+.ladder.is-visible .rung:nth-child(3) { transition-delay: 0.3s; }
+.ladder.is-visible .rung:nth-child(4) { transition-delay: 0.2s; }
+.ladder.is-visible .rung:nth-child(5) { transition-delay: 0.1s; }
+.ladder.is-visible .rung:nth-child(5) { border-color: var(--gold); background: var(--gold-soft); }
+.rung-step {
+width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+background: var(--accent-soft); color: var(--accent-ink);
+display: flex; align-items: center; justify-content: center;
+font-family: var(--serif); font-weight: 700; font-size: 0.9rem;
+}
+.ladder.is-visible .rung:nth-child(5) .rung-step { background: var(--gold); color: #fff; }
+.rung-body b { display: block; font-size: 0.98rem; }
+.rung-body span { font-size: 0.85rem; color: var(--muted); }
+
+/* ================= breakdown funnel ================= */
+
+.funnel-wrap { position: relative; height: 260px; max-width: 380px; margin: 0 auto; }
+.funnel-shape {
+position: absolute; inset: 0;
+clip-path: polygon(6% 0%, 94% 0%, 62% 100%, 38% 100%);
+background: linear-gradient(180deg, var(--accent-soft), var(--gold-soft));
+border: 1px solid var(--hairline);
+}
+.funnel-rule {
+position: absolute; left: 0; right: 0; border-top: 1px dashed var(--hairline);
+display: flex; justify-content: flex-end; padding-right: 6px;
+}
+.funnel-rule span { font-size: 0.68rem; color: var(--muted); transform: translateY(-9px); background: var(--surface); padding: 0 6px; border-radius: 4px; }
+.funnel-dot {
+position: absolute; width: 9px; height: 9px; border-radius: 50%;
+background: var(--accent); top: -14px;
+animation: fall 3.2s linear infinite;
+}
+.funnel-dot.gold { background: var(--gold); }
+@keyframes fall {
+0% { transform: translateY(0) scale(1); opacity: 0; }
+8% { opacity: 1; }
+92% { opacity: 1; }
+100% { transform: translateY(270px) scale(0.4); opacity: 0; }
+}
+
+/* ================= stat cards ================= */
+
+.stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 30px 0; }
+.stat-card {
+background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px;
+padding: 22px 14px; text-align: center; box-shadow: var(--shadow);
+}
+.stat-icon { margin: 0 auto 10px; width: 34px; height: 34px; color: var(--accent); }
+.stat-num {
+font-family: var(--serif); font-weight: 700; color: var(--ink);
+font-size: clamp(1.4rem, 5vw, 1.9rem); line-height: 1.15; margin-bottom: 6px;
+}
+.stat-word { font-size: 0.8rem; color: var(--muted); font-weight: 600; letter-spacing: 0.02em; }
+
+/* ================= 30-minute gauge ================= */
+
+.chart-card {
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 18px; padding: 26px 22px 20px; margin: 30px 0; box-shadow: var(--shadow);
+}
+.chart-title { font-size: 0.82rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 22px; }
+
+.gauge-track { position: relative; height: 40px; border-radius: 10px; background: var(--hairline); overflow: hidden; margin: 10px 0 6px; display: flex; }
+.gauge-zone { height: 100%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.72rem; font-weight: 700; transform: scaleX(0); transform-origin: left; transition: transform 1.1s cubic-bezier(.2,.8,.2,1); }
+.is-visible .gauge-zone { transform: scaleX(1); }
+.gauge-zone:nth-child(1) { width: 33%; background: var(--s-orange); transition-delay: 0s; }
+.gauge-zone:nth-child(2) { width: 33%; background: var(--s-blue); transition-delay: 0.15s; }
+.gauge-zone:nth-child(3) { width: 34%; background: var(--accent-ink); transition-delay: 0.3s; }
+.gauge-legend { display: flex; justify-content: space-between; font-size: 0.74rem; color: var(--muted); gap: 8px; }
+.gauge-legend span { flex: 1; }
+.gauge-legend span:last-child { text-align: right; }
+
+/* ================= category tiles ================= */
+
+.tile-row { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 22px 0; }
+@media (min-width: 560px) { .tile-row { grid-template-columns: repeat(2, 1fr); } }
+.tile {
+display: flex; align-items: center; gap: 12px;
+background: var(--surface); border: 1px solid var(--hairline); border-radius: 14px;
+padding: 14px 16px;
+}
+.tile-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.tile b { display: block; font-size: 0.94rem; }
+.tile span { font-size: 0.8rem; color: var(--muted); }
+
+.mini-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 24px 0; }
+.mini-stat { background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px; padding: 20px; box-shadow: var(--shadow); }
+.mini-stat .num { font-family: var(--serif); font-size: clamp(1.6rem, 5vw, 2rem); font-weight: 700; color: var(--accent); }
+.mini-stat .lbl { font-size: 0.82rem; color: var(--ink-soft); margin-top: 4px; }
+
+/* ================= case study card ================= */
+
+.case-card {
+background: linear-gradient(160deg, var(--surface), var(--accent-soft));
+border: 1px solid var(--hairline); border-radius: 20px; padding: 28px 24px;
+margin: 30px 0; box-shadow: var(--shadow);
+}
+.case-tag {
+display: inline-flex; align-items: center; gap: 6px;
+font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+color: var(--accent); background: var(--surface); padding: 5px 10px; border-radius: 20px;
+border: 1px solid var(--border); margin-bottom: 14px;
+}
+.case-stats { display: flex; gap: 26px; margin-top: 18px; flex-wrap: wrap; }
+.case-stats div b { display: block; font-family: var(--serif); font-size: 1.5rem; }
+.case-stats div span { font-size: 0.78rem; color: var(--muted); }
+
+.diagram { margin: 30px 0 8px; }
+.diagram-card {
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 20px; padding: 28px 20px 20px; box-shadow: var(--shadow);
+text-align: center;
+}
+.diagram-label {
+font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase;
+color: var(--muted); font-weight: 700; margin-bottom: 4px;
+}
+.diagram-caption { font-size: 0.92rem; color: var(--ink-soft); margin-top: 10px; }
+
+.closer {
+text-align: center; padding: 70px 0 90px;
+}
+.closer h2 {
+font-family: var(--serif); font-weight: 600; font-style: italic;
+font-size: clamp(1.8rem, 6vw, 2.6rem); line-height: 1.2; margin: 0 0 18px;
+}
+.closer p { color: var(--ink-soft); font-size: 1.05rem; max-width: 46ch; margin: 0 auto; }
+.signoff { margin-top: 34px; font-family: var(--serif); font-style: italic; color: var(--muted); }
+
+footer.site-footer {
+border-top: 1px solid var(--hairline); padding: 28px 0 calc(40px + env(safe-area-inset-bottom));
+text-align: center; font-size: 0.82rem; color: var(--muted);
+}
+
+@media (max-width: 480px) {
+.stat-row { gap: 10px; }
+.stat-card { padding: 16px 8px; }
+.case-stats { gap: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+.reveal, .rung, .luck-ring-fg, .gauge-zone { transition: none !important; }
+.funnel-dot { animation: none !important; }
+html { scroll-behavior: auto; }
+}
+
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">◐</button>
+<button class="float-top" id="floatTop" aria-label="Back to top">↑</button>
+
+<div class="wrap">
+
+<header class="hero">
+<p class="kicker">On Learning, Struggle &amp; Figuring Out What You Love</p>
+<h1 class="title">The Learning Trap (And How to <em>Escape</em> It)</h1>
+<p class="dek">Why "I need to learn more first" might be the most reasonable-sounding excuse your brain has ever invented — and what to do instead, for problems and for life.</p>
+<div class="byline">
+<div class="avatar">?</div>
+<span>A conversation worth having with yourself</span>
+<span class="dot"></span>
+<span>~11 min read</span>
+<span class="dot"></span>
+<span>11 chapters</span>
+</div>
+<blockquote class="hero-quote">
+"Maybe you don't hate solving problems. Maybe you hate the feeling of not knowing how to solve them. Those are very different things."
+</blockquote>
+</header>
+
+<nav class="toc reveal">
+<h2>In this piece</h2>
+<ol>
+<li><a href="#ch1">The loop you're stuck in</a></li>
+<li><a href="#ch2">It's not laziness — it's an escape hatch</a></li>
+<li><a href="#ch3">Knowing vs. solving</a></li>
+<li><a href="#ch4">The trap of experience</a></li>
+<li><a href="#ch5">Case study: the app that never ships</a></li>
+<li><a href="#ch6">Redefining "learning"</a></li>
+<li><a href="#ch7">The new rule: no learning without a problem</a></li>
+<li><a href="#ch8">The 30-minute struggle window</a></li>
+<li><a href="#ch9">Five skills of a great problem solver</a></li>
+<li><a href="#ch10">Finding what you actually love</a></li>
+<li><a href="#ch11">The 30-day experiment</a></li>
+</ol>
+</nav>
+
+<!-- ===================== CHAPTER 1 ===================== -->
+<section class="chapter reveal" id="ch1">
+<p class="chapter-num">Chapter One</p>
+<h2 class="h">The loop you're stuck in</h2>
+<p class="body-text lede">You don't have a problem with learning. You've become exceptionally good at it. What you might actually have trouble with is the transition from <mark class="hl">learning → uncertainty → struggle → solving</mark>.</p>
+<p class="body-text soft">Here's the loop that probably feels effortless, even addictive: curiosity leads you to learn something, learning feels good, that good feeling reveals a new gap in your knowledge, so you learn that too — and the cycle repeats, forever, pleasantly.</p>
+<p class="body-text soft">Now compare it to the loop you keep avoiding: you have a problem, you don't know how to solve it, you try anyway, you get stuck, you feel stupid or uncomfortable, and right at that exact moment your brain offers you an exit ramp that sounds completely reasonable — "maybe I just need to learn X first."</p>
+
+<div class="diagram reveal">
+<div class="diagram-card">
+<div class="diagram-label">Two Very Different Loops</div>
+<div class="loop-grid">
+<div class="loop-col old">
+<div class="loop-col-title">The one you know by heart</div>
+<div class="pill-chain">
+<div class="pill">Curiosity</div>
+<div class="pill-arrow">↓</div>
+<div class="pill">Learn something</div>
+<div class="pill-arrow">↓</div>
+<div class="pill">Feel good</div>
+<div class="pill-arrow">↓</div>
+<div class="pill">Discover a new gap</div>
+<div class="pill-arrow escape">↺ loops forever, never touches a real problem</div>
+</div>
+</div>
+<div class="loop-col new">
+<div class="loop-col-title">The one that actually builds things</div>
+<div class="pill-chain">
+<div class="pill">Problem</div>
+<div class="pill-arrow">↓</div>
+<div class="pill">Don't know how</div>
+<div class="pill-arrow">↓</div>
+<div class="pill">Try, get stuck</div>
+<div class="pill-arrow">↓</div>
+<div class="pill">Feel uncomfortable</div>
+<div class="pill-arrow">↓</div>
+<div class="pill">Solved</div>
+</div>
+</div>
+</div>
+</div>
+<p class="diagram-caption">Same brain, two very different circuits. One is smooth and endless. The other has friction — and the friction is exactly where the growth lives.</p>
+</div>
+
+<p class="body-text soft">You never consciously think "I'm avoiding the problem." Instead you think: "I need to understand distributed systems first." "I need to learn this framework properly." "I need to watch one more video on architecture." And just like that, you're back in the loop that feels good — learning again, gap-hunting again, never quite arriving at the uncomfortable middle part.</p>
+</section>
+
+<!-- ===================== CHAPTER 2 ===================== -->
+<section class="chapter reveal" id="ch2">
+<p class="chapter-num">Chapter Two</p>
+<h2 class="h">It's not laziness — it's an escape hatch</h2>
+<p class="body-text lede">The interesting part is that learning is genuinely rewarding for you. That's what makes this so hard to notice. This isn't simple laziness — laziness would feel bad. This feels productive. It <em>is</em> productive, in a narrow sense. You really are learning things. You just aren't finishing anything.</p>
+<blockquote class="pull">"Maybe I hate solving the problems." I wouldn't conclude that yet. I'd phrase it differently: maybe you hate the feeling of not knowing how to solve the problem.</blockquote>
+<p class="body-text soft">Those are very different diagnoses, and they call for very different treatments. When you're learning, you control the difficulty dial. You can watch a video about CAP theorem, read about Kafka, study system architecture end to end — and at the finish line you get a clean, satisfying "ah, now I understand." Real problem-solving almost never hands you that feeling on schedule. It hands you "I don't know," then "that didn't work," then "why didn't that work," then "I have no idea," on repeat, for as long as it takes — sometimes hours, sometimes weeks — with very little dopamine along the way.</p>
+</section>
+
+<!-- ===================== CHAPTER 3 ===================== -->
+<section class="chapter reveal" id="ch3">
+<p class="chapter-num">Chapter Three</p>
+<h2 class="h">Knowing vs. solving</h2>
+<p class="body-text lede">Seven years of experience means you've accumulated a genuinely large amount of conceptual knowledge. You can discuss architecture, distributed systems, testing strategy, infrastructure, new languages — fluently. That knowledge is real. It's also a trap, and it's a subtle one:</p>
+<blockquote class="pull">"If I just know enough, eventually I'll become the person who can build things."</blockquote>
+<p class="body-text soft">Engineering doesn't actually work that way. You don't become good at solving problems by knowing everything. You become good at solving problems by repeatedly living through the cycle: not knowing → experimenting → failing → debugging → discovering → finishing. That cycle is the entire skill. Knowledge is just the raw material you occasionally reach for in the middle of it.</p>
+<div class="callout reveal">
+<h4>🔧 The missing skill isn't technical</h4>
+<p>It's probably not another framework, language, or architecture pattern. It's <em>problem-solving endurance</em> — the ability to stay in the uncomfortable middle long enough for the thing to actually click.</p>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 4 ===================== -->
+<section class="chapter reveal" id="ch4">
+<p class="chapter-num">Chapter Four</p>
+<h2 class="h">The trap of experience</h2>
+<p class="body-text lede">Here's how the trap runs, concretely, using the classic example: you've wanted to build and publish an Android app for years.</p>
+
+<div class="diagram reveal">
+<div class="diagram-card" style="text-align:left;">
+<div class="diagram-label" style="text-align:center; margin-bottom:14px;">Where The Project Actually Dies</div>
+<div class="ladder">
+<div class="rung">
+<div class="rung-step">1</div>
+<div class="rung-body"><b>"I want to build an Android app"</b><span>The idea. Full of energy.</span></div>
+</div>
+<div class="rung">
+<div class="rung-step">2</div>
+<div class="rung-body"><b>"I should learn Kotlin properly first"</b><span>Reasonable. Feels responsible.</span></div>
+</div>
+<div class="rung">
+<div class="rung-step">3</div>
+<div class="rung-body"><b>"I should understand MVVM and Jetpack"</b><span>Still feels like progress.</span></div>
+</div>
+<div class="rung">
+<div class="rung-step">4</div>
+<div class="rung-body"><b>"I should understand clean architecture"</b><span>Now it's mostly stalling, dressed as diligence.</span></div>
+</div>
+<div class="rung">
+<div class="rung-step">5</div>
+<div class="rung-body"><b>The project never ships</b><span>Years pass. The idea is still "someday."</span></div>
+</div>
+</div>
+</div>
+</div>
+
+<p class="body-text soft">None of those "I should learn X first" thoughts are wrong, exactly. They're just perfectly timed to keep you one step away from the discomfort of actually starting.</p>
+</section>
+
+<!-- ===================== CHAPTER 5 ===================== -->
+<section class="chapter reveal" id="ch5">
+<p class="chapter-num">Chapter Five</p>
+<h2 class="h">Case study: the app that never ships</h2>
+<p class="body-text lede">The alternative is almost absurdly simple. Build a terrible app. Not good. Not scalable. Not architecturally beautiful. Terrible — and shipped.</p>
+
+<div class="case-card reveal">
+<span class="case-tag">Experiment · The Ugly First App</span>
+<p class="body-text" style="margin-bottom:0;">The idea: an app that lets you record one thing you learned today. That's the entire spec. You don't know Android? Good. Search "how do I create a text input in Android." Implement it. Stuck? Search. Implement. Next problem: "how do I save this?" Search. Implement. Next: "how do I display saved entries?" Search. Implement. Then — publish it.</p>
+<div class="case-stats">
+<div><b>0</b><span>hours of upfront tutorials required</span></div>
+<div><b>~6</b><span>tiny, googleable problems in a row</span></div>
+<div><b>1</b><span>real, shipped, ugly thing that exists</span></div>
+</div>
+</div>
+
+<p class="body-text soft">Now you've experienced something that five hundred hours of YouTube cannot give you: <em>I had a problem, I didn't know the answer, and I figured it out.</em> That single sentence is worth more than another course.</p>
+</section>
+
+<!-- ===================== CHAPTER 6 ===================== -->
+<section class="chapter reveal" id="ch6">
+<p class="chapter-num">Chapter Six</p>
+<h2 class="h">Redefining "learning"</h2>
+<p class="body-text lede">Right now your brain's definition might be: <em>learning = acquiring knowledge.</em> Replace it with: <mark class="hl">learning = becoming capable of doing something I couldn't do before.</mark> Those sound similar. They are not the same thing at all.</p>
+<p class="body-text soft">Watch ten hours of videos about Kafka and you'll know more about Kafka. But you haven't necessarily learned it in the engineering sense. Build an API → Kafka → consumer → database pipeline and spend three days debugging why messages are duplicating, and you will likely learn far more Kafka than those ten hours ever gave you — because now the knowledge has a job to do.</p>
+<div class="stat-row reveal">
+<div class="stat-card">
+<div class="stat-num">Info</div>
+<div class="stat-word">10 hrs of Kafka videos</div>
+</div>
+<div class="stat-card">
+<div class="stat-num">vs.</div>
+<div class="stat-word">&nbsp;</div>
+</div>
+<div class="stat-card">
+<div class="stat-num">Skill</div>
+<div class="stat-word">3 days debugging duplicate messages</div>
+</div>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 7 ===================== -->
+<section class="chapter reveal" id="ch7">
+<p class="chapter-num">Chapter Seven</p>
+<h2 class="h">The new rule: no learning without a problem</h2>
+<p class="body-text lede">Don't try to overhaul your entire personality overnight. Introduce one rule instead: <mark class="hl">no learning without a problem.</mark></p>
+<p class="body-text soft">Don't say "today I'll learn Docker." Say "I need to run my app and database together" — <em>then</em> learn Docker. Don't say "I want to learn system design." Say "I want to build a URL shortener" — now learn the architecture the problem actually demands. Don't say "I need to learn Kotlin." Say "I want to build this tiny, ugly app" — and learn Kotlin exactly when the problem requires it, no sooner.</p>
+
+<div class="diagram reveal">
+<div class="diagram-card">
+<div class="diagram-label">One Big Problem → Many Tiny Ones</div>
+<div class="funnel-wrap">
+<div class="funnel-shape"></div>
+<div class="funnel-rule" style="top:0%"><span>"build an Android app"</span></div>
+<div class="funnel-rule" style="top:45%"><span>"can I save this input?"</span></div>
+<div class="funnel-rule" style="top:88%"><span>shipped</span></div>
+<div class="funnel-dot" style="left:14%; animation-delay:0s"></div>
+<div class="funnel-dot" style="left:26%; animation-delay:0.5s"></div>
+<div class="funnel-dot gold" style="left:38%; animation-delay:1s"></div>
+<div class="funnel-dot" style="left:50%; animation-delay:1.5s"></div>
+<div class="funnel-dot" style="left:62%; animation-delay:2s"></div>
+<div class="funnel-dot gold" style="left:74%; animation-delay:2.5s"></div>
+<div class="funnel-dot" style="left:86%; animation-delay:0.8s"></div>
+</div>
+<p class="diagram-caption">Twenty small, concrete, googleable problems are far less scary than one enormous, vague one. Break it down before you try to learn your way through it.</p>
+</div>
+</div>
+
+<p class="body-text soft">The problem becomes your teacher. It hands you exactly the right lesson, exactly when you need it — never a chapter early.</p>
+</section>
+
+<!-- ===================== CHAPTER 8 ===================== -->
+<section class="chapter reveal" id="ch8">
+<p class="chapter-num">Chapter Eight</p>
+<h2 class="h">The 30-minute struggle window</h2>
+<p class="body-text lede">Here's the one rule I'd make especially strict: when you get stuck, don't immediately retreat into "learning mode." Give yourself a 30-minute struggle window first.</p>
+
+<div class="chart-card reveal">
+<div class="chart-title">What to do in the first 30 minutes of being stuck</div>
+<div class="gauge-track">
+<div class="gauge-zone">0–10 min</div>
+<div class="gauge-zone">10–20 min</div>
+<div class="gauge-zone">20–30 min</div>
+</div>
+<div class="gauge-legend">
+<span>State the problem, expected vs. actual, one hypothesis</span>
+<span>Test the hypothesis, read the actual error/logs</span>
+<span>Search for the exact specific problem, try again</span>
+</div>
+</div>
+
+<p class="body-text soft">Only after that thirty minutes do you earn the right to reach for broader educational material. This one habit quietly rewires your relationship with Google and YouTube — from "teach me something interesting" to "help me solve this specific problem." That's a completely different kind of question, and it produces a completely different kind of person.</p>
+</section>
+
+<!-- ===================== CHAPTER 9 ===================== -->
+<section class="chapter reveal" id="ch9">
+<p class="chapter-num">Chapter Nine</p>
+<h2 class="h">Five skills of a great problem solver</h2>
+<p class="body-text lede">Don't stop learning — change what triggers it. Move from "what should I learn?" toward "what problem am I trying to solve?" Five skills sit underneath that shift.</p>
+
+<div class="tile-row reveal">
+<div class="tile"><div class="tile-dot" style="background:var(--s-blue);"></div><div><b>1. Define the problem</b><span>"My API is slow" becomes "requests with 100+ items take 4–6s vs. the usual 200ms."</span></div></div>
+<div class="tile"><div class="tile-dot" style="background:var(--s-orange);"></div><div><b>2. Sit with "I don't know"</b><span>Not "I need to learn more first" — just "I don't know yet, let's investigate."</span></div></div>
+<div class="tile"><div class="tile-dot" style="background:var(--s-aqua);"></div><div><b>3. Break it into tiny problems</b><span>One huge problem becomes twenty small, ordinary, solvable ones.</span></div></div>
+<div class="tile"><div class="tile-dot" style="background:var(--s-yellow);"></div><div><b>4. Experiment, don't guess</b><span>Hypothesis → experiment → evidence → conclusion, instead of two hours of theory.</span></div></div>
+<div class="tile"><div class="tile-dot" style="background:var(--s-magenta);"></div><div><b>5. Stay with the problem</b><span>Stuck → uncomfortable → investigate anyway. Not stuck → uncomfortable → escape into learning.</span></div></div>
+</div>
+
+<div class="callout reveal">
+<h4>🧭 The real test</h4>
+<p>After anything you learn, ask: "what can I now build, change, explain, debug, or solve that I couldn't before?" If the answer is nothing, you consumed information rather than learned a skill. And before you start learning something new, ask: "what problem will I use this to solve?" If you can't answer that yet, it can wait on your "interesting things to learn later" list.</p>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 10 ===================== -->
+<section class="chapter reveal" id="ch10">
+<p class="chapter-num">Chapter Ten</p>
+<h2 class="h">Finding what you actually love</h2>
+<p class="body-text lede">This second question — "what are my hobbies, what do I actually love?" — turns out to be built from the exact same mistake. You've been trying to <em>think</em> your way to an answer that only <em>doing</em> can produce.</p>
+<p class="body-text soft">A child doesn't sit down and ask "what is my passion?" They draw something, play cricket, build something, take something apart, talk to someone. Some things produce "that was fun, I want to do it again" — and that's the whole signal. Adults need to deliberately recreate that same experiment.</p>
+
+<div class="stat-row reveal">
+<div class="stat-card">
+<div class="stat-num">Curious</div>
+<div class="stat-word">"I want to know how X works" — that's curiosity</div>
+</div>
+<div class="stat-card">
+<div class="stat-num">Interested</div>
+<div class="stat-word">"I enjoy actually doing X" — that's interest</div>
+</div>
+<div class="stat-card">
+<div class="stat-num">Aspiring</div>
+<div class="stat-word">"I want to become good at X" — that's an aspiration</div>
+</div>
+</div>
+
+<p class="body-text soft">These three can overlap, but they don't have to — and mixing them up is exactly why "I'm fascinated by technology" doesn't automatically mean "I want to spend my Saturdays building software." Run a real experiment for six to eight weeks: try one new activity a week, across categories, and don't judge it by whether you're good at it — only by whether you wanted to keep going.</p>
+
+<div class="diagram reveal">
+<div class="diagram-card">
+<div class="diagram-label">Categories Worth Sampling</div>
+<div class="luck-widget">
+<div class="luck-ring-wrap">
+<svg viewBox="0 0 160 160">
+<defs>
+<linearGradient id="luckGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="var(--accent)"/>
+<stop offset="100%" stop-color="var(--gold)"/>
+</linearGradient>
+</defs>
+<circle class="luck-ring-bg" cx="80" cy="80" r="70"/>
+<circle class="luck-ring-fg" cx="80" cy="80" r="70"/>
+</svg>
+<div class="luck-number">6+</div>
+</div>
+<div class="luck-labels">
+<span>Categories to sample</span>
+<span>Zero required to master</span>
+</div>
+</div>
+<p class="diagram-caption">Create, Explore, Physical, Social, Intellectual, Performance — one deliberate new attempt a week is plenty of signal.</p>
+</div>
+</div>
+
+<div class="tile-row reveal">
+<div class="tile"><div class="tile-dot" style="background:var(--s-blue);"></div><div><b>Create</b><span>Writing, drawing, photography, music, cooking, making things</span></div></div>
+<div class="tile"><div class="tile-dot" style="background:var(--s-aqua);"></div><div><b>Explore</b><span>Travel, hiking, museums, new cuisines, nature, astronomy</span></div></div>
+<div class="tile"><div class="tile-dot" style="background:var(--s-orange);"></div><div><b>Physical</b><span>Gym, swimming, running, cycling, sports, dance</span></div></div>
+<div class="tile"><div class="tile-dot" style="background:var(--s-magenta);"></div><div><b>Social</b><span>Teaching, mentoring, volunteering, public speaking, clubs</span></div></div>
+<div class="tile"><div class="tile-dot" style="background:var(--s-yellow);"></div><div><b>Intellectual</b><span>Reading, philosophy, puzzles, science, essays</span></div></div>
+<div class="tile"><div class="tile-dot" style="background:var(--accent-ink);"></div><div><b>Performance</b><span>Music, singing, acting, stand-up, content creation</span></div></div>
+</div>
+
+<p class="body-text soft">After each attempt, log five honest, one-to-ten scores. Not "am I good at this" — just "did I want more of it."</p>
+
+<div class="mini-stats reveal">
+<div class="mini-stat"><div class="num">?/10</div><div class="lbl">Did I enjoy it while doing it?</div></div>
+<div class="mini-stat"><div class="num">?/10</div><div class="lbl">Did I lose track of time?</div></div>
+<div class="mini-stat"><div class="num">?/10</div><div class="lbl">Did I want to keep going?</div></div>
+<div class="mini-stat"><div class="num">?/10</div><div class="lbl">Would I do it again, unasked?</div></div>
+</div>
+
+<blockquote class="pull">Pay attention to what you do when nobody is asking you to do it. That's more informative than anything you could conclude by thinking harder about "what's my passion."</blockquote>
+
+<p class="body-text soft">Watch for one trap: consuming content about a thing isn't the same as being interested in the thing. Watching photography videos for hours doesn't prove you love photography — wanting to actually go outside and take photos does. The strongest evidence always comes from voluntary action, not voluntary watching.</p>
+
+<div class="callout reveal">
+<h4>💡 A clue hiding in plain sight</h4>
+<p>Notice what you keep returning to across unrelated stories — building something, seeing it exist, sharing it, having someone use it. That pattern might matter more than the specific tool (programming, writing, anything else) you happened to spend years learning. The tool isn't always the interest. Sometimes it's just what you had lying around.</p>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 11 / CLOSING ===================== -->
+<section class="chapter reveal closer" id="ch11">
+<p class="chapter-num" style="text-align:center;">Chapter Eleven</p>
+<h2>Solve X. Not "learn X."</h2>
+<p>For the next 30 days, don't set the goal "learn something." Set the goal "solve something." Pick one small, real problem. Build it. Every time you hit something you don't know, learn it only because the problem just demanded it — nothing sooner, nothing "just in case."</p>
+<p style="margin-top:18px;">At the end, don't measure hours studied. Measure problems solved. Eventually you want your brain to greet uncertainty with <em>"interesting, I don't know this — let's figure it out"</em> instead of <em>"I don't know this — I need to learn more."</em> That shift, quietly, is the whole game.</p>
+<p class="signoff">— Now go build the ugly, unfinished, embarrassing first version. That's the entire assignment.</p>
+</section>
+
+</div>
+
+<footer class="site-footer">
+<div class="wrap">Notes on learning, struggle, and figuring out what you actually love · read on any device</div>
+</footer>
+
+<script>
+(function () {
+var root = document.documentElement;
+var btn = document.getElementById('themeToggle');
+function currentTheme() {
+if (root.getAttribute('data-theme')) return root.getAttribute('data-theme');
+return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+btn.addEventListener('click', function () {
+var next = currentTheme() === 'dark' ? 'light' : 'dark';
+root.setAttribute('data-theme', next);
+btn.textContent = next === 'dark' ? '☀' : '◐';
+});
+btn.textContent = currentTheme() === 'dark' ? '☀' : '◐';
+
+var bar = document.getElementById('progress-bar');
+var floatTop = document.getElementById('floatTop');
+function onScroll() {
+var h = document.documentElement;
+var scrolled = h.scrollTop || document.body.scrollTop;
+var height = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
+var pct = height > 0 ? (scrolled / height) * 100 : 0;
+bar.style.width = pct + '%';
+if (scrolled > 500) floatTop.classList.add('show'); else floatTop.classList.remove('show');
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+floatTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+var revealEls = document.querySelectorAll('.reveal, .ladder');
+if ('IntersectionObserver' in window) {
+var io = new IntersectionObserver(function (entries) {
+entries.forEach(function (entry) {
+if (entry.isIntersecting) {
+entry.target.classList.add('is-visible');
+io.unobserve(entry.target);
+}
+});
+}, { threshold: 0.15 });
+revealEls.forEach(function (el) { io.observe(el); });
+} else {
+revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+}
+
+var tocLinks = {};
+document.querySelectorAll('nav.toc a').forEach(function (a) {
+tocLinks[a.getAttribute('href').slice(1)] = a;
+});
+var chapters = document.querySelectorAll('section.chapter');
+if ('IntersectionObserver' in window) {
+var tocObserver = new IntersectionObserver(function (entries) {
+entries.forEach(function (entry) {
+var link = tocLinks[entry.target.id];
+if (!link) return;
+if (entry.isIntersecting) {
+Object.values(tocLinks).forEach(function (l) { l.classList.remove('active'); });
+link.classList.add('active');
+}
+});
+}, { rootMargin: '-40% 0px -50% 0px' });
+chapters.forEach(function (c) { if (c.id) tocObserver.observe(c); });
+}
+})();
+</script>
+
+</body>
+</html>
