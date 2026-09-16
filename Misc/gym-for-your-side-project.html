@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>The Gym Trick I Forgot to Use on My Business</title>
+<style>
+
+:root {
+color-scheme: light;
+--page: #f9f9f7;
+--surface: #fcfcfb;
+--ink: #0b0b0b;
+--ink-soft: #52514e;
+--muted: #898781;
+--hairline: #e1e0d9;
+--border: rgba(11,11,11,0.10);
+--accent: #2a78d6;
+--accent-ink: #184f95;
+--accent-soft: #eaf2fc;
+--gold: #eda100;
+--gold-soft: #fbf1dc;
+--good: #0ca30c;
+--warn: #fab219;
+--bad: #ec835a;
+
+--s-blue: #2a78d6;
+--s-orange: #eb6834;
+--s-aqua: #1baf7a;
+--s-yellow: #eda100;
+--s-magenta: #e87ba4;
+
+--shadow: 0 1px 2px rgba(11,11,11,0.04), 0 8px 24px rgba(11,11,11,0.06);
+--serif: ui-serif, Charter, "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+--sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+html[data-theme="dark"] {
+color-scheme: dark;
+--page: #0d0d0d;
+--surface: #1a1a19;
+--ink: #ffffff;
+--ink-soft: #c3c2b7;
+--muted: #898781;
+--hairline: #2c2c2a;
+--border: rgba(255,255,255,0.10);
+--accent: #3987e5;
+--accent-ink: #bcd6f7;
+--accent-soft: rgba(57,135,229,0.14);
+--gold: #c98500;
+--gold-soft: rgba(201,133,0,0.16);
+--good: #0ca30c;
+--warn: #fab219;
+--bad: #ec835a;
+
+--s-blue: #3987e5;
+--s-orange: #d95926;
+--s-aqua: #199e70;
+--s-yellow: #c98500;
+--s-magenta: #d55181;
+
+--shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+}
+
+@media (prefers-color-scheme: dark) {
+html:not([data-theme="light"]) {
+color-scheme: dark;
+--page: #0d0d0d;
+--surface: #1a1a19;
+--ink: #ffffff;
+--ink-soft: #c3c2b7;
+--muted: #898781;
+--hairline: #2c2c2a;
+--border: rgba(255,255,255,0.10);
+--accent: #3987e5;
+--accent-ink: #bcd6f7;
+--accent-soft: rgba(57,135,229,0.14);
+--gold: #c98500;
+--gold-soft: rgba(201,133,0,0.16);
+--s-blue: #3987e5;
+--s-orange: #d95926;
+--s-aqua: #199e70;
+--s-yellow: #c98500;
+--s-magenta: #d55181;
+--shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+}
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+
+body {
+margin: 0;
+background: var(--page);
+color: var(--ink);
+font-family: var(--sans);
+line-height: 1.65;
+-webkit-font-smoothing: antialiased;
+text-rendering: optimizeLegibility;
+transition: background 0.25s ease, color 0.25s ease;
+padding-left: env(safe-area-inset-left);
+padding-right: env(safe-area-inset-right);
+}
+
+::selection { background: var(--gold-soft); color: var(--ink); }
+
+/* ---------- chrome ---------- */
+
+#progress-bar {
+position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+background: linear-gradient(90deg, var(--accent), var(--gold));
+z-index: 1000; transition: width 0.1s ease-out;
+}
+
+.theme-toggle, .float-top {
+position: fixed; z-index: 999;
+width: 44px; height: 44px; border-radius: 50%;
+border: 1px solid var(--border);
+background: var(--surface); color: var(--ink);
+display: flex; align-items: center; justify-content: center;
+cursor: pointer; box-shadow: var(--shadow);
+font-size: 1.05rem;
+transition: transform 0.15s ease, background 0.25s ease;
+}
+.theme-toggle { top: calc(16px + env(safe-area-inset-top)); right: calc(16px + env(safe-area-inset-right)); }
+.float-top {
+bottom: calc(22px + env(safe-area-inset-bottom)); right: calc(16px + env(safe-area-inset-right));
+background: var(--ink); color: var(--page); border: none;
+opacity: 0; transform: translateY(10px); pointer-events: none;
+}
+.float-top.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.theme-toggle:active, .float-top:active { transform: scale(0.92); }
+
+/* ---------- layout ---------- */
+
+.wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+.wrap-wide { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+header.hero {
+padding: calc(88px + env(safe-area-inset-top)) 0 56px;
+position: relative;
+overflow: hidden;
+}
+.kicker {
+font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
+color: var(--accent); font-weight: 700; margin: 0 0 18px;
+display: flex; align-items: center; gap: 10px;
+}
+.kicker::before { content: ""; width: 22px; height: 2px; background: var(--accent); display: inline-block; border-radius: 2px; }
+
+h1.title {
+font-family: var(--serif);
+font-weight: 600;
+font-size: clamp(2.1rem, 7vw, 3.6rem);
+line-height: 1.08;
+letter-spacing: -0.01em;
+margin: 0 0 20px;
+}
+h1.title em { font-style: italic; color: var(--accent); }
+
+.dek {
+font-size: clamp(1.05rem, 2.6vw, 1.3rem);
+color: var(--ink-soft);
+max-width: 60ch;
+margin: 0 0 28px;
+font-weight: 400;
+}
+
+.byline {
+display: flex; align-items: center; gap: 14px;
+font-size: 0.88rem; color: var(--muted);
+padding-top: 22px; border-top: 1px solid var(--hairline);
+}
+.byline .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); }
+.avatar {
+width: 38px; height: 38px; border-radius: 50%;
+background: linear-gradient(135deg, var(--accent), var(--gold));
+display: flex; align-items: center; justify-content: center;
+color: #fff; font-family: var(--serif); font-weight: 700; font-size: 1rem;
+}
+
+.hero-quote {
+font-family: var(--serif); font-style: italic;
+font-size: clamp(1.15rem, 3vw, 1.5rem); line-height: 1.5;
+color: var(--ink);
+margin: 40px 0 0; padding: 26px 0 0 24px;
+border-left: 3px solid var(--gold);
+}
+
+/* ---------- table of contents ---------- */
+
+nav.toc {
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 18px; padding: 26px 26px 22px; margin: 8px 0 64px;
+box-shadow: var(--shadow);
+}
+nav.toc h2 {
+font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+color: var(--muted); margin: 0 0 14px; font-weight: 700;
+}
+nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; }
+nav.toc li { counter-increment: toc; margin-bottom: 4px; }
+nav.toc a {
+display: flex; align-items: baseline; gap: 12px;
+color: var(--ink-soft); text-decoration: none;
+font-size: 0.96rem; padding: 7px 4px; border-radius: 8px;
+transition: color 0.15s ease, background 0.15s ease;
+}
+nav.toc a::before {
+content: counter(toc, decimal-leading-zero);
+font-family: var(--serif); font-size: 0.82rem; color: var(--muted); flex-shrink: 0;
+}
+nav.toc a:hover, nav.toc a.active { color: var(--accent); background: var(--accent-soft); }
+nav.toc a.active::before { color: var(--accent); }
+
+/* ---------- article sections ---------- */
+
+section.chapter { padding: 44px 0 8px; scroll-margin-top: 24px; }
+section.chapter + section.chapter { border-top: 1px solid var(--hairline); }
+
+.chapter-num {
+font-family: var(--serif); font-style: italic; color: var(--gold);
+font-size: 1rem; margin: 0 0 10px; font-weight: 600;
+}
+
+h2.h {
+font-family: var(--serif); font-weight: 600;
+font-size: clamp(1.5rem, 4.4vw, 2.1rem);
+line-height: 1.18; letter-spacing: -0.01em;
+margin: 0 0 20px;
+}
+h3.h3 {
+font-family: var(--serif); font-weight: 600;
+font-size: clamp(1.15rem, 3vw, 1.4rem);
+margin: 30px 0 12px;
+}
+
+p.body-text { font-size: 1.06rem; color: var(--ink); margin: 0 0 18px; }
+p.body-text.soft { color: var(--ink-soft); }
+.lede { font-size: 1.18rem; }
+
+mark.hl {
+background: var(--gold-soft); color: var(--ink);
+padding: 0.05em 0.15em; border-radius: 4px; font-weight: 600;
+}
+
+blockquote.pull {
+font-family: var(--serif); font-style: italic;
+font-size: clamp(1.2rem, 3.4vw, 1.6rem); line-height: 1.45;
+color: var(--ink); margin: 34px 0; padding: 0 0 0 24px;
+border-left: 3px solid var(--accent);
+}
+blockquote.pull cite {
+display: block; font-style: normal; font-family: var(--sans);
+font-size: 0.82rem; color: var(--muted); margin-top: 10px; letter-spacing: 0.02em;
+}
+
+.callout {
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 16px; padding: 22px 24px; margin: 28px 0;
+box-shadow: var(--shadow);
+}
+.callout h4 {
+margin: 0 0 8px; font-size: 0.98rem; font-weight: 700;
+display: flex; align-items: center; gap: 8px;
+}
+.callout p { margin: 0; color: var(--ink-soft); font-size: 0.98rem; }
+
+.callout-row { display: grid; grid-template-columns: 1fr; gap: 14px; margin: 28px 0; }
+@media (min-width: 620px) { .callout-row { grid-template-columns: 1fr 1fr; } }
+.callout-row .callout { margin: 0; }
+.callout.no { border-color: rgba(236,131,90,0.35); }
+.callout.yes { border-color: rgba(12,163,12,0.3); }
+
+/* ---------- reveal-on-scroll ---------- */
+
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s cubic-bezier(.2,.7,.3,1), transform 0.7s cubic-bezier(.2,.7,.3,1); }
+.reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+/* ================= DIAGRAM: the feedback loop ================= */
+
+.diagram { margin: 30px 0 8px; }
+.diagram-card {
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 20px; padding: 28px 20px 20px; box-shadow: var(--shadow);
+text-align: center;
+}
+.diagram-label {
+font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase;
+color: var(--muted); font-weight: 700; margin-bottom: 4px;
+}
+.diagram-caption { font-size: 0.92rem; color: var(--ink-soft); margin-top: 10px; }
+
+.loop-svg { width: 100%; max-width: 380px; height: auto; }
+.loop-node-bg { fill: var(--accent-soft); stroke: var(--hairline); stroke-width: 1.5; }
+.loop-node-glow {
+fill: var(--gold); opacity: 0;
+animation: loop-pulse 6s ease-in-out infinite;
+}
+.loop-path { stroke: var(--muted); stroke-width: 1.6; fill: none; opacity: 0.55; }
+.loop-label { font-family: var(--sans); font-size: 9.5px; font-weight: 700; fill: var(--ink); }
+.loop-sub { font-family: var(--sans); font-size: 7.5px; fill: var(--muted); }
+
+@keyframes loop-pulse {
+0%, 12% { opacity: 0; }
+4% { opacity: 0.9; }
+20%, 100% { opacity: 0; }
+}
+
+/* ================= DIAGRAM: broken vs working loop ================= */
+
+.loop-compare { display: grid; grid-template-columns: 1fr; gap: 16px; margin: 28px 0; }
+@media (min-width: 620px) { .loop-compare { grid-template-columns: 1fr 1fr; } }
+.loop-chain {
+background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px;
+padding: 20px; box-shadow: var(--shadow);
+}
+.loop-chain .diagram-label { text-align: left; margin-bottom: 14px; }
+.chain-step { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.chain-step:last-child { margin-bottom: 0; }
+.chain-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.chain-step span { font-size: 0.92rem; color: var(--ink); }
+.chain-step.dead span { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--bad); }
+.chain-arrow { color: var(--muted); font-size: 0.8rem; padding-left: 4px; }
+
+/* ================= DIAGRAM: ladder of evidence ================= */
+
+.ladder { display: flex; flex-direction: column-reverse; gap: 10px; margin: 30px 0; }
+.rung {
+display: flex; align-items: center; gap: 16px;
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 14px; padding: 14px 18px;
+opacity: 0.35; transform: translateX(-10px);
+transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.5s ease, background 0.5s ease;
+}
+.ladder.is-visible .rung { opacity: 1; transform: translateX(0); }
+.ladder.is-visible .rung:nth-child(1) { transition-delay: 0.5s; }
+.ladder.is-visible .rung:nth-child(2) { transition-delay: 0.4s; }
+.ladder.is-visible .rung:nth-child(3) { transition-delay: 0.3s; }
+.ladder.is-visible .rung:nth-child(4) { transition-delay: 0.2s; }
+.ladder.is-visible .rung:nth-child(5) { transition-delay: 0.1s; }
+.rung-step {
+width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+background: var(--accent-soft); color: var(--accent-ink);
+display: flex; align-items: center; justify-content: center;
+font-family: var(--serif); font-weight: 700; font-size: 0.9rem;
+}
+.rung-body b { display: block; font-size: 0.98rem; }
+.rung-body span { font-size: 0.85rem; color: var(--muted); }
+
+/* seven-rung variant: top rung (paid) gets the gold treatment instead of rung 5 */
+.ladder-7.is-visible .rung:nth-child(6) { transition-delay: 0.08s; }
+.ladder-7.is-visible .rung:nth-child(7) { transition-delay: 0.02s; border-color: var(--gold); background: var(--gold-soft); }
+.ladder-7.is-visible .rung:nth-child(7) .rung-step { background: var(--gold); color: #fff; }
+
+/* ================= comparison table ================= */
+
+.chart-card {
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 18px; padding: 24px 22px 20px; margin: 30px 0; box-shadow: var(--shadow);
+overflow-x: auto;
+}
+.chart-title { font-size: 0.82rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 18px; }
+table.compare { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 480px; }
+table.compare th { text-align: left; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); padding: 0 10px 10px; border-bottom: 1px solid var(--hairline); font-weight: 700; }
+table.compare td { padding: 12px 10px; border-bottom: 1px solid var(--hairline); color: var(--ink-soft); vertical-align: top; }
+table.compare tr:last-child td { border-bottom: none; }
+table.compare td.app-name { color: var(--ink); font-weight: 600; white-space: nowrap; }
+table.compare td.like { color: var(--good); }
+table.compare td.dislike { color: var(--bad); }
+
+/* ================= scorecard ================= */
+
+.scorecard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 28px 0; }
+@media (min-width: 560px) { .scorecard-grid { grid-template-columns: repeat(5, 1fr); } }
+.score-card {
+background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px;
+padding: 18px 14px; text-align: center; box-shadow: var(--shadow);
+}
+.score-num {
+width: 32px; height: 32px; margin: 0 auto 10px; border-radius: 50%;
+background: var(--accent-soft); color: var(--accent-ink);
+display: flex; align-items: center; justify-content: center;
+font-family: var(--serif); font-weight: 700; font-size: 0.95rem;
+}
+.score-word { font-size: 0.82rem; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+.score-sub { font-size: 0.76rem; color: var(--muted); line-height: 1.4; }
+
+/* ================= timeline ================= */
+
+.timeline { position: relative; margin: 30px 0; padding-left: 30px; }
+.timeline::before { content: ""; position: absolute; left: 9px; top: 4px; bottom: 4px; width: 2px; background: var(--hairline); }
+.t-step { position: relative; padding-bottom: 22px; opacity: 0.4; transform: translateX(-8px); transition: opacity 0.5s ease, transform 0.5s ease; }
+.timeline.is-visible .t-step { opacity: 1; transform: translateX(0); }
+.timeline.is-visible .t-step:nth-child(1) { transition-delay: 0.05s; }
+.timeline.is-visible .t-step:nth-child(2) { transition-delay: 0.15s; }
+.timeline.is-visible .t-step:nth-child(3) { transition-delay: 0.25s; }
+.timeline.is-visible .t-step:nth-child(4) { transition-delay: 0.35s; }
+.timeline.is-visible .t-step:nth-child(5) { transition-delay: 0.45s; }
+.timeline.is-visible .t-step:nth-child(6) { transition-delay: 0.55s; }
+.t-step:last-child { padding-bottom: 0; }
+.t-step::before {
+content: ""; position: absolute; left: -30px; top: 3px; width: 12px; height: 12px;
+border-radius: 50%; background: var(--surface); border: 2.5px solid var(--accent);
+}
+.t-step:last-child::before { background: var(--gold); border-color: var(--gold); }
+.t-step b { display: block; font-size: 0.96rem; }
+.t-step span { font-size: 0.85rem; color: var(--muted); }
+
+/* ================= closing ================= */
+
+.closer { text-align: center; padding: 70px 0 90px; }
+.closer h2 {
+font-family: var(--serif); font-weight: 600; font-style: italic;
+font-size: clamp(1.8rem, 6vw, 2.6rem); line-height: 1.2; margin: 0 0 18px;
+}
+.closer p { color: var(--ink-soft); font-size: 1.05rem; max-width: 46ch; margin: 0 auto; }
+.signoff { margin-top: 34px; font-family: var(--serif); font-style: italic; color: var(--muted); }
+
+footer.site-footer {
+border-top: 1px solid var(--hairline); padding: 28px 0 calc(40px + env(safe-area-inset-bottom));
+text-align: center; font-size: 0.82rem; color: var(--muted);
+}
+
+/* ================= responsive ================= */
+
+@media (max-width: 480px) {
+.score-card { padding: 14px 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+.reveal, .rung, .t-step { transition: none !important; }
+.loop-node-glow { animation: none !important; }
+html { scroll-behavior: auto; }
+}
+
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">◐</button>
+<button class="float-top" id="floatTop" aria-label="Back to top">↑</button>
+
+<div class="wrap">
+
+<header class="hero">
+<p class="kicker">Motivation &amp; Building Things · A Chat With ChatGPT</p>
+<h1 class="title">The Gym Trick I Forgot to Use on My <em>Business</em></h1>
+<p class="dek">I know exactly how to build muscle. I gave up on my online store in a month. I've started a dozen apps and finished none. Turns out all three are the same problem — I just never looked at them side by side until now.</p>
+<div class="byline">
+<div class="avatar">PS</div>
+<span>Personal notes</span>
+<span class="dot"></span>
+<span>~10 min read</span>
+<span class="dot"></span>
+<span>10 chapters</span>
+</div>
+<blockquote class="hero-quote">
+"Progress doesn't come after interest. Interest comes after progress."
+</blockquote>
+</header>
+
+<nav class="toc reveal">
+<h2>In this piece</h2>
+<ol>
+<li><a href="#ch1">The gym worked. The business didn't. Why?</a></li>
+<li><a href="#ch2">It's not discipline — it's a broken loop</a></li>
+<li><a href="#ch3">Copying an app isn't cheating (if you do it right)</a></li>
+<li><a href="#ch4">Redefine "success": the ladder of evidence</a></li>
+<li><a href="#ch5">Stop starting at the finish line</a></li>
+<li><a href="#ch6">How do you actually find the thing to build?</a></li>
+<li><a href="#ch7">The product discovery scorecard</a></li>
+<li><a href="#ch8">Your personal "project gym": 30 days</a></li>
+<li><a href="#ch9">Starting a YouTube channel: same playbook, new medium</a></li>
+<li><a href="#ch10">Build to get evidence, not to be right</a></li>
+</ol>
+</nav>
+
+<!-- ===================== CHAPTER 1 ===================== -->
+<section class="chapter reveal" id="ch1">
+<p class="chapter-num">Chapter One</p>
+<h2 class="h">The gym worked. The business didn't. Why?</h2>
+<p class="body-text lede">I wasn't serious about the gym either — until I actually saw a change. A bit of shape, a bit of muscle. Nothing impressive, but enough that I could feel it, and enough that it beat most people just showing up and going through the motions. That one bit of proof was enough to keep me showing up, every day, for years.</p>
+<p class="body-text soft">Then life happened — a year off for marriage — and I lost the shape. Now I can barely manage the gym once or twice a week. But here's the part that actually bothered me: it's not really about the gym. It's the same story everywhere else in my life. I quit an Amazon and Meesho reselling business in a month because nothing sold. I keep starting apps and side projects I imagine publishing on the App Store, and I never finish a single one.</p>
+<p class="body-text soft">My instinct was to blame myself — not disciplined enough, not passionate enough, not cut out for business. But when I actually laid it next to the gym story, a different explanation showed up.</p>
+
+<div class="callout reveal">
+<h4>💬 What I brought to the conversation</h4>
+<p>"I think I have to copy some already existing product and sell it cheaper. That way at least I'll finish it, because someone else has already proven it's possible. But then I fear I won't be able to defend it — people will say 'this already exists.'"</p>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 2 ===================== -->
+<section class="chapter reveal" id="ch2">
+<p class="chapter-num">Chapter Two</p>
+<h2 class="h">It's not discipline — it's a broken loop</h2>
+<p class="body-text lede">Here's the reframe that changed how I see this whole problem: <mark class="hl">it isn't a discipline problem, it's a feedback loop problem.</mark> Some people can grind for years with no external sign that it's working. I can't — and pretending otherwise was the real reason I kept quitting.</p>
+
+<div class="callout reveal">
+<h4>💡 What's a "feedback loop"?</h4>
+<p>It just means: you do something, the world shows you a result, and that result changes what you do next. A thermostat is a feedback loop — it checks the temperature and adjusts the heater. Your motivation runs on one too: action, then evidence, then a decision to keep going or stop.</p>
+</div>
+
+<div class="diagram reveal">
+<div class="diagram-card">
+<div class="diagram-label">My Actual Motivation Loop</div>
+<svg class="loop-svg" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
+<g class="loop-path">
+<path d="M160 60 A100 100 0 0 1 253 130" marker-end="url(#arrowhead)"/>
+<path d="M253 190 A100 100 0 0 1 205 275" marker-end="url(#arrowhead)"/>
+<path d="M147 279 A100 100 0 0 1 67 190" marker-end="url(#arrowhead)"/>
+<path d="M67 130 A100 100 0 0 1 133 63" marker-end="url(#arrowhead)"/>
+<path d="M205 275 A100 100 0 0 1 147 279" marker-end="url(#arrowhead)" opacity="0"/>
+</g>
+<defs>
+<marker id="arrowhead" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+<polygon points="0 0, 7 3.5, 0 7" fill="var(--muted)" opacity="0.7"/>
+</marker>
+</defs>
+<g>
+<circle class="loop-node-bg" cx="160" cy="45" r="34"/>
+<circle class="loop-node-glow" cx="160" cy="45" r="34" style="animation-delay:0s"/>
+<text class="loop-label" x="160" y="43" text-anchor="middle">Action</text>
+<text class="loop-sub" x="160" y="54" text-anchor="middle">I put in effort</text>
+</g>
+<g>
+<circle class="loop-node-bg" cx="270" cy="130" r="34"/>
+<circle class="loop-node-glow" cx="270" cy="130" r="34" style="animation-delay:1.2s"/>
+<text class="loop-label" x="270" y="128" text-anchor="middle">Result</text>
+<text class="loop-sub" x="270" y="139" text-anchor="middle">the world reacts</text>
+</g>
+<g>
+<circle class="loop-node-bg" cx="228" cy="255" r="34"/>
+<circle class="loop-node-glow" cx="228" cy="255" r="34" style="animation-delay:2.4s"/>
+<text class="loop-label" x="228" y="253" text-anchor="middle">Confidence</text>
+<text class="loop-sub" x="228" y="264" text-anchor="middle">"this works"</text>
+</g>
+<g>
+<circle class="loop-node-bg" cx="92" cy="255" r="34"/>
+<circle class="loop-node-glow" cx="92" cy="255" r="34" style="animation-delay:3.6s"/>
+<text class="loop-label" x="92" y="253" text-anchor="middle">Motivation</text>
+<text class="loop-sub" x="92" y="264" text-anchor="middle">I want more</text>
+</g>
+<g>
+<circle class="loop-node-bg" cx="50" cy="130" r="34"/>
+<circle class="loop-node-glow" cx="50" cy="130" r="34" style="animation-delay:4.8s"/>
+<text class="loop-label" x="50" y="128" text-anchor="middle">More action</text>
+<text class="loop-sub" x="50" y="139" text-anchor="middle">and repeat</text>
+</g>
+</svg>
+<p class="diagram-caption">In the gym, this loop closes in weeks — a mirror gives you a "result" for free. In business, nothing closes the loop unless you deliberately build one.</p>
+</div>
+</div>
+
+<p class="body-text soft">The gym gave me this loop automatically, for free: I worked out, my body changed, I saw it in the mirror, other people noticed. Business and side projects never gave me that. I'd build something, get no users, get no sale, and the loop simply never closed. No result means no confidence, which means no motivation, which means the project quietly dies.</p>
+
+<div class="loop-compare reveal">
+<div class="loop-chain">
+<div class="diagram-label">🏋️ Gym (loop closes)</div>
+<div class="chain-step"><div class="chain-dot" style="background:var(--good)"></div><span>Show up, put in effort</span></div>
+<div class="chain-arrow">↓</div>
+<div class="chain-step"><div class="chain-dot" style="background:var(--good)"></div><span>Body visibly changes</span></div>
+<div class="chain-arrow">↓</div>
+<div class="chain-step"><div class="chain-dot" style="background:var(--good)"></div><span>"This works" — confidence</span></div>
+<div class="chain-arrow">↓</div>
+<div class="chain-step"><div class="chain-dot" style="background:var(--good)"></div><span>Motivated to keep going</span></div>
+</div>
+<div class="loop-chain">
+<div class="diagram-label">💻 Side project (loop breaks)</div>
+<div class="chain-step"><div class="chain-dot" style="background:var(--good)"></div><span>Build something</span></div>
+<div class="chain-arrow">↓</div>
+<div class="chain-step dead"><div class="chain-dot" style="background:var(--bad)"></div><span>No users, no sale</span></div>
+<div class="chain-arrow">↓</div>
+<div class="chain-step dead"><div class="chain-dot" style="background:var(--bad)"></div><span>No proof it can work</span></div>
+<div class="chain-arrow">↓</div>
+<div class="chain-step dead"><div class="chain-dot" style="background:var(--bad)"></div><span>Motivation drops, I quit</span></div>
+</div>
+</div>
+
+<p class="body-text soft">That's the actual diagnosis: I don't lack discipline. I lack a project that hands me small, frequent proof the way a mirror does. So the real question isn't "how do I try harder" — it's "how do I design a project that gives me a mirror."</p>
+</section>
+
+<!-- ===================== CHAPTER 3 ===================== -->
+<section class="chapter reveal" id="ch3">
+<p class="chapter-num">Chapter Three</p>
+<h2 class="h">Copying an app isn't cheating (if you do it right)</h2>
+<p class="body-text lede">My instinct — "just copy something that already exists and sell it cheaper" — turned out to be a genuinely reasonable idea. Not as "steal the market with a cheap clone," but as a shortcut around the scariest part of building anything: not knowing if anyone even wants it.</p>
+
+<blockquote class="pull">Existing product → proven problem → proven demand → smaller version → launch → real users → improve.<cite>versus</cite></blockquote>
+<p class="body-text soft">Compare that to the model I kept unconsciously choosing instead: <em>"I have a brilliant idea nobody's thought of, spend six months building it, and hope someone wants it."</em> That second model asks you to stay motivated for months with zero outside evidence. For someone whose motivation runs on visible proof, that's close to designing your own failure.</p>
+
+<p class="body-text soft">But there was a real catch in my own worry, and it turned out to matter more than the "copying" part: don't pick a product just because it has a lot of downloads. Pick one where you can answer a much smaller, more personal question first.</p>
+
+<div class="callout reveal">
+<h4>🎯 The one question that changes everything</h4>
+<p>"Why would <em>I</em> personally care about making this better?" Not "is this popular," not "will this make money" — just, do you personally feel the itch this product doesn't scratch?</p>
+</div>
+
+<div class="callout-row reveal">
+<div class="callout no">
+<h4>❌ Defending a random clone</h4>
+<p>"Why should I use yours instead of QuickBooks?" — and you have no real answer, because you picked it for the download count, not because you use it or care about it. You'll feel embarrassed marketing something you don't believe in.</p>
+</div>
+<div class="callout yes">
+<h4>✅ Defending your own itch</h4>
+<p>"I use this myself, and three things about it annoy me — so I built the version that fixes them for people like me." That's not defending a clone. That's telling a true story, and true stories are easy to say out loud.</p>
+</div>
+</div>
+
+<p class="body-text soft">And the "someone will say it already exists" fear? Nearly every useful product already exists in some form. Google wasn't the first search engine. Facebook wasn't the first social network. Zoom wasn't the first video call app. A product doesn't need to be new — it needs to be useful to someone, for a reason you can actually explain.</p>
+</section>
+
+<!-- ===================== CHAPTER 4 ===================== -->
+<section class="chapter reveal" id="ch4">
+<p class="chapter-num">Chapter Four</p>
+<h2 class="h">Redefine "success": the ladder of evidence</h2>
+<p class="body-text lede">Here's where I'd been quietly sabotaging myself without realizing it. My definition of "success" for any project was: money, users, downloads. That's a terrible target for someone like me, because that kind of feedback arrives too late — often months after the effort, if it arrives at all.</p>
+<p class="body-text soft">The fix is to stop treating success as one giant finish line, and start treating it as a ladder — a series of smaller "wins" that each count as real proof, long before any money shows up.</p>
+
+<div class="ladder ladder-7 reveal">
+<div class="rung">
+<div class="rung-step">1</div>
+<div class="rung-body"><b>I built it</b><span>The thing exists outside my head now.</span></div>
+</div>
+<div class="rung">
+<div class="rung-step">2</div>
+<div class="rung-body"><b>I deployed it publicly</b><span>It has a link. Anyone could open it.</span></div>
+</div>
+<div class="rung">
+<div class="rung-step">3</div>
+<div class="rung-body"><b>A total stranger used it</b><span>Not me, not a friend I begged. A real outsider.</span></div>
+</div>
+<div class="rung">
+<div class="rung-step">4</div>
+<div class="rung-body"><b>10 people used it</b><span>One wasn't a fluke. Ten is a pattern.</span></div>
+</div>
+<div class="rung">
+<div class="rung-step">5</div>
+<div class="rung-body"><b>Someone came back</b><span>They opened it a second time, on their own.</span></div>
+</div>
+<div class="rung">
+<div class="rung-step">6</div>
+<div class="rung-body"><b>Someone asked for a feature</b><span>They care enough to want it better.</span></div>
+</div>
+<div class="rung">
+<div class="rung-step">7</div>
+<div class="rung-body"><b>Someone paid</b><span>The furthest rung — and now, not the only one that counts.</span></div>
+</div>
+</div>
+
+<p class="body-text soft">Look at that list again and notice something: I hit six separate forms of real validation before a single rupee shows up. Compare that to the gym. I never went from "doesn't exercise" straight to "has an impressive physique" — there were dozens of tiny signals along the way. Weight moved. A muscle showed up. Clothes fit differently. Someone noticed. Those small signals are exactly what kept the loop alive for years. I just never built the equivalent ladder for anything else.</p>
+</section>
+
+<!-- ===================== CHAPTER 5 ===================== -->
+<section class="chapter reveal" id="ch5">
+<p class="chapter-num">Chapter Five</p>
+<h2 class="h">Stop starting at the finish line</h2>
+<p class="body-text lede">There was one sentence I said in the conversation that, once it was pointed back at me, explained almost everything: <em>"I always think of developing something and publishing it on the App Store."</em></p>
+<p class="body-text soft">My brain was quietly running this sequence: <strong>idea → build → App Store → users → business.</strong> The App Store was the goal. But the App Store isn't a milestone at all — it's a distribution channel, and a fairly late one. The real first milestone, the one that's supposed to feel like seeing your first bit of muscle in the mirror, is much smaller than that.</p>
+
+<div class="callout reveal">
+<h4>🏁 The actual first finish line</h4>
+<p>Getting one real human being — a stranger, not a friend doing you a favor — to use something you made. That's it. Not a launch. Not a business. One person, one use.</p>
+</div>
+
+<p class="body-text soft">The correct sequence looks a lot less impressive on paper, but it's the one that can actually survive contact with my own motivation pattern: <strong>problem → tiny solution → 1 user → feedback → improve → 10 users → improve → maybe, eventually, a business.</strong> Even my failed Amazon and Meesho attempt isn't proof I "can't do business" — it's proof of something narrower and much more fixable: I picked a product I didn't care about, and I stopped the moment the feedback (a single sale) didn't arrive fast enough. That's a project-selection problem, not a character flaw.</p>
+
+<div class="callout reveal">
+<h4>💡 What's an "MVP"?</h4>
+<p>Short for Minimum Viable Product — the smallest version of an idea that's still genuinely useful to someone. Not a rough sketch nobody could use, and not the "real" full-featured product either. Just enough to test whether the core idea is worth anything.</p>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 6 ===================== -->
+<section class="chapter reveal" id="ch6">
+<p class="chapter-num">Chapter Six</p>
+<h2 class="h">How do you actually find the thing to build?</h2>
+<p class="body-text lede">My first instinct was: search a category, try a few competing apps, and remix the features I personally like from each one. That turns out to be close, but backwards in one important way. Features aren't where you should start.</p>
+
+<blockquote class="pull">Don't ask "which features do I like?" Ask "which problem — and which person — do I actually want to understand?"</blockquote>
+
+<h3 class="h3">A five-step version of the process</h3>
+<p class="body-text soft"><strong>1. Pick a problem area, not a product.</strong> Personal finance, fitness, job-hunting, developer tools — anywhere you already have a bit of natural curiosity.</p>
+<p class="body-text soft"><strong>2. Actually use 5–10 existing products for several days.</strong> Not screenshots, not reviews — live in them. What are they trying to help you do? What annoys you? What feels overbuilt? Who does this really seem designed for?</p>
+<p class="body-text soft"><strong>3. Look for the gap between them.</strong> Somewhere between five imperfect products is a shape none of them quite cover.</p>
+
+<div class="chart-card reveal">
+<div class="chart-title">Example: testing five fitness apps</div>
+<table class="compare">
+<thead><tr><th>App</th><th>What you like</th><th>What you dislike</th></tr></thead>
+<tbody>
+<tr><td class="app-name">App A</td><td class="like">Great workout tracking</td><td class="dislike">Too complicated</td></tr>
+<tr><td class="app-name">App B</td><td class="like">Beautiful design</td><td class="dislike">Poor progress tracking</td></tr>
+<tr><td class="app-name">App C</td><td class="like">Excellent statistics</td><td class="dislike">Expensive</td></tr>
+<tr><td class="app-name">App D</td><td class="like">Very simple</td><td class="dislike">No nutrition features</td></tr>
+<tr><td class="app-name">App E</td><td class="like">Strong community</td><td class="dislike">Too much social noise</td></tr>
+</tbody>
+</table>
+</div>
+
+<p class="body-text soft">Now the idea isn't "copy App A." It's something sharper: a simple fitness tracker for people who want workout and progress tracking without all the social complexity nobody asked for.</p>
+
+<p class="body-text soft"><strong>4. Pick one specific person, not a broad audience.</strong> "People who work out" is enormous and useless. "People who recently came back to the gym after a long break" is specific enough that you can actually list what they struggle with: they don't know what to follow, they've forgotten their old weights, they get demotivated fast because progress feels invisible. Notice something — that specific person is basically me, right now. Understanding them isn't research. It's memory.</p>
+<p class="body-text soft"><strong>5. Remix around one job, not a pile of random features.</strong> "App A's calendar plus App B's AI plus App C's chat plus App D's payments" is a Frankenstein product nobody asked for. "Help beginner gym-goers consistently follow a simple 3-day plan" is one job — and every borrowed feature has to serve that one job or it doesn't make the cut.</p>
+
+<div class="callout reveal">
+<h4>💡 What does "iteration" mean here?</h4>
+<p>Building a small version, watching how real people actually use it, then adjusting based on what you saw — instead of guessing every feature up front and building it all at once.</p>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 7 ===================== -->
+<section class="chapter reveal" id="ch7">
+<p class="chapter-num">Chapter Seven</p>
+<h2 class="h">The product discovery scorecard</h2>
+<p class="body-text lede">Once you've got a candidate idea, run it through five quick questions before committing weeks to it. You don't need a perfect score on all five — you're looking for a combination that feels interesting, buildable, and testable at the same time.</p>
+
+<div class="scorecard-grid reveal">
+<div class="score-card"><div class="score-num">1</div><div class="score-word">Existing demand</div><div class="score-sub">Are people already paying or using things like this?</div></div>
+<div class="score-card"><div class="score-num">2</div><div class="score-word">Personal interest</div><div class="score-sub">Would you actually enjoy building and using it?</div></div>
+<div class="score-card"><div class="score-num">3</div><div class="score-word">User clarity</div><div class="score-sub">Can you name one specific type of person for this?</div></div>
+<div class="score-card"><div class="score-num">4</div><div class="score-word">Small MVP</div><div class="score-sub">Can a useful first version ship in a few weeks?</div></div>
+<div class="score-card"><div class="score-num">5</div><div class="score-word">Distribution</div><div class="score-sub">Can you picture reaching your first 10–100 users?</div></div>
+</div>
+
+<div class="callout reveal">
+<h4>💡 What's "distribution," quickly?</h4>
+<p>It's simply how the people you're building for actually find out the thing exists. A great product with zero distribution is a secret, not a business.</p>
+</div>
+
+<p class="body-text soft">And one rule to add specifically for a motivation pattern like mine: never choose a project whose feedback takes six months to arrive. Skip "I'll build a whole platform and eventually someone will buy it." Prefer "I can ship this in two to four weeks and get real users." The goal of a first project isn't to find the business — it's to prove, once, that you personally can go from idea to a stranger's hands and back. Everything after that gets easier.</p>
+</section>
+
+<!-- ===================== CHAPTER 8 ===================== -->
+<section class="chapter reveal" id="ch8">
+<p class="chapter-num">Chapter Eight</p>
+<h2 class="h">Your personal "project gym": 30 days</h2>
+<p class="body-text lede">Take an existing product, shrink it to three features instead of fifty, and give yourself thirty days. No thirty days of learning new frameworks. No thirty days perfecting the architecture. No thirty days of tutorials. Just: build, deploy, get one person, then another, then another.</p>
+
+<div class="timeline reveal">
+<div class="t-step"><b>Day 1 — Idea selected</b><span>One problem, one specific person, three must-have features.</span></div>
+<div class="t-step"><b>Day 5 — First working version</b><span>Ugly is fine. Working is not optional.</span></div>
+<div class="t-step"><b>Day 10 — Deployed</b><span>It has a public link. Anyone could open it right now.</span></div>
+<div class="t-step"><b>Day 15 — First real user</b><span>A stranger, not a friend doing you a favor.</span></div>
+<div class="t-step"><b>Day 20 — Five users</b><span>Ask every one of them: "what's the one thing you wish this had?"</span></div>
+<div class="t-step"><b>Day 30 — Ten users</b><span>Your roadmap now comes from them, not from your imagination.</span></div>
+</div>
+
+<p class="body-text soft">That scoreboard is the whole trick. It replaces the impossibly vague target of "build a successful startup" with a target your brain can actually see happening in real time — the exact same way it could see a shoulder slowly filling out a t-shirt.</p>
+</section>
+
+<!-- ===================== CHAPTER 9 ===================== -->
+<section class="chapter reveal" id="ch9">
+<p class="chapter-num">Chapter Nine</p>
+<h2 class="h">Starting a YouTube channel: same playbook, different medium</h2>
+<p class="body-text lede">Everything so far applies almost word for word to starting a YouTube channel — because a channel is just another feedback-loop machine, and honestly a faster one than most apps. Views, comments, and subscribers are a mirror that updates within hours, not months.</p>
+
+<div class="callout reveal">
+<h4>💡 Quick terms</h4>
+<p><strong>Niche</strong> — the specific topic and audience your channel is known for. <strong>Algorithm</strong> — YouTube's system that decides who gets shown your video, based on how well it holds attention. <strong>Retention</strong> — how much of a video people actually watch before leaving.</p>
+</div>
+
+<h3 class="h3">Pick a niche the same way you'd pick a product</h3>
+<p class="body-text soft">Don't start with "what should my channel be about?" Start with the same question from Chapter Six: which problem, and which person, do you actually understand? Then watch 5–10 existing channels in that space for real, the same way you'd trial 5–10 competing apps — what do they cover well, what do they skip, what feels missing for a specific kind of viewer?</p>
+
+<div class="scorecard-grid reveal">
+<div class="score-card"><div class="score-num">1</div><div class="score-word">Existing demand</div><div class="score-sub">Are other channels already getting views in this niche?</div></div>
+<div class="score-card"><div class="score-num">2</div><div class="score-word">Personal interest</div><div class="score-sub">Could you talk about this for a year without getting bored?</div></div>
+<div class="score-card"><div class="score-num">3</div><div class="score-word">Viewer clarity</div><div class="score-sub">Can you picture exactly who's watching?</div></div>
+<div class="score-card"><div class="score-num">4</div><div class="score-word">Small MVP</div><div class="score-sub">Can you film and post something this week, on a phone?</div></div>
+<div class="score-card"><div class="score-num">5</div><div class="score-word">Distribution</div><div class="score-sub">Does the topic lend itself to Shorts, search, or a trend?</div></div>
+</div>
+
+<h3 class="h3">Your ladder of evidence for a channel</h3>
+<p class="body-text soft">Just like the product ladder in Chapter Four, don't wait for "monetized creator" to count as success. There are several real wins before that.</p>
+
+<div class="ladder ladder-7 reveal">
+<div class="rung">
+<div class="rung-step">1</div>
+<div class="rung-body"><b>You uploaded a video</b><span>It exists publicly. That alone beats most "someday" channels.</span></div>
+</div>
+<div class="rung">
+<div class="rung-step">2</div>
+<div class="rung-body"><b>A stranger watched it</b><span>Not a friend who felt obligated — someone who found you.</span></div>
+</div>
+<div class="rung">
+<div class="rung-step">3</div>
+<div class="rung-body"><b>Someone left a comment</b><span>They cared enough to respond.</span></div>
+</div>
+<div class="rung">
+<div class="rung-step">4</div>
+<div class="rung-body"><b>Someone subscribed</b><span>They want to see what you make next.</span></div>
+</div>
+<div class="rung">
+<div class="rung-step">5</div>
+<div class="rung-body"><b>Someone watched several videos</b><span>You're becoming a habit, not a one-off.</span></div>
+</div>
+<div class="rung">
+<div class="rung-step">6</div>
+<div class="rung-body"><b>Someone requested a topic</b><span>Your content plan starts coming from viewers, not guesswork.</span></div>
+</div>
+<div class="rung">
+<div class="rung-step">7</div>
+<div class="rung-body"><b>First revenue or brand deal</b><span>The furthest rung — arriving only after six real wins already happened.</span></div>
+</div>
+</div>
+
+<div class="callout reveal">
+<h4>🎥 Equipment is not the blocker</h4>
+<p>A phone, a quiet room, and decent light beat a fancy camera you're still researching. The feedback loop only starts once something is posted — every day spent comparing microphones is a day the loop stays closed.</p>
+</div>
+
+<h3 class="h3">Your first 30 days on a channel</h3>
+<div class="timeline reveal">
+<div class="t-step"><b>Day 1 — Niche and viewer chosen</b><span>One topic, one specific person you're making this for.</span></div>
+<div class="t-step"><b>Day 5 — First video scripted and filmed</b><span>Short and rough beats long and unfinished.</span></div>
+<div class="t-step"><b>Day 10 — First three videos posted</b><span>One video teaches you nothing. Three starts a pattern.</span></div>
+<div class="t-step"><b>Day 15 — First non-friend view</b><span>Shared in a relevant community or under a Short, not just to contacts.</span></div>
+<div class="t-step"><b>Day 20 — First comment or subscriber</b><span>Read it twice. This is your mirror.</span></div>
+<div class="t-step"><b>Day 30 — Ten videos posted</b><span>Enough data to see which topics actually held attention.</span></div>
+</div>
+
+<p class="body-text soft">Notice the shape is identical to Chapter Eight's product plan — small, dated, visible checkpoints instead of one distant goal called "become a YouTuber." Post consistently, watch retention on each video like a scoreboard, and let the topics that hold attention tell you what to make more of. The channel that survives isn't the one with the best camera. It's the one that kept a feedback loop alive long enough to compound.</p>
+</section>
+
+<!-- ===================== CHAPTER 10 / CLOSING ===================== -->
+<section class="chapter reveal closer" id="ch10">
+<p class="chapter-num" style="text-align:center;">Chapter Ten</p>
+<h2>Build to get evidence, not to be right.</h2>
+<p>I don't need to find the perfect idea before I start, and I don't need to feel passionate about it on day one either. My own gym story already proves the opposite order works: the results made me interested, not the other way around. Progress creates interest. So the plan isn't "wait to care." It's "pick something small and specific enough to give me a mirror — and let the caring show up on its own."</p>
+<p class="signoff">— Back to day one. Let's see what thirty days of proof actually looks like.</p>
+</section>
+
+</div>
+
+<footer class="site-footer">
+<div class="wrap">Personal notes on motivation, feedback loops, and finally finishing something · read on any device</div>
+</footer>
+
+<script>
+(function () {
+// theme toggle
+var root = document.documentElement;
+var btn = document.getElementById('themeToggle');
+function currentTheme() {
+if (root.getAttribute('data-theme')) return root.getAttribute('data-theme');
+return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+btn.addEventListener('click', function () {
+var next = currentTheme() === 'dark' ? 'light' : 'dark';
+root.setAttribute('data-theme', next);
+btn.textContent = next === 'dark' ? '☀' : '◐';
+});
+btn.textContent = currentTheme() === 'dark' ? '☀' : '◐';
+
+// scroll progress
+var bar = document.getElementById('progress-bar');
+var floatTop = document.getElementById('floatTop');
+function onScroll() {
+var h = document.documentElement;
+var scrolled = h.scrollTop || document.body.scrollTop;
+var height = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
+var pct = height > 0 ? (scrolled / height) * 100 : 0;
+bar.style.width = pct + '%';
+if (scrolled > 500) floatTop.classList.add('show'); else floatTop.classList.remove('show');
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+floatTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+// reveal on scroll
+var revealEls = document.querySelectorAll('.reveal, .ladder, .timeline');
+if ('IntersectionObserver' in window) {
+var io = new IntersectionObserver(function (entries) {
+entries.forEach(function (entry) {
+if (entry.isIntersecting) {
+entry.target.classList.add('is-visible');
+io.unobserve(entry.target);
+}
+});
+}, { threshold: 0.15 });
+revealEls.forEach(function (el) { io.observe(el); });
+} else {
+revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+}
+
+// TOC active link
+var tocLinks = {};
+document.querySelectorAll('nav.toc a').forEach(function (a) {
+tocLinks[a.getAttribute('href').slice(1)] = a;
+});
+var chapters = document.querySelectorAll('section.chapter');
+if ('IntersectionObserver' in window) {
+var tocObserver = new IntersectionObserver(function (entries) {
+entries.forEach(function (entry) {
+var link = tocLinks[entry.target.id];
+if (!link) return;
+if (entry.isIntersecting) {
+Object.values(tocLinks).forEach(function (l) { l.classList.remove('active'); });
+link.classList.add('active');
+}
+});
+}, { rootMargin: '-40% 0px -50% 0px' });
+chapters.forEach(function (c) { if (c.id) tocObserver.observe(c); });
+}
+})();
+</script>
+
+</body>
+</html>
