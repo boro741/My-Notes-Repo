@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Color Grading in DaVinci Resolve, Explained Simply</title>
+<style>
+
+:root {
+color-scheme: light;
+--page: #f5f2ec;
+--surface: #ffffff;
+--ink: #17140f;
+--ink-soft: #5c564c;
+--muted: #928a7c;
+--hairline: #e5ddce;
+--border: rgba(23,20,15,0.10);
+--teal: #0d8f80;
+--teal-ink: #066358;
+--teal-soft: #e2f3f0;
+--orange: #de6a12;
+--orange-ink: #a24d0d;
+--orange-soft: #fbe9d8;
+--gold: #b8900a;
+--gold-soft: #f7edd2;
+--good: #1f9d55;
+--warn: #c98a12;
+--bad: #cf4a3d;
+--shadow: 0 1px 2px rgba(23,20,15,0.05), 0 10px 28px rgba(23,20,15,0.08);
+--serif: ui-serif, Charter, "Iowan Old Style", Georgia, "Times New Roman", serif;
+--sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+html[data-theme="dark"] {
+color-scheme: dark;
+--page: #0e0f10;
+--surface: #18191b;
+--ink: #f2efe7;
+--ink-soft: #c3bdb1;
+--muted: #857e72;
+--hairline: #2b2c2c;
+--border: rgba(255,255,255,0.10);
+--teal: #2ed6c3;
+--teal-ink: #bdf3ea;
+--teal-soft: rgba(46,214,195,0.14);
+--orange: #ff8f45;
+--orange-ink: #ffd9b8;
+--orange-soft: rgba(255,143,69,0.16);
+--gold: #e2ba1c;
+--gold-soft: rgba(226,186,28,0.14);
+--shadow: 0 1px 2px rgba(0,0,0,0.35), 0 12px 32px rgba(0,0,0,0.42);
+}
+
+@media (prefers-color-scheme: dark) {
+html:not([data-theme="light"]) {
+color-scheme: dark;
+--page: #0e0f10;
+--surface: #18191b;
+--ink: #f2efe7;
+--ink-soft: #c3bdb1;
+--muted: #857e72;
+--hairline: #2b2c2c;
+--border: rgba(255,255,255,0.10);
+--teal: #2ed6c3;
+--teal-ink: #bdf3ea;
+--teal-soft: rgba(46,214,195,0.14);
+--orange: #ff8f45;
+--orange-ink: #ffd9b8;
+--orange-soft: rgba(255,143,69,0.16);
+--gold: #e2ba1c;
+--gold-soft: rgba(226,186,28,0.14);
+--shadow: 0 1px 2px rgba(0,0,0,0.35), 0 12px 32px rgba(0,0,0,0.42);
+}
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+
+body {
+margin: 0;
+background: var(--page);
+color: var(--ink);
+font-family: var(--sans);
+line-height: 1.65;
+-webkit-font-smoothing: antialiased;
+text-rendering: optimizeLegibility;
+transition: background 0.25s ease, color 0.25s ease;
+padding-left: env(safe-area-inset-left);
+padding-right: env(safe-area-inset-right);
+}
+
+::selection { background: var(--orange-soft); color: var(--ink); }
+
+#progress-bar {
+position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+background: linear-gradient(90deg, var(--teal), var(--orange));
+z-index: 1000; transition: width 0.1s ease-out;
+}
+
+.theme-toggle, .float-top {
+position: fixed; z-index: 999;
+width: 44px; height: 44px; border-radius: 50%;
+border: 1px solid var(--border);
+background: var(--surface); color: var(--ink);
+display: flex; align-items: center; justify-content: center;
+cursor: pointer; box-shadow: var(--shadow);
+font-size: 1.05rem;
+transition: transform 0.15s ease, background 0.25s ease;
+}
+.theme-toggle { top: calc(16px + env(safe-area-inset-top)); right: calc(16px + env(safe-area-inset-right)); }
+.float-top {
+bottom: calc(22px + env(safe-area-inset-bottom)); right: calc(16px + env(safe-area-inset-right));
+background: var(--ink); color: var(--page); border: none;
+opacity: 0; transform: translateY(10px); pointer-events: none;
+}
+.float-top.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.theme-toggle:active, .float-top:active { transform: scale(0.92); }
+
+.wrap { max-width: 740px; margin: 0 auto; padding: 0 24px; }
+
+header.hero { padding: calc(84px + env(safe-area-inset-top)) 0 52px; position: relative; overflow: hidden; }
+.kicker {
+font-size: 0.78rem; letter-spacing: 0.06em; color: var(--teal-ink); font-weight: 700; margin: 0 0 18px;
+display: flex; align-items: center; gap: 10px;
+}
+.kicker::before { content: ""; width: 22px; height: 2px; background: var(--teal); display: inline-block; border-radius: 2px; }
+
+h1.title {
+font-family: var(--serif); font-weight: 600;
+font-size: clamp(2rem, 6.6vw, 3.3rem); line-height: 1.1; letter-spacing: -0.01em; margin: 0 0 20px;
+}
+h1.title em { font-style: italic; color: var(--orange); }
+
+.dek { font-size: clamp(1.02rem, 2.5vw, 1.24rem); color: var(--ink-soft); max-width: 58ch; margin: 0 0 28px; font-weight: 400; }
+
+.byline { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; font-size: 0.86rem; color: var(--muted); padding-top: 22px; border-top: 1px solid var(--hairline); }
+.byline .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); }
+.avatar {
+width: 38px; height: 38px; border-radius: 50%;
+background: linear-gradient(135deg, var(--teal), var(--orange));
+display: flex; align-items: center; justify-content: center;
+color: #fff; font-family: var(--serif); font-weight: 700; font-size: 0.92rem;
+}
+
+.hero-quote {
+font-family: var(--serif); font-style: italic;
+font-size: clamp(1.1rem, 2.8vw, 1.4rem); line-height: 1.5; color: var(--ink);
+margin: 38px 0 0; padding: 24px 0 0 22px; border-left: 3px solid var(--orange);
+}
+
+nav.toc { background: var(--surface); border: 1px solid var(--hairline); border-radius: 18px; padding: 24px 24px 20px; margin: 8px 0 60px; box-shadow: var(--shadow); }
+nav.toc h2 { font-size: 0.72rem; letter-spacing: 0.1em; color: var(--muted); margin: 0 0 14px; font-weight: 700; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; }
+nav.toc li { counter-increment: toc; margin-bottom: 2px; }
+nav.toc a { display: flex; align-items: baseline; gap: 12px; color: var(--ink-soft); text-decoration: none; font-size: 0.94rem; padding: 7px 4px; border-radius: 8px; transition: color 0.15s ease, background 0.15s ease; }
+nav.toc a::before { content: counter(toc, decimal-leading-zero); font-family: var(--serif); font-size: 0.8rem; color: var(--muted); flex-shrink: 0; }
+nav.toc a:hover, nav.toc a.active { color: var(--teal-ink); background: var(--teal-soft); }
+nav.toc a.active::before { color: var(--teal); }
+
+section.chapter { padding: 42px 0 8px; scroll-margin-top: 24px; }
+section.chapter + section.chapter { border-top: 1px solid var(--hairline); }
+
+.chapter-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.chapter-icon {
+width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+display: flex; align-items: center; justify-content: center;
+background: var(--icon-bg, var(--teal-soft)); color: var(--icon-fg, var(--teal-ink));
+}
+.chapter-icon svg { width: 22px; height: 22px; }
+.chapter-num { font-family: var(--serif); font-style: italic; color: var(--muted); font-size: 0.86rem; margin: 0; }
+h2.h { font-family: var(--serif); font-weight: 600; font-size: clamp(1.4rem, 4vw, 1.9rem); line-height: 1.2; margin: 2px 0 0; }
+h3.h3 { font-family: var(--serif); font-weight: 600; font-size: clamp(1.08rem, 2.8vw, 1.28rem); margin: 26px 0 10px; }
+
+p.body-text { font-size: 1.03rem; color: var(--ink); margin: 0 0 16px; }
+p.body-text.soft { color: var(--ink-soft); }
+.lede { font-size: 1.1rem; }
+ul.plain, ol.plain { margin: 0 0 16px; padding-left: 22px; color: var(--ink); }
+ul.plain li, ol.plain li { margin-bottom: 8px; }
+
+mark.hl { background: var(--gold-soft); color: var(--ink); padding: 0.05em 0.15em; border-radius: 4px; font-weight: 600; }
+
+.callout { background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px; padding: 18px 20px; margin: 22px 0; box-shadow: var(--shadow); }
+.callout.tip { border-left: 4px solid var(--gold); }
+.callout.warn { border-left: 4px solid var(--bad); }
+.callout h4 { margin: 0 0 6px; font-size: 0.92rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.callout p { margin: 0; color: var(--ink-soft); font-size: 0.94rem; }
+
+.reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.6s cubic-bezier(.2,.7,.3,1), transform 0.6s cubic-bezier(.2,.7,.3,1); }
+.reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+/* diagram shell */
+.diagram { margin: 26px 0 6px; }
+.diagram-card { background: var(--surface); border: 1px solid var(--hairline); border-radius: 18px; padding: 24px 18px 18px; box-shadow: var(--shadow); }
+.diagram-label { font-size: 0.72rem; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; margin-bottom: 14px; text-align: center; }
+.diagram-caption { font-size: 0.88rem; color: var(--ink-soft); margin-top: 12px; text-align: center; }
+
+/* ---- chain diagram ---- */
+.chain { position: relative; display: flex; justify-content: space-between; gap: 4px; padding: 6px 0 2px; }
+.chain-track { position: absolute; top: 21px; left: 6%; right: 6%; height: 2px; background: var(--hairline); z-index: 0; }
+.chain-node { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+.chain-dot { width: 42px; height: 42px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--serif); font-weight: 700; font-size: 0.95rem; transform: scale(0.5); opacity: 0; transition: transform 0.5s ease, opacity 0.5s ease; background: var(--c, var(--teal)); }
+.chain.is-visible .chain-dot { transform: scale(1); opacity: 1; }
+.chain-node:nth-child(2) .chain-dot { transition-delay: 0.05s; }
+.chain-node:nth-child(3) .chain-dot { transition-delay: 0.1s; }
+.chain-node:nth-child(4) .chain-dot { transition-delay: 0.15s; }
+.chain-node:nth-child(5) .chain-dot { transition-delay: 0.2s; }
+.chain-node:nth-child(6) .chain-dot { transition-delay: 0.25s; }
+.chain-node span { font-size: 0.68rem; color: var(--muted); text-align: center; line-height: 1.25; }
+@media (max-width: 560px) {
+  .chain { flex-wrap: wrap; row-gap: 18px; }
+  .chain-track { display: none; }
+  .chain-node { flex: 1 1 28%; }
+}
+
+/* ---- scope compare ---- */
+.scope-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.scope-panel { text-align: center; }
+.scope-panel .lbl { font-size: 0.74rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+.scope-graph { height: 130px; border: 1px solid var(--hairline); border-radius: 10px; background: var(--page); position: relative; overflow: hidden; display: flex; align-items: flex-end; justify-content: center; }
+.scope-band { width: 46%; border-radius: 4px; background: linear-gradient(180deg, var(--orange), var(--teal)); height: 0%; transition: height 1.2s cubic-bezier(.2,.8,.2,1); }
+.scope-panel.before .scope-band { height: 26%; margin-bottom: 37%; }
+.is-visible .scope-panel.after .scope-band { height: 88%; }
+.scope-panel p { font-size: 0.82rem; color: var(--ink-soft); margin: 10px 0 0; }
+@media (max-width: 560px) { .scope-compare { grid-template-columns: 1fr; } }
+
+/* ---- four wheels ---- */
+.wheel-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin: 6px 0; }
+.wheel-card { text-align: center; }
+.wheel-ring { width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 10px; position: relative; border: 3px solid var(--hairline); background: var(--page); }
+.wheel-dot { position: absolute; width: 12px; height: 12px; border-radius: 50%; top: 50%; left: 50%; }
+.wheel-card b { display: block; font-size: 0.86rem; }
+.wheel-card span { font-size: 0.74rem; color: var(--muted); }
+@media (max-width: 560px) { .wheel-row { grid-template-columns: repeat(2,1fr); row-gap: 20px; } }
+
+/* ---- layer stack ---- */
+.stack { display: flex; flex-direction: column; gap: 10px; margin: 22px 0 6px; }
+.stack-item { display: flex; align-items: center; gap: 14px; background: var(--surface); border: 1px solid var(--hairline); border-radius: 14px; padding: 14px 16px; opacity: 0.3; transform: translateX(-12px); transition: opacity 0.5s ease, transform 0.5s ease; }
+.stack.is-visible .stack-item { opacity: 1; transform: translateX(0); }
+.stack.is-visible .stack-item:nth-child(1) { transition-delay: 0.05s; }
+.stack.is-visible .stack-item:nth-child(2) { transition-delay: 0.15s; }
+.stack.is-visible .stack-item:nth-child(3) { transition-delay: 0.25s; }
+.stack-badge { width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-family: var(--serif); font-weight: 700; font-size: 0.86rem; color: #fff; background: var(--c); }
+.stack-item b { display: block; font-size: 0.96rem; }
+.stack-item span { font-size: 0.83rem; color: var(--muted); }
+
+/* ---- node compare (serial vs parallel) ---- */
+.node-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.node-compare-col { text-align: center; }
+.node-compare-title { font-size: 0.82rem; font-weight: 700; margin-bottom: 10px; }
+.mini-flow-svg { width: 100%; max-width: 220px; height: auto; }
+.node-compare p { font-size: 0.82rem; color: var(--ink-soft); margin: 10px 0 0; }
+@media (max-width: 560px) { .node-compare { grid-template-columns: 1fr; } }
+
+/* ---- generic stat / tile grids (export, formats) ---- */
+.stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 22px 0; }
+.stat-card { background: var(--surface); border: 1px solid var(--hairline); border-radius: 14px; padding: 16px 10px; text-align: center; box-shadow: var(--shadow); }
+.stat-card b { display: block; font-family: var(--serif); font-size: 1.15rem; margin-bottom: 3px; }
+.stat-card span { font-size: 0.76rem; color: var(--muted); }
+@media (max-width: 560px) { .stat-row { grid-template-columns: repeat(2,1fr); } }
+
+.tile-row { display: grid; grid-template-columns: 1fr; gap: 10px; margin: 20px 0; }
+@media (min-width: 560px) { .tile-row { grid-template-columns: repeat(2, 1fr); } }
+.tile { display: flex; align-items: flex-start; gap: 12px; background: var(--surface); border: 1px solid var(--hairline); border-radius: 14px; padding: 14px 16px; }
+.tile-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+.tile b { display: block; font-size: 0.92rem; }
+.tile span { font-size: 0.8rem; color: var(--muted); }
+
+/* ---- step list (export) ---- */
+.step-list { counter-reset: step; margin: 22px 0; padding: 0; list-style: none; }
+.step-list li { counter-increment: step; display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--hairline); }
+.step-list li:last-child { border-bottom: none; }
+.step-list .num { width: 26px; height: 26px; border-radius: 50%; background: var(--orange-soft); color: var(--orange-ink); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; font-family: var(--serif); }
+.step-list b { display: block; font-size: 0.95rem; }
+.step-list span { font-size: 0.85rem; color: var(--ink-soft); }
+
+.closer { text-align: center; padding: 60px 0 80px; }
+.closer h2 { font-family: var(--serif); font-weight: 600; font-style: italic; font-size: clamp(1.6rem, 5.4vw, 2.2rem); line-height: 1.2; margin: 0 0 16px; }
+.closer p { color: var(--ink-soft); font-size: 1.02rem; max-width: 46ch; margin: 0 auto; }
+.signoff { margin-top: 30px; font-family: var(--serif); font-style: italic; color: var(--muted); }
+
+.recap-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin: 26px 0; text-align: left; }
+@media (min-width: 620px) { .recap-grid { grid-template-columns: repeat(3,1fr); } }
+.recap-card { background: var(--surface); border: 1px solid var(--hairline); border-radius: 14px; padding: 14px; box-shadow: var(--shadow); }
+.recap-card .n { font-family: var(--serif); font-weight: 700; color: var(--orange); font-size: 0.85rem; }
+.recap-card b { display: block; font-size: 0.9rem; margin: 4px 0 2px; }
+.recap-card span { font-size: 0.78rem; color: var(--muted); }
+
+footer.site-footer { border-top: 1px solid var(--hairline); padding: 26px 0 calc(38px + env(safe-area-inset-bottom)); text-align: center; font-size: 0.8rem; color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) {
+.reveal, .stack-item, .chain-dot, .scope-band { transition: none !important; }
+html { scroll-behavior: auto; }
+}
+
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">◐</button>
+<button class="float-top" id="floatTop" aria-label="Back to top">↑</button>
+
+<div class="wrap">
+
+<header class="hero">
+<p class="kicker">DaVinci Resolve · Color Grading Basics</p>
+<h1 class="title">Color Grading in DaVinci Resolve, <em>Explained Simply</em></h1>
+<p class="dek">A calm, step-by-step map through the exact node system colorists use — so you can grade any clip, even footage shot on your phone, without feeling lost.</p>
+<div class="byline">
+<div class="avatar">DR</div>
+<span>From a colorist &amp; cinematographer's tutorial</span>
+<span class="dot"></span>
+<span>~11 min read</span>
+<span class="dot"></span>
+<span>10 chapters</span>
+</div>
+<blockquote class="hero-quote">Colour grading looks intimidating for about ten minutes. After that, it's just the same six steps, over and over, on every single clip.</blockquote>
+</header>
+
+<nav class="toc reveal">
+<h2>In this guide</h2>
+<ol>
+<li><a href="#ch1">Get your room ready</a></li>
+<li><a href="#ch2">Grab the free cheat-sheet tool</a></li>
+<li><a href="#ch3">Step 1 — Undo the flat "log" look</a></li>
+<li><a href="#ch4">Step 2 — Balance the image</a></li>
+<li><a href="#ch5">Step 3 — Separate the colors</a></li>
+<li><a href="#ch6">Step 4 — Build the final look</a></li>
+<li><a href="#ch7">Step 5 — Add small touches</a></li>
+<li><a href="#ch8">Step 6 — Finish with grain &amp; sharpness</a></li>
+<li><a href="#ch9">Export your clip</a></li>
+<li><a href="#ch10">Shot on a phone? Same idea</a></li>
+</ol>
+</nav>
+
+<!-- ===================== CHAPTER 1 ===================== -->
+<section class="chapter reveal" id="ch1">
+<div class="chapter-head" style="--icon-bg:var(--teal-soft); --icon-fg:var(--teal-ink);">
+<div class="chapter-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.3"/></svg></div>
+<div><p class="chapter-num">Before you touch a single slider</p><h2 class="h">Get your room ready</h2></div>
+</div>
+<p class="body-text lede">Before any color grading happens, two boring settings make everything else work correctly. Skip these and your grade will look wrong no matter what you do afterwards.</p>
+<ul class="plain">
+<li>Open <strong>Settings → Color Management</strong>. Set <strong>Timeline color space</strong> to <em>DaVinci Wide Gamut Intermediate</em>.</li>
+<li>Set <strong>Output color space</strong> to <em>Rec.709 A</em> if you're on a Mac, or <em>Rec.709 Gamma 2.2/2.4</em> on Windows. This makes your exported video look exactly like what you see while editing.</li>
+</ul>
+
+<div class="callout tip">
+<h4>💡 Why does this even matter?</h4>
+<p>Think of "color space" as the rulebook your screen and your export use to decode color. If the timeline and the output disagree, your careful grade can look completely different once you export it. Setting this once, upfront, keeps what-you-see = what-you-get.</p>
+</div>
+
+<p class="body-text soft">Once that's set, open the <strong>Color</strong> page (bottom toolbar). If it looks cluttered on your first visit, that's normal — turn off the Clips strip, the Timeline strip, and the Gallery panel from the icons at the top so only your image and the node area remain. Drag the panel dividers until you have a clean, spacious layout. A tidy workspace makes everything below far less overwhelming.</p>
+</section>
+
+<!-- ===================== CHAPTER 2 ===================== -->
+<section class="chapter reveal" id="ch2">
+<div class="chapter-head" style="--icon-bg:var(--orange-soft); --icon-fg:var(--orange-ink);">
+<div class="chapter-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+<div><p class="chapter-num">The shortcut worth taking</p><h2 class="h">Grab the free cheat-sheet tool</h2></div>
+</div>
+<p class="body-text lede">Instead of building a color-grading setup from scratch, this tutorial uses a free, ready-made <strong>node tree</strong> — nicknamed a "Power Grade" — that already has every tool arranged in the right order.</p>
+
+<div class="callout tip">
+<h4>💡 What's a "node"?</h4>
+<p>A node is one single adjustment step, shown as a little box you can plug things into. Instead of one giant panel of sliders, DaVinci Resolve lets you chain small, focused steps together — one node just for exposure, another just for color, another just for the final polish. That chain is your "node tree."</p>
+</div>
+
+<p class="body-text soft">To use it: open the <strong>Gallery</strong> panel, drag the downloaded Power Grade files into a Power Grade folder, then right-click it and choose <em>Apply Grade</em> on any clip. It instantly builds this entire node chain for you:</p>
+
+<div class="diagram reveal">
+<div class="diagram-card">
+<div class="diagram-label">The Six-Step Node Chain</div>
+<div class="chain">
+<div class="chain-node" style="--c:var(--teal)"><div class="chain-dot">1</div><span>Convert<br>footage</span></div>
+<div class="chain-node" style="--c:var(--gold)"><div class="chain-dot">2</div><span>Balance<br>image</span></div>
+<div class="chain-node" style="--c:var(--orange)"><div class="chain-dot">3</div><span>Separate<br>colors</span></div>
+<div class="chain-node" style="--c:#c9457b"><div class="chain-dot">4</div><span>Build<br>the look</span></div>
+<div class="chain-node" style="--c:#7a5fd1"><div class="chain-dot">5</div><span>Small<br>touches</span></div>
+<div class="chain-node" style="--c:var(--teal-ink)"><div class="chain-dot">6</div><span>Final<br>polish</span></div>
+</div>
+<div class="chain-track"></div>
+<p class="diagram-caption">Every grade in this guide follows this exact left-to-right order — nothing more to memorize.</p>
+</div>
+</div>
+
+<p class="body-text soft">You never have to build this chain by hand. Once it's applied, you just move node-to-node, left to right, doing one job at a time. That's the entire secret to this whole tutorial.</p>
+</section>
+
+<!-- ===================== CHAPTER 3 ===================== -->
+<section class="chapter reveal" id="ch3">
+<div class="chapter-head" style="--icon-bg:var(--teal-soft); --icon-fg:var(--teal-ink);">
+<div class="chapter-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M9 9l3 3-3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<div><p class="chapter-num">Node 1 · CST</p><h2 class="h">Undo the flat "log" look</h2></div>
+</div>
+<p class="body-text lede">If you shot in "Log," your footage arrives looking washed-out and gray on purpose. The first node — called the <strong>CST</strong> — undoes that so the image looks normal again, before any actual grading starts.</p>
+
+<div class="callout tip">
+<h4>💡 What is "Log" footage, and what's a CST?</h4>
+<p>Log is a flat, low-contrast recording style cameras use to capture more shadow and highlight detail. It looks bad straight out of the camera on purpose — it's raw material, not the final image. The <strong>CST (Color Space Transform)</strong> node tells Resolve exactly which camera and log format you used (e.g. Sony S-Log3, Canon Log, Blackmagic Film) so it can convert that flat footage back into a normal-looking image.</p>
+</div>
+
+<p class="body-text soft">Just type your camera's color space and gamma into this node — for example <em>S-Gamut3.Cine / S-Log3</em> for Sony, or <em>Canon Cinema Gamut / Canon Log 3</em> for Canon. Get this one setting right, and everything downstream gets much easier.</p>
+</section>
+
+<!-- ===================== CHAPTER 4 ===================== -->
+<section class="chapter reveal" id="ch4">
+<div class="chapter-head" style="--icon-bg:var(--gold-soft); --icon-fg:var(--gold);">
+<div class="chapter-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 19V9M10 19V5M16 19v-7M22 19V3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+<div><p class="chapter-num">Nodes 2–4 · Exposure, contrast, saturation</p><h2 class="h">Balance the image</h2></div>
+</div>
+<p class="body-text lede">Next come three "balancing" nodes. Their only job is to spread the image's tones from true black to true white, using as much of the available range as possible — nothing creative happens here yet.</p>
+
+<div class="diagram reveal">
+<div class="diagram-card">
+<div class="diagram-label">Reading the Scope</div>
+<div class="scope-compare">
+<div class="scope-panel before"><div class="lbl">Before</div><div class="scope-graph"><div class="scope-band"></div></div><p>Flat log footage: everything bunched in the middle of the scope.</p></div>
+<div class="scope-panel after"><div class="lbl">After balancing</div><div class="scope-graph"><div class="scope-band"></div></div><p>Shadows near the bottom, highlights near the top — full range used.</p></div>
+</div>
+<p class="diagram-caption">The scope (Parade or Waveform) shows exactly where your tones sit. Stretching it out = more information to work with later.</p>
+</div>
+</div>
+
+<div class="callout tip">
+<h4>💡 Lift, Gamma, Gain &amp; Offset — what's the difference?</h4>
+<p>These four wheels are how you nudge color and brightness in DaVinci. Each one targets a different part of the image.</p>
+</div>
+
+<div class="wheel-row reveal">
+<div class="wheel-card"><div class="wheel-ring"><div class="wheel-dot" style="background:var(--muted); transform:translate(-16px,10px);"></div></div><b>Lift</b><span>Shadows</span></div>
+<div class="wheel-card"><div class="wheel-ring"><div class="wheel-dot" style="background:var(--gold); transform:translate(4px,-6px);"></div></div><b>Gamma</b><span>Midtones</span></div>
+<div class="wheel-card"><div class="wheel-ring"><div class="wheel-dot" style="background:var(--orange); transform:translate(12px,-14px);"></div></div><b>Gain</b><span>Highlights</span></div>
+<div class="wheel-card"><div class="wheel-ring"><div class="wheel-dot" style="background:var(--teal); transform:translate(-2px,2px);"></div></div><b>Offset</b><span>Whole image</span></div>
+</div>
+
+<p class="body-text soft">A simple routine: push <strong>Offset</strong> up a touch to lift the overall image, pull <strong>Lift</strong> down slightly to ground the shadows, push <strong>Gamma</strong> up to brighten midtones (where skin usually lives), and raise <strong>Gain</strong> for the highlights. Watch the scope the whole time — if the line slams flat against the very top or bottom, you're <mark class="hl">clipping</mark> and losing detail permanently, so back off.</p>
+
+<p class="body-text soft">For <strong>Contrast</strong>, use your eyes: if skin looks muddy or blotchy, lower the contrast slightly, or drag the <em>pivot</em> point left so the contrast affects shadows more than highlights. For <strong>Saturation</strong>, add just a little — flat log footage needs some color back before the next step can work properly.</p>
+
+<div class="callout warn">
+<h4>⚠️ Why bother balancing at all?</h4>
+<p>The next chapter relies on picking out specific colors (like skin) from the rest of the image. That's nearly impossible on a flat, low-saturation image — everything looks too similar. A well-balanced image separates naturally, which makes every step after this one far easier.</p>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 5 ===================== -->
+<section class="chapter reveal" id="ch5">
+<div class="chapter-head" style="--icon-bg:var(--orange-soft); --icon-fg:var(--orange-ink);">
+<div class="chapter-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 3a9 9 0 010 18" stroke="currentColor" stroke-width="1.6"/></svg></div>
+<div><p class="chapter-num">The Qualifier &amp; Power Windows</p><h2 class="h">Separate the colors</h2></div>
+</div>
+<p class="body-text lede">This is where you tell Resolve "only change <em>this</em> part of the image" — usually skin, sky, or clothing — so later adjustments don't affect everything at once.</p>
+
+<div class="callout tip">
+<h4>💡 What's a Qualifier?</h4>
+<p>A qualifier lets you click on a color (say, someone's skin) and Resolve automatically selects every pixel that's similar to it. Press <strong>Shift+H</strong> any time to preview exactly what's selected — colored areas are selected, gray areas aren't.</p>
+</div>
+
+<p class="body-text soft">A first click rarely gives a perfect selection. Refine it with a few sliders:</p>
+<ul class="plain">
+<li><strong>Hue width</strong> — narrows the selection to just the color range you clicked (e.g. only reds/oranges for skin).</li>
+<li><strong>Saturation &amp; Luminance</strong> — excludes areas that are too dull or too bright/dark to be a real match.</li>
+<li><strong>Denoise &amp; Blur radius</strong> — softens the edges of the selection so it doesn't look harsh or cut-out.</li>
+</ul>
+
+<p class="body-text soft">If the color selection alone isn't precise enough, add a <strong>Power Window</strong> — a shape (circle, square, or a freehand outline with the pen tool) that masks off an area of the frame. For a moving subject, Resolve's built-in tracker can follow it automatically frame by frame. If you have the paid Studio version, <strong>Magic Mask</strong> does this almost instantly with far less manual drawing.</p>
+
+<div class="callout tip">
+<h4>💡 Bonus: the Vectorscope skin-tone line</h4>
+<p>Open the <strong>Vectorscope</strong> and turn on <em>Show Skin Tone Indicator</em>. It draws a line showing exactly where natural skin tones should sit. Nudge your Gamma wheel until your subject's skin lands on that line for a realistic (not orange, not gray) result.</p>
+</div>
+
+<h3 class="h3">Stacking selections with the Layer Mixer</h3>
+<p class="body-text soft">Once you've isolated one thing (say, skin), you can add another node for a second object (like a jacket) and a third for everything else (the background). A special <strong>Layer Mixer</strong> node stacks these with a simple rule: whatever you isolated first always wins.</p>
+
+<div class="stack reveal">
+<div class="stack-item"><div class="stack-badge" style="--c:var(--teal)">1</div><div><b>Main object</b><span>Highest priority — usually skin or your subject.</span></div></div>
+<div class="stack-item"><div class="stack-badge" style="--c:var(--orange)">2</div><div><b>Second object</b><span>Next priority — e.g. clothing.</span></div></div>
+<div class="stack-item"><div class="stack-badge" style="--c:var(--muted)">3</div><div><b>Background</b><span>Lowest priority — everything left over.</span></div></div>
+</div>
+
+<p class="body-text soft">This is exactly how the classic "orange skin, teal background" look gets made: color the background freely, and the skin and clothing simply stay protected underneath because they were isolated first.</p>
+
+<div class="callout warn">
+<h4>⚠️ Don't overdo it</h4>
+<p>Push any single color isolation too hard and the image starts to look broken — harsh edges, blotchy skin, fake-looking color. Small, subtle separations always look more convincing than dramatic ones.</p>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 6 ===================== -->
+<section class="chapter reveal" id="ch6">
+<div class="chapter-head" style="--icon-bg:#f4dceb; --icon-fg:#c9457b;">
+<div class="chapter-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12c4-8 12-8 16 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M4 12c4 8 12 8 16 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+<div><p class="chapter-num">The Global node</p><h2 class="h">Build the final look</h2></div>
+</div>
+<p class="body-text lede">With the image balanced and separated, this is where the actual creative decisions happen — the mood, the color cast, the personality of the shot.</p>
+
+<div class="callout tip">
+<h4>💡 Serial vs. Parallel (Global) nodes</h4>
+<p>Nodes can chain two different ways. It matters more than it sounds.</p>
+</div>
+
+<div class="node-compare reveal">
+<div class="node-compare-col">
+<div class="node-compare-title" style="color:var(--muted);">Serial nodes</div>
+<svg class="mini-flow-svg" viewBox="0 0 220 60"><circle cx="30" cy="30" r="18" fill="none" stroke="var(--hairline)" stroke-width="2"/><text x="30" y="35" text-anchor="middle" font-size="13" fill="var(--ink-soft)">A</text><line x1="52" y1="30" x2="88" y2="30" stroke="var(--hairline)" stroke-width="2"/><circle cx="110" cy="30" r="18" fill="none" stroke="var(--hairline)" stroke-width="2"/><text x="110" y="35" text-anchor="middle" font-size="13" fill="var(--ink-soft)">B</text><line x1="132" y1="30" x2="168" y2="30" stroke="var(--hairline)" stroke-width="2"/><circle cx="190" cy="30" r="18" fill="none" stroke="var(--hairline)" stroke-width="2"/><text x="190" y="35" text-anchor="middle" font-size="13" fill="var(--ink-soft)">C</text></svg>
+<p>Each node builds on the last. Handy for quick fine-tuning, but a little information gets lost with every step.</p>
+</div>
+<div class="node-compare-col">
+<div class="node-compare-title" style="color:var(--orange-ink);">Parallel (Global) nodes</div>
+<svg class="mini-flow-svg" viewBox="0 0 240 110"><circle cx="120" cy="18" r="15" fill="var(--orange)"/><text x="120" y="23" text-anchor="middle" font-size="11" fill="#fff">G</text><line x1="120" y1="33" x2="40" y2="76" stroke="var(--hairline)" stroke-width="2"/><line x1="120" y1="33" x2="120" y2="76" stroke="var(--hairline)" stroke-width="2"/><line x1="120" y1="33" x2="200" y2="76" stroke="var(--hairline)" stroke-width="2"/><rect x="20" y="76" width="40" height="24" rx="6" fill="none" stroke="var(--hairline)" stroke-width="2"/><rect x="100" y="76" width="40" height="24" rx="6" fill="none" stroke="var(--hairline)" stroke-width="2"/><rect x="180" y="76" width="40" height="24" rx="6" fill="none" stroke="var(--hairline)" stroke-width="2"/></svg>
+<p>Every node reads from the same original source. Nothing gets lost, which is why the "Global" look is built here.</p>
+</div>
+</div>
+
+<p class="body-text soft">Inside the Global node, three tools do most of the work:</p>
+<ul class="plain">
+<li><strong>Curves</strong> — drag the shadows, midtones, and highlights of the tone curve to add gentle contrast, exactly like the balancing step, but now with intent.</li>
+<li><strong>Primary wheels</strong> — this is where you add an actual color cast: cooler shadows, warmer highlights, or any combination you like.</li>
+<li><strong>A reference image</strong> (optional) — drop in a still you like the look of, place it side-by-side on the scope, and roughly match where its tones sit. Great when you're not sure where to start.</li>
+</ul>
+
+<p class="body-text soft">Prefer a specific, exact color? The <strong>Hue vs Hue</strong> curve or the six-sided <strong>Color Warper</strong> let you grab one precise color on a graph and shift it wherever you like, without touching anything else in the frame.</p>
+</section>
+
+<!-- ===================== CHAPTER 7 ===================== -->
+<section class="chapter reveal" id="ch7">
+<div class="chapter-head" style="--icon-bg:#e7e1fb; --icon-fg:#7a5fd1;">
+<div class="chapter-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></div>
+<div><p class="chapter-num">Adjustment nodes</p><h2 class="h">Add small touches</h2></div>
+</div>
+<p class="body-text lede">A few optional finishing details live in the "Adjustment" nodes. None of these are essential, but they add polish.</p>
+
+<div class="callout tip">
+<h4>💡 Why not just use the Saturation slider?</h4>
+<p>The regular saturation slider also quietly changes brightness and contrast as a side effect. The <strong>Color Slicer's</strong> saturation tool only touches saturation — nothing else — so colors intensify without the image looking artificially brighter.</p>
+</div>
+
+<p class="body-text soft">If you're grading a person and have the paid Studio version, <strong>Face Refinement</strong> can automatically detect a face and offer gentle, targeted controls — skin smoothing, brightening the eyes, reducing shine, or softening eye bags. Small, subtle nudges here go a long way; overdo any single one and it starts to look artificial.</p>
+
+<div class="tile-row reveal">
+<div class="tile"><div class="tile-dot" style="background:var(--teal);"></div><div><b>Skin smoothing</b><span>Keep it light — full smoothing looks plastic-y.</span></div></div>
+<div class="tile"><div class="tile-dot" style="background:var(--orange);"></div><div><b>Eye brighten</b><span>A tiny lift makes eyes pop without looking fake.</span></div></div>
+</div>
+
+<p class="body-text soft">You can also revisit <strong>Power Windows</strong> here to brighten a subject in the middle of the frame or darken the edges for a subtle vignette — small, targeted brightness shifts that quietly guide the viewer's eye.</p>
+</section>
+
+<!-- ===================== CHAPTER 8 ===================== -->
+<section class="chapter reveal" id="ch8">
+<div class="chapter-head" style="--icon-bg:var(--teal-soft); --icon-fg:var(--teal-ink);">
+<div class="chapter-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z" stroke="currentColor" stroke-width="1.6"/><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<div><p class="chapter-num">Fine-tune &amp; Final nodes</p><h2 class="h">Finish with grain &amp; sharpness</h2></div>
+</div>
+<p class="body-text lede">The very last two nodes exist purely to add texture and clarity — the difference between a "digital-looking" grade and one that feels finished.</p>
+
+<h3 class="h3">Film grain</h3>
+<p class="body-text soft">A tiny bit of grain adds texture and makes an image feel less sterile. You have two options:</p>
+<ul class="plain">
+<li>If you're on the <strong>free</strong> version of Resolve, use a downloadable film-grain overlay clip, set its blend mode to <em>Overlay</em>, and layer it on top of your graded clip.</li>
+<li>If you have the <strong>Studio</strong> version, drop the built-in <strong>Film Grain</strong> effect onto its own node and adjust size, softness, and strength directly.</li>
+</ul>
+
+<div class="callout tip">
+<h4>💡 My export looks slow or choppy — why?</h4>
+<p>Film grain is heavy on your computer. If playback stutters while you're working, temporarily hide grades with <strong>Shift+D</strong>, switch your timeline to quarter-resolution playback, or drop to a 1080p timeline while editing — then switch everything back to full quality before your final export.</p>
+</div>
+
+<h3 class="h3">Sharpening &amp; scaling</h3>
+<p class="body-text soft">The final node usually adds a touch of sharpening. Lower the blur radius slightly to sharpen, or raise it to soften. A lesser-known control called <strong>Scaling</strong> decides which size of detail gets sharpened — push it up and fine details like eyelashes and skin texture become noticeably crisper, especially useful before uploading to social media where compression can flatten an image.</p>
+</section>
+
+<!-- ===================== CHAPTER 9 ===================== -->
+<section class="chapter reveal" id="ch9">
+<div class="chapter-head" style="--icon-bg:var(--orange-soft); --icon-fg:var(--orange-ink);">
+<div class="chapter-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M7 10l5-5 5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+<div><p class="chapter-num">The Deliver page</p><h2 class="h">Export your clip</h2></div>
+</div>
+<p class="body-text lede">Once you're happy, switch to the <strong>Deliver</strong> page. This is where your finished, graded clip leaves DaVinci Resolve and becomes an actual video file.</p>
+
+<ol class="step-list">
+<li><span class="num">1</span><div><b>Mark your range</b><span>Press <strong>I</strong> at the start and <strong>O</strong> at the end of the clip you want exported.</span></div></li>
+<li><span class="num">2</span><div><b>Name it &amp; pick a folder</b><span>Give it a clear file name and choose where it saves.</span></div></li>
+<li><span class="num">3</span><div><b>Choose format &amp; codec</b><span>MP4 with H.264 plays reliably on almost any device — the safest default.</span></div></li>
+<li><span class="num">4</span><div><b>Set resolution &amp; frame rate</b><span>Match your timeline unless you have a specific reason to change it.</span></div></li>
+<li><span class="num">5</span><div><b>Leave quality on Automatic</b><span>It consistently produces solid results without guesswork.</span></div></li>
+<li><span class="num">6</span><div><b>Add to render queue, then hit Render</b><span>Watch the progress bar — your video appears at the folder you chose.</span></div></li>
+</ol>
+
+<div class="stat-row reveal">
+<div class="stat-card"><b>H.264</b><span>Plays everywhere, larger file size</span></div>
+<div class="stat-card"><b>H.265</b><span>Smaller file, some older devices can't open it</span></div>
+<div class="stat-card"><b>MP4</b><span>The safest, most compatible container</span></div>
+</div>
+
+<div class="callout tip">
+<h4>💡 Got subtitles?</h4>
+<p>Subtitles won't appear in your exported video unless you open the subtitle track settings and switch it to <strong>Burn into video</strong> before rendering. It's an easy step to forget.</p>
+</div>
+
+<div class="callout warn">
+<h4>⚠️ Slow or glitchy exports?</h4>
+<p>A laptop running hot will drop frames and can leave white blocks in your export. Export somewhere cool, or point a fan at your laptop — it genuinely speeds things up and prevents render errors.</p>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 10 ===================== -->
+<section class="chapter reveal" id="ch10">
+<div class="chapter-head" style="--icon-bg:var(--teal-soft); --icon-fg:var(--teal-ink);">
+<div class="chapter-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="7" y="2" width="10" height="20" rx="2" stroke="currentColor" stroke-width="1.6"/><line x1="11" y1="18" x2="13" y2="18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+<div><p class="chapter-num">Rec.709 footage</p><h2 class="h">Shot on a phone? Same idea</h2></div>
+</div>
+<p class="body-text lede">Not everyone shoots in Log. If your clip came straight from a regular phone, the exact same six-step chain still applies — only the very first node changes.</p>
+
+<p class="body-text soft">In the CST node, set both the input and output to <strong>Rec.709 / Rec.709</strong>. This effectively passes the image through unchanged, since a normal phone video isn't flat like log footage — it's already contrasty and saturated out of the camera.</p>
+
+<div class="tile-row reveal">
+<div class="tile"><div class="tile-dot" style="background:var(--good);"></div><div><b>Good news</b><span>Phone footage already has strong contrast — balancing needs less work.</span></div></div>
+<div class="tile"><div class="tile-dot" style="background:var(--warn);"></div><div><b>Go gently</b><span>Most phone video is 8-bit, so pushing color separation too hard causes banding and blotchy skin fast.</span></div></div>
+</div>
+
+<p class="body-text soft">Beyond that one change, the process is identical: balance, isolate skin and sky as color-qualified objects, build a Global look, add small touches, then finish with grain and sharpening. It's genuinely possible to make basic phone footage look cinematic — you don't need to own a proper camera to start practicing color grading.</p>
+</section>
+
+<!-- ===================== CLOSING ===================== -->
+<section class="chapter reveal closer" id="closer">
+<p class="chapter-num" style="text-align:center;">One last thing</p>
+<h2>Six steps. Every clip. Every time.</h2>
+<p>You don't need to memorize color theory to grade well — you need to run the same short checklist on every clip until it becomes automatic. Here's the whole guide in one glance:</p>
+
+<div class="recap-grid reveal">
+<div class="recap-card"><span class="n">01</span><b>Set up</b><span>Color space + clean workspace</span></div>
+<div class="recap-card"><span class="n">02</span><b>Convert (CST)</b><span>Undo log, or pass Rec.709 through</span></div>
+<div class="recap-card"><span class="n">03</span><b>Balance</b><span>Stretch exposure, contrast, saturation</span></div>
+<div class="recap-card"><span class="n">04</span><b>Separate</b><span>Qualify skin, clothes, background</span></div>
+<div class="recap-card"><span class="n">05</span><b>Build the look</b><span>Curves + wheels in the Global node</span></div>
+<div class="recap-card"><span class="n">06</span><b>Finish</b><span>Grain, sharpening, then export</span></div>
+</div>
+
+<p>Grade a few clips, compare your before-and-afters, and keep an eye on images you admire — your taste sharpens far faster than any tutorial can teach it.</p>
+<p class="signoff">— Happy grading.</p>
+</section>
+
+</div>
+
+<footer class="site-footer">
+<div class="wrap">Notes from a DaVinci Resolve color grading tutorial · read on any device</div>
+</footer>
+
+<script>
+(function () {
+var root = document.documentElement;
+var btn = document.getElementById('themeToggle');
+function currentTheme() {
+if (root.getAttribute('data-theme')) return root.getAttribute('data-theme');
+return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+btn.addEventListener('click', function () {
+var next = currentTheme() === 'dark' ? 'light' : 'dark';
+root.setAttribute('data-theme', next);
+btn.textContent = next === 'dark' ? '☀' : '◐';
+});
+btn.textContent = currentTheme() === 'dark' ? '☀' : '◐';
+
+var bar = document.getElementById('progress-bar');
+var floatTop = document.getElementById('floatTop');
+function onScroll() {
+var h = document.documentElement;
+var scrolled = h.scrollTop || document.body.scrollTop;
+var height = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
+var pct = height > 0 ? (scrolled / height) * 100 : 0;
+bar.style.width = pct + '%';
+if (scrolled > 500) floatTop.classList.add('show'); else floatTop.classList.remove('show');
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+floatTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+var revealEls = document.querySelectorAll('.reveal, .chain, .stack');
+if ('IntersectionObserver' in window) {
+var io = new IntersectionObserver(function (entries) {
+entries.forEach(function (entry) {
+if (entry.isIntersecting) {
+entry.target.classList.add('is-visible');
+io.unobserve(entry.target);
+}
+});
+}, { threshold: 0.15 });
+revealEls.forEach(function (el) { io.observe(el); });
+} else {
+revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+}
+
+var tocLinks = {};
+document.querySelectorAll('nav.toc a').forEach(function (a) {
+tocLinks[a.getAttribute('href').slice(1)] = a;
+});
+var chapters = document.querySelectorAll('section.chapter');
+if ('IntersectionObserver' in window) {
+var tocObserver = new IntersectionObserver(function (entries) {
+entries.forEach(function (entry) {
+var link = tocLinks[entry.target.id];
+if (!link) return;
+if (entry.isIntersecting) {
+Object.values(tocLinks).forEach(function (l) { l.classList.remove('active'); });
+link.classList.add('active');
+}
+});
+}, { rootMargin: '-40% 0px -50% 0px' });
+chapters.forEach(function (c) { if (c.id) tocObserver.observe(c); });
+}
+})();
+</script>
+
+</body>
+</html>
