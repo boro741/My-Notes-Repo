@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Color Grading Fundamentals: The Skill That 10x's Your Footage</title>
+<style>
+
+:root {
+color-scheme: light;
+--page: #f9f9f7;
+--surface: #fcfcfb;
+--ink: #0b0b0b;
+--ink-soft: #52514e;
+--muted: #898781;
+--hairline: #e1e0d9;
+--border: rgba(11,11,11,0.10);
+--accent: #1c8f8f;
+--accent-ink: #0f6363;
+--accent-soft: #e7f4f4;
+--gold: #e0762c;
+--gold-soft: #fbe9db;
+--good: #0ca30c;
+--warn: #fab219;
+--bad: #ec835a;
+
+--s-blue: #2a78d6;
+--s-orange: #e0762c;
+--s-aqua: #1c8f8f;
+--s-yellow: #eda100;
+--s-magenta: #e87ba4;
+
+--shadow: 0 1px 2px rgba(11,11,11,0.04), 0 8px 24px rgba(11,11,11,0.06);
+--serif: ui-serif, Charter, "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+--sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+--mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+html[data-theme="dark"] {
+color-scheme: dark;
+--page: #0d0d0d;
+--surface: #1a1a19;
+--ink: #ffffff;
+--ink-soft: #c3c2b7;
+--muted: #898781;
+--hairline: #2c2c2a;
+--border: rgba(255,255,255,0.10);
+--accent: #2fb3b3;
+--accent-ink: #bdf0f0;
+--accent-soft: rgba(47,179,179,0.14);
+--gold: #e28a44;
+--gold-soft: rgba(226,138,68,0.16);
+--good: #0ca30c;
+--warn: #fab219;
+--bad: #ec835a;
+
+--s-blue: #3987e5;
+--s-orange: #e28a44;
+--s-aqua: #2fb3b3;
+--s-yellow: #c98500;
+--s-magenta: #d55181;
+
+--shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+}
+
+@media (prefers-color-scheme: dark) {
+html:not([data-theme="light"]) {
+color-scheme: dark;
+--page: #0d0d0d;
+--surface: #1a1a19;
+--ink: #ffffff;
+--ink-soft: #c3c2b7;
+--muted: #898781;
+--hairline: #2c2c2a;
+--border: rgba(255,255,255,0.10);
+--accent: #2fb3b3;
+--accent-ink: #bdf0f0;
+--accent-soft: rgba(47,179,179,0.14);
+--gold: #e28a44;
+--gold-soft: rgba(226,138,68,0.16);
+--s-blue: #3987e5;
+--s-orange: #e28a44;
+--s-aqua: #2fb3b3;
+--s-yellow: #c98500;
+--s-magenta: #d55181;
+--shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+}
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+
+body {
+margin: 0;
+background: var(--page);
+color: var(--ink);
+font-family: var(--sans);
+line-height: 1.65;
+-webkit-font-smoothing: antialiased;
+text-rendering: optimizeLegibility;
+transition: background 0.25s ease, color 0.25s ease;
+padding-left: env(safe-area-inset-left);
+padding-right: env(safe-area-inset-right);
+}
+
+::selection { background: var(--gold-soft); color: var(--ink); }
+
+#progress-bar {
+position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+background: linear-gradient(90deg, var(--accent), var(--gold));
+z-index: 1000; transition: width 0.1s ease-out;
+}
+
+.theme-toggle, .float-top {
+position: fixed; z-index: 999;
+width: 44px; height: 44px; border-radius: 50%;
+border: 1px solid var(--border);
+background: var(--surface); color: var(--ink);
+display: flex; align-items: center; justify-content: center;
+cursor: pointer; box-shadow: var(--shadow);
+font-size: 1.05rem;
+transition: transform 0.15s ease, background 0.25s ease;
+}
+.theme-toggle { top: calc(16px + env(safe-area-inset-top)); right: calc(16px + env(safe-area-inset-right)); }
+.float-top {
+bottom: calc(22px + env(safe-area-inset-bottom)); right: calc(16px + env(safe-area-inset-right));
+background: var(--ink); color: var(--page); border: none;
+opacity: 0; transform: translateY(10px); pointer-events: none;
+}
+.float-top.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.theme-toggle:active, .float-top:active { transform: scale(0.92); }
+
+.wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+.wrap-wide { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+header.hero {
+padding: calc(88px + env(safe-area-inset-top)) 0 56px;
+position: relative;
+overflow: hidden;
+}
+.kicker {
+font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
+color: var(--accent); font-weight: 700; margin: 0 0 18px;
+display: flex; align-items: center; gap: 10px;
+}
+.kicker::before { content: ""; width: 22px; height: 2px; background: var(--accent); display: inline-block; border-radius: 2px; }
+
+h1.title {
+font-family: var(--serif);
+font-weight: 600;
+font-size: clamp(2.1rem, 7vw, 3.6rem);
+line-height: 1.08;
+letter-spacing: -0.01em;
+margin: 0 0 20px;
+}
+h1.title em { font-style: italic; color: var(--gold); }
+
+.dek {
+font-size: clamp(1.05rem, 2.6vw, 1.3rem);
+color: var(--ink-soft);
+max-width: 60ch;
+margin: 0 0 28px;
+font-weight: 400;
+}
+
+.byline {
+display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+font-size: 0.88rem; color: var(--muted);
+padding-top: 22px; border-top: 1px solid var(--hairline);
+}
+.byline .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); }
+.avatar {
+width: 38px; height: 38px; border-radius: 50%;
+background: linear-gradient(135deg, var(--accent), var(--gold));
+display: flex; align-items: center; justify-content: center;
+color: #fff; font-family: var(--serif); font-weight: 700; font-size: 1rem;
+}
+
+.hero-quote {
+font-family: var(--serif); font-style: italic;
+font-size: clamp(1.15rem, 3vw, 1.5rem); line-height: 1.5;
+color: var(--ink);
+margin: 40px 0 0; padding: 26px 0 0 24px;
+border-left: 3px solid var(--gold);
+}
+
+nav.toc {
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 18px; padding: 26px 26px 22px; margin: 8px 0 64px;
+box-shadow: var(--shadow);
+}
+nav.toc h2 {
+font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+color: var(--muted); margin: 0 0 14px; font-weight: 700;
+}
+nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; }
+nav.toc li { counter-increment: toc; margin-bottom: 4px; }
+nav.toc a {
+display: flex; align-items: baseline; gap: 12px;
+color: var(--ink-soft); text-decoration: none;
+font-size: 0.96rem; padding: 7px 4px; border-radius: 8px;
+transition: color 0.15s ease, background 0.15s ease;
+}
+nav.toc a::before {
+content: counter(toc, decimal-leading-zero);
+font-family: var(--serif); font-size: 0.82rem; color: var(--muted); flex-shrink: 0;
+}
+nav.toc a:hover, nav.toc a.active { color: var(--accent); background: var(--accent-soft); }
+nav.toc a.active::before { color: var(--accent); }
+
+section.chapter { padding: 44px 0 8px; scroll-margin-top: 24px; }
+section.chapter + section.chapter { border-top: 1px solid var(--hairline); }
+
+.chapter-num {
+font-family: var(--serif); font-style: italic; color: var(--gold);
+font-size: 1rem; margin: 0 0 10px; font-weight: 600;
+}
+
+h2.h {
+font-family: var(--serif); font-weight: 600;
+font-size: clamp(1.5rem, 4.4vw, 2.1rem);
+line-height: 1.18; letter-spacing: -0.01em;
+margin: 0 0 20px;
+}
+h3.h3 {
+font-family: var(--serif); font-weight: 600;
+font-size: clamp(1.15rem, 3vw, 1.4rem);
+margin: 30px 0 12px;
+}
+
+p.body-text { font-size: 1.06rem; color: var(--ink); margin: 0 0 18px; }
+p.body-text.soft { color: var(--ink-soft); }
+.lede { font-size: 1.18rem; }
+
+mark.hl {
+background: var(--gold-soft); color: var(--ink);
+padding: 0.05em 0.15em; border-radius: 4px; font-weight: 600;
+}
+
+blockquote.pull {
+font-family: var(--serif); font-style: italic;
+font-size: clamp(1.2rem, 3.4vw, 1.6rem); line-height: 1.45;
+color: var(--ink); margin: 34px 0; padding: 0 0 0 24px;
+border-left: 3px solid var(--accent);
+}
+blockquote.pull cite {
+display: block; font-style: normal; font-family: var(--sans);
+font-size: 0.82rem; color: var(--muted); margin-top: 10px; letter-spacing: 0.02em;
+}
+
+.callout {
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 16px; padding: 22px 24px; margin: 28px 0;
+box-shadow: var(--shadow);
+}
+.callout h4 {
+margin: 0 0 8px; font-size: 0.98rem; font-weight: 700;
+display: flex; align-items: center; gap: 8px;
+}
+.callout p { margin: 0; color: var(--ink-soft); font-size: 0.98rem; }
+
+.tip {
+background: var(--accent-soft); border: 1px dashed var(--accent);
+border-radius: 14px; padding: 16px 20px; margin: 22px 0;
+display: flex; gap: 12px; align-items: flex-start;
+}
+.tip .bulb { font-size: 1.2rem; line-height: 1; flex-shrink: 0; margin-top: 2px; }
+.tip .tip-body b { display: block; font-size: 0.92rem; color: var(--accent-ink); margin-bottom: 3px; letter-spacing: 0.01em; }
+.tip .tip-body span { font-size: 0.92rem; color: var(--ink-soft); }
+html[data-theme="dark"] .tip .tip-body b { color: var(--accent-ink); }
+
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s cubic-bezier(.2,.7,.3,1), transform 0.7s cubic-bezier(.2,.7,.3,1); }
+.reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+/* ============ diagram shell ============ */
+.diagram { margin: 30px 0 8px; }
+.diagram-card {
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 20px; padding: 28px 20px 20px; box-shadow: var(--shadow);
+text-align: center;
+}
+.diagram-label {
+font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase;
+color: var(--muted); font-weight: 700; margin-bottom: 4px;
+}
+.diagram-caption { font-size: 0.92rem; color: var(--ink-soft); margin-top: 10px; text-align: left; }
+
+/* ============ hue wheel + swatches ============ */
+.hue-wheel-wrap { display: flex; justify-content: center; padding: 10px 0; }
+.hue-wheel {
+width: 190px; height: 190px; border-radius: 50%;
+background: conic-gradient(from 0deg, #ff0000, #ffae00, #fff700, #6fff00, #00ffcc, #0088ff, #7000ff, #ff00c8, #ff0000);
+box-shadow: 0 0 0 6px var(--surface), 0 0 0 7px var(--hairline), var(--shadow);
+position: relative;
+transform: scale(0.85); opacity: 0;
+transition: transform 1s cubic-bezier(.2,.8,.2,1), opacity 1s ease;
+}
+.is-visible .hue-wheel { transform: scale(1); opacity: 1; }
+.swatch-row { display: flex; gap: 8px; margin: 22px 0 4px; justify-content: center; flex-wrap: wrap; }
+.swatch {
+width: 46px; height: 46px; border-radius: 10px; flex-shrink: 0;
+box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+transform: translateY(10px); opacity: 0;
+transition: transform 0.5s ease, opacity 0.5s ease;
+}
+.is-visible .swatch { transform: translateY(0); opacity: 1; }
+.is-visible .swatch:nth-child(1) { transition-delay: 0s; }
+.is-visible .swatch:nth-child(2) { transition-delay: 0.08s; }
+.is-visible .swatch:nth-child(3) { transition-delay: 0.16s; }
+.is-visible .swatch:nth-child(4) { transition-delay: 0.24s; }
+.is-visible .swatch:nth-child(5) { transition-delay: 0.32s; }
+
+/* ============ contrast bars ============ */
+.contrast-demo { display: flex; flex-direction: column; gap: 18px; text-align: left; }
+.contrast-row .name { font-size: 0.9rem; font-weight: 700; margin-bottom: 6px; }
+.contrast-bar {
+height: 34px; border-radius: 8px; position: relative; overflow: hidden;
+box-shadow: inset 0 0 0 1px var(--border);
+}
+.contrast-bar.flat { background: linear-gradient(90deg, #6b6b68, #9a9a96); }
+.contrast-bar.healthy { background: linear-gradient(90deg, #141414, #f2f2ee); }
+.contrast-bar.blown { background: linear-gradient(90deg, #000000 0%, #000000 38%, #ffffff 62%, #ffffff 100%); }
+.contrast-tag { font-size: 0.74rem; color: var(--muted); margin-top: 4px; }
+
+/* ============ pipeline ============ */
+.pipeline { display: flex; align-items: center; gap: 0; flex-wrap: wrap; justify-content: center; margin: 10px 0; }
+.pipe-step {
+background: var(--accent-soft); border: 1px solid var(--border);
+border-radius: 12px; padding: 14px 16px; font-size: 0.86rem; font-weight: 700;
+color: var(--accent-ink); text-align: center; min-width: 118px;
+}
+.pipe-step.gold { background: var(--gold-soft); color: var(--ink); }
+.pipe-arrow { font-size: 1.2rem; color: var(--muted); padding: 0 10px; }
+
+/* ============ saturation vs vibrance ============ */
+.sv-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; text-align: left; }
+@media (max-width: 480px) { .sv-compare { grid-template-columns: 1fr; } }
+.sv-card { background: var(--page); border: 1px solid var(--hairline); border-radius: 14px; padding: 16px; }
+.sv-card b { display: block; font-size: 0.94rem; margin-bottom: 6px; }
+.sv-card span { font-size: 0.86rem; color: var(--ink-soft); }
+.sv-dots { display: flex; gap: 6px; margin-top: 10px; }
+.sv-dots div { width: 22px; height: 22px; border-radius: 50%; }
+
+/* ============ temperature slider ============ */
+.temp-track {
+height: 46px; border-radius: 23px;
+background: linear-gradient(90deg, #3987e5, #f2f2ee, #e0762c);
+position: relative; margin: 20px 0 8px;
+box-shadow: inset 0 0 0 1px var(--border);
+}
+.temp-dot {
+position: absolute; top: 50%; width: 30px; height: 30px; border-radius: 50%;
+background: var(--surface); border: 3px solid var(--ink); transform: translate(-50%,-50%);
+left: 50%; box-shadow: var(--shadow);
+transition: left 1.4s cubic-bezier(.2,.8,.2,1);
+}
+.is-visible .temp-dot { left: 78%; }
+.temp-labels { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--muted); }
+
+/* ============ luminosity seesaw ============ */
+.seesaw { display: flex; flex-direction: column; gap: 14px; margin: 10px 0; }
+.seesaw-row { display: flex; align-items: center; gap: 12px; }
+.seesaw-label { width: 92px; font-size: 0.82rem; font-weight: 700; color: var(--ink-soft); flex-shrink: 0; text-align: left; }
+.seesaw-bar-track { flex: 1; height: 16px; background: var(--hairline); border-radius: 8px; overflow: hidden; }
+.seesaw-fill { height: 100%; border-radius: 8px; width: 0%; transition: width 1.3s cubic-bezier(.2,.8,.2,1); }
+.is-visible .seesaw-fill.up { width: 88%; background: var(--gold); }
+.is-visible .seesaw-fill.down { width: 30%; background: var(--accent); }
+
+/* ============ bit depth ============ */
+.bit-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 480px) { .bit-compare { grid-template-columns: 1fr; } }
+.bit-card { text-align: left; }
+.bit-card .bit-title { font-size: 0.86rem; font-weight: 700; margin-bottom: 8px; }
+.bit-gradient { height: 70px; border-radius: 10px; box-shadow: inset 0 0 0 1px var(--border); }
+.bit-gradient.smooth { background: linear-gradient(180deg, #14202a, #3a5a72, #96b9cc, #ffffff); }
+.bit-gradient.banded {
+background: repeating-linear-gradient(180deg, #14202a 0 10px, #253d4d 10px 20px, #3a5a72 20px 30px, #5b7f95 30px 40px, #96b9cc 40px 50px, #ffffff 50px 70px);
+}
+.bit-note { font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+
+/* ============ real-world grading ladder ============ */
+.ladder { display: flex; flex-direction: column; gap: 10px; margin: 30px 0; }
+.rung {
+display: flex; align-items: center; gap: 16px;
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 14px; padding: 14px 18px;
+opacity: 0.35; transform: translateX(-10px);
+transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.5s ease, background 0.5s ease;
+}
+.ladder.is-visible .rung { opacity: 1; transform: translateX(0); }
+.ladder.is-visible .rung:nth-child(1) { transition-delay: 0.1s; }
+.ladder.is-visible .rung:nth-child(2) { transition-delay: 0.2s; }
+.ladder.is-visible .rung:nth-child(3) { transition-delay: 0.3s; }
+.ladder.is-visible .rung:nth-child(4) { transition-delay: 0.4s; }
+.rung-step {
+width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+background: var(--accent-soft); color: var(--accent-ink);
+display: flex; align-items: center; justify-content: center;
+font-family: var(--serif); font-weight: 700; font-size: 1rem;
+}
+.rung-body b { display: block; font-size: 0.98rem; }
+.rung-body span { font-size: 0.85rem; color: var(--muted); }
+
+/* ============ color harmony wheels ============ */
+.harmony-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 26px 0; }
+@media (max-width: 560px) { .harmony-grid { grid-template-columns: 1fr; } }
+.harmony-card { background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px; padding: 20px 18px; text-align: center; box-shadow: var(--shadow); }
+.harmony-card svg { width: 108px; height: 108px; }
+.harmony-card b { display: block; margin: 10px 0 4px; font-size: 0.96rem; }
+.harmony-card span { font-size: 0.82rem; color: var(--ink-soft); }
+
+/* ============ case card ============ */
+.case-card {
+background: linear-gradient(160deg, var(--surface), var(--accent-soft));
+border: 1px solid var(--hairline); border-radius: 20px; padding: 28px 24px;
+margin: 30px 0; box-shadow: var(--shadow);
+}
+.case-tag {
+display: inline-flex; align-items: center; gap: 6px;
+font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+color: var(--accent); background: var(--surface); padding: 5px 10px; border-radius: 20px;
+border: 1px solid var(--border); margin-bottom: 14px;
+}
+
+/* ============ stat row (reused) ============ */
+.stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 30px 0; }
+.stat-card {
+background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px;
+padding: 22px 14px; text-align: center; box-shadow: var(--shadow);
+}
+.stat-num {
+font-family: var(--serif); font-weight: 700; color: var(--ink);
+font-size: clamp(1.6rem, 5vw, 2.1rem); line-height: 1; margin-bottom: 6px;
+}
+.stat-word { font-size: 0.78rem; color: var(--muted); font-weight: 600; letter-spacing: 0.02em; }
+
+@media (max-width: 480px) {
+.stat-row { gap: 10px; }
+.stat-card { padding: 16px 8px; }
+}
+
+.closer { text-align: center; padding: 70px 0 90px; }
+.closer h2 {
+font-family: var(--serif); font-weight: 600; font-style: italic;
+font-size: clamp(1.8rem, 6vw, 2.6rem); line-height: 1.2; margin: 0 0 18px;
+}
+.closer p { color: var(--ink-soft); font-size: 1.05rem; max-width: 46ch; margin: 0 auto; }
+.signoff { margin-top: 34px; font-family: var(--serif); font-style: italic; color: var(--muted); }
+
+footer.site-footer {
+border-top: 1px solid var(--hairline); padding: 28px 0 calc(40px + env(safe-area-inset-bottom));
+text-align: center; font-size: 0.82rem; color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+.reveal, .rung, .swatch, .hue-wheel, .temp-dot, .seesaw-fill { transition: none !important; }
+html { scroll-behavior: auto; }
+}
+
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">◐</button>
+<button class="float-top" id="floatTop" aria-label="Back to top">↑</button>
+
+<div class="wrap">
+
+<header class="hero">
+<p class="kicker">Video Editing &amp; Color Theory · Field Notes</p>
+<h1 class="title">The Color Grading Class That Makes Your Footage Look <em>10x</em> More Premium</h1>
+<p class="dek">Why the gap between "amateur" and "professional" footage almost never comes from expensive gear or flashy motion graphics — it comes down to whether you actually understand color.</p>
+<div class="byline">
+<div class="avatar">CG</div>
+<span>Color Grading Masterclass Notes</span>
+<span class="dot"></span>
+<span>~20 min read</span>
+<span class="dot"></span>
+<span>11 chapters</span>
+</div>
+<blockquote class="hero-quote">
+"Half of your video's 'premium problem' disappears the moment you actually understand color."
+</blockquote>
+</header>
+
+<nav class="toc reveal">
+<h2>In this piece</h2>
+<ol>
+<li><a href="#ch1">Why color quietly runs everything</a></li>
+<li><a href="#ch2">Hue: color isn't one thing</a></li>
+<li><a href="#ch3">Contrast: the gap between light and dark</a></li>
+<li><a href="#ch4">Primaries vs. secondaries</a></li>
+<li><a href="#ch5">Saturation vs. vibrance</a></li>
+<li><a href="#ch6">Temperature: warm or cold?</a></li>
+<li><a href="#ch7">Luminosity and its trade-off</a></li>
+<li><a href="#ch8">Bit depth: the real reason footage looks rich</a></li>
+<li><a href="#ch9">Banding: the blocky circles nobody explains</a></li>
+<li><a href="#ch10">How pros actually grade real footage</a></li>
+<li><a href="#ch11">Color harmonies every colorist should know</a></li>
+</ol>
+</nav>
+
+<!-- ===================== CHAPTER 1 ===================== -->
+<section class="chapter reveal" id="ch1">
+<p class="chapter-num">Chapter One</p>
+<h2 class="h">Why color quietly runs everything</h2>
+<p class="body-text lede">Understand color, and most of the "why doesn't my footage look premium?" problem disappears. Color isn't just decoration — it's one of the strongest storytelling tools you have.</p>
+<p class="body-text soft">Audio is often called 50% of your video. Color is right behind it — a bigger factor in how "cinematic" footage feels than the transitions and motion graphics most beginners obsess over.</p>
+
+<div class="callout reveal">
+<h4>🎬 Why some footage just looks richer</h4>
+<p>Same camera, same light, completely different result — because one editor went deep on color and the other jumped straight to motion graphics.</p>
+</div>
+
+<p class="body-text soft">A clean edit with a great color grade beats a flashy edit with a mediocre one, every time. In your favorite films, most of a scene's emotional weight comes from color — not from graphics layered on top.</p>
+
+<div class="tip reveal">
+<div class="bulb">💡</div>
+<div class="tip-body"><b>Correction vs. grading — quick preview</b><span><strong>Correction</strong> fixes footage to look natural. <strong>Grading</strong> pushes it toward a mood on purpose. More on this in Chapter 4.</span></div>
+</div>
+
+<p class="body-text soft">Color also works on the audience psychologically. Red reads as tension or danger. Green reads as eerie. That's why, before touching a single slider, you should know exactly what feeling you're going for.</p>
+</section>
+
+<!-- ===================== CHAPTER 2 ===================== -->
+<section class="chapter reveal" id="ch2">
+<p class="chapter-num">Chapter Two</p>
+<h2 class="h">Hue: color isn't one thing</h2>
+<p class="body-text lede"><mark class="hl">Hue is just the name of a color</mark> — green, orange, blue. Simple. So why do colorists use this word instead of just saying "color"?</p>
+<p class="body-text soft">Because "orange" alone is too vague. There are dozens of different oranges — more yellow, more red, brighter, duller. Each exact shade is its own <strong>hue</strong>.</p>
+
+<div class="diagram reveal">
+<div class="diagram-card">
+<div class="diagram-label">One Color, Many Hues</div>
+<div class="hue-wheel-wrap"><div class="hue-wheel"></div></div>
+<div class="swatch-row">
+<div class="swatch" style="background:#ffb347"></div>
+<div class="swatch" style="background:#ff9a2e"></div>
+<div class="swatch" style="background:#f2760f"></div>
+<div class="swatch" style="background:#e0762c"></div>
+<div class="swatch" style="background:#c85a12"></div>
+</div>
+<p class="diagram-caption">All five swatches above are "orange." But each one is a different hue — a different exact shade within that family. This is exactly why a professional never just says "make it orange."</p>
+</div>
+</div>
+
+<p class="body-text soft">This matters in real work: if a client says their brand color is "green," don't just grab any green off the wheel — "green" is hundreds of possible hues. Use the exact hex code instead, so every graphic matches the <em>exact</em> brand hue, not just "close enough."</p>
+
+<div class="tip reveal">
+<div class="bulb">💡</div>
+<div class="tip-body"><b>Hex code</b><span>A hex code (like <code style="font-family:var(--mono)">#e0762c</code>) is a six-character code that points to one exact, unambiguous color. It removes all the guesswork of "which orange did you mean?"</span></div>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 3 ===================== -->
+<section class="chapter reveal" id="ch3">
+<p class="chapter-num">Chapter Three</p>
+<h2 class="h">Contrast: the gap between light and dark</h2>
+<p class="body-text lede"><mark class="hl">Contrast is the gap between the brightest and darkest parts of your image.</mark> That's the whole idea.</p>
+<p class="body-text soft">Too much contrast and footage looks harsh and broken. Too little and it looks flat and washed out — that's called <strong>log footage</strong>.</p>
+
+<div class="tip reveal">
+<div class="bulb">💡</div>
+<div class="tip-body"><b>Log footage</b><span>Cameras deliberately record flat, gray, low-contrast footage called "Log." It looks unattractive straight out of camera, but it preserves more detail in shadows and highlights — giving you more room to shape the final look yourself.</span></div>
+</div>
+
+<div class="diagram reveal">
+<div class="diagram-card">
+<div class="diagram-label">Same Shot, Three Contrast Levels</div>
+<div class="contrast-demo">
+<div class="contrast-row">
+<div class="name">Flat (Log) — no real gap between light and dark</div>
+<div class="contrast-bar flat"></div>
+<div class="contrast-tag">Everything sits in a grey middle zone</div>
+</div>
+<div class="contrast-row">
+<div class="name">Healthy — clear, natural separation</div>
+<div class="contrast-bar healthy"></div>
+<div class="contrast-tag">This is what a well-balanced grade looks like</div>
+</div>
+<div class="contrast-row">
+<div class="name">Blown out — the gap is too extreme</div>
+<div class="contrast-bar blown"></div>
+<div class="contrast-tag">Highlights clip to pure white, shadows crush to pure black</div>
+</div>
+</div>
+</div>
+</div>
+
+<p class="body-text soft">Keep contrast healthy — not flat, not blown out — and you're already ahead of most beginner edits. This step is called working with <strong>primaries</strong>.</p>
+</section>
+
+<!-- ===================== CHAPTER 4 ===================== -->
+<section class="chapter reveal" id="ch4">
+<p class="chapter-num">Chapter Four</p>
+<h2 class="h">Primaries vs. secondaries (a.k.a. color correction vs. color grading)</h2>
+<p class="body-text lede">This distinction is what separates a colorist from someone just dragging sliders around.</p>
+
+<div class="diagram reveal">
+<div class="diagram-card">
+<div class="diagram-label">The Two-Stage Pipeline</div>
+<div class="pipeline">
+<div class="pipe-step">Raw / Log Footage</div>
+<div class="pipe-arrow">→</div>
+<div class="pipe-step">Primaries<br><span style="font-weight:400; font-size:0.78rem;">(Color Correction)</span></div>
+<div class="pipe-arrow">→</div>
+<div class="pipe-step gold">Secondaries<br><span style="font-weight:400; font-size:0.78rem;">(Color Grading)</span></div>
+</div>
+<p class="diagram-caption" style="text-align:center;">Correction comes first and fixes reality. Grading comes second and shapes emotion.</p>
+</div>
+</div>
+
+<p class="body-text soft"><strong>Primaries</strong> means bringing flat, log footage back to natural color — making it look like the scene actually did in real life. This is <strong>color correction</strong>: not creative, just accurate.</p>
+<p class="body-text soft"><strong>Secondaries</strong> comes after: this is <strong>color grading</strong> — the creative stage where you push colors toward a mood on purpose. Correction fixes reality. Grading bends it.</p>
+</section>
+
+<!-- ===================== CHAPTER 5 ===================== -->
+<section class="chapter reveal" id="ch5">
+<p class="chapter-num">Chapter Five</p>
+<h2 class="h">Saturation vs. vibrance</h2>
+<p class="body-text lede"><mark class="hl">Saturation is how much color intensity exists in a frame.</mark> Turn it up, colors get punchier. Turn it down, everything drifts toward grey.</p>
+<p class="body-text soft">Vibrance is the cousin people confuse it with. The difference is precision:</p>
+
+<div class="diagram reveal">
+<div class="diagram-card" style="text-align:left;">
+<div class="diagram-label" style="text-align:center; margin-bottom:6px;">Saturation vs. Vibrance</div>
+<div class="sv-compare">
+<div class="sv-card">
+<b>Saturation</b>
+<span>Boosts the color intensity of the <em>entire frame</em> uniformly — every hue gets stronger together.</span>
+<div class="sv-dots">
+<div style="background:#e0762c"></div><div style="background:#1c8f8f"></div><div style="background:#e87ba4"></div><div style="background:#eda100"></div>
+</div>
+</div>
+<div class="sv-card">
+<b>Vibrance</b>
+<span>Selectively boosts specific, usually muted, colors — while being gentler on colors that are already saturated (like skin tones).</span>
+<div class="sv-dots">
+<div style="background:#e0762c; opacity:0.5"></div><div style="background:#1c8f8f"></div><div style="background:#e87ba4; opacity:0.5"></div><div style="background:#eda100"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<p class="body-text soft">Saturation is a blunt, all-at-once tool. Vibrance is smarter and more selective. Neither is "better" — just different levels of control.</p>
+</section>
+
+<!-- ===================== CHAPTER 6 ===================== -->
+<section class="chapter reveal" id="ch6">
+<p class="chapter-num">Chapter Six</p>
+<h2 class="h">Temperature: warm or cold?</h2>
+<p class="body-text lede"><mark class="hl">Temperature is just how warm or cold your footage looks.</mark> That's the whole concept.</p>
+<p class="body-text soft">Shot on a cloudy day but want it to feel like a sunny afternoon? Push the slider warmer. Want it to feel like a cold winter evening? Push it colder. Warm reads as "summer." Cold reads as "winter."</p>
+
+<div class="diagram reveal">
+<div class="diagram-card">
+<div class="diagram-label">Cold ↔ Warm</div>
+<div class="temp-track"><div class="temp-dot"></div></div>
+<div class="temp-labels"><span>Winter feeling</span><span>Summer feeling</span></div>
+<p class="diagram-caption" style="text-align:center;">Nudging temperature is often the fastest way to set the emotional baseline of a scene before anything else.</p>
+</div>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 7 ===================== -->
+<section class="chapter reveal" id="ch7">
+<p class="chapter-num">Chapter Seven</p>
+<h2 class="h">Luminosity and its trade-off with saturation</h2>
+<p class="body-text lede">This one's slightly trickier. <mark class="hl">Luminosity is the brightness of a specific color</mark> — not the whole image's exposure, just how bright <em>one hue</em> is.</p>
+
+<div class="tip reveal">
+<div class="bulb">💡</div>
+<div class="tip-body"><b>Luminosity vs. exposure</b><span>Exposure brightens the <em>whole image</em> at once. Luminosity brightens just one color, leaving everything else untouched.</span></div>
+</div>
+
+<p class="body-text soft">Luminosity and saturation trade off against each other. Push a color's brightness up, its saturation drops. Push saturation up, brightness dips. They can't both max out at once.</p>
+
+<div class="diagram reveal">
+<div class="diagram-card" style="text-align:left;">
+<div class="diagram-label" style="text-align:center; margin-bottom:10px;">The Luminosity ↔ Saturation Trade-off</div>
+<div class="seesaw">
+<div class="seesaw-row"><div class="seesaw-label">Luminosity ↑</div><div class="seesaw-bar-track"><div class="seesaw-fill up"></div></div></div>
+<div class="seesaw-row"><div class="seesaw-label">Saturation ↓</div><div class="seesaw-bar-track"><div class="seesaw-fill down"></div></div></div>
+</div>
+<p class="diagram-caption">Brighten a color and it loses some richness. Deepen it and it loses some brightness. A good grade balances both.</p>
+</div>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 8 ===================== -->
+<section class="chapter reveal" id="ch8">
+<p class="chapter-num">Chapter Eight</p>
+<h2 class="h">Bit depth: the real reason footage looks rich</h2>
+<p class="body-text lede">This is what quietly separates "premium" footage from "cheap" footage — and almost nobody outside pro circles talks about it.</p>
+<p class="body-text soft">More bits used to describe color means more distinct shades you can generate. At <strong>8-bit</strong>, you get roughly <strong>16 million</strong> colors. Sounds like a lot — until you see what happens two steps later.</p>
+
+<div class="stat-row reveal">
+<div class="stat-card"><div class="stat-num">16M</div><div class="stat-word">Colors at 8-bit</div></div>
+<div class="stat-card"><div class="stat-num">1B</div><div class="stat-word">Colors at 10-bit</div></div>
+<div class="stat-card"><div class="stat-num">12-bit</div><div class="stat-word">The real practical ceiling (despite marketing claims of 16-bit)</div></div>
+</div>
+
+<p class="body-text soft">Jump from 8-bit to 10-bit and available colors explode to roughly <strong>one billion</strong>. That doesn't mean a billion new colors exist — it means the smooth transitions <em>between</em> shades become far more refined.</p>
+
+<div class="diagram reveal">
+<div class="diagram-card">
+<div class="diagram-label">8-bit vs. 10-bit, Same Gradient</div>
+<div class="bit-compare">
+<div class="bit-card">
+<div class="bit-title">8-bit — visible steps</div>
+<div class="bit-gradient banded"></div>
+<div class="bit-note">Not enough color information — you can see the "stairs" between shades.</div>
+</div>
+<div class="bit-card">
+<div class="bit-title">10-bit — smooth blend</div>
+<div class="bit-gradient smooth"></div>
+<div class="bit-note">Every shade blends into the next with no visible steps.</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="callout reveal">
+<h4>📐 Resolution isn't the flex you think it is</h4>
+<p>Resolution has almost nothing to do with color quality. Given a choice between 4K at 8-bit or 1080p at 10-bit, an experienced colorist picks the 1080p 10-bit footage every time. Bit depth matters more than pixel count.</p>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 9 ===================== -->
+<section class="chapter reveal" id="ch9">
+<p class="chapter-num">Chapter Nine</p>
+<h2 class="h">Banding: the blocky circles nobody explains</h2>
+<p class="body-text lede">Ever noticed strange blocky circles or wavy lines in a background graphic after rendering? That artifact is called <mark class="hl">banding</mark>.</p>
+
+<div class="tip reveal">
+<div class="bulb">💡</div>
+<div class="tip-body"><b>Banding</b><span>Visible stripes or rings in what should be a smooth gradient — common in dark backgrounds — caused by not having enough color information (bit depth) for a smooth transition.</span></div>
+</div>
+
+<p class="body-text soft">Bright colors carry more color information than dark ones. So dark backgrounds — black, navy, dark grey — band more once compressed and uploaded to platforms like Instagram or YouTube.</p>
+
+<p class="body-text soft">That's why brands favor <strong>bright, white backgrounds</strong> for motion graphics over dark ones — they're naturally resistant to banding. If a client insists on dark, render at the highest bit depth you can.</p>
+</section>
+
+<!-- ===================== CHAPTER 10 ===================== -->
+<section class="chapter reveal" id="ch10">
+<p class="chapter-num">Chapter Ten</p>
+<h2 class="h">How pros actually grade real footage</h2>
+<p class="body-text lede">Theory aside, real color grading comes down to four recurring habits. Master these and you're thinking like a colorist, not just pushing sliders.</p>
+
+<div class="ladder reveal">
+<div class="rung">
+<div class="rung-step">1</div>
+<div class="rung-body"><b>Focus points</b><span>Deliberately guiding the viewer's eye toward your subject — and away from everything else — using darkness, vignettes, and selective color.</span></div>
+</div>
+<div class="rung">
+<div class="rung-step">2</div>
+<div class="rung-body"><b>Keying</b><span>Selecting a specific hue and separating it from the rest of the frame, so you can change just that one color's mood.</span></div>
+</div>
+<div class="rung">
+<div class="rung-step">3</div>
+<div class="rung-body"><b>Split toning</b><span>Deliberately mixing two or three different colors in one frame so it feels layered and interesting, instead of one flat, boring tone.</span></div>
+</div>
+<div class="rung">
+<div class="rung-step">4</div>
+<div class="rung-body"><b>Narrative-based grading</b><span>Choosing colors because they serve the story or the brand being told — never just because a look "seems cool."</span></div>
+</div>
+</div>
+
+<h3 class="h3">1 · Focus points — invisible direction</h3>
+<p class="body-text soft">A badly lit frame lets the viewer's eyes wander to the wrong thing — a bright tree, a stray lamp. Your job is to quietly darken those distractions, usually with a mask or vignette, so attention lands on your subject.</p>
+
+<div class="tip reveal">
+<div class="bulb">💡</div>
+<div class="tip-body"><b>The golden rule</b><span>The viewer should never notice you did anything. If it looks obviously darkened, you've overdone it.</span></div>
+</div>
+
+<h3 class="h3">2 · Keying — separating your subject from its background</h3>
+<p class="body-text soft">Keying means picking a specific hue and isolating just that one color. Example: filming in a warm, sunny room but wanting it to feel like a cold destination. Key out your skin tone to protect it, then push the background toward cooler, bluer hues.</p>
+
+<div class="tip reveal">
+<div class="bulb">💡</div>
+<div class="tip-body"><b>Keying vs. masking</b><span>Keying selects a <em>hue</em> automatically. Masking is manual — you draw a shape by hand, regardless of color.</span></div>
+</div>
+
+<h3 class="h3">3 · Split toning — mixing colors on purpose</h3>
+<p class="body-text soft">Split toning means using two or three colors in one frame instead of a single flat tone. Example: a scene lit mostly cool blue, with one warm orange lamp. That contrast is what makes a shot feel intentional.</p>
+
+<h3 class="h3">4 · Narrative-based grading — color with a purpose</h3>
+<p class="body-text soft">Every color choice should serve the story — never "just because it looks cool." A cheerful film like <em>Barbie</em> and a dark thriller need completely different grades, because they're telling different emotional stories.</p>
+
+<div class="case-card reveal">
+<span class="case-tag">Real Example · A Tech Product Launch</span>
+<p class="body-text" style="margin-bottom:0;">For a captioning tool's landing-page video, the colorist shifted the <strong>background</strong> toward the brand's green — leaving skin tones untouched — so it felt like an extension of the website. Even the speaker's jacket got a saturation boost to stand out. Every choice had a reason.</p>
+</div>
+
+<p class="body-text soft">The takeaway: never grade on autopilot. Ask <em>why</em> before every choice. Thoughtful editing beats flashy effects.</p>
+</section>
+
+<!-- ===================== CHAPTER 11 ===================== -->
+<section class="chapter reveal" id="ch11">
+<p class="chapter-num">Chapter Eleven</p>
+<h2 class="h">Color harmonies every colorist should know</h2>
+<p class="body-text lede"><mark class="hl">Color harmony is how different colors are combined within a frame</mark> — why a combination feels balanced, dramatic, or calm. Designers use dozens; colorists only need four.</p>
+
+<div class="harmony-grid reveal">
+
+<div class="harmony-card">
+<svg viewBox="0 0 108 108"><circle cx="54" cy="54" r="46" fill="none" stroke="var(--hairline)" stroke-width="2"/><circle cx="54" cy="14" r="9" fill="var(--s-blue)"/></svg>
+<b>Monochromatic</b>
+<span>One single hue throughout the frame — just its light and dark shades. Creates stillness and mood. Great for moonlit or quiet scenes.</span>
+</div>
+
+<div class="harmony-card">
+<svg viewBox="0 0 108 108"><circle cx="54" cy="54" r="46" fill="none" stroke="var(--hairline)" stroke-width="2"/><circle cx="54" cy="14" r="8" fill="var(--s-orange)"/><circle cx="82" cy="30" r="8" fill="var(--gold)"/><circle cx="26" cy="30" r="8" fill="#f2b04d"/></svg>
+<b>Analogous</b>
+<span>Colors that sit next to each other on the wheel — like Blade Runner's warm oranges. Feels stylized and futuristic, but pushed too far can feel gimmicky.</span>
+</div>
+
+<div class="harmony-card">
+<svg viewBox="0 0 108 108"><circle cx="54" cy="54" r="46" fill="none" stroke="var(--hairline)" stroke-width="2"/><circle cx="54" cy="14" r="9" fill="var(--gold)"/><circle cx="54" cy="94" r="9" fill="var(--s-aqua)"/></svg>
+<b>Complementary</b>
+<span>Two colors from opposite sides of the wheel — like Joker's warm skin tones against cold backdrops. The most famous harmony — highly dramatic, but easy to overuse.</span>
+</div>
+
+<div class="harmony-card">
+<svg viewBox="0 0 108 108"><circle cx="54" cy="54" r="46" fill="none" stroke="var(--hairline)" stroke-width="2"/><circle cx="54" cy="14" r="8" fill="var(--gold)"/><circle cx="82" cy="82" r="8" fill="var(--s-magenta)"/><circle cx="26" cy="82" r="8" fill="var(--s-blue)"/></svg>
+<b>Split-complementary</b>
+<span>Three colors forming a rough "Y" shape — like Birds of Prey. Needs to be planned at the shoot itself; you usually can't fake it well afterward in the grade.</span>
+</div>
+
+</div>
+
+<h3 class="h3">Monochromatic — one hue, full stillness</h3>
+<p class="body-text soft">Not black and white — the whole frame built from one hue's light and dark range, like everything nudged toward blue as if lit by moonlight. Use it when a scene should feel quiet and still.</p>
+
+<h3 class="h3">Analogous — neighbors on the wheel</h3>
+<p class="body-text soft">A tight range of neighboring hues — think <em>Blade Runner</em>'s orange cityscape. Bold and futuristic, but a strong "pushed" style that needs a deliberate reason.</p>
+
+<h3 class="h3">Complementary — the most dramatic one</h3>
+<p class="body-text soft">Two colors from opposite ends of the wheel — warm orange skin tones against cool teal backgrounds is the classic example. Instant visual drama, but overuse kills the effect.</p>
+
+<div class="tip reveal">
+<div class="bulb">💡</div>
+<div class="tip-body"><b>Vectorscope</b><span>A tool that plots which hues are present in your frame and how strong. Colorists use it to confirm a grade lands on the intended hues.</span></div>
+</div>
+
+<h3 class="h3">Split-complementary — the one you can't fully fake later</h3>
+<p class="body-text soft">The trickiest: you can't manufacture this look purely in grading. It needs three distinct colors coexisting naturally in the frame — like skin tone, a pink light, and a blue background in <em>Birds of Prey</em>. It has to be planned during production, not fixed later.</p>
+</section>
+
+<!-- ===================== CLOSING ===================== -->
+<section class="chapter reveal closer" id="closer">
+<p class="chapter-num" style="text-align:center;">Bringing It All Together</p>
+<h2>Color isn't decoration. It's direction.</h2>
+<p>Hue, contrast, saturation, temperature, luminosity, bit depth, focus points, keying, split toning, narrative grading, color harmony — none of these work alone. Every real grade combines them in service of a feeling you decided on first. Ask "why am I doing this?" on every choice, and your footage will look far more premium.</p>
+<p class="signoff">— Notes from a color grading masterclass.</p>
+</section>
+
+</div>
+
+<footer class="site-footer">
+<div class="wrap">Notes on color theory for video editors · read on any device</div>
+</footer>
+
+<script>
+(function () {
+var root = document.documentElement;
+var btn = document.getElementById('themeToggle');
+function currentTheme() {
+if (root.getAttribute('data-theme')) return root.getAttribute('data-theme');
+return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+btn.addEventListener('click', function () {
+var next = currentTheme() === 'dark' ? 'light' : 'dark';
+root.setAttribute('data-theme', next);
+btn.textContent = next === 'dark' ? '☀' : '◐';
+});
+btn.textContent = currentTheme() === 'dark' ? '☀' : '◐';
+
+var bar = document.getElementById('progress-bar');
+var floatTop = document.getElementById('floatTop');
+function onScroll() {
+var h = document.documentElement;
+var scrolled = h.scrollTop || document.body.scrollTop;
+var height = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
+var pct = height > 0 ? (scrolled / height) * 100 : 0;
+bar.style.width = pct + '%';
+if (scrolled > 500) floatTop.classList.add('show'); else floatTop.classList.remove('show');
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+floatTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+var revealEls = document.querySelectorAll('.reveal, .ladder');
+if ('IntersectionObserver' in window) {
+var io = new IntersectionObserver(function (entries) {
+entries.forEach(function (entry) {
+if (entry.isIntersecting) {
+entry.target.classList.add('is-visible');
+io.unobserve(entry.target);
+}
+});
+}, { threshold: 0.15 });
+revealEls.forEach(function (el) { io.observe(el); });
+} else {
+revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+}
+
+var tocLinks = {};
+document.querySelectorAll('nav.toc a').forEach(function (a) {
+tocLinks[a.getAttribute('href').slice(1)] = a;
+});
+var chapters = document.querySelectorAll('section.chapter');
+if ('IntersectionObserver' in window) {
+var tocObserver = new IntersectionObserver(function (entries) {
+entries.forEach(function (entry) {
+var link = tocLinks[entry.target.id];
+if (!link) return;
+if (entry.isIntersecting) {
+Object.values(tocLinks).forEach(function (l) { l.classList.remove('active'); });
+link.classList.add('active');
+}
+});
+}, { rootMargin: '-40% 0px -50% 0px' });
+chapters.forEach(function (c) { if (c.id) tocObserver.observe(c); });
+}
+})();
+</script>
+
+</body>
+</html>
