@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Nodes, Explained: How DaVinci Resolve's Color Page Actually Thinks</title>
+<style>
+
+:root {
+color-scheme: light;
+--page: #f5f4ef;
+--surface: #ffffff;
+--ink: #14140f;
+--ink-soft: #4c4a41;
+--muted: #8b8879;
+--hairline: #e3e0d4;
+--border: rgba(20,20,15,0.10);
+--accent: #0e7268;
+--accent-ink: #0a5750;
+--accent-soft: #e3f2ef;
+--orange: #d9611c;
+--orange-soft: #fbe9d9;
+--node-green: #2c9e52;
+--node-green-soft: #e2f4e8;
+--node-blue: #3567c9;
+--node-blue-soft: #e6ecfb;
+--good: #1a9c4b;
+--warn: #c98200;
+--bad: #c94b2e;
+
+--shadow: 0 1px 2px rgba(20,20,15,0.05), 0 8px 24px rgba(20,20,15,0.06);
+--serif: ui-serif, Charter, "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+--sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+--mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+html[data-theme="dark"] {
+color-scheme: dark;
+--page: #0a0b0a;
+--surface: #171816;
+--ink: #f2f1ea;
+--ink-soft: #c6c4b8;
+--muted: #7d7b70;
+--hairline: #26271f;
+--border: rgba(255,255,255,0.10);
+--accent: #2fcabb;
+--accent-ink: #b6f2ea;
+--accent-soft: rgba(47,202,187,0.14);
+--orange: #ff8a42;
+--orange-soft: rgba(255,138,66,0.15);
+--node-green: #4fd07d;
+--node-green-soft: rgba(79,208,125,0.14);
+--node-blue: #6f95ec;
+--node-blue-soft: rgba(111,149,236,0.16);
+--good: #4fd07d;
+--warn: #f0ac3f;
+--bad: #ef7256;
+--shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.4);
+}
+
+@media (prefers-color-scheme: dark) {
+html:not([data-theme="light"]) {
+color-scheme: dark;
+--page: #0a0b0a;
+--surface: #171816;
+--ink: #f2f1ea;
+--ink-soft: #c6c4b8;
+--muted: #7d7b70;
+--hairline: #26271f;
+--border: rgba(255,255,255,0.10);
+--accent: #2fcabb;
+--accent-ink: #b6f2ea;
+--accent-soft: rgba(47,202,187,0.14);
+--orange: #ff8a42;
+--orange-soft: rgba(255,138,66,0.15);
+--node-green: #4fd07d;
+--node-green-soft: rgba(79,208,125,0.14);
+--node-blue: #6f95ec;
+--node-blue-soft: rgba(111,149,236,0.16);
+--good: #4fd07d; --warn: #f0ac3f; --bad: #ef7256;
+--shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.4);
+}
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+
+body {
+margin: 0;
+background: var(--page);
+color: var(--ink);
+font-family: var(--sans);
+line-height: 1.65;
+-webkit-font-smoothing: antialiased;
+text-rendering: optimizeLegibility;
+transition: background 0.25s ease, color 0.25s ease;
+padding-left: env(safe-area-inset-left);
+padding-right: env(safe-area-inset-right);
+}
+
+::selection { background: var(--orange-soft); color: var(--ink); }
+
+/* ---------- chrome ---------- */
+
+#progress-bar {
+position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+background: linear-gradient(90deg, var(--accent), var(--orange));
+z-index: 1000; transition: width 0.1s ease-out;
+}
+.theme-toggle, .float-top {
+position: fixed; z-index: 999;
+width: 44px; height: 44px; border-radius: 50%;
+border: 1px solid var(--border);
+background: var(--surface); color: var(--ink);
+display: flex; align-items: center; justify-content: center;
+cursor: pointer; box-shadow: var(--shadow);
+font-size: 1.05rem;
+transition: transform 0.15s ease, background 0.25s ease;
+}
+.theme-toggle { top: calc(16px + env(safe-area-inset-top)); right: calc(16px + env(safe-area-inset-right)); }
+.float-top {
+bottom: calc(22px + env(safe-area-inset-bottom)); right: calc(16px + env(safe-area-inset-right));
+background: var(--ink); color: var(--page); border: none;
+opacity: 0; transform: translateY(10px); pointer-events: none;
+}
+.float-top.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.theme-toggle:active, .float-top:active { transform: scale(0.92); }
+
+/* ---------- layout ---------- */
+
+.wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+.wrap-wide { max-width: 920px; margin: 0 auto; padding: 0 24px; }
+
+header.hero { padding: calc(88px + env(safe-area-inset-top)) 0 44px; position: relative; overflow: hidden; }
+.kicker {
+font-size: 0.78rem; letter-spacing: 0.04em; color: var(--accent); font-weight: 700; margin: 0 0 18px;
+display: flex; align-items: center; gap: 10px;
+}
+.kicker::before { content: ""; width: 22px; height: 2px; background: var(--accent); display: inline-block; border-radius: 2px; }
+
+h1.title {
+font-family: var(--serif); font-weight: 600;
+font-size: clamp(2rem, 6.6vw, 3.3rem); line-height: 1.1; letter-spacing: -0.01em; margin: 0 0 20px;
+}
+h1.title .accent-word { color: var(--accent); }
+
+.dek { font-size: clamp(1.02rem, 2.4vw, 1.24rem); color: var(--ink-soft); max-width: 58ch; margin: 0 0 28px; font-weight: 400; }
+
+.byline {
+display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+font-size: 0.88rem; color: var(--muted); padding-top: 22px; border-top: 1px solid var(--hairline);
+}
+.byline .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); }
+.avatar {
+width: 38px; height: 38px; border-radius: 50%;
+background: linear-gradient(135deg, var(--accent), var(--orange));
+display: flex; align-items: center; justify-content: center;
+color: #fff; font-family: var(--serif); font-weight: 700; font-size: 0.95rem;
+}
+
+.hero-diagram { margin: 40px 0 0; }
+
+/* ---------- table of contents ---------- */
+
+nav.toc { background: var(--surface); border: 1px solid var(--hairline); border-radius: 18px; padding: 26px 26px 22px; margin: 8px 0 60px; box-shadow: var(--shadow); }
+nav.toc h2 { font-size: 0.72rem; letter-spacing: 0.1em; color: var(--muted); margin: 0 0 14px; font-weight: 700; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; }
+nav.toc li { counter-increment: toc; margin-bottom: 4px; }
+nav.toc a {
+display: flex; align-items: baseline; gap: 12px; color: var(--ink-soft); text-decoration: none;
+font-size: 0.96rem; padding: 7px 4px; border-radius: 8px; transition: color 0.15s ease, background 0.15s ease;
+}
+nav.toc a::before { content: counter(toc, decimal-leading-zero); font-family: var(--serif); font-size: 0.82rem; color: var(--muted); flex-shrink: 0; }
+nav.toc a:hover, nav.toc a.active { color: var(--accent); background: var(--accent-soft); }
+nav.toc a.active::before { color: var(--accent); }
+
+/* ---------- sections ---------- */
+
+section.chapter { padding: 44px 0 8px; scroll-margin-top: 24px; }
+section.chapter + section.chapter { border-top: 1px solid var(--hairline); }
+.chapter-num { font-family: var(--serif); font-style: italic; color: var(--orange); font-size: 1rem; margin: 0 0 10px; font-weight: 600; }
+h2.h { font-family: var(--serif); font-weight: 600; font-size: clamp(1.45rem, 4.2vw, 2rem); line-height: 1.18; letter-spacing: -0.01em; margin: 0 0 20px; }
+h3.h3 { font-family: var(--serif); font-weight: 600; font-size: clamp(1.1rem, 2.8vw, 1.32rem); margin: 30px 0 12px; }
+
+p.body-text { font-size: 1.05rem; color: var(--ink); margin: 0 0 18px; }
+p.body-text.soft { color: var(--ink-soft); }
+.lede { font-size: 1.15rem; }
+mark.hl { background: var(--orange-soft); color: var(--ink); padding: 0.05em 0.15em; border-radius: 4px; font-weight: 600; }
+
+blockquote.pull {
+font-family: var(--serif); font-style: italic; font-size: clamp(1.15rem, 3.2vw, 1.5rem); line-height: 1.45;
+color: var(--ink); margin: 32px 0; padding: 0 0 0 22px; border-left: 3px solid var(--accent);
+}
+
+/* ---------- tip callout ---------- */
+
+.tip {
+display: flex; gap: 14px; align-items: flex-start;
+background: var(--accent-soft); border: 1px solid var(--border); border-radius: 14px;
+padding: 16px 18px; margin: 22px 0;
+}
+.tip .bulb { font-size: 1.2rem; line-height: 1; flex-shrink: 0; margin-top: 1px; }
+.tip .tip-body b { display: block; font-size: 0.92rem; margin-bottom: 3px; color: var(--accent-ink); }
+.tip .tip-body span { font-size: 0.92rem; color: var(--ink-soft); }
+
+.callout { background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px; padding: 20px 22px; margin: 26px 0; box-shadow: var(--shadow); }
+.callout h4 { margin: 0 0 8px; font-size: 0.96rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.callout p { margin: 0; color: var(--ink-soft); font-size: 0.96rem; }
+
+.reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.6s cubic-bezier(.2,.7,.3,1), transform 0.6s cubic-bezier(.2,.7,.3,1); }
+.reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+/* ================= node diagram components ================= */
+
+.diagram { margin: 30px 0 10px; }
+.diagram-card { background: var(--surface); border: 1px solid var(--hairline); border-radius: 20px; padding: 26px 20px 22px; box-shadow: var(--shadow); }
+.diagram-label { font-size: 0.74rem; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; margin-bottom: 18px; text-align: center; }
+.diagram-caption { font-size: 0.92rem; color: var(--ink-soft); margin-top: 16px; text-align: center; }
+
+.node-flow { display: flex; align-items: center; justify-content: center; gap: 0; flex-wrap: wrap; row-gap: 18px; }
+.node-io {
+width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
+background: var(--node-green-soft); border: 2px solid var(--node-green); color: var(--node-green);
+display: flex; align-items: center; justify-content: center; text-align: center;
+font-size: 0.62rem; font-weight: 800; letter-spacing: 0.02em; line-height: 1.1;
+}
+html[data-theme="dark"] .node-io { color: var(--node-green); }
+.node-box {
+position: relative; background: var(--surface); border: 1.5px solid var(--hairline); border-radius: 14px;
+padding: 14px 18px; min-width: 108px; text-align: center; box-shadow: var(--shadow); flex-shrink: 0;
+}
+.node-box b { display: block; font-size: 0.92rem; }
+.node-box span { display: block; font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+.node-box .pin { position: absolute; top: 50%; transform: translateY(-50%); width: 9px; height: 9px; border-radius: 50%; background: var(--node-green); border: 1.5px solid var(--surface); }
+.node-box .pin.pin-l { left: -5.5px; }
+.node-box .pin.pin-r { right: -5.5px; }
+.node-box .pin.alpha { background: var(--node-blue); }
+
+.node-link { position: relative; width: 34px; height: 2px; background: var(--hairline); flex-shrink: 0; }
+.node-link.dashed { background: none; border-top: 2px dashed var(--node-blue); }
+.node-link .signal { position: absolute; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--orange); left: -4px; animation: travel 2.4s linear infinite; opacity: 0; }
+.is-visible .node-link .signal { opacity: 1; }
+@keyframes travel { 0% { left: -4px; opacity: 0; } 8% { opacity: 1; } 88% { opacity: 1; } 100% { left: 100%; opacity: 0; } }
+
+.fan-icon { width: 30px; height: 30px; flex-shrink: 0; color: var(--muted); }
+
+/* fan-out layout for parallel/layer */
+.fan-diagram { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; row-gap: 14px; }
+.branch-stack { display: flex; flex-direction: column; gap: 10px; }
+.branch-stack .node-box { min-width: 96px; padding: 10px 14px; }
+.branch-swatch { width: 16px; height: 16px; border-radius: 5px; margin: 0 auto 6px; }
+
+/* order-matters two-panel */
+.order-compare { display: grid; grid-template-columns: 1fr; gap: 16px; margin: 26px 0; }
+@media (min-width: 560px) { .order-compare { grid-template-columns: 1fr 1fr; } }
+.order-panel { background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px; padding: 18px 18px 20px; box-shadow: var(--shadow); }
+.order-panel .order-title { font-size: 0.78rem; font-weight: 700; color: var(--muted); margin-bottom: 14px; text-align: center; }
+.order-chain { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.order-chain .step { background: var(--page); border: 1px solid var(--hairline); border-radius: 10px; padding: 7px 10px; font-size: 0.8rem; font-weight: 600; }
+.order-chain .arrow { color: var(--muted); font-size: 0.9rem; }
+.result-swatch { height: 64px; border-radius: 10px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; }
+.result-swatch span { font-size: 0.76rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; background: rgba(255,255,255,0.85); color: #14140f; }
+.swatch-greentint { background: linear-gradient(135deg, #6c9a6f, #3f6b46); }
+.swatch-bw { background: linear-gradient(135deg, #8a8a86, #3a3a38); }
+
+/* mask preview (outside node) */
+.mask-row { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; margin: 10px 0; }
+.mask-block { text-align: center; }
+.mask-preview { position: relative; width: 132px; height: 92px; border-radius: 12px; overflow: hidden; background: #26251f; }
+.mask-preview .spot { position: absolute; width: 54px; height: 54px; border-radius: 50%; top: 19px; left: 39px; }
+.mask-preview.original { }
+.mask-preview.original .spot { background: #f2e6c9; }
+.mask-preview.inverted { background: #f2e6c9; }
+.mask-preview.inverted .spot { background: #26251f; }
+.mask-block .mask-label { font-size: 0.8rem; font-weight: 600; margin-top: 10px; }
+.mask-block .mask-sub { font-size: 0.74rem; color: var(--muted); }
+
+/* stack quirk visual */
+.stack-quirk { display: flex; align-items: center; justify-content: center; gap: 26px; flex-wrap: wrap; margin: 8px 0; }
+.stack-col { text-align: center; }
+.stack-col .stack-title { font-size: 0.76rem; font-weight: 700; color: var(--muted); margin-bottom: 10px; }
+.chip-list { display: flex; flex-direction: column; gap: 6px; }
+.chip { padding: 8px 16px; border-radius: 9px; font-size: 0.84rem; font-weight: 600; border: 1.5px solid var(--hairline); background: var(--surface); }
+.chip.top-chip { border-color: var(--orange); background: var(--orange-soft); }
+.flip-icon { font-size: 1.4rem; color: var(--muted); }
+
+/* ================= cheatsheet ================= */
+
+.cheat-title-block { text-align: center; margin-bottom: 8px; }
+.cheat-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin: 30px 0; }
+@media (min-width: 640px) { .cheat-grid { grid-template-columns: repeat(2, 1fr); } }
+.cheat-card { background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px; padding: 20px 22px; box-shadow: var(--shadow); }
+.cheat-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.cheat-card-top h4 { margin: 0; font-family: var(--serif); font-size: 1.12rem; font-weight: 600; }
+kbd.key { font-family: var(--mono); font-size: 0.76rem; background: var(--page); border: 1px solid var(--hairline); border-bottom-width: 2px; border-radius: 6px; padding: 3px 8px; color: var(--ink-soft); white-space: nowrap; }
+.cheat-card p { margin: 0 0 10px; font-size: 0.92rem; color: var(--ink-soft); }
+.cheat-card ul { margin: 0; padding-left: 18px; font-size: 0.88rem; color: var(--ink); }
+.cheat-card ul li { margin-bottom: 4px; }
+.cheat-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; }
+
+.shortcut-table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 0.92rem; }
+.shortcut-table th, .shortcut-table td { text-align: left; padding: 11px 10px; border-bottom: 1px solid var(--hairline); }
+.shortcut-table th { font-size: 0.72rem; letter-spacing: 0.06em; color: var(--muted); font-weight: 700; }
+.shortcut-table td:last-child, .shortcut-table th:last-child { text-align: right; }
+
+.compare-table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 0.9rem; }
+.compare-table th, .compare-table td { padding: 12px 12px; border-bottom: 1px solid var(--hairline); vertical-align: top; }
+.compare-table th { font-size: 0.72rem; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; text-align: left; }
+.compare-table td:first-child { font-weight: 700; color: var(--ink); white-space: nowrap; }
+
+.platform-note { display: flex; gap: 10px; align-items: flex-start; font-size: 0.86rem; color: var(--muted); margin: -4px 0 26px; }
+
+/* ================= closing ================= */
+
+.closer { text-align: center; padding: 64px 0 90px; }
+.closer h2 { font-family: var(--serif); font-weight: 600; font-style: italic; font-size: clamp(1.7rem, 5.6vw, 2.4rem); line-height: 1.2; margin: 0 0 18px; }
+.closer p { color: var(--ink-soft); font-size: 1.03rem; max-width: 48ch; margin: 0 auto; }
+.signoff { margin-top: 30px; font-family: var(--serif); font-style: italic; color: var(--muted); }
+
+footer.site-footer { border-top: 1px solid var(--hairline); padding: 26px 0 calc(38px + env(safe-area-inset-bottom)); text-align: center; font-size: 0.8rem; color: var(--muted); }
+
+@media (max-width: 480px) {
+.diagram-card { padding: 22px 14px 18px; }
+.node-box { min-width: 90px; padding: 12px 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+.reveal { transition: none !important; }
+.node-link .signal { animation: none !important; opacity: 0.9; }
+html { scroll-behavior: auto; }
+}
+
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">◐</button>
+<button class="float-top" id="floatTop" aria-label="Back to top">↑</button>
+
+<div class="wrap">
+
+<header class="hero">
+<p class="kicker">DaVinci Resolve · Color Page Fundamentals</p>
+<h1 class="title">Nodes, Explained: How the Color Page <span class="accent-word">Actually</span> Thinks</h1>
+<p class="dek">If you've come to Resolve from Premiere, Final Cut, or Avid, the node tree looks like a foreign machine bolted onto your timeline. It isn't. It's just a flowchart — and once it clicks, you'll never want to grade any other way.</p>
+<div class="byline">
+<div class="avatar">DR</div>
+<span>Color Page Notes</span>
+<span class="dot"></span>
+<span>~11 min read</span>
+<span class="dot"></span>
+<span>Includes a cheatsheet</span>
+</div>
+</header>
+
+<div class="hero-diagram diagram reveal">
+<div class="diagram-card">
+<div class="diagram-label">EVERY NODE TREE, AT ITS CORE</div>
+<div class="node-flow is-visible">
+<div class="node-io">SOURCE</div>
+<div class="node-link"><span class="signal"></span></div>
+<div class="node-box"><span class="pin pin-l"></span><b>Node</b><span>an instruction</span><span class="pin pin-r"></span></div>
+<div class="node-link"><span class="signal" style="animation-delay:1.2s"></span></div>
+<div class="node-io">OUTPUT</div>
+</div>
+<p class="diagram-caption">Your ungraded footage flows in on the left, gets acted on by one or more nodes, and flows back out to the timeline on the right.</p>
+</div>
+</div>
+
+<nav class="toc reveal">
+<h2>In this piece</h2>
+<ol>
+<li><a href="#ch1">What is a node, really?</a></li>
+<li><a href="#ch2">The simplest tree you can build</a></li>
+<li><a href="#ch3">Why one big node is a bad idea</a></li>
+<li><a href="#ch4">Order changes everything</a></li>
+<li><a href="#ch5">Parallel nodes: same input, no interference</a></li>
+<li><a href="#ch6">Layer nodes: same shape, opposite rule</a></li>
+<li><a href="#ch7">Outside nodes: flipping the mask</a></li>
+<li><a href="#ch8">The cheatsheet</a></li>
+</ol>
+</nav>
+
+<!-- ===================== CHAPTER 1 ===================== -->
+<section class="chapter reveal" id="ch1">
+<p class="chapter-num">Chapter One</p>
+<h2 class="h">What is a node, really?</h2>
+<p class="body-text lede">Forget the word "node" for a second. Think of it as one instruction you're giving the software — <mark class="hl">"do this to the image."</mark> Nothing more mysterious than that.</p>
+<p class="body-text soft">The node tree, then, is just a flowchart. It shows the order you want those instructions carried out in. Layer-based editors like Premiere or Final Cut stack effects invisibly inside a clip's properties panel. Resolve instead lays every instruction out on a little map you can see, rearrange, and switch on or off — which is exactly why it feels unfamiliar at first, and exactly why it becomes so powerful once you're used to it.</p>
+
+<div class="tip reveal">
+<div class="bulb">💡</div>
+<div class="tip-body"><b>Green dots = input and output</b><span>Every node tree starts with a green dot on the left (the original, ungraded clip as it arrives from your timeline) and ends with a green dot on the right (the final graded image that gets sent back). Everything in between is where you do the actual work.</span></div>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 2 ===================== -->
+<section class="chapter reveal" id="ch2">
+<p class="chapter-num">Chapter Two</p>
+<h2 class="h">The simplest tree you can build</h2>
+<p class="body-text lede">A brand-new clip on the color page already has this: source in, one node, output out. Select that node and add some contrast, and you've made your first grade.</p>
+<p class="body-text soft">That single node has two kinds of connectors, or "inputs." The green ones on its left and right carry the actual RGB image — the picture itself. There's also a set of blue ones, which carry something different: transparency information. We'll come back to those blue connectors in a few chapters, when they finally get interesting.</p>
+
+<div class="tip reveal">
+<div class="bulb">💡</div>
+<div class="tip-body"><b>RGB</b><span>Red, Green, Blue — the three colors every pixel on your screen is built from. When people say a connector "carries the RGB," they mean it's passing along the actual picture, not just some side information about it.</span></div>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 3 ===================== -->
+<section class="chapter reveal" id="ch3">
+<p class="chapter-num">Chapter Three</p>
+<h2 class="h">Why one big node is a bad idea</h2>
+<p class="body-text lede">You could add contrast, saturation, and warmth all on that one node. Resolve won't stop you. But try to check your work afterward, and you'll hit a wall: you can turn the whole node off with <kbd class="key">⌘D</kbd> / <kbd class="key">Ctrl+D</kbd>, but you can't isolate just the contrast, or just the saturation. To see one adjustment on its own, you'd have to undo and redo each one by hand — which gets old fast.</p>
+<p class="body-text soft">The fix is simple: split adjustments across separate nodes. Add a node for contrast. Add another for saturation. Add a third for warmth. Now each one can be switched on and off independently, and you can actually see what each instruction is doing to your image.</p>
+
+<div class="diagram reveal">
+<div class="diagram-card">
+<div class="diagram-label">ONE ADJUSTMENT PER NODE</div>
+<div class="node-flow is-visible">
+<div class="node-io">SRC</div>
+<div class="node-link"><span class="signal"></span></div>
+<div class="node-box"><span class="pin pin-l"></span><b>Contrast</b><span>node 1</span><span class="pin pin-r"></span></div>
+<div class="node-link"><span class="signal" style="animation-delay:0.8s"></span></div>
+<div class="node-box"><span class="pin pin-l"></span><b>Saturation</b><span>node 2</span><span class="pin pin-r"></span></div>
+<div class="node-link"><span class="signal" style="animation-delay:1.6s"></span></div>
+<div class="node-box"><span class="pin pin-l"></span><b>Warm</b><span>node 3</span><span class="pin pin-r"></span></div>
+<div class="node-link"><span class="signal" style="animation-delay:2.4s"></span></div>
+<div class="node-io">OUT</div>
+</div>
+<p class="diagram-caption">Three small, labeled nodes beat one crowded one — each can be toggled, inspected, and reordered on its own.</p>
+</div>
+</div>
+
+<div class="tip reveal">
+<div class="bulb">💡</div>
+<div class="tip-body"><b>Node labels</b><span>Right-click any node and choose "Node Label" to name it (or assign a keyboard shortcut for it under Keyboard Customization). Do this every time. A tree full of unlabeled boxes is unreadable a week later — even to the person who built it.</span></div>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 4 ===================== -->
+<section class="chapter reveal" id="ch4">
+<p class="chapter-num">Chapter Four</p>
+<h2 class="h">Order changes everything</h2>
+<p class="body-text lede">Here's the idea that trips up almost everyone coming from a layer-based editor: <mark class="hl">a serial node tree runs top to bottom, left to right</mark> — swap two nodes, and you can get a completely different image, even though neither node itself changed.</p>
+<p class="body-text soft">Take two instructions: "remove all color" and "make the image green." Depending which one runs first, you land in a totally different place.</p>
+
+<div class="order-compare reveal">
+<div class="order-panel">
+<div class="order-title">DESATURATE → GREEN TINT</div>
+<div class="order-chain">
+<span class="step">Remove color</span><span class="arrow">→</span><span class="step">Add green</span>
+</div>
+<div class="result-swatch swatch-greentint"><span>Result: green cast</span></div>
+</div>
+<div class="order-panel">
+<div class="order-title">GREEN TINT → DESATURATE</div>
+<div class="order-chain">
+<span class="step">Add green</span><span class="arrow">→</span><span class="step">Remove color</span>
+</div>
+<div class="result-swatch swatch-bw"><span>Result: no color at all</span></div>
+</div>
+</div>
+
+<p class="body-text soft">In the first order, the image is grayscale by the time the green is added, so the green cast survives — you end up with a greenish black-and-white look. In the second order, the green gets added first, and then the desaturation step wipes out <em>all</em> color, green included. Same two nodes. Same two adjustments. Opposite results, purely because of the order they're connected in.</p>
+
+<div class="callout reveal">
+<h4>🔧 How to reorder</h4>
+<p>Hover the right edge of any connector until it turns blue, then click to disconnect it. Drag from a node's output back to a different node's input to rewire the chain. It takes a few tries the first time — after that, it's second nature.</p>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 5 ===================== -->
+<section class="chapter reveal" id="ch5">
+<p class="chapter-num">Chapter Five</p>
+<h2 class="h">Parallel nodes: same input, no interference</h2>
+<p class="body-text lede">Serial nodes are what you'll use 90% of the time. But sometimes you want several adjustments that <em>don't</em> feed into each other at all — each one working from the same untouched starting image, independently.</p>
+<p class="body-text soft">That's a <b>parallel node</b>. Add one (right-click → Add Node → Add Parallel, or <kbd class="key">⌥P</kbd> / <kbd class="key">Alt+P</kbd>) and Resolve splits your signal, feeding an identical copy of the image to two or more nodes at once. A dedicated node called the <b>parallel mixer</b> then blends all of their outputs back together into one image.</p>
+
+<div class="diagram reveal">
+<div class="diagram-card">
+<div class="diagram-label">ONE SIGNAL, SEVERAL INDEPENDENT NODES, ONE BLEND</div>
+<div class="fan-diagram is-visible">
+<div class="node-io">SRC</div>
+<svg class="fan-icon" viewBox="0 0 40 40" fill="none"><path d="M4 20 H14" stroke="var(--muted)" stroke-width="2"/><path d="M14 20 L34 6" stroke="var(--muted)" stroke-width="2"/><path d="M14 20 L34 20" stroke="var(--muted)" stroke-width="2"/><path d="M14 20 L34 34" stroke="var(--muted)" stroke-width="2"/></svg>
+<div class="branch-stack">
+<div class="node-box"><div class="branch-swatch" style="background:var(--bad)"></div><b>Window A</b><span>red tint</span></div>
+<div class="node-box"><div class="branch-swatch" style="background:var(--node-blue)"></div><b>Window B</b><span>blue tint</span></div>
+</div>
+<svg class="fan-icon" viewBox="0 0 40 40" fill="none" style="transform:scaleX(-1)"><path d="M4 20 H14" stroke="var(--muted)" stroke-width="2"/><path d="M14 20 L34 6" stroke="var(--muted)" stroke-width="2"/><path d="M14 20 L34 20" stroke="var(--muted)" stroke-width="2"/><path d="M14 20 L34 34" stroke="var(--muted)" stroke-width="2"/></svg>
+<div class="node-box"><b>Parallel<br>Mixer</b><span>blends all</span></div>
+<div class="node-link"><span class="signal"></span></div>
+<div class="node-io">OUT</div>
+</div>
+<p class="diagram-caption">Grade Window A red and Window B blue — neither branch sees the other's changes. Where the two windows overlap, the mixer blends both colors together. The order the branches connect into the mixer doesn't matter; the result is identical either way.</p>
+</div>
+</div>
+
+<p class="body-text soft">This is the tool for grading several isolated regions of a shot at once without one adjustment's math bleeding into the next one's starting point.</p>
+</section>
+
+<!-- ===================== CHAPTER 6 ===================== -->
+<section class="chapter reveal" id="ch6">
+<p class="chapter-num">Chapter Six</p>
+<h2 class="h">Layer nodes: same shape, opposite rule</h2>
+<p class="body-text lede">A layer node (<kbd class="key">⌥L</kbd> / <kbd class="key">Alt+L</kbd>) looks almost identical to a parallel one on the node tree — same fan-out, same mixer at the end. But it works completely differently: instead of <em>blending</em> branches together, a layer mixer <em>stacks</em> them, one on top of another, the way layers stack in Photoshop.</p>
+
+<div class="tip reveal">
+<div class="bulb">💡</div>
+<div class="tip-body"><b>Why this matters</b><span>With a stack, whichever layer is "on top" wins wherever it's visible, and everything underneath it only shows through the gaps — a mask, a key, a window. With a blend (parallel), every branch always contributes something, everywhere.</span></div>
+</div>
+
+<p class="body-text soft">Here's the part that catches everyone out. You'd assume the node wired into the mixer's <em>top</em> input ends up as the <em>top</em> layer. It's the opposite: in Resolve's layer mixer, <mark class="hl">the node connected to the bottom input becomes the top layer</mark> of the stack. There's no elegant explanation for it — it's just the convention, and it's worth memorizing precisely because it's so unintuitive.</p>
+
+<div class="stack-quirk reveal">
+<div class="stack-col">
+<div class="stack-title">MIXER INPUTS (top → bottom)</div>
+<div class="chip-list">
+<div class="chip">Node A</div>
+<div class="chip">Node B</div>
+</div>
+</div>
+<div class="flip-icon">⇄</div>
+<div class="stack-col">
+<div class="stack-title">VISUAL STACK (top → bottom)</div>
+<div class="chip-list">
+<div class="chip top-chip">Node B</div>
+<div class="chip">Node A</div>
+</div>
+</div>
+</div>
+
+<p class="body-text soft">So if your top layer desaturates the whole frame and it's covering everything, that's expected — it's sitting on top of the stack even though it looks "first" going into the mixer. Add a window or a key to that top node, and now it only covers part of the frame, letting the layer beneath show through everywhere else. Swap the connection order into the mixer, and you'll swap which layer sits on top.</p>
+
+<div class="tip reveal">
+<div class="bulb">💡</div>
+<div class="tip-body"><b>Key</b><span>A "key" isolates part of an image by color or brightness rather than by shape — for example, selecting only the blue pixels in a shot. A window, by contrast, isolates by shape (a circle, a box, a custom curve) regardless of color.</span></div>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 7 ===================== -->
+<section class="chapter reveal" id="ch7">
+<p class="chapter-num">Chapter Seven</p>
+<h2 class="h">Outside nodes: flipping the mask</h2>
+<p class="body-text lede">Say you've put a window around a face to brighten it. Now you also want to darken everything <em>except</em> the face — the walls, the background, the rest of the frame. Re-drawing a second window for "everything but the face" would be painful, and it would break the moment you nudge the first window even slightly.</p>
+<p class="body-text soft">An <b>outside node</b> (<kbd class="key">⌥O</kbd> / <kbd class="key">Alt+O</kbd>) solves this automatically. Add one after a node that already has a window or key on it, and Resolve draws a dashed blue line between the two — the alpha connection we mentioned back in chapter two, finally doing something. The outside node inherits the exact same window, but inverts it, so your adjustments land everywhere the original window <em>doesn't</em> cover.</p>
+
+<div class="tip reveal">
+<div class="bulb">💡</div>
+<div class="tip-body"><b>Alpha channel</b><span>Alongside a picture's color (RGB), Resolve tracks a fourth, invisible channel called alpha — essentially a black-and-white map of "how much does this adjustment apply here." A window or key is really just a shape drawn onto that alpha map. The blue connectors carry this map between nodes; the green ones carry the actual image.</span></div>
+</div>
+
+<div class="diagram reveal">
+<div class="diagram-card">
+<div class="diagram-label">A MASK, AND ITS AUTOMATIC OPPOSITE</div>
+<div class="mask-row">
+<div class="mask-block">
+<div class="mask-preview original"><div class="spot"></div></div>
+<div class="mask-label">Original window</div>
+<div class="mask-sub">brightens inside the circle</div>
+</div>
+<div class="node-link dashed" style="width:56px;"></div>
+<div class="mask-block">
+<div class="mask-preview inverted"><div class="spot"></div></div>
+<div class="mask-label">Outside node</div>
+<div class="mask-sub">darkens everything else</div>
+</div>
+</div>
+<p class="diagram-caption">Move or reshape the original window, and the outside node's inverted mask updates automatically — they're permanently linked through that dashed alpha connection.</p>
+</div>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 8 / CHEATSHEET ===================== -->
+<section class="chapter reveal" id="ch8">
+<p class="chapter-num">Chapter Eight</p>
+<div class="cheat-title-block">
+<h2 class="h">The cheatsheet</h2>
+<p class="body-text soft">Everything above, condensed. Bookmark this section — it's built to be scanned, not read.</p>
+</div>
+
+<div class="platform-note reveal">
+<span>🖥️</span>
+<span>Shortcuts below are shown as <kbd class="key">Option</kbd> (Mac). On Windows, swap <kbd class="key">Option</kbd> for <kbd class="key">Alt</kbd> and <kbd class="key">⌘</kbd> for <kbd class="key">Ctrl</kbd> throughout.</span>
+</div>
+
+<div class="cheat-grid">
+
+<div class="cheat-card reveal">
+<div class="cheat-card-top"><h4>Serial</h4><kbd class="key">⌥S</kbd></div>
+<p>Runs one after another, left to right. The default node type, and the one you'll reach for most.</p>
+<ul>
+<li>Order changes the result</li>
+<li>One instruction per node — keep it isolated and toggleable</li>
+<li>Toggle a node on/off: <kbd class="key">⌘D</kbd></li>
+</ul>
+</div>
+
+<div class="cheat-card reveal">
+<div class="cheat-card-top"><h4>Parallel</h4><kbd class="key">⌥P</kbd></div>
+<p>Splits one signal to several nodes at once, then blends every output together via a parallel mixer.</p>
+<ul>
+<li>Branches never see each other's changes</li>
+<li>Connection order into the mixer doesn't matter</li>
+<li>Good for grading several isolated regions together</li>
+</ul>
+</div>
+
+<div class="cheat-card reveal">
+<div class="cheat-card-top"><h4>Layer</h4><kbd class="key">⌥L</kbd></div>
+<p>Looks like Parallel, but stacks branches instead of blending them — like layers in Photoshop.</p>
+<ul>
+<li>Order matters — connection order sets stacking order</li>
+<li>⚠️ Bottom mixer input = top of the visual stack</li>
+<li>A window/key on the top layer reveals the layer below through the gap</li>
+</ul>
+</div>
+
+<div class="cheat-card reveal">
+<div class="cheat-card-top"><h4>Outside</h4><kbd class="key">⌥O</kbd></div>
+<p>Auto-inverts the mask (window or key) from the node before it — a dashed blue alpha link ties the two together.</p>
+<ul>
+<li>Adjustments apply everywhere the original mask doesn't</li>
+<li>Reshaping the original mask updates this node automatically</li>
+<li>No need to redraw a second, opposite mask by hand</li>
+</ul>
+</div>
+
+</div>
+
+<h3 class="h3">Shortcuts at a glance</h3>
+<table class="shortcut-table">
+<thead><tr><th>Action</th><th>Mac</th><th>Windows</th></tr></thead>
+<tbody>
+<tr><td>Add a serial node</td><td><kbd class="key">⌥S</kbd></td><td><kbd class="key">Alt+S</kbd></td></tr>
+<tr><td>Add a parallel node</td><td><kbd class="key">⌥P</kbd></td><td><kbd class="key">Alt+P</kbd></td></tr>
+<tr><td>Add a layer node</td><td><kbd class="key">⌥L</kbd></td><td><kbd class="key">Alt+L</kbd></td></tr>
+<tr><td>Add an outside node</td><td><kbd class="key">⌥O</kbd></td><td><kbd class="key">Alt+O</kbd></td></tr>
+<tr><td>Toggle the selected node on/off</td><td><kbd class="key">⌘D</kbd></td><td><kbd class="key">Ctrl+D</kbd></td></tr>
+<tr><td>Toggle <em>all</em> nodes on/off</td><td><kbd class="key">⌥D</kbd></td><td><kbd class="key">Alt+D</kbd></td></tr>
+<tr><td>Label the selected node</td><td colspan="2">Right-click → Node Label (or assign your own key)</td></tr>
+<tr><td>Reset a single node's grade</td><td colspan="2">Right-click node → Reset Node Grade</td></tr>
+<tr><td>Reset the entire tree</td><td colspan="2">Right-click empty space → Reset All Grades and Nodes</td></tr>
+</tbody>
+</table>
+
+<h3 class="h3">Parallel vs. layer, side by side</h3>
+<p class="body-text soft">These two are the ones people mix up, because the node tree looks the same for both. This is the actual difference:</p>
+<table class="compare-table">
+<thead><tr><th></th><th>Parallel</th><th>Layer</th></tr></thead>
+<tbody>
+<tr><td>What it does</td><td>Blends every branch's output together</td><td>Stacks branches, top one wins where visible</td></tr>
+<tr><td>Does order matter?</td><td>No — connect branches in any order</td><td>Yes — connection order sets the stack</td></tr>
+<tr><td>The catch</td><td>None — behaves as you'd expect</td><td>Bottom mixer input = <em>top</em> of the stack</td></tr>
+<tr><td>Use it when</td><td>Grading several regions that shouldn't interact</td><td>Building a "base look" with targeted layers on top</td></tr>
+</tbody>
+</table>
+
+<div class="callout reveal">
+<h4>📌 The one habit that saves every future headache</h4>
+<p>Label every node the moment you create it. It costs three seconds. A tree of six unlabeled gray boxes tells you nothing — the same tree with "Contrast," "Skin Tone," "Sky Window," and "Final Look" tells you everything, weeks later, at a glance.</p>
+</div>
+</section>
+
+<section class="chapter reveal closer">
+<p class="chapter-num" style="text-align:center;">Recap</p>
+<h2>Four node types. One flowchart.</h2>
+<p>Serial for step-by-step instructions where order matters. Parallel when you want isolated adjustments blended together. Layer when you want them stacked instead. Outside when you want the exact opposite of a mask you've already drawn. That's the whole system — everything else in Resolve's node tree builds on these four.</p>
+<p class="signoff">— A few more specialized nodes exist beyond these four; a good next thing to go learn once these feel automatic.</p>
+</section>
+
+</div>
+
+<footer class="site-footer">
+<div class="wrap">Notes on DaVinci Resolve's color page node system · read on any device</div>
+</footer>
+
+<script>
+(function () {
+var root = document.documentElement;
+var btn = document.getElementById('themeToggle');
+function currentTheme() {
+if (root.getAttribute('data-theme')) return root.getAttribute('data-theme');
+return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+btn.addEventListener('click', function () {
+var next = currentTheme() === 'dark' ? 'light' : 'dark';
+root.setAttribute('data-theme', next);
+btn.textContent = next === 'dark' ? '☀' : '◐';
+});
+btn.textContent = currentTheme() === 'dark' ? '☀' : '◐';
+
+var bar = document.getElementById('progress-bar');
+var floatTop = document.getElementById('floatTop');
+function onScroll() {
+var h = document.documentElement;
+var scrolled = h.scrollTop || document.body.scrollTop;
+var height = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
+var pct = height > 0 ? (scrolled / height) * 100 : 0;
+bar.style.width = pct + '%';
+if (scrolled > 500) floatTop.classList.add('show'); else floatTop.classList.remove('show');
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+floatTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+var revealEls = document.querySelectorAll('.reveal');
+if ('IntersectionObserver' in window) {
+var io = new IntersectionObserver(function (entries) {
+entries.forEach(function (entry) {
+if (entry.isIntersecting) {
+entry.target.classList.add('is-visible');
+io.unobserve(entry.target);
+}
+});
+}, { threshold: 0.12 });
+revealEls.forEach(function (el) { io.observe(el); });
+} else {
+revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+}
+
+var tocLinks = {};
+document.querySelectorAll('nav.toc a').forEach(function (a) {
+tocLinks[a.getAttribute('href').slice(1)] = a;
+});
+var chapters = document.querySelectorAll('section.chapter');
+if ('IntersectionObserver' in window) {
+var tocObserver = new IntersectionObserver(function (entries) {
+entries.forEach(function (entry) {
+var link = tocLinks[entry.target.id];
+if (!link) return;
+if (entry.isIntersecting) {
+Object.values(tocLinks).forEach(function (l) { l.classList.remove('active'); });
+link.classList.add('active');
+}
+});
+}, { rootMargin: '-40% 0px -50% 0px' });
+chapters.forEach(function (c) { if (c.id) tocObserver.observe(c); });
+}
+})();
+</script>
+
+</body>
+</html>
