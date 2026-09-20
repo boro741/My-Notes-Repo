@@ -1,0 +1,1855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../scripts/auth-guard.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Framework - Color Grading in DaVinci Resolve: Go Broad to Narrow (Beginner's Guide)</title>
+<style>
+
+:root {
+color-scheme: light;
+--page: #f9f9f7;
+--surface: #fcfcfb;
+--ink: #0b0b0b;
+--ink-soft: #52514e;
+--muted: #898781;
+--hairline: #e1e0d9;
+--border: rgba(11,11,11,0.10);
+--accent: #2a78d6;
+--accent-ink: #184f95;
+--accent-soft: #eaf2fc;
+--gold: #eda100;
+--gold-soft: #fbf1dc;
+--good: #0ca30c;
+--warn: #fab219;
+--bad: #ec835a;
+
+--s-blue: #2a78d6;
+--s-orange: #eb6834;
+--s-aqua: #1baf7a;
+--s-yellow: #eda100;
+--s-magenta: #e87ba4;
+
+--shadow: 0 1px 2px rgba(11,11,11,0.04), 0 8px 24px rgba(11,11,11,0.06);
+--serif: ui-serif, Charter, "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+--sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+html[data-theme="dark"] {
+color-scheme: dark;
+--page: #0d0d0d;
+--surface: #1a1a19;
+--ink: #ffffff;
+--ink-soft: #c3c2b7;
+--muted: #898781;
+--hairline: #2c2c2a;
+--border: rgba(255,255,255,0.10);
+--accent: #3987e5;
+--accent-ink: #bcd6f7;
+--accent-soft: rgba(57,135,229,0.14);
+--gold: #c98500;
+--gold-soft: rgba(201,133,0,0.16);
+--good: #0ca30c;
+--warn: #fab219;
+--bad: #ec835a;
+
+--s-blue: #3987e5;
+--s-orange: #d95926;
+--s-aqua: #199e70;
+--s-yellow: #c98500;
+--s-magenta: #d55181;
+
+--shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+}
+
+@media (prefers-color-scheme: dark) {
+html:not([data-theme="light"]) {
+color-scheme: dark;
+--page: #0d0d0d;
+--surface: #1a1a19;
+--ink: #ffffff;
+--ink-soft: #c3c2b7;
+--muted: #898781;
+--hairline: #2c2c2a;
+--border: rgba(255,255,255,0.10);
+--accent: #3987e5;
+--accent-ink: #bcd6f7;
+--accent-soft: rgba(57,135,229,0.14);
+--gold: #c98500;
+--gold-soft: rgba(201,133,0,0.16);
+--s-blue: #3987e5;
+--s-orange: #d95926;
+--s-aqua: #199e70;
+--s-yellow: #c98500;
+--s-magenta: #d55181;
+--shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+}
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+
+body {
+margin: 0;
+background: var(--page);
+color: var(--ink);
+font-family: var(--sans);
+line-height: 1.65;
+-webkit-font-smoothing: antialiased;
+text-rendering: optimizeLegibility;
+transition: background 0.25s ease, color 0.25s ease;
+padding-left: env(safe-area-inset-left);
+padding-right: env(safe-area-inset-right);
+}
+
+::selection { background: var(--gold-soft); color: var(--ink); }
+
+/* ---------- chrome: progress bar, theme toggle, top button ---------- */
+
+#progress-bar {
+position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+background: linear-gradient(90deg, var(--accent), var(--gold));
+z-index: 1000; transition: width 0.1s ease-out;
+}
+
+.theme-toggle, .float-top {
+position: fixed; z-index: 999;
+width: 44px; height: 44px; border-radius: 50%;
+border: 1px solid var(--border);
+background: var(--surface); color: var(--ink);
+display: flex; align-items: center; justify-content: center;
+cursor: pointer; box-shadow: var(--shadow);
+font-size: 1.05rem;
+transition: transform 0.15s ease, background 0.25s ease;
+}
+.theme-toggle { top: calc(16px + env(safe-area-inset-top)); right: calc(16px + env(safe-area-inset-right)); }
+.float-top {
+bottom: calc(22px + env(safe-area-inset-bottom)); right: calc(16px + env(safe-area-inset-right));
+background: var(--ink); color: var(--page); border: none;
+opacity: 0; transform: translateY(10px); pointer-events: none;
+}
+.float-top.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.theme-toggle:active, .float-top:active { transform: scale(0.92); }
+
+/* ---------- layout ---------- */
+
+.wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+.wrap-wide { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+header.hero {
+padding: calc(88px + env(safe-area-inset-top)) 0 56px;
+position: relative;
+overflow: hidden;
+}
+.kicker {
+font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
+color: var(--accent); font-weight: 700; margin: 0 0 18px;
+display: flex; align-items: center; gap: 10px;
+}
+.kicker::before { content: ""; width: 22px; height: 2px; background: var(--accent); display: inline-block; border-radius: 2px; }
+
+h1.title {
+font-family: var(--serif);
+font-weight: 600;
+font-size: clamp(2.1rem, 7vw, 3.6rem);
+line-height: 1.08;
+letter-spacing: -0.01em;
+margin: 0 0 20px;
+}
+h1.title em { font-style: italic; color: var(--accent); }
+
+.dek {
+font-size: clamp(1.05rem, 2.6vw, 1.3rem);
+color: var(--ink-soft);
+max-width: 60ch;
+margin: 0 0 28px;
+font-weight: 400;
+}
+
+.byline {
+display: flex; align-items: center; gap: 14px;
+font-size: 0.88rem; color: var(--muted);
+padding-top: 22px; border-top: 1px solid var(--hairline);
+}
+.byline .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); }
+.avatar {
+width: 38px; height: 38px; border-radius: 50%;
+background: linear-gradient(135deg, var(--accent), var(--gold));
+display: flex; align-items: center; justify-content: center;
+color: #fff; font-family: var(--serif); font-weight: 700; font-size: 1rem;
+}
+
+.hero-quote {
+font-family: var(--serif); font-style: italic;
+font-size: clamp(1.15rem, 3vw, 1.5rem); line-height: 1.5;
+color: var(--ink);
+margin: 40px 0 0; padding: 26px 0 0 24px;
+border-left: 3px solid var(--gold);
+}
+
+/* ---------- table of contents ---------- */
+
+nav.toc {
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 18px; padding: 26px 26px 22px; margin: 8px 0 64px;
+box-shadow: var(--shadow);
+}
+nav.toc h2 {
+font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+color: var(--muted); margin: 0 0 14px; font-weight: 700;
+}
+nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; }
+nav.toc li {
+counter-increment: toc; margin-bottom: 4px;
+}
+nav.toc a {
+display: flex; align-items: baseline; gap: 12px;
+color: var(--ink-soft); text-decoration: none;
+font-size: 0.96rem; padding: 7px 4px; border-radius: 8px;
+transition: color 0.15s ease, background 0.15s ease;
+}
+nav.toc a::before {
+content: counter(toc, decimal-leading-zero);
+font-family: var(--serif); font-size: 0.82rem; color: var(--muted); flex-shrink: 0;
+}
+nav.toc a:hover, nav.toc a.active { color: var(--accent); background: var(--accent-soft); }
+nav.toc a.active::before { color: var(--accent); }
+
+/* ---------- article sections ---------- */
+
+section.chapter { padding: 44px 0 8px; scroll-margin-top: 24px; }
+section.chapter + section.chapter { border-top: 1px solid var(--hairline); }
+
+.chapter-num {
+font-family: var(--serif); font-style: italic; color: var(--gold);
+font-size: 1rem; margin: 0 0 10px; font-weight: 600;
+}
+
+h2.h {
+font-family: var(--serif); font-weight: 600;
+font-size: clamp(1.5rem, 4.4vw, 2.1rem);
+line-height: 1.18; letter-spacing: -0.01em;
+margin: 0 0 20px;
+}
+h3.h3 {
+font-family: var(--serif); font-weight: 600;
+font-size: clamp(1.15rem, 3vw, 1.4rem);
+margin: 30px 0 12px;
+}
+
+p.body-text { font-size: 1.06rem; color: var(--ink); margin: 0 0 18px; }
+p.body-text.soft { color: var(--ink-soft); }
+.lede { font-size: 1.18rem; }
+
+mark.hl {
+background: var(--gold-soft); color: var(--ink);
+padding: 0.05em 0.15em; border-radius: 4px; font-weight: 600;
+}
+
+blockquote.pull {
+font-family: var(--serif); font-style: italic;
+font-size: clamp(1.2rem, 3.4vw, 1.6rem); line-height: 1.45;
+color: var(--ink); margin: 34px 0; padding: 0 0 0 24px;
+border-left: 3px solid var(--accent);
+}
+blockquote.pull cite {
+display: block; font-style: normal; font-family: var(--sans);
+font-size: 0.82rem; color: var(--muted); margin-top: 10px; letter-spacing: 0.02em;
+}
+
+.callout {
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 16px; padding: 22px 24px; margin: 28px 0;
+box-shadow: var(--shadow);
+}
+.callout h4 {
+margin: 0 0 8px; font-size: 0.98rem; font-weight: 700;
+display: flex; align-items: center; gap: 8px;
+}
+.callout p { margin: 0; color: var(--ink-soft); font-size: 0.98rem; }
+
+/* ---------- reveal-on-scroll ---------- */
+
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s cubic-bezier(.2,.7,.3,1), transform 0.7s cubic-bezier(.2,.7,.3,1); }
+.reveal.is-visible { opacity: 1; transform: translateY(0); }
+.reveal-stagger.is-visible > * { }
+
+/* ================= DIAGRAM: lightning rod ================= */
+
+.diagram { margin: 30px 0 8px; }
+.diagram-card {
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 20px; padding: 28px 20px 20px; box-shadow: var(--shadow);
+text-align: center;
+}
+.diagram-label {
+font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase;
+color: var(--muted); font-weight: 700; margin-bottom: 4px;
+}
+.diagram-caption { font-size: 0.92rem; color: var(--ink-soft); margin-top: 10px; }
+
+.rod-svg { width: 100%; max-width: 320px; height: auto; }
+.rod-bolt {
+stroke-dasharray: 140; stroke-dashoffset: 140;
+animation: bolt-strike 4s ease-in-out infinite;
+}
+.rod-flash {
+opacity: 0; transform-origin: 160px 46px;
+animation: flash 4s ease-in-out infinite;
+}
+.rod-glow { opacity: 0; animation: glow-pulse 4s ease-in-out infinite; }
+
+@keyframes bolt-strike {
+0%, 46% { stroke-dashoffset: 140; opacity: 0; }
+48% { opacity: 1; }
+58%, 100% { stroke-dashoffset: 0; opacity: 1; }
+62% { opacity: 0.15; }
+64% { opacity: 1; }
+70%, 100% { opacity: 0; }
+}
+@keyframes flash {
+0%, 55% { opacity: 0; transform: scale(0.6); }
+58% { opacity: 1; transform: scale(1.3); }
+68% { opacity: 0; transform: scale(1.6); }
+100% { opacity: 0; }
+}
+@keyframes glow-pulse {
+0%, 55% { opacity: 0; }
+60% { opacity: 0.9; }
+100% { opacity: 0; }
+}
+
+/* ================= DIAGRAM: luck counter ================= */
+
+.luck-widget { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 0; }
+.luck-ring-wrap { position: relative; width: 168px; height: 168px; }
+.luck-ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.luck-ring-bg { fill: none; stroke: var(--hairline); stroke-width: 10; }
+.luck-ring-fg {
+fill: none; stroke: url(#luckGrad); stroke-width: 10; stroke-linecap: round;
+stroke-dasharray: 440; stroke-dashoffset: 440;
+transition: stroke-dashoffset 1.8s cubic-bezier(.2,.8,.2,1);
+}
+.is-visible .luck-ring-fg { stroke-dashoffset: 22; }
+.luck-number {
+position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+font-family: var(--serif); font-weight: 700; font-size: 2.5rem; color: var(--ink);
+}
+.luck-labels { display: flex; gap: 26px; margin-top: 6px; font-size: 0.85rem; color: var(--muted); }
+.luck-labels b { color: var(--ink); }
+
+/* ================= DIAGRAM: funnel ================= */
+
+.funnel-wrap { position: relative; height: 260px; max-width: 380px; margin: 0 auto; }
+.funnel-shape {
+position: absolute; inset: 0;
+clip-path: polygon(6% 0%, 94% 0%, 62% 100%, 38% 100%);
+background: linear-gradient(180deg, var(--accent-soft), var(--gold-soft));
+border: 1px solid var(--hairline);
+}
+.funnel-rule {
+position: absolute; left: 0; right: 0; border-top: 1px dashed var(--hairline);
+display: flex; justify-content: flex-end; padding-right: 6px;
+}
+.funnel-rule span { font-size: 0.68rem; color: var(--muted); transform: translateY(-9px); background: var(--surface); padding: 0 6px; border-radius: 4px; }
+.funnel-dot {
+position: absolute; width: 9px; height: 9px; border-radius: 50%;
+background: var(--accent); top: -14px;
+animation: fall 3.2s linear infinite;
+}
+.funnel-dot.gold { background: var(--gold); }
+@keyframes fall {
+0% { transform: translateY(0) scale(1); opacity: 0; }
+8% { opacity: 1; }
+92% { opacity: 1; }
+100% { transform: translateY(270px) scale(0.4); opacity: 0; }
+}
+.funnel-tag {
+position: absolute; font-size: 0.74rem; color: var(--ink-soft); font-weight: 600;
+}
+
+/* ================= DIAGRAM: trust ladder ================= */
+
+.ladder { display: flex; flex-direction: column-reverse; gap: 10px; margin: 30px 0; }
+.rung {
+display: flex; align-items: center; gap: 16px;
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 14px; padding: 14px 18px;
+opacity: 0.35; transform: translateX(-10px);
+transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.5s ease, background 0.5s ease;
+}
+.ladder.is-visible .rung { opacity: 1; transform: translateX(0); }
+.ladder.is-visible .rung:nth-child(1) { transition-delay: 0.5s; }
+.ladder.is-visible .rung:nth-child(2) { transition-delay: 0.4s; }
+.ladder.is-visible .rung:nth-child(3) { transition-delay: 0.3s; }
+.ladder.is-visible .rung:nth-child(4) { transition-delay: 0.2s; }
+.ladder.is-visible .rung:nth-child(5) { transition-delay: 0.1s; }
+.ladder.is-visible .rung:nth-child(5) { border-color: var(--gold); background: var(--gold-soft); }
+.rung-step {
+width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+background: var(--accent-soft); color: var(--accent-ink);
+display: flex; align-items: center; justify-content: center;
+font-family: var(--serif); font-weight: 700; font-size: 0.9rem;
+}
+.ladder.is-visible .rung:nth-child(5) .rung-step { background: var(--gold); color: #fff; }
+.rung-body b { display: block; font-size: 0.98rem; }
+.rung-body span { font-size: 0.85rem; color: var(--muted); }
+
+/* ================= 4-7-11 stat cards ================= */
+
+.stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 30px 0; }
+.stat-card {
+background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px;
+padding: 22px 14px; text-align: center; box-shadow: var(--shadow);
+}
+.stat-icon { margin: 0 auto 10px; width: 34px; height: 34px; color: var(--accent); }
+.stat-num {
+font-family: var(--serif); font-weight: 700; color: var(--ink);
+font-size: clamp(1.8rem, 6vw, 2.4rem); line-height: 1; margin-bottom: 6px;
+}
+.stat-word { font-size: 0.8rem; color: var(--muted); font-weight: 600; letter-spacing: 0.02em; }
+
+/* ================= bar chart: touches by deal size ================= */
+
+.chart-card {
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 18px; padding: 26px 22px 20px; margin: 30px 0; box-shadow: var(--shadow);
+}
+.chart-title { font-size: 0.82rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 22px; }
+.bar-row { margin-bottom: 18px; }
+.bar-row:last-child { margin-bottom: 4px; }
+.bar-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; gap: 10px; }
+.bar-label .name { font-size: 0.92rem; font-weight: 600; color: var(--ink); }
+.bar-label .val { font-size: 0.86rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bar-track { position: relative; height: 12px; background: var(--hairline); border-radius: 6px; overflow: visible; }
+.bar-fill {
+position: absolute; left: 0; top: 0; height: 100%; border-radius: 6px; width: 0%;
+transition: width 1.4s cubic-bezier(.16,.9,.2,1);
+}
+.is-visible .bar-fill { width: var(--w); }
+.bar-row.has-avg { margin-bottom: 34px; }
+.avg-line {
+position: absolute; top: -8px; bottom: -8px; width: 2px; background: var(--ink-soft);
+left: 29%; opacity: 0.6;
+}
+.avg-line span {
+position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+font-size: 0.66rem; color: var(--muted); white-space: nowrap;
+}
+
+/* ================= watch-time gauge ================= */
+
+.gauge-track { position: relative; height: 40px; border-radius: 10px; background: var(--hairline); overflow: hidden; margin: 10px 0 6px; display: flex; }
+.gauge-zone { height: 100%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.72rem; font-weight: 700; transform: scaleX(0); transform-origin: left; transition: transform 1.1s cubic-bezier(.2,.8,.2,1); }
+.is-visible .gauge-zone { transform: scaleX(1); }
+.gauge-zone:nth-child(1) { width: 30%; background: #86b6ef; transition-delay: 0s; }
+.gauge-zone:nth-child(2) { width: 35%; background: #3987e5; transition-delay: 0.15s; }
+.gauge-zone:nth-child(3) { width: 35%; background: #184f95; transition-delay: 0.3s; }
+html[data-theme="dark"] .gauge-zone:nth-child(1) { background: #5598e7; }
+.gauge-legend { display: flex; justify-content: space-between; font-size: 0.74rem; color: var(--muted); }
+
+/* ================= engagement tier tiles ================= */
+
+.tile-row { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 22px 0; }
+@media (min-width: 560px) { .tile-row { grid-template-columns: repeat(3, 1fr); } }
+.tile {
+display: flex; align-items: center; gap: 12px;
+background: var(--surface); border: 1px solid var(--hairline); border-radius: 14px;
+padding: 14px 16px;
+}
+.tile-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.tile b { display: block; font-size: 0.94rem; }
+.tile span { font-size: 0.8rem; color: var(--muted); }
+
+.mini-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 24px 0; }
+.mini-stat { background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px; padding: 20px; box-shadow: var(--shadow); }
+.mini-stat .num { font-family: var(--serif); font-size: clamp(1.6rem, 5vw, 2rem); font-weight: 700; color: var(--accent); }
+.mini-stat .lbl { font-size: 0.82rem; color: var(--ink-soft); margin-top: 4px; }
+
+/* ================= case study card ================= */
+
+.case-card {
+background: linear-gradient(160deg, var(--surface), var(--accent-soft));
+border: 1px solid var(--hairline); border-radius: 20px; padding: 28px 24px;
+margin: 30px 0; box-shadow: var(--shadow);
+}
+.case-tag {
+display: inline-flex; align-items: center; gap: 6px;
+font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+color: var(--accent); background: var(--surface); padding: 5px 10px; border-radius: 20px;
+border: 1px solid var(--border); margin-bottom: 14px;
+}
+.case-stats { display: flex; gap: 26px; margin-top: 18px; flex-wrap: wrap; }
+.case-stats div b { display: block; font-family: var(--serif); font-size: 1.5rem; }
+.case-stats div span { font-size: 0.78rem; color: var(--muted); }
+
+/* ================= closing ================= */
+
+.closer {
+text-align: center; padding: 70px 0 90px;
+}
+.closer h2 {
+font-family: var(--serif); font-weight: 600; font-style: italic;
+font-size: clamp(1.8rem, 6vw, 2.6rem); line-height: 1.2; margin: 0 0 18px;
+}
+.closer p { color: var(--ink-soft); font-size: 1.05rem; max-width: 46ch; margin: 0 auto; }
+.signoff { margin-top: 34px; font-family: var(--serif); font-style: italic; color: var(--muted); }
+
+footer.site-footer {
+border-top: 1px solid var(--hairline); padding: 28px 0 calc(40px + env(safe-area-inset-bottom));
+text-align: center; font-size: 0.82rem; color: var(--muted);
+}
+
+/* ================= responsive ================= */
+
+@media (max-width: 480px) {
+.stat-row { gap: 10px; }
+.stat-card { padding: 16px 8px; }
+.case-stats { gap: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+.reveal, .rung, .luck-ring-fg, .bar-fill, .gauge-zone { transition: none !important; }
+.rod-bolt, .rod-flash, .rod-glow, .funnel-dot { animation: none !important; }
+html { scroll-behavior: auto; }
+}
+
+
+/* ================= EXTRA COMPONENTS (color grading blog) ================= */
+
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- inline term buttons + dialog ---------- */
+button.term {
+font: inherit; color: var(--accent-ink); background: var(--accent-soft);
+border: none; border-bottom: 2px dotted var(--accent); border-radius: 4px 4px 0 0;
+padding: 0 4px; cursor: help; line-height: inherit; font-weight: 600;
+transition: background 0.15s ease, border-color 0.15s ease;
+}
+button.term:hover { background: var(--gold-soft); border-bottom-color: var(--gold); }
+
+dialog.term-dialog {
+border: 1px solid var(--border); border-radius: 22px; background: var(--surface); color: var(--ink);
+padding: 0; width: calc(100% - 32px); max-width: 460px;
+box-shadow: 0 24px 70px rgba(0,0,0,0.4);
+}
+dialog.term-dialog::backdrop { background: rgba(11,11,11,0.55); backdrop-filter: blur(3px); }
+dialog.term-dialog[open] { animation: dlg-pop 0.28s cubic-bezier(.2,.9,.3,1.15); }
+@keyframes dlg-pop { from { opacity: 0; transform: translateY(16px) scale(0.95); } to { opacity: 1; transform: none; } }
+.td-head { display: flex; align-items: center; gap: 12px; padding: 22px 24px 8px; }
+.td-icon {
+width: 46px; height: 46px; border-radius: 14px; background: var(--accent-soft);
+display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;
+}
+.td-tag { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); font-weight: 700; }
+.td-title { font-family: var(--serif); font-size: 1.35rem; font-weight: 600; margin: 0; line-height: 1.2; }
+.td-body { padding: 4px 24px 6px; color: var(--ink-soft); font-size: 1.02rem; margin: 0; }
+.td-example {
+margin: 12px 24px 0; padding: 12px 14px; background: var(--gold-soft);
+border-radius: 12px; font-size: 0.93rem; color: var(--ink);
+}
+.td-close {
+display: block; margin: 18px 24px 24px auto; font: inherit; font-weight: 600; font-size: 0.92rem;
+background: var(--ink); color: var(--page); border: none; border-radius: 999px; padding: 10px 22px; cursor: pointer;
+}
+
+/* ---------- tip boxes ---------- */
+.tip {
+display: flex; gap: 14px; align-items: flex-start;
+background: var(--gold-soft); border: 1px solid var(--hairline); border-left: 4px solid var(--gold);
+border-radius: 14px; padding: 16px 18px; margin: 26px 0;
+}
+.tip .ico { font-size: 1.5rem; line-height: 1.2; flex-shrink: 0; }
+.tip b { display: block; margin-bottom: 3px; font-size: 0.96rem; }
+.tip p { margin: 0; font-size: 0.96rem; color: var(--ink-soft); }
+.tip.blue { background: var(--accent-soft); border-left-color: var(--accent); }
+.tip.red { background: rgba(236,131,90,0.13); border-left-color: var(--bad); }
+.tip.green { background: rgba(12,163,12,0.10); border-left-color: var(--good); }
+
+/* ---------- broad-to-narrow focus scene ---------- */
+.scene-svg { width: 100%; max-width: 440px; height: auto; border-radius: 14px; display: block; margin: 0 auto; }
+.focus-box {
+fill: rgba(237,161,0,0.10); stroke: #eda100; stroke-width: 3; stroke-dasharray: 9 6;
+vector-effect: non-scaling-stroke; transform-origin: 0 0;
+animation: focus-move 9s ease-in-out infinite;
+}
+@keyframes focus-move {
+0%, 20% { transform: translate(0px, 0px) scale(1, 1); }
+30%, 50% { transform: translate(72px, 62px) scale(0.2125, 0.36); }
+60%, 80% { transform: translate(182px, 62px) scale(0.2125, 0.36); }
+92%, 100% { transform: translate(0px, 0px) scale(1, 1); }
+}
+.zoom-caps { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+.zoom-caps span {
+font-size: 0.8rem; font-weight: 600; padding: 6px 12px; border-radius: 999px;
+border: 1px solid var(--hairline); color: var(--muted);
+animation: cap-hi 9s ease-in-out infinite;
+}
+.zoom-caps span:nth-child(2) { animation-delay: 2.9s; }
+.zoom-caps span:nth-child(3) { animation-delay: 5.8s; }
+@keyframes cap-hi {
+0%, 28% { background: var(--gold-soft); border-color: var(--gold); color: var(--ink); }
+34%, 100% { background: transparent; border-color: var(--hairline); color: var(--muted); }
+}
+
+/* ---------- compare cards ---------- */
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 26px 0; }
+@media (max-width: 600px) { .compare { grid-template-columns: 1fr; } }
+.cmp-card {
+background: var(--surface); border: 1px solid var(--hairline); border-radius: 18px;
+padding: 18px; box-shadow: var(--shadow);
+}
+.cmp-card.bad { border-top: 5px solid var(--bad); }
+.cmp-card.good { border-top: 5px solid var(--good); }
+.cmp-card h4 { margin: 0 0 4px; font-size: 1.02rem; }
+.cmp-card .sub { font-size: 0.84rem; color: var(--muted); margin: 0 0 12px; }
+.cmp-card svg { width: 100%; height: auto; border-radius: 12px; display: block; margin-bottom: 12px; }
+.cmp-card ol { margin: 0; padding-left: 1.2em; font-size: 0.94rem; color: var(--ink-soft); }
+.cmp-card li { margin-bottom: 6px; }
+.verdict { margin-top: 12px; padding: 9px 12px; border-radius: 10px; font-size: 0.88rem; font-weight: 600; }
+.cmp-card.bad .verdict { background: rgba(236,131,90,0.15); }
+.cmp-card.good .verdict { background: rgba(12,163,12,0.12); }
+.halo-pulse { animation: halo 2.4s ease-in-out infinite; }
+@keyframes halo { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+/* ---------- node chain ---------- */
+.chain { display: flex; flex-wrap: wrap; align-items: stretch; justify-content: center; gap: 6px; margin: 10px 0 6px; }
+.chain-node {
+position: relative; background: var(--surface); border: 2px solid var(--hairline);
+border-top: 5px solid var(--c, var(--accent)); border-radius: 12px;
+padding: 10px 12px; min-width: 104px; text-align: center;
+display: flex; flex-direction: column; justify-content: center;
+animation: node-glow 9s ease-in-out infinite; animation-delay: calc(var(--i) * 1s);
+}
+.chain-node .n { font-family: var(--serif); font-size: 0.74rem; color: var(--muted); }
+.chain-node b { display: block; font-size: 0.86rem; line-height: 1.25; }
+.chain-node .sub { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+.chain-io {
+align-self: center; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+color: var(--muted); border: 1px dashed var(--muted); border-radius: 999px; padding: 6px 12px;
+}
+.chain-arrow { align-self: center; color: var(--muted); font-size: 1.1rem; }
+@keyframes node-glow {
+0%, 11% { box-shadow: 0 0 0 5px var(--accent-soft), 0 6px 18px rgba(11,11,11,0.10); transform: translateY(-3px); }
+16%, 100% { box-shadow: none; transform: none; }
+}
+@media (max-width: 600px) {
+.chain { flex-direction: column; align-items: stretch; }
+.chain-arrow { transform: rotate(90deg); text-align: center; }
+.chain-io { text-align: center; }
+}
+
+/* ---------- step list ---------- */
+.steps { display: flex; flex-direction: column; gap: 10px; margin: 22px 0; }
+.step {
+display: flex; gap: 14px; align-items: flex-start;
+background: var(--surface); border: 1px solid var(--hairline); border-left: 5px solid var(--c, var(--accent));
+border-radius: 14px; padding: 14px 16px;
+}
+.step .badge {
+width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+background: var(--c, var(--accent)); color: #fff;
+display: flex; align-items: center; justify-content: center;
+font-family: var(--serif); font-weight: 700; font-size: 0.95rem;
+}
+.step .badge.emoji { background: transparent; font-size: 1.5rem; }
+.step b { display: block; font-size: 1rem; margin-bottom: 2px; }
+.step span { font-size: 0.94rem; color: var(--ink-soft); }
+
+/* ---------- phase cards ---------- */
+.phase-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 26px 0; }
+@media (max-width: 600px) { .phase-grid { grid-template-columns: 1fr; } }
+@media (min-width: 700px) { .phase-grid.three { grid-template-columns: repeat(3, 1fr); } }
+.phase-card {
+background: var(--surface); border: 1px solid var(--hairline); border-top: 5px solid var(--c, var(--accent));
+border-radius: 16px; padding: 18px; box-shadow: var(--shadow);
+}
+.phase-card .icon { font-size: 1.7rem; }
+.phase-card .ph { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--c, var(--accent)); margin-top: 4px; }
+.phase-card h4 { font-family: var(--serif); font-size: 1.15rem; margin: 2px 0 6px; }
+.phase-card p { margin: 0; font-size: 0.93rem; color: var(--ink-soft); }
+.phase-card .level { display: inline-block; margin-top: 10px; font-size: 0.74rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--page); border: 1px solid var(--hairline); color: var(--muted); }
+
+.shape-bar { display: flex; height: 34px; border-radius: 10px; overflow: hidden; margin: 8px 0 6px; }
+.shape-bar div { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.72rem; font-weight: 700; }
+.shape-legend { display: flex; justify-content: space-between; font-size: 0.74rem; color: var(--muted); }
+
+/* ---------- 8-node explorer ---------- */
+.explorer { background: var(--surface); border: 1px solid var(--hairline); border-radius: 20px; padding: 20px; box-shadow: var(--shadow); margin: 28px 0; }
+.ex-hint { font-size: 0.82rem; color: var(--muted); margin: 0 0 12px; text-align: center; }
+.ex-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 18px; }
+.ex-tab {
+font: inherit; border: 2px solid var(--hairline); background: var(--page); color: var(--ink-soft);
+border-radius: 12px; padding: 10px 4px; cursor: pointer; text-align: center; font-size: 0.76rem; line-height: 1.25;
+transition: border-color 0.2s, background 0.2s, transform 0.15s;
+}
+.ex-tab:hover { transform: translateY(-2px); }
+.ex-tab .num { display: block; font-family: var(--serif); font-weight: 700; font-size: 1.1rem; color: var(--c); }
+.ex-tab[aria-selected="true"] { border-color: var(--c); background: var(--surface); color: var(--ink); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 18%, transparent); }
+.ex-panel { border-left: 5px solid var(--c); padding: 2px 0 2px 16px; animation: ex-in 0.35s ease; }
+@keyframes ex-in { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: none; } }
+.ex-phase { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--c); }
+.ex-panel h4 { font-family: var(--serif); font-size: 1.3rem; margin: 4px 0 10px; }
+.ex-plain { font-size: 1.02rem; color: var(--ink); margin: 0 0 12px; }
+.ex-row { display: flex; gap: 12px; margin: 8px 0; font-size: 0.94rem; color: var(--ink-soft); }
+.ex-row .lab { flex: 0 0 52px; font-weight: 700; color: var(--muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.06em; padding-top: 3px; }
+.ex-level { display: inline-block; margin-top: 10px; font-size: 0.78rem; font-weight: 700; padding: 5px 12px; border-radius: 999px; background: var(--gold-soft); color: var(--ink); }
+
+/* ---------- rules ---------- */
+.kbd {
+font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.82em;
+background: var(--page); border: 1px solid var(--hairline); border-bottom-width: 3px;
+border-radius: 6px; padding: 1px 7px; white-space: nowrap; color: var(--ink);
+}
+.label-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.label-chip { font-size: 0.78rem; font-weight: 700; padding: 5px 12px; border-radius: 8px; background: var(--accent-soft); color: var(--accent-ink); border: 1px solid var(--border); }
+
+.curve-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 480px) { .curve-pair { grid-template-columns: 1fr; } }
+.curve-box { background: var(--page); border: 1px solid var(--hairline); border-radius: 14px; padding: 12px 12px 10px; }
+.curve-box svg { width: 100%; height: auto; display: block; }
+.curve-box b { display: block; font-size: 0.9rem; margin-top: 4px; }
+.curve-box span { font-size: 0.8rem; color: var(--muted); }
+.curve-shift { animation: shift-up 3.4s ease-in-out infinite alternate; }
+@keyframes shift-up { from { transform: translateY(14px); } to { transform: translateY(-14px); } }
+.curve-bend { animation: bend-fade 3.4s ease-in-out infinite alternate; }
+@keyframes bend-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---------- grain demo ---------- */
+.gd-card { background: var(--surface); border: 1px solid var(--hairline); border-radius: 20px; padding: 20px; box-shadow: var(--shadow); margin: 28px 0; }
+.gd-stage { position: relative; height: 180px; border-radius: 14px; overflow: hidden; border: 1px solid var(--hairline); margin-bottom: 14px; }
+.gd-stage > * { position: absolute; inset: 0; }
+.gd-smooth { background: linear-gradient(90deg, #1b3a5c, #5b8fbf); }
+.gd-banded {
+background: linear-gradient(90deg, #1b3a5c 0 12.5%, #24466a 12.5% 25%, #2d5278 25% 37.5%, #365e86 37.5% 50%, #406b95 50% 62.5%, #4977a3 62.5% 75%, #5283b1 75% 87.5%, #5b8fbf 87.5% 100%);
+opacity: 0; transition: opacity 0.4s;
+}
+.gd-stage[data-mode="banded"] .gd-banded, .gd-stage[data-mode="grain"] .gd-banded { opacity: 1; }
+canvas.gd-grain { width: 100%; height: 100%; mix-blend-mode: overlay; opacity: 0; transition: opacity 0.3s; }
+.gd-tag {
+inset: auto auto 10px 10px !important; background: rgba(0,0,0,0.55); color: #fff; font-size: 0.74rem; font-weight: 700;
+padding: 4px 10px; border-radius: 999px;
+}
+.gd-controls { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; }
+.seg { display: inline-flex; background: var(--page); border: 1px solid var(--hairline); border-radius: 999px; padding: 4px; gap: 4px; flex-wrap: wrap; }
+.seg button { font: inherit; font-size: 0.84rem; border: none; background: transparent; color: var(--ink-soft); padding: 8px 14px; border-radius: 999px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.gd-slider { display: flex; align-items: center; gap: 10px; font-size: 0.84rem; color: var(--ink-soft); }
+.gd-slider input { accent-color: var(--accent); width: 130px; }
+.gd-note { font-size: 0.8rem; color: var(--muted); margin: 12px 0 0; }
+
+/* ---------- checklist ---------- */
+.check-card { background: var(--surface); border: 1px solid var(--hairline); border-radius: 20px; padding: 22px; box-shadow: var(--shadow); margin: 28px 0; }
+.check-card h4 { margin: 0 0 14px; font-family: var(--serif); font-size: 1.2rem; }
+.check-item {
+display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px;
+border: 1px solid var(--hairline); border-radius: 12px; margin-bottom: 8px; cursor: pointer;
+background: var(--page); transition: border-color 0.2s, background 0.2s;
+}
+.check-item input { width: 20px; height: 20px; accent-color: var(--good); margin-top: 3px; flex-shrink: 0; }
+.check-item .ct b { display: block; font-size: 0.98rem; }
+.check-item .ct span { font-size: 0.86rem; color: var(--muted); }
+.check-item.done { border-color: var(--good); background: rgba(12,163,12,0.08); }
+.check-item.done .ct b { text-decoration: line-through; color: var(--muted); }
+.check-item.locked { opacity: 0.55; cursor: not-allowed; border-style: dashed; }
+.progress { height: 10px; background: var(--hairline); border-radius: 6px; overflow: hidden; margin: 16px 0 6px; }
+.progress i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--good)); transition: width 0.5s ease; }
+.progress-text { font-size: 0.82rem; color: var(--muted); }
+.cheer { display: none; margin-top: 14px; padding: 12px 14px; border-radius: 12px; background: rgba(12,163,12,0.12); font-weight: 600; font-size: 0.95rem; }
+.cheer.show { display: block; animation: dlg-pop 0.4s ease; }
+
+/* ---------- cheat sheet + jargon ---------- */
+.cheat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 22px 0; }
+@media (min-width: 700px) { .cheat-grid { grid-template-columns: repeat(3, 1fr); } }
+.cheat { background: var(--surface); border: 1px solid var(--hairline); border-radius: 14px; padding: 14px; }
+.cheat .e { font-size: 1.4rem; }
+.cheat b { display: block; font-size: 0.92rem; margin: 4px 0 2px; }
+.cheat span { font-size: 0.82rem; color: var(--muted); }
+.jargon-grid { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0; }
+.term-chip {
+font: inherit; font-size: 0.86rem; border: 1px solid var(--hairline); background: var(--surface); color: var(--ink);
+padding: 7px 13px; border-radius: 999px; cursor: pointer; transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.term-chip:hover { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-ink); }
+
+.tile .emo { font-size: 1.5rem; flex-shrink: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+.focus-box, .zoom-caps span, .chain-node, .halo-pulse, .curve-shift, .curve-bend,
+dialog.term-dialog[open], .ex-panel, .cheer.show { animation: none !important; }
+.curve-bend { opacity: 1; }
+}
+</style>
+<noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">◐</button>
+<button class="float-top" id="floatTop" aria-label="Back to top">↑</button>
+
+<dialog class="term-dialog" id="termDialog" aria-labelledby="tdTitle">
+<div class="td-head">
+<div class="td-icon" id="tdIcon">💡</div>
+<div>
+<div class="td-tag">New word</div>
+<h3 class="td-title" id="tdTitle">Term</h3>
+</div>
+</div>
+<p class="td-body" id="tdBody"></p>
+<div class="td-example" id="tdExample"></div>
+<button type="button" class="td-close" id="tdClose">Got it ✓</button>
+</dialog>
+
+<div class="wrap">
+
+<header class="hero">
+<p class="kicker">Video Editing · DaVinci Resolve · Beginner's Guide</p>
+<h1 class="title">Color Grading in DaVinci Resolve: Go <em>Broad to Narrow</em></h1>
+<p class="dek">A friendly, no-jargon guide to grading your video in the right order, from the whole picture down to faces and tiny details, with a simple node recipe you can copy.</p>
+<div class="byline">
+<div class="avatar">CG</div>
+<span>Beginner's Guide</span>
+<span class="dot"></span>
+<span>~12 min read</span>
+<span class="dot"></span>
+<span>10 chapters</span>
+</div>
+<blockquote class="hero-quote">
+"Fix the whole room first. Fix the faces last."
+</blockquote>
+</header>
+
+<nav class="toc reveal">
+<h2>In this piece</h2>
+<ol>
+<li><a href="#ch1">The big idea: broad to narrow</a></li>
+<li><a href="#ch2">The "bad thing": edge fringing</a></li>
+<li><a href="#ch3">Flip your workflow: room first, faces later</a></li>
+<li><a href="#ch4">Your first 4-node tree</a></li>
+<li><a href="#ch5">The 4-phase pipeline</a></li>
+<li><a href="#ch6">The standard 8-node template</a></li>
+<li><a href="#ch7">Three golden rules</a></li>
+<li><a href="#ch8">Phase 4: texture &amp; grain</a></li>
+<li><a href="#ch9">Your honest starting plan</a></li>
+<li><a href="#ch10">Jargon buster</a></li>
+</ol>
+</nav>
+
+<!-- ===================== CHAPTER 1 ===================== -->
+<section class="chapter reveal" id="ch1">
+<p class="chapter-num">Chapter One</p>
+<h2 class="h">The big idea: go from broad to narrow</h2>
+<p class="body-text lede">Here is the one idea that makes <button type="button" class="term" data-term="grading">color grading</button> much easier: <mark class="hl">start big, then go small.</mark></p>
+<p class="body-text soft">First, you fix the whole picture. You set how bright it is, how strong the colors are, and what mood it has. Only when the whole shot looks good do you zoom in on smaller things, like one face or one object. In DaVinci Resolve, these smaller jobs sit <em>later</em> in your chain of <button type="button" class="term" data-term="node">nodes</button>.</p>
+<p class="body-text soft">Some people call this the <strong>top-down approach</strong>. Others call it <strong>broad to narrow</strong>. Same thing.</p>
+
+<div class="tip blue reveal">
+<div class="ico">💡</div>
+<div>
+<b>Quick tip: what is color grading?</b>
+<p>It means changing the colors, brightness and mood of a video after you have filmed it. DaVinci Resolve is an editing app that is famous for its color tools (and it has a free version).</p>
+</div>
+</div>
+
+<p class="body-text">Think about painting your house before Diwali. You paint all the big walls first. Only after that do you touch up the door frames and window edges. Nobody paints every door first and then tries to paint the wall around it. Color grading works the same way.</p>
+
+<div class="diagram reveal">
+<div class="diagram-card">
+<div class="diagram-label">Broad → Narrow, in action</div>
+<svg class="scene-svg" viewBox="0 0 320 200" role="img" aria-label="A video frame with two people. A dashed box starts on the whole frame, then shrinks to the first face, then the second face.">
+<defs>
+<linearGradient id="roomG" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#2f6f9f"/>
+<stop offset="1" stop-color="#e8a25c"/>
+</linearGradient>
+</defs>
+<rect width="320" height="200" fill="url(#roomG)"/>
+<rect x="18" y="20" width="50" height="60" rx="4" fill="#ffffff" opacity="0.18"/>
+<circle cx="285" cy="38" r="16" fill="#ffe08a" opacity="0.85"/>
+<rect x="250" y="150" width="60" height="50" fill="#000000" opacity="0.12"/>
+<path d="M52 200 C52 150 158 150 158 200 Z" fill="#34495e"/>
+<circle cx="105" cy="98" r="26" fill="#e0a982"/>
+<path d="M79 92 C82 66 128 66 131 92 C122 80 88 80 79 92 Z" fill="#2b1d16"/>
+<path d="M162 200 C162 150 268 150 268 200 Z" fill="#7f3f5a"/>
+<circle cx="215" cy="98" r="26" fill="#c98d68"/>
+<path d="M189 94 C190 68 240 68 241 94 C232 82 198 82 189 94 Z" fill="#1f1a17"/>
+<rect class="focus-box" x="0" y="0" width="320" height="200"/>
+</svg>
+<div class="zoom-caps">
+<span>1 · Whole frame</span>
+<span>2 · Face one</span>
+<span>3 · Face two</span>
+</div>
+<p class="diagram-caption">Watch the dashed box. It starts on the whole picture, then shrinks to one face, then the other. That is broad to narrow.</p>
+</div>
+</div>
+
+<p class="body-text soft">Here are the three "zoom levels" to remember:</p>
+<div class="tile-row reveal">
+<div class="tile"><div class="emo">🌍</div><div><b>Whole frame</b><span>Brightness, contrast, overall color</span></div></div>
+<div class="tile"><div class="emo">🧑</div><div><b>Faces and objects</b><span>One person, one shirt, one thing</span></div></div>
+<div class="tile"><div class="emo">✨</div><div><b>Tiny details</b><span>The last light touches</span></div></div>
+</div>
+
+<div class="callout reveal">
+<h4>🎯 Why this saves you a headache</h4>
+<p>If you start with small jobs (like cutting people out so you can change only the background), you will later have to flip that cut-out around. That flip is what causes trouble. Going broad to narrow means you never have to think about the background separately. Let's see exactly what goes wrong in the next chapter.</p>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 2 ===================== -->
+<section class="chapter reveal" id="ch2">
+<p class="chapter-num">Chapter Two</p>
+<h2 class="h">The "bad thing": edge fringing</h2>
+<p class="body-text lede">Maybe you remember a warning that "something bad" happens when you cut people out and change only the background. That bad thing has a name: <mark class="hl">edge fringing</mark>, also called a <button type="button" class="term" data-term="fringing">matte halo</button>.</p>
+<p class="body-text soft">Here is what happens. You draw a <button type="button" class="term" data-term="mask">mask</button> around the people so you can boost the color of the background only. But fine hair, motion blur and soft edges never get cut out cleanly. You end up with an odd <strong>glowing outline</strong> or a <strong>dark border</strong> around the person.</p>
+<p class="body-text soft">It is like cutting yourself out of a photo with scissors and pasting it on a new sheet of paper. The edges look "cut out", and the eye spots it straight away.</p>
+
+<div class="compare reveal">
+<div class="cmp-card bad">
+<svg viewBox="0 0 200 150" role="img" aria-label="A person with a glowing outline around them">
+<rect width="200" height="150" fill="#1f7fd6"/>
+<circle class="halo-pulse" cx="100" cy="78" r="46" fill="none" stroke="#fff6c2" stroke-width="7"/>
+<path d="M62 150 C62 112 138 112 138 150Z" fill="#34495e"/>
+<circle cx="100" cy="78" r="38" fill="#e0a982"/>
+<path d="M62 74 C62 36 138 36 138 74 C126 56 74 56 62 74Z" fill="#2b1d16"/>
+<g stroke="#2b1d16" stroke-width="1.6" stroke-linecap="round">
+<path d="M64 60 L55 54"/><path d="M136 60 L145 54"/><path d="M78 44 L74 35"/><path d="M122 44 L126 35"/>
+</g>
+<g class="halo-pulse" fill="#fff6c2">
+<circle cx="54" cy="53" r="2.4"/><circle cx="146" cy="53" r="2.4"/><circle cx="73" cy="34" r="2.4"/><circle cx="127" cy="34" r="2.4"/>
+</g>
+</svg>
+<h4>❌ Cut-out way</h4>
+<p class="sub">Mask the people, boost only the background</p>
+<div class="verdict">You can see a hard line around the person.</div>
+</div>
+<div class="cmp-card good">
+<svg viewBox="0 0 200 150" role="img" aria-label="A person with a soft, natural blend on the face">
+<defs>
+<filter id="blurSoft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+<rect width="200" height="150" fill="#1f7fd6"/>
+<path d="M62 150 C62 112 138 112 138 150Z" fill="#34495e"/>
+<circle cx="100" cy="78" r="38" fill="#e0a982"/>
+<path d="M62 74 C62 36 138 36 138 74 C126 56 74 56 62 74Z" fill="#2b1d16"/>
+<g stroke="#2b1d16" stroke-width="1.6" stroke-linecap="round">
+<path d="M64 60 L55 54"/><path d="M136 60 L145 54"/><path d="M78 44 L74 35"/><path d="M122 44 L126 35"/>
+</g>
+<ellipse cx="100" cy="86" rx="34" ry="34" fill="#ff9a5c" opacity="0.4" filter="url(#blurSoft)"/>
+</svg>
+<h4>✅ Face-tweak way</h4>
+<p class="sub">Boost the whole frame, then soften only the face</p>
+<div class="verdict">The change fades in slowly. Nobody notices.</div>
+</div>
+</div>
+
+<div class="tip reveal">
+<div class="ico">🧠</div>
+<div>
+<b>Why hair and blur cause trouble</b>
+<p>A single strand of hair is thin, so the pixels around it are part hair and part background. A mask can only say "inside" or "outside". Those mixed pixels get treated the wrong way, and that leaves the glowing or dark edge.</p>
+</div>
+</div>
+
+<h3 class="h3">Why the face-tweak way looks invisible</h3>
+<p class="body-text soft">When you <button type="button" class="term" data-term="feather">feather</button> a mask inward on a face to bring the color down a little, the eye accepts it easily. Skin naturally reacts to the light in the room, so a small change on a face feels natural.</p>
+<p class="body-text soft">But when you cut a hard hole in the background and push color up right around a person, the viewer immediately notices the boundary line. Same tool, very different result.</p>
+</section>
+
+<!-- ===================== CHAPTER 3 ===================== -->
+<section class="chapter reveal" id="ch3">
+<p class="chapter-num">Chapter Three</p>
+<h2 class="h">Flip your workflow: room first, faces later</h2>
+<p class="body-text lede">The fix is simple. Turn your workflow upside down. <mark class="hl">Grade the whole room first, then calm down the faces afterwards.</mark></p>
+
+<div class="steps reveal">
+<div class="step" style="--c:var(--s-orange)">
+<div class="badge">1</div>
+<div>
+<b>Grade the entire room first (a global node)</b>
+<span>Push the <button type="button" class="term" data-term="saturation">saturation</button>, <button type="button" class="term" data-term="contrast">contrast</button> and overall color mood across the <em>whole frame</em>, early in your chain. Let the background look rich and vibrant, even if the faces get a bit too orange, red or oversaturated for now.</span>
+</div>
+</div>
+<div class="step" style="--c:var(--s-aqua)">
+<div class="badge">2</div>
+<div>
+<b>Tame the faces downstream (secondary nodes)</b>
+<span>Add nodes <button type="button" class="term" data-term="downstream">downstream</button> (later in the chain) with a <button type="button" class="term" data-term="powerwindow">Power Window</button> <button type="button" class="term" data-term="tracking">tracked</button> to each face. In these nodes you slightly lower the saturation or adjust the <button type="button" class="term" data-term="skintone">skin hues</button>, lift or drop the exposure so faces pop out from the room, and soften the window edges heavily.</span>
+</div>
+</div>
+</div>
+
+<div class="compare reveal">
+<div class="cmp-card bad">
+<h4>❌ The hard way</h4>
+<p class="sub">Small jobs first</p>
+<ol>
+<li>Cut the people out with a mask</li>
+<li><button type="button" class="term" data-term="invert">Invert</button> the mask</li>
+<li>Boost the background</li>
+<li>Fight with edges and outlines</li>
+</ol>
+<div class="verdict">Risk: edge fringing</div>
+</div>
+<div class="cmp-card good">
+<h4>✅ The easy way</h4>
+<p class="sub">Big jobs first</p>
+<ol>
+<li>Boost the whole frame</li>
+<li>Add a Power Window on each face</li>
+<li>Soften the window edges</li>
+<li>Adjust the skin gently</li>
+</ol>
+<div class="verdict">No inverting. No outlines.</div>
+</div>
+</div>
+
+<p class="body-text soft">Working downstream like this removes the need to invert masks, wrestle with <button type="button" class="term" data-term="mixer">mixers</button>, or worry about edge fringing at all.</p>
+
+<div class="tip green reveal">
+<div class="ico">✅</div>
+<div>
+<b>The takeaway</b>
+<p>Do the big, easy change on everything. Then fix only the small parts that came out wrong. Fixing faces is much easier than cutting them out.</p>
+</div>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 4 ===================== -->
+<section class="chapter reveal" id="ch4">
+<p class="chapter-num">Chapter Four</p>
+<h2 class="h">Your first 4-node tree</h2>
+<p class="body-text lede">Here is a clean, headache-free chain you can build today. Your picture travels through the nodes one by one, like a <button type="button" class="term" data-term="serial">serial</button> assembly line.</p>
+
+<div class="diagram reveal">
+<div class="diagram-card">
+<div class="diagram-label">A simple serial node chain</div>
+<div class="chain">
+<div class="chain-io">Input</div>
+<div class="chain-arrow">→</div>
+<div class="chain-node" style="--i:1; --c:var(--s-blue)"><span class="n">Node 01</span><b>Base Balance</b><span class="sub">whole shot</span></div>
+<div class="chain-arrow">→</div>
+<div class="chain-node" style="--i:2; --c:var(--s-orange)"><span class="n">Node 02</span><b>Room / Global Look</b><span class="sub">whole shot</span></div>
+<div class="chain-arrow">→</div>
+<div class="chain-node" style="--i:3; --c:var(--s-aqua)"><span class="n">Node 03</span><b>Face 1</b><span class="sub">small area</span></div>
+<div class="chain-arrow">→</div>
+<div class="chain-node" style="--i:4; --c:var(--s-aqua)"><span class="n">Node 04</span><b>Face 2</b><span class="sub">small area</span></div>
+<div class="chain-arrow">→</div>
+<div class="chain-io">Output</div>
+</div>
+<p class="diagram-caption">The glow moves along the chain, just like your video does. Wide jobs first, small jobs last.</p>
+</div>
+</div>
+
+<div class="steps reveal">
+<div class="step" style="--c:var(--s-blue)">
+<div class="badge">01</div>
+<div><b>Base Balance</b><span>Set the <button type="button" class="term" data-term="exposure">exposure</button>, contrast and a neutral <button type="button" class="term" data-term="whitebalance">white balance</button> for the whole shot.</span></div>
+</div>
+<div class="step" style="--c:var(--s-orange)">
+<div class="badge">02</div>
+<div><b>Room / Global Look</b><span>Boost the overall saturation and push the color palette you want for the environment.</span></div>
+</div>
+<div class="step" style="--c:var(--s-aqua)">
+<div class="badge">03</div>
+<div><b>Face 1 (secondary)</b><span>A Power Window tracked to the first face. Gently roll back the saturation or fix the skin tone.</span></div>
+</div>
+<div class="step" style="--c:var(--s-aqua)">
+<div class="badge">04</div>
+<div><b>Face 2 (secondary)</b><span>A Power Window tracked to the second face. Balance their skin tone on its own.</span></div>
+</div>
+</div>
+
+<div class="tip reveal">
+<div class="ico">🎥</div>
+<div>
+<b>Before you grade: how was your footage shot?</b>
+<p>There are two common kinds. <button type="button" class="term" data-term="log">Log</button> footage (like Sony S-Log, Canon Log or Apple Log) looks flat and washed out on purpose, and needs more work to bring back normal contrast and color. <button type="button" class="term" data-term="rec709">Rec.709</button> is the standard video look, with normal contrast already in place. It is worth knowing which one you have.</p>
+</div>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 5 ===================== -->
+<section class="chapter reveal" id="ch5">
+<p class="chapter-num">Chapter Five</p>
+<h2 class="h">The 4-phase pipeline</h2>
+<p class="body-text lede">You may not want to invent a new chain every time. That is why professional colorists use a <mark class="hl">Fixed Node Tree</mark>.</p>
+<p class="body-text soft">A fixed node tree is a standard, repeatable layout. Every node has <strong>one dedicated job</strong>, and the nodes are ordered from big technical fixes to small local touches. You build the same structure again and again.</p>
+
+<div class="diagram reveal">
+<div class="diagram-card">
+<div class="diagram-label">The 4-phase architecture</div>
+<div class="chain">
+<div class="chain-io">Input</div>
+<div class="chain-arrow">→</div>
+<div class="chain-node" style="--i:1; --c:var(--s-blue)"><span class="n">Phase 1</span><b>Primaries</b><span class="sub">Exposure &amp; balance</span></div>
+<div class="chain-arrow">→</div>
+<div class="chain-node" style="--i:2; --c:var(--s-orange)"><span class="n">Phase 2</span><b>Master Look</b><span class="sub">Contrast &amp; saturation</span></div>
+<div class="chain-arrow">→</div>
+<div class="chain-node" style="--i:3; --c:var(--s-aqua)"><span class="n">Phase 3</span><b>Secondaries</b><span class="sub">Faces &amp; relighting</span></div>
+<div class="chain-arrow">→</div>
+<div class="chain-node" style="--i:4; --c:var(--s-magenta)"><span class="n">Phase 4</span><b>Finishing</b><span class="sub">Grain &amp; sharpening</span></div>
+<div class="chain-arrow">→</div>
+<div class="chain-io">Output</div>
+</div>
+</div>
+</div>
+
+<div class="phase-grid reveal">
+<div class="phase-card" style="--c:var(--s-blue)">
+<div class="icon">🧰</div>
+<div class="ph">Phase 1 · Broadest</div>
+<h4>Primaries</h4>
+<p>The technical foundation. You neutralize the raw capture: fix the <button type="button" class="term" data-term="dynamicrange">dynamic range</button>, <button type="button" class="term" data-term="clipping">clipped levels</button> and any <button type="button" class="term" data-term="colorcast">color cast</button> in the white balance.</p>
+</div>
+<div class="phase-card" style="--c:var(--s-orange)">
+<div class="icon">🎨</div>
+<div class="ph">Phase 2 · Broad</div>
+<h4>Master Look</h4>
+<p>The broad style. You sculpt the contrast, the tonal <button type="button" class="term" data-term="pivot">pivot</button> and the overall color palette across the entire frame.</p>
+</div>
+<div class="phase-card" style="--c:var(--s-aqua)">
+<div class="icon">🎯</div>
+<div class="ph">Phase 3 · Narrow</div>
+<h4>Secondaries</h4>
+<p>The local work. You fix faces, refine single clothing colors, and <button type="button" class="term" data-term="relighting">relight</button> subjects with <button type="button" class="term" data-term="vignette">vignettes</button>.</p>
+</div>
+<div class="phase-card" style="--c:var(--s-magenta)">
+<div class="icon">✨</div>
+<div class="ph">Phase 4 · Global polish</div>
+<h4>Finishing</h4>
+<p>The final polish: film <button type="button" class="term" data-term="grain">grain</button>, <button type="button" class="term" data-term="halation">halation</button>, subtle <button type="button" class="term" data-term="sharpening">sharpening</button>, or a final <button type="button" class="term" data-term="gamut">gamut limit</button>.</p>
+</div>
+</div>
+
+<div class="tip blue reveal">
+<div class="ico">🔍</div>
+<div>
+<b>Notice the shape</b>
+<p>The pattern is wide, wide, narrow, and then a light polish over everything at the end. Big changes first, small changes in the middle, tiny finishing touch last.</p>
+</div>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 6 ===================== -->
+<section class="chapter reveal" id="ch6">
+<p class="chapter-num">Chapter Six</p>
+<h2 class="h">The standard 8-node template</h2>
+<p class="body-text lede">Here is the most-used standard recipe: eight nodes, grouped into the four phases. Tap each node below to see which tool to use and what the goal is.</p>
+
+<div class="explorer reveal" id="explorer">
+<p class="ex-hint">👆 Tap a node. Colors match the four phases: blue, orange, green, pink.</p>
+<div class="ex-tabs" id="exTabs" role="tablist" aria-label="The 8 nodes"></div>
+<div class="ex-panel" id="exPanel" role="tabpanel" style="--c:var(--s-blue)"></div>
+</div>
+
+<div class="tip reveal">
+<div class="ico">🤔</div>
+<div>
+<b>Wait, didn't we say "avoid inverting"?</b>
+<p>Node 07 uses an inverted window, so it is fair to ask. The earlier warning was about tight cut-outs around people. A vignette is a big oval with very soft edges, spread out to the corners of the frame, so there is no tight outline for anyone to notice.</p>
+</div>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 7 ===================== -->
+<section class="chapter reveal" id="ch7">
+<p class="chapter-num">Chapter Seven</p>
+<h2 class="h">Three golden rules</h2>
+<p class="body-text lede">Whatever node tree you build, follow these three rules. They keep your work clean and easy to fix.</p>
+
+<h3 class="h3">Rule 1: Always use Offset first</h3>
+<p class="body-text soft"><button type="button" class="term" data-term="liftgammagain">Lift, Gamma and Gain</button> bend <em>specific</em> parts of the picture's brightness curve, and that can skew colors. <button type="button" class="term" data-term="offset">Offset</button> is different: it raises or lowers <em>every pixel equally</em>. That keeps the original <button type="button" class="term" data-term="linear">linear</button> balance the camera sensor recorded. Think of Offset as one master dimmer switch for the whole room.</p>
+
+<div class="diagram reveal">
+<div class="diagram-card">
+<div class="curve-pair">
+<div class="curve-box">
+<svg viewBox="0 0 160 120" role="img" aria-label="A straight line sliding up and down">
+<rect x="1" y="1" width="158" height="118" rx="8" fill="none" stroke="var(--hairline)"/>
+<line x1="15" y1="105" x2="145" y2="15" stroke="var(--muted)" stroke-width="2" stroke-dasharray="4 4"/>
+<g class="curve-shift"><line x1="15" y1="105" x2="145" y2="15" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/></g>
+</svg>
+<b>Offset</b><span>The whole line slides. Nothing gets bent.</span>
+</div>
+<div class="curve-box">
+<svg viewBox="0 0 160 120" role="img" aria-label="A straight line bending in the middle">
+<rect x="1" y="1" width="158" height="118" rx="8" fill="none" stroke="var(--hairline)"/>
+<line x1="15" y1="105" x2="145" y2="15" stroke="var(--muted)" stroke-width="2" stroke-dasharray="4 4"/>
+<path class="curve-bend" d="M15 105 C 50 104, 80 18, 145 15" stroke="var(--s-orange)" stroke-width="4" fill="none" stroke-linecap="round"/>
+</svg>
+<b>Lift / Gamma / Gain</b><span>Parts of the line bend. Colors can shift.</span>
+</div>
+</div>
+</div>
+</div>
+
+<h3 class="h3">Rule 2: One task per node</h3>
+<p class="body-text soft">Never mix a tracked face mask and a master white balance fix in the same node. Keep each job in its own node. Then you can switch a single node off and on to check what it really does: press <span class="kbd">Ctrl</span> + <span class="kbd">D</span> on Windows, or <span class="kbd">Cmd</span> + <span class="kbd">D</span> on Mac.</p>
+
+<h3 class="h3">Rule 3: Label every node</h3>
+<p class="body-text soft">Right-click a node and choose <strong>Node Label</strong>. Give it a short name. When you open the shot again weeks later, you will know what each node does at a glance.</p>
+<div class="label-chips reveal">
+<span class="label-chip">EXP</span><span class="label-chip">WB</span><span class="label-chip">CONTRAST</span><span class="label-chip">FACE 1</span>
+</div>
+
+<div class="tip reveal">
+<div class="ico">🔦</div>
+<div>
+<b>Why toggling matters</b>
+<p>Switching a node off shows you the picture without it. If the shot looks better with the node off, you have just found a bad adjustment. This only works if the node holds one job.</p>
+</div>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 8 ===================== -->
+<section class="chapter reveal" id="ch8">
+<p class="chapter-num">Chapter Eight</p>
+<h2 class="h">Phase 4: texture &amp; grain</h2>
+<p class="body-text lede">This is the part that confuses most beginners. Why would anyone <em>add</em> grain on purpose? Let's make it simple.</p>
+
+<p class="body-text">Think of a tiny pinch of salt in your food, or the tadka on top of a dal. It goes in at the very end, in a small amount, and it ties the whole dish together. Or think of a photo printed on textured paper compared to a glossy phone screen.</p>
+<p class="body-text soft">Modern digital cameras capture images that are so clean, sharp and flat that people can look slightly plastic or synthetic. <button type="button" class="term" data-term="grain">Grain</button> is just a layer of tiny, microscopic dots scattered across the whole video, added at the very end.</p>
+
+<h3 class="h3">Three reasons people add grain</h3>
+<div class="steps reveal">
+<div class="step" style="--c:var(--s-blue)">
+<div class="badge emoji">🎬</div>
+<div>
+<b>It makes your video look like a real movie</b>
+<span>Movies shot on traditional film naturally have texture. A tiny touch of grain removes the cheap, sterile "digital webcam" look and makes the video feel cinematic.</span>
+</div>
+</div>
+<div class="step" style="--c:var(--s-orange)">
+<div class="badge emoji">🧱</div>
+<div>
+<b>It stops YouTube from ruining your walls</b>
+<span>Film a plain flat wall and upload it, and YouTube compresses your file. Smooth walls can break into ugly, blocky stripes. That is called <button type="button" class="term" data-term="banding">color banding</button>. Subtle grain gives the compression tiny details to work with, so the wall stays smooth.</span>
+</div>
+</div>
+<div class="step" style="--c:var(--s-aqua)">
+<div class="badge emoji">🩹</div>
+<div>
+<b>It hides your editing seams</b>
+<span>You isolated faces and changed the background separately, so mask edges can look a little cut-out. One even layer of grain over the whole frame sits on top of everything. It works like a light blending filter that ties the shot together.</span>
+</div>
+</div>
+</div>
+
+<div class="tip blue reveal">
+<div class="ico">⚙️</div>
+<div>
+<b>The technical reason behind reason 2</b>
+<p>Screens with <button type="button" class="term" data-term="bit8">8-bit</button> color and web <button type="button" class="term" data-term="compression">compression</button> (like YouTube's H.264 or AV1) cannot show very subtle gradients smoothly. Grain works as <button type="button" class="term" data-term="dither">dither</button>: the microscopic random dots break up flat color areas, so the encoder renders the gradient smoothly instead of in blocky bands.</p>
+</div>
+</div>
+
+<h3 class="h3">Try it yourself</h3>
+<p class="body-text soft">Press the three buttons below. First you see a smooth wall. Then you see what heavy compression can do to it. Then you add grain and watch the stripes melt away.</p>
+
+<div class="gd-card reveal">
+<div class="gd-stage" id="gdStage" data-mode="smooth">
+<div class="gd-smooth"></div>
+<div class="gd-banded"></div>
+<canvas class="gd-grain" id="gdCanvas" width="400" height="180"></canvas>
+<div class="gd-tag" id="gdTag">Original: smooth wall</div>
+</div>
+<div class="gd-controls">
+<div class="seg" role="group" aria-label="Choose a view">
+<button type="button" data-mode="smooth" aria-pressed="true">1 · Smooth wall</button>
+<button type="button" data-mode="banded" aria-pressed="false">2 · After YouTube</button>
+<button type="button" data-mode="grain" aria-pressed="false">3 · Add grain</button>
+</div>
+<label class="gd-slider">Grain <input type="range" id="gdRange" min="0" max="100" value="45" aria-label="Grain strength"> <span id="gdVal">45%</span></label>
+</div>
+<p class="gd-note">This demo is exaggerated on purpose so you can see the idea clearly. Real banding is subtler, and real grain should be much gentler.</p>
+</div>
+
+<h3 class="h3">The three texture tools in Resolve</h3>
+<div class="phase-grid three reveal">
+<div class="phase-card" style="--c:var(--s-magenta)">
+<div class="icon">🎞️</div>
+<h4>Film Grain</h4>
+<p>A <button type="button" class="term" data-term="resolvefx">Resolve FX</button> effect that copies the tiny chemical crystals of 16mm or 35mm film. Keep the grain size small and the strength low.</p>
+</div>
+<div class="phase-card" style="--c:var(--s-blue)">
+<div class="icon">🔍</div>
+<h4>Midtone Detail</h4>
+<p>Found in the Primary Wheels palette. Lower it slightly to soften harsh skin blemishes without blurring fine hair. Raise it to add crisp texture to clothing and hair.</p>
+</div>
+<div class="phase-card" style="--c:var(--s-orange)">
+<div class="icon">🌅</div>
+<h4>Halation</h4>
+<p>A soft, warm glow around high-contrast edges, where bright lights meet dark boundaries. It copies how light scatters through the layers of analog film.</p>
+</div>
+</div>
+
+<div class="mini-stats reveal">
+<div class="mini-stat"><div class="num">0.2–0.3</div><div class="lbl">A typical Film Grain strength: subtle texture, not harsh static</div></div>
+<div class="mini-stat"><div class="num">Small</div><div class="lbl">Keep the grain size small so it feels natural</div></div>
+</div>
+
+<div class="tip reveal">
+<div class="ico">📺</div>
+<div>
+<b>Is your video going to YouTube or the web?</b>
+<p>If yes, the banding problem matters more for you, because those platforms compress video heavily. Smooth walls and out-of-focus backgrounds are where you will notice it first.</p>
+</div>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 9 ===================== -->
+<section class="chapter reveal" id="ch9">
+<p class="chapter-num">Chapter Nine</p>
+<h2 class="h">Your honest starting plan</h2>
+<p class="body-text lede">Here is the honest advice: <mark class="hl">as a beginner, you can completely ignore Phase 4 for now.</mark></p>
+<p class="body-text soft">Put all your energy into getting comfortable with the first three steps below. Once your lighting and colors look great, you can add texture later.</p>
+
+<div class="check-card reveal">
+<h4>Your 3-step beginner checklist</h4>
+<label class="check-item"><input type="checkbox"><div class="ct"><b>Set your overall brightness and contrast</b><span>Nodes 01 to 03: the base of the whole shot</span></div></label>
+<label class="check-item"><input type="checkbox"><div class="ct"><b>Boost the room's color</b><span>Node 04: saturation and color palette for the environment</span></div></label>
+<label class="check-item"><input type="checkbox"><div class="ct"><b>Lightly touch up the faces</b><span>Nodes 05 and 06: Power Windows with soft edges</span></div></label>
+<label class="check-item locked"><input type="checkbox" disabled><div class="ct"><b>Add texture and grain 🔒</b><span>Phase 4: later, when the first three feel easy</span></div></label>
+<div class="progress"><i id="chkBar"></i></div>
+<div class="progress-text" id="chkText">0 of 3 done</div>
+<div class="cheer" id="chkCheer">🎉 That is the whole beginner workflow. Great start!</div>
+</div>
+
+<h3 class="h3">The 30-second cheat sheet</h3>
+<div class="cheat-grid reveal">
+<div class="cheat"><div class="e">🌍</div><b>Broad to narrow</b><span>Whole frame first, small parts later</span></div>
+<div class="cheat"><div class="e">🏠</div><b>Room first, faces later</b><span>No cut-outs, no edge fringing</span></div>
+<div class="cheat"><div class="e">1️⃣</div><b>One task per node</b><span>Easy to switch on and off</span></div>
+<div class="cheat"><div class="e">🎚️</div><b>Offset first</b><span>Move every pixel equally</span></div>
+<div class="cheat"><div class="e">🏷️</div><b>Label every node</b><span>Future you will say thanks</span></div>
+<div class="cheat"><div class="e">🧂</div><b>Grain comes last</b><span>A pinch, not a spoonful</span></div>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 10 ===================== -->
+<section class="chapter reveal" id="ch10">
+<p class="chapter-num">Chapter Ten</p>
+<h2 class="h">Jargon buster</h2>
+<p class="body-text lede">Forgot what a word means? Tap any chip to open its little explanation. The dotted words in the blog work the same way.</p>
+<div class="jargon-grid" id="jargonGrid"></div>
+</section>
+
+<section class="chapter reveal closer" id="end">
+<h2>Start big. Go small. Finish light.</h2>
+<p>Every great grade follows the same path: fix the whole picture, then the faces, then add a pinch of texture. Build the first three steps until they feel easy, and everything else will follow.</p>
+<p class="signoff">Happy grading. 🎨</p>
+</section>
+
+</div>
+
+<footer class="site-footer">
+<div class="wrap">A beginner's guide to color grading in DaVinci Resolve · read on any device</div>
+</footer>
+
+<script>
+
+(function () {
+// theme toggle
+var root = document.documentElement;
+var btn = document.getElementById('themeToggle');
+function currentTheme() {
+if (root.getAttribute('data-theme')) return root.getAttribute('data-theme');
+return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+btn.addEventListener('click', function () {
+var next = currentTheme() === 'dark' ? 'light' : 'dark';
+root.setAttribute('data-theme', next);
+btn.textContent = next === 'dark' ? '☀' : '◐';
+});
+btn.textContent = currentTheme() === 'dark' ? '☀' : '◐';
+
+// scroll progress
+var bar = document.getElementById('progress-bar');
+var floatTop = document.getElementById('floatTop');
+function onScroll() {
+var h = document.documentElement;
+var scrolled = h.scrollTop || document.body.scrollTop;
+var height = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
+var pct = height > 0 ? (scrolled / height) * 100 : 0;
+bar.style.width = pct + '%';
+if (scrolled > 500) floatTop.classList.add('show'); else floatTop.classList.remove('show');
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+floatTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+// reveal on scroll
+var revealEls = document.querySelectorAll('.reveal, .ladder');
+if ('IntersectionObserver' in window) {
+var io = new IntersectionObserver(function (entries) {
+entries.forEach(function (entry) {
+if (entry.isIntersecting) {
+entry.target.classList.add('is-visible');
+io.unobserve(entry.target);
+}
+});
+}, { threshold: 0, rootMargin: '0px 0px -8% 0px' });
+revealEls.forEach(function (el) { io.observe(el); });
+} else {
+revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+}
+
+// TOC active link
+var tocLinks = {};
+document.querySelectorAll('nav.toc a').forEach(function (a) {
+tocLinks[a.getAttribute('href').slice(1)] = a;
+});
+var chapters = document.querySelectorAll('section.chapter');
+if ('IntersectionObserver' in window) {
+var tocObserver = new IntersectionObserver(function (entries) {
+entries.forEach(function (entry) {
+var link = tocLinks[entry.target.id];
+if (!link) return;
+if (entry.isIntersecting) {
+Object.values(tocLinks).forEach(function (l) { l.classList.remove('active'); });
+link.classList.add('active');
+}
+});
+}, { rootMargin: '-40% 0px -50% 0px' });
+chapters.forEach(function (c) { if (c.id) tocObserver.observe(c); });
+}
+})();
+
+</script>
+
+<script>
+(function () {
+/* ---------- glossary data: key: [icon, title, meaning, example] ---------- */
+var TERMS = {
+grading: ["🎨", "Color grading", "Changing the colors, brightness and mood of a video after you have filmed it, so it looks polished and matches your style.", "Making a flat, grey-looking wedding video feel warm and golden."],
+node: ["🔲", "Node", "One box on DaVinci Resolve's Color page. Each node holds one set of adjustments, and your picture passes through the nodes one by one.", "Think of a node as one step in a recipe. Step one fixes brightness, step two fixes color."],
+serial: ["🔗", "Serial nodes", "Nodes connected in one straight line. The picture goes through the first node, then the second, then the third, and so on.", "Like an assembly line where each worker does one job and passes the item on."],
+downstream: ["⬇️", "Downstream", "\"Later in the chain.\" A downstream node comes after another node, so it receives the picture after that earlier node has already changed it.", "Node 03 is downstream of Node 02."],
+mask: ["🎭", "Mask", "A shape or outline that limits an adjustment to one part of the picture, so the rest stays untouched.", "Masking a face so only the face gets brighter."],
+invert: ["🔄", "Invert (a mask)", "Flipping a mask so the effect goes to everything except the selected area.", "You select the people, then invert, so the change hits only the background."],
+feather: ["🪶", "Feather / soften edges", "Blurring the edge of a mask or window so an effect fades in slowly instead of stopping at a sharp line.", "Like a soft spray-paint edge instead of a hard-cut sticker."],
+fringing: ["✨", "Edge fringing (matte halo)", "A glowing or dark outline that appears around a person when you mask them out and change only the background. Fine hair and motion blur make it worse.", "A bright rim around someone's hair after their background was boosted."],
+powerwindow: ["🪟", "Power Window", "A shape (circle, oval, square) you draw over part of the picture in Resolve, so your changes only affect what is inside it.", "A circle around one face so only that face gets adjusted."],
+tracking: ["🎯", "Tracking", "Making a Power Window follow a moving person or object automatically, frame after frame.", "The window on a face follows it as the person walks."],
+saturation: ["🌈", "Saturation", "How strong or dull the colors are. Turn it up and colors look bold. Turn it down and they look faded.", "A red saree looks very rich at high saturation and washed out at low saturation."],
+contrast: ["🌗", "Contrast", "The gap between the darkest and brightest parts of the picture. More contrast gives deep blacks and bright whites.", "A flat, foggy photo has low contrast. A punchy poster has high contrast."],
+exposure: ["☀️", "Exposure", "How bright or dark the picture is overall.", "Too much exposure turns a bright sky into plain white. Too little makes everything muddy."],
+whitebalance: ["⚪", "White balance", "Adjusting the picture so white things look truly white, not yellow or blue.", "A yellow bulb makes a white wall look orange. Fixing the white balance brings back the natural color."],
+colorcast: ["🟡", "Color cast", "An unwanted tint that covers the whole picture, like everything looking a bit blue or green.", "Footage shot under a tube light can have a greenish cast."],
+scopes: ["📈", "Scopes (waveform / parade)", "Graphs in Resolve that show the exact brightness and color values of your picture, so you do not have to trust only your eyes.", "The parade scope shows red, green and blue side by side. If whites are balanced, the three line up."],
+skintone: ["🧑", "Skin tone", "The natural color range of human skin. Viewers notice wrong skin color very quickly, so it needs gentle handling.", "Skin that looks too orange or too pale looks unnatural."],
+dynamicrange: ["📏", "Dynamic range", "The range from the darkest to the brightest detail your picture can hold.", "A picture with good dynamic range shows detail both in the dark corners and the bright window."],
+clipping: ["✂️", "Clipping", "When the brightest (or darkest) parts of the picture go to pure white (or pure black) and all detail is lost.", "A sky that has turned into a flat white patch with no clouds."],
+pivot: ["⚖️", "Pivot", "The balance point for the contrast control. It decides which brightness level stays fixed while the darks go darker and the brights go brighter.", "Like the middle point of a see-saw."],
+tones: ["🎚️", "Shadows, midtones, highlights", "The three brightness zones of a picture: shadows are the dark parts, midtones are the middle, and highlights are the bright parts.", "In a face, the shaded side is shadow, the skin is mostly midtone, and the shiny forehead is highlight."],
+linear: ["📏", "Linear", "Here it means the natural, even relationship between the light the camera sensor saw and the values it recorded. Offset leaves this relationship untouched.", "Like a ruler with even markings: twice the light gives twice the value."],
+offset: ["🎛️", "Offset", "A Resolve control that raises or lowers every pixel equally, so the whole picture gets brighter or shifts color as one block.", "A master dimmer switch for the whole room."],
+liftgammagain: ["📐", "Lift, Gamma, Gain", "Three wheels that change the picture in parts. Lift mostly moves the dark areas, Gamma the middle areas, and Gain the bright areas.", "Like pushing the dark, middle and bright parts of a curve separately."],
+printerlights: ["⌨️", "Printer Lights", "Keyboard shortcuts in Resolve that nudge the brightness and color balance in small, steady steps.", "Tap a key a few times to make the shot a little brighter."],
+scurve: ["〰️", "S-Curve", "A curve you draw to add contrast. The dark parts are pulled down and the bright parts are pushed up, making a gentle S shape.", "The curve tool works like a fine dial for contrast."],
+colorboost: ["🚀", "Color Boost", "A control like saturation, but gentler. It boosts dull colors more than colors that are already strong.", "Faded colors come alive without the strong ones looking too loud."],
+rgbmixer: ["🔀", "RGB Mixer", "A panel that lets you control how much red, green and blue go into each color channel, for stronger color changes.", "Used to push the whole scene toward a specific color mood."],
+mixer: ["🧩", "Mixer nodes", "Special nodes that combine the results of separate node branches. They are more advanced and easy to get tangled in.", "Blending two versions of the same shot back together."],
+relighting: ["💡", "Relighting", "Changing where the light seems to fall in the picture after filming, to guide the viewer's eye.", "Making the person in the middle look brighter than the corners of the room."],
+vignette: ["⭕", "Vignette", "A soft darkening around the edges of the picture that gently pulls the eye toward the center.", "Old photographs often have darker corners."],
+log: ["🎞️", "Log footage", "A flat, washed-out looking video format (like Sony S-Log, Canon Log or Apple Log) that keeps extra detail in the brights and darks. It is meant to be graded.", "It looks dull straight from the camera, but has more room to work with."],
+rec709: ["📺", "Rec.709", "The standard video look for normal screens. The contrast and colors are already set, so the footage looks normal right away.", "A regular phone video usually looks like this."],
+primaries: ["🧰", "Primaries", "Adjustments that affect the whole picture, like exposure, white balance and contrast.", "Fixing the brightness of the entire shot."],
+grain: ["🧂", "Film grain", "A layer of tiny, random dots over the picture that copies the texture of real film. Used lightly, it makes video feel less clinical.", "A pinch of salt on food: small, but it changes the feel."],
+banding: ["🪜", "Color banding", "Ugly stripes or steps in a smooth color area, like a wall or sky, where the color should blend smoothly.", "A sunset sky that shows visible steps instead of a smooth blend."],
+dither: ["🎲", "Dither", "Adding tiny random noise on purpose so smooth gradients look smooth even on screens that cannot show every shade.", "Grain acts as dither and hides the stripes."],
+bit8: ["🔢", "8-bit color", "The most common color depth for screens and web video. It has fewer shades available than pro formats, so subtle gradients can break into steps.", "Fewer crayons in the box, so blends look less smooth."],
+compression: ["🗜️", "Compression (H.264 / AV1)", "Shrinking a video file so it uploads and streams fast. The price is that small details, like smooth gradients, can get damaged.", "YouTube compresses every video you upload."],
+halation: ["🌅", "Halation", "A soft, warm glow around bright lights against dark edges. It copies how light scatters inside real film.", "The reddish glow around a street lamp in an old film."],
+midtone: ["🔍", "Midtone Detail", "A control in Resolve's Primary Wheels that softens or sharpens the fine detail in the middle-brightness parts of the picture.", "Lower it for softer skin. Raise it for crisper clothes and hair."],
+sharpening: ["🔪", "Sharpening", "Making edges and small details look crisper.", "Fine cloth patterns look clearer after gentle sharpening."],
+gamut: ["🎨", "Gamut limiting", "Keeping colors inside the range that screens can show, so nothing looks wrong or gets clipped on a normal display.", "A final safety check on color."],
+resolvefx: ["🧪", "Resolve FX", "The built-in effects library in DaVinci Resolve, including Film Grain and Halation.", "Drag an effect onto a node to use it."],
+secondaries: ["🎯", "Secondaries", "Adjustments that affect only a selected part of the picture, such as a face or a shirt.", "Making one person's skin look more natural."]
+};
+
+/* ---------- dialog ---------- */
+var dlg = document.getElementById("termDialog");
+function openTerm(key) {
+var d = TERMS[key];
+if (!d) return;
+document.getElementById("tdIcon").textContent = d[0];
+document.getElementById("tdTitle").textContent = d[1];
+document.getElementById("tdBody").textContent = d[2];
+document.getElementById("tdExample").innerHTML = "<b>Example:</b> " + d[3].replace(/&/g, "&amp;").replace(/</g, "&lt;");
+if (typeof dlg.showModal === "function") { if (!dlg.open) dlg.showModal(); }
+else { dlg.setAttribute("open", ""); }
+}
+document.addEventListener("click", function (e) {
+var t = e.target.closest ? e.target.closest("[data-term]") : null;
+if (t) { openTerm(t.getAttribute("data-term")); return; }
+if (e.target === dlg) dlg.close();
+});
+document.getElementById("tdClose").addEventListener("click", function () {
+if (typeof dlg.close === "function") dlg.close(); else dlg.removeAttribute("open");
+});
+
+/* ---------- jargon chips ---------- */
+var grid = document.getElementById("jargonGrid");
+Object.keys(TERMS).sort(function (a, b) { return TERMS[a][1].localeCompare(TERMS[b][1]); }).forEach(function (k) {
+var b = document.createElement("button");
+b.type = "button"; b.className = "term-chip"; b.setAttribute("data-term", k);
+b.textContent = TERMS[k][0] + " " + TERMS[k][1];
+grid.appendChild(b);
+});
+
+/* ---------- 8-node explorer ---------- */
+function T(k, txt) { return '<button type="button" class="term" data-term="' + k + '">' + txt + "</button>"; }
+var BLUE = "var(--s-blue)", ORANGE = "var(--s-orange)", AQUA = "var(--s-aqua)", PINK = "var(--s-magenta)";
+var NODES = [
+{ n: "01", short: "Exposure", name: "Exposure (Offset)", phase: "Phase 1 · Primaries", c: BLUE,
+plain: "Make the whole picture as bright as it should be, before you touch anything else.",
+tool: "Color Wheels › " + T("offset", "Offset") + " wheel (or " + T("printerlights", "Printer Lights") + " shortcuts).",
+goal: "Set the master exposure of the entire image to the proper baseline before touching the individual " + T("tones", "tonal ranges") + ".",
+level: "✅ Start here" },
+{ n: "02", short: "White Balance", name: "White Balance (Temp / Tint)", phase: "Phase 1 · Primaries", c: BLUE,
+plain: "Make white things look truly white, not yellow or blue.",
+tool: "Temperature and Tint sliders, or the Offset color wheel.",
+goal: "Neutralize unwanted color casts so whites, neutral grays and shadows sit cleanly on the waveform and parade " + T("scopes", "scopes") + ".",
+level: "✅ Start here" },
+{ n: "03", short: "Contrast", name: "Contrast &amp; Pivot", phase: "Phase 2 · Master Look", c: ORANGE,
+plain: "Make dark parts richly dark and bright parts cleanly bright.",
+tool: "Contrast and " + T("pivot", "Pivot") + " controls (or custom " + T("scurve", "S-Curves") + ").",
+goal: "Expand the dynamic range by setting deep, rich blacks and clean highlights. The Pivot slider controls where the midtones sit without clipping the extremes.",
+level: "✅ Start here" },
+{ n: "04", short: "Saturation", name: "Global Saturation &amp; Color Palette", phase: "Phase 2 · Master Look", c: ORANGE,
+plain: "Decide how colorful the whole scene looks and what color mood it has.",
+tool: "Saturation wheel, " + T("colorboost", "Color Boost") + ", or " + T("rgbmixer", "RGB Mixer") + ".",
+goal: "Set the overall scene saturation and environment tone, for example pushing warmth into the midtones or coolness into the shadows.",
+level: "✅ Start here" },
+{ n: "05", short: "Face 1", name: "Subject 1 / Face (Power Window)", phase: "Phase 3 · Secondaries", c: AQUA,
+plain: "Make the first person look natural and let them stand out from the background.",
+tool: "A circular " + T("powerwindow", "Power Window") + " " + T("tracking", "tracked") + " to the first person's face.",
+goal: "Soften the edges heavily. Gently adjust saturation, skin-tone warmth or exposure so the subject stands out naturally.",
+level: "✅ Start here" },
+{ n: "06", short: "Face 2", name: "Subject 2 / Face (Power Window)", phase: "Phase 3 · Secondaries", c: AQUA,
+plain: "Do the same for the second person, so both look like they were lit together.",
+tool: "A circular Power Window tracked to the second person's face.",
+goal: "Match the exposure and skin balance between the subjects when they were lit differently.",
+level: "✅ Start here" },
+{ n: "07", short: "Vignette", name: "Relighting / Vignette", phase: "Phase 3 · Secondaries", c: AQUA,
+plain: "Gently darken the edges of the room so the eye goes straight to the people.",
+tool: "An inverted oval Power Window over the main focal area.",
+goal: "Slightly lower the gamma or offset on the edges of the room to subtly guide the viewer's eye toward the subjects.",
+level: "🌱 When you feel comfortable" },
+{ n: "08", short: "Grain", name: "Texture &amp; Grain", phase: "Phase 4 · Finishing", c: PINK,
+plain: "A light layer of texture over everything, right at the end.",
+tool: T("resolvefx", "Resolve FX") + " Film Grain, Halation, or gentle sharpening (Midtone Detail).",
+goal: "Bind the clip together with organic texture, across both the foreground and the background.",
+level: "⏭️ Skip for now (see Chapter 8)" }
+];
+var tabs = document.getElementById("exTabs");
+var panel = document.getElementById("exPanel");
+function selectNode(i) {
+var nd = NODES[i];
+var btns = tabs.children;
+for (var k = 0; k < btns.length; k++) btns[k].setAttribute("aria-selected", k === i ? "true" : "false");
+panel.style.setProperty("--c", nd.c);
+panel.style.animation = "none"; void panel.offsetWidth; panel.style.animation = "";
+panel.innerHTML =
+'<div class="ex-phase">' + nd.phase + "</div>" +
+"<h4>Node " + nd.n + " · " + nd.name + "</h4>" +
+'<p class="ex-plain">' + nd.plain + "</p>" +
+'<div class="ex-row"><span class="lab">Tool</span><span>' + nd.tool + "</span></div>" +
+'<div class="ex-row"><span class="lab">Goal</span><span>' + nd.goal + "</span></div>" +
+'<span class="ex-level">' + nd.level + "</span>";
+}
+NODES.forEach(function (nd, i) {
+var b = document.createElement("button");
+b.type = "button"; b.className = "ex-tab"; b.setAttribute("role", "tab");
+b.style.setProperty("--c", nd.c);
+b.innerHTML = '<span class="num">' + nd.n + "</span>" + nd.short;
+b.addEventListener("click", function () { selectNode(i); });
+tabs.appendChild(b);
+});
+selectNode(0);
+
+/* ---------- grain demo ---------- */
+var stage = document.getElementById("gdStage");
+var canvas = document.getElementById("gdCanvas");
+var range = document.getElementById("gdRange");
+var val = document.getElementById("gdVal");
+var tag = document.getElementById("gdTag");
+if (stage && canvas) {
+var ctx = canvas.getContext("2d");
+var img = ctx.createImageData(canvas.width, canvas.height);
+for (var p = 0; p < img.data.length; p += 4) {
+var v = Math.floor(Math.random() * 256);
+img.data[p] = v; img.data[p + 1] = v; img.data[p + 2] = v; img.data[p + 3] = 255;
+}
+ctx.putImageData(img, 0, 0);
+var TAGS = { smooth: "Original: smooth wall", banded: "After compression: stripes", grain: "With grain: stripes hidden" };
+function applyGrain() {
+var mode = stage.getAttribute("data-mode");
+canvas.style.opacity = mode === "grain" ? (range.value / 100) : 0;
+val.textContent = range.value + "%";
+}
+document.querySelectorAll(".seg button").forEach(function (b) {
+b.addEventListener("click", function () {
+var m = b.getAttribute("data-mode");
+stage.setAttribute("data-mode", m);
+document.querySelectorAll(".seg button").forEach(function (o) { o.setAttribute("aria-pressed", o === b ? "true" : "false"); });
+tag.textContent = TAGS[m];
+applyGrain();
+});
+});
+range.addEventListener("input", function () {
+if (stage.getAttribute("data-mode") !== "grain") {
+document.querySelector('.seg button[data-mode="grain"]').click();
+}
+applyGrain();
+});
+applyGrain();
+}
+
+/* ---------- checklist ---------- */
+var items = document.querySelectorAll(".check-item:not(.locked) input");
+var bar = document.getElementById("chkBar");
+var txt = document.getElementById("chkText");
+var cheer = document.getElementById("chkCheer");
+function updateChecks() {
+var done = 0;
+items.forEach(function (i) {
+i.parentNode.classList.toggle("done", i.checked);
+if (i.checked) done++;
+});
+bar.style.width = (done / items.length * 100) + "%";
+txt.textContent = done + " of " + items.length + " done";
+cheer.classList.toggle("show", done === items.length);
+}
+items.forEach(function (i) { i.addEventListener("change", updateChecks); });
+})();
+
+</script>
+
+<!-- Reading font picker -->
+<script>
+(function() {
+  var STORAGE_KEY = 'notes_font_pref'; // font id, or 'default'
+
+  var FONT_OPTIONS = [
+    { id: 'default', label: 'Normal (page default)', category: null },
+
+    { id: 'atkinson', label: 'Atkinson Hyperlegible', category: 'Best for long-form reading',
+      google: 'Atkinson+Hyperlegible:wght@400;700', family: "'Atkinson Hyperlegible', sans-serif" },
+    { id: 'lora', label: 'Lora', category: 'Best for long-form reading',
+      google: 'Lora:wght@400;600;700', family: "'Lora', serif" },
+    { id: 'source-serif', label: 'Source Serif 4', category: 'Best for long-form reading',
+      google: 'Source+Serif+4:wght@400;600;700', family: "'Source Serif 4', serif" },
+    { id: 'merriweather', label: 'Merriweather', category: 'Best for long-form reading',
+      google: 'Merriweather:wght@400;700', family: "'Merriweather', serif" },
+
+    { id: 'comic-neue', label: 'Comic Neue', category: 'Fun & playful',
+      google: 'Comic+Neue:wght@400;700', family: "'Comic Neue', 'Comic Sans MS', cursive" },
+    { id: 'nunito', label: 'Nunito', category: 'Fun & playful',
+      google: 'Nunito:wght@400;700;800', family: "'Nunito', sans-serif" },
+    { id: 'quicksand', label: 'Quicksand', category: 'Fun & playful',
+      google: 'Quicksand:wght@400;600;700', family: "'Quicksand', sans-serif" },
+    { id: 'baloo2', label: 'Baloo 2', category: 'Fun & playful',
+      google: 'Baloo+2:wght@400;600;700', family: "'Baloo 2', cursive" },
+    { id: 'fredoka', label: 'Fredoka', category: 'Fun & playful',
+      google: 'Fredoka:wght@400;600;700', family: "'Fredoka', sans-serif" },
+
+    { id: 'lexend', label: 'Lexend', category: 'Dyslexia-friendly',
+      google: 'Lexend:wght@400;600;700', family: "'Lexend', sans-serif" },
+    { id: 'opendyslexic', label: 'OpenDyslexic', category: 'Dyslexia-friendly',
+      cdnfonts: 'opendyslexic', family: "'Open Dyslexic', sans-serif" }
+  ];
+
+  var CATEGORY_ORDER = ['Best for long-form reading', 'Fun & playful', 'Dyslexia-friendly'];
+  var loadedFontIds = {};
+
+  function getOption(id) {
+    for (var i = 0; i < FONT_OPTIONS.length; i++) {
+      if (FONT_OPTIONS[i].id === id) return FONT_OPTIONS[i];
+    }
+    return FONT_OPTIONS[0];
+  }
+
+  function loadFontAssets(option) {
+    if (!option || option.id === 'default' || loadedFontIds[option.id]) return;
+    loadedFontIds[option.id] = true;
+
+    if (option.google) {
+      if (!document.getElementById('gf-preconnect-1')) {
+        var pc1 = document.createElement('link');
+        pc1.id = 'gf-preconnect-1';
+        pc1.rel = 'preconnect';
+        pc1.href = 'https://fonts.googleapis.com';
+        var pc2 = document.createElement('link');
+        pc2.id = 'gf-preconnect-2';
+        pc2.rel = 'preconnect';
+        pc2.href = 'https://fonts.gstatic.com';
+        pc2.crossOrigin = 'anonymous';
+        document.head.appendChild(pc1);
+        document.head.appendChild(pc2);
+      }
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://fonts.googleapis.com/css2?family=' + option.google + '&display=swap';
+      document.head.appendChild(link);
+    } else if (option.cdnfonts) {
+      var link2 = document.createElement('link');
+      link2.rel = 'stylesheet';
+      link2.href = 'https://fonts.cdnfonts.com/css/' + option.cdnfonts;
+      document.head.appendChild(link2);
+    }
+  }
+
+  function injectOverrideStyle() {
+    if (document.getElementById('notes-font-override')) return document.getElementById('notes-font-override');
+    var style = document.createElement('style');
+    style.id = 'notes-font-override';
+    document.head.appendChild(style);
+    return style;
+  }
+
+  function applyFont(id) {
+    var option = getOption(id);
+    loadFontAssets(option);
+    var style = injectOverrideStyle();
+
+    document.documentElement.setAttribute('data-notes-font', option.id);
+
+    if (option.id === 'default') {
+      style.textContent = '';
+    } else {
+      style.textContent =
+        'html[data-notes-font="' + option.id + '"] body,\n' +
+        'html[data-notes-font="' + option.id + '"] *:not(.material-icons):not([class*="icon-"]) {\n' +
+        '  font-family: ' + option.family + ' !important;\n' +
+        '}';
+    }
+  }
+
+  function savePreference(id) {
+    try { localStorage.setItem(STORAGE_KEY, id); } catch (e) {}
+  }
+
+  function loadPreference() {
+    try { return localStorage.getItem(STORAGE_KEY) || 'default'; } catch (e) { return 'default'; }
+  }
+
+  function buildOptionRow(option) {
+    var row = document.createElement('button');
+    row.type = 'button';
+    row.textContent = option.label;
+    row.dataset.fontId = option.id;
+    row.style.cssText = [
+      'display:block', 'width:100%', 'text-align:left', 'background:transparent',
+      'border:none', 'color:#e8e8f0', 'padding:7px 8px', 'border-radius:8px',
+      'cursor:pointer', 'font-size:13px', 'margin-bottom:2px', 'transition:background .15s'
+    ].join(';');
+    row.addEventListener('mouseenter', function() { row.style.background = 'rgba(255,255,255,0.08)'; });
+    row.addEventListener('mouseleave', function() {
+      row.style.background = row.dataset.active === 'true' ? 'rgba(108,99,255,0.25)' : 'transparent';
+    });
+    row.addEventListener('click', function() {
+      applyFont(option.id);
+      savePreference(option.id);
+      updateActiveRow(option.id);
+    });
+    return row;
+  }
+
+  function updateActiveRow(activeId) {
+    var rows = document.querySelectorAll('#font-picker-panel button[data-font-id]');
+    rows.forEach(function(row) {
+      var isActive = row.dataset.fontId === activeId;
+      row.dataset.active = isActive ? 'true' : 'false';
+      row.style.background = isActive ? 'rgba(108,99,255,0.25)' : 'transparent';
+      row.style.fontWeight = isActive ? '700' : '400';
+    });
+  }
+
+  function buildPanel() {
+    var panel = document.createElement('div');
+    panel.id = 'font-picker-panel';
+    panel.style.cssText = [
+      'position:fixed', 'bottom:64px', 'left:20px', 'z-index:999998',
+      'background:#111118', 'color:#e8e8f0', 'border:1px solid rgba(255,255,255,0.15)',
+      'border-radius:14px', 'padding:14px', 'width:230px', 'max-height:60vh',
+      'overflow-y:auto', 'font-family:sans-serif', 'font-size:13px',
+      'box-shadow:0 8px 28px rgba(0,0,0,0.45)', 'display:none'
+    ].join(';');
+
+    var title = document.createElement('div');
+    title.textContent = 'Reading font';
+    title.style.cssText = 'font-weight:700;margin-bottom:10px;font-size:12px;letter-spacing:.03em;color:#a8a1ff;text-transform:uppercase;';
+    panel.appendChild(title);
+
+    panel.appendChild(buildOptionRow(getOption('default')));
+
+    CATEGORY_ORDER.forEach(function(cat) {
+      var heading = document.createElement('div');
+      heading.textContent = cat;
+      heading.style.cssText = 'margin:12px 0 6px;font-size:11px;font-weight:700;color:#8888a8;text-transform:uppercase;letter-spacing:.03em;';
+      panel.appendChild(heading);
+
+      FONT_OPTIONS.filter(function(o) { return o.category === cat; }).forEach(function(o) {
+        panel.appendChild(buildOptionRow(o));
+      });
+    });
+
+    return panel;
+  }
+
+  function buildToggleButton(panel) {
+    var btn = document.createElement('button');
+    btn.id = 'font-toggle-btn';
+    btn.type = 'button';
+    btn.title = 'Change reading font';
+    btn.textContent = 'Aa 🔤';
+    btn.setAttribute('aria-label', 'Change reading font');
+    btn.style.cssText = [
+      'position:fixed', 'bottom:20px', 'left:20px', 'z-index:999998',
+      'background:#111118', 'color:#e8e8f0', 'border:1px solid rgba(255,255,255,0.15)',
+      'border-radius:100px', 'padding:10px 16px', 'font-family:sans-serif', 'font-size:13px',
+      'font-weight:600', 'cursor:pointer', 'box-shadow:0 4px 16px rgba(0,0,0,0.35)',
+      'opacity:0.85', 'transition:opacity .2s'
+    ].join(';');
+    btn.addEventListener('mouseenter', function() { btn.style.opacity = '1'; });
+    btn.addEventListener('mouseleave', function() { btn.style.opacity = '0.85'; });
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    });
+    document.addEventListener('click', function(e) {
+      if (panel.style.display !== 'none' && !panel.contains(e.target) && e.target !== btn) {
+        panel.style.display = 'none';
+      }
+    });
+    return btn;
+  }
+
+  function initFontPicker() {
+    injectOverrideStyle();
+    var panel = buildPanel();
+    var btn = buildToggleButton(panel);
+    document.body.appendChild(panel);
+    document.body.appendChild(btn);
+
+    var saved = loadPreference();
+    applyFont(saved);
+    updateActiveRow(saved);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFontPicker);
+  } else {
+    initFontPicker();
+  }
+})();
+</script>
+
+</body>
+</html>
