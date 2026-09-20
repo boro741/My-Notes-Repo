@@ -46,12 +46,19 @@ const FOLDER_CONFIGS = {
     theme: 'theme-blue',
     order: 6
   },
+  'Davinci Resolve': {
+    id: 'section-davinci-resolve',
+    title: 'Davinci Resolve',
+    icon: '🎬',
+    theme: 'theme-teal',
+    order: 7
+  },
   'Youtube Videos': {
     id: 'section-youtube',
     title: 'YouTube Video Notes',
     icon: '▶️',
     theme: 'theme-green',
-    order: 7
+    order: 8
   }
 };
 
