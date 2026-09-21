@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>The 5 Shots That Turn Random Clips Into a Story</title>
+<style>
+
+:root {
+color-scheme: light;
+--page: #f5f2ec;
+--surface: #ffffff;
+--ink: #1c1815;
+--ink-soft: #57514a;
+--muted: #8d867b;
+--hairline: #e5ddd0;
+--border: rgba(28,24,21,0.10);
+--accent: #d9722c;
+--accent-ink: #a3521c;
+--accent-soft: #fbe7d3;
+--teal: #1f8a82;
+--teal-soft: #dff1ef;
+--gold: #c99a3d;
+--gold-soft: #f6ecd5;
+--good: #1f8a54;
+--warn: #c99a3d;
+--bad: #c65b3f;
+--shadow: 0 1px 2px rgba(28,24,21,0.05), 0 10px 26px rgba(28,24,21,0.07);
+--display: -apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+--serif: ui-serif, Charter, "Iowan Old Style", Georgia, "Times New Roman", serif;
+--sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+--mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+html[data-theme="dark"] {
+color-scheme: dark;
+--page: #121010;
+--surface: #1c1916;
+--ink: #f3ede2;
+--ink-soft: #c9c0b1;
+--muted: #948c7f;
+--hairline: #332d26;
+--border: rgba(255,255,255,0.10);
+--accent: #ea9a54;
+--accent-ink: #f8cea0;
+--accent-soft: rgba(234,154,84,0.16);
+--teal: #45b8ac;
+--teal-soft: rgba(69,184,172,0.14);
+--gold: #d9ac52;
+--gold-soft: rgba(217,172,82,0.16);
+--shadow: 0 1px 2px rgba(0,0,0,0.3), 0 10px 32px rgba(0,0,0,0.4);
+}
+
+@media (prefers-color-scheme: dark) {
+html:not([data-theme="light"]) {
+color-scheme: dark;
+--page: #121010;
+--surface: #1c1916;
+--ink: #f3ede2;
+--ink-soft: #c9c0b1;
+--muted: #948c7f;
+--hairline: #332d26;
+--border: rgba(255,255,255,0.10);
+--accent: #ea9a54;
+--accent-ink: #f8cea0;
+--accent-soft: rgba(234,154,84,0.16);
+--teal: #45b8ac;
+--teal-soft: rgba(69,184,172,0.14);
+--gold: #d9ac52;
+--gold-soft: rgba(217,172,82,0.16);
+--shadow: 0 1px 2px rgba(0,0,0,0.3), 0 10px 32px rgba(0,0,0,0.4);
+}
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+
+body {
+margin: 0;
+background: var(--page);
+color: var(--ink);
+font-family: var(--sans);
+line-height: 1.65;
+-webkit-font-smoothing: antialiased;
+text-rendering: optimizeLegibility;
+transition: background 0.25s ease, color 0.25s ease;
+padding-left: env(safe-area-inset-left);
+padding-right: env(safe-area-inset-right);
+}
+
+::selection { background: var(--gold-soft); color: var(--ink); }
+
+#progress-bar {
+position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+background: linear-gradient(90deg, var(--accent), var(--teal));
+z-index: 1000; transition: width 0.1s ease-out;
+}
+
+.theme-toggle, .float-top {
+position: fixed; z-index: 999;
+width: 44px; height: 44px; border-radius: 50%;
+border: 1px solid var(--border);
+background: var(--surface); color: var(--ink);
+display: flex; align-items: center; justify-content: center;
+cursor: pointer; box-shadow: var(--shadow);
+font-size: 1.05rem;
+transition: transform 0.15s ease, background 0.25s ease;
+}
+.theme-toggle { top: calc(16px + env(safe-area-inset-top)); right: calc(16px + env(safe-area-inset-right)); }
+.float-top {
+bottom: calc(22px + env(safe-area-inset-bottom)); right: calc(16px + env(safe-area-inset-right));
+background: var(--ink); color: var(--page); border: none;
+opacity: 0; transform: translateY(10px); pointer-events: none;
+}
+.float-top.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.theme-toggle:active, .float-top:active { transform: scale(0.92); }
+
+.wrap { max-width: 740px; margin: 0 auto; padding: 0 24px; }
+
+/* ---------- hero ---------- */
+
+header.hero {
+padding: calc(84px + env(safe-area-inset-top)) 0 48px;
+position: relative;
+}
+.kicker {
+font-size: 0.8rem; letter-spacing: 0.02em;
+color: var(--accent-ink); font-weight: 600; margin: 0 0 18px;
+display: flex; align-items: center; gap: 10px;
+}
+.kicker svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+h1.title {
+font-family: var(--display);
+font-weight: 800;
+font-size: clamp(2rem, 7vw, 3.2rem);
+line-height: 1.06;
+letter-spacing: -0.02em;
+margin: 0 0 20px;
+}
+
+.dek {
+font-family: var(--serif);
+font-style: italic;
+font-size: clamp(1.05rem, 2.6vw, 1.28rem);
+color: var(--ink-soft);
+max-width: 56ch;
+margin: 0 0 28px;
+font-weight: 400;
+}
+
+.byline {
+display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+font-size: 0.86rem; color: var(--muted);
+padding-top: 20px; border-top: 1px solid var(--hairline);
+}
+.byline .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); }
+
+.hero-quote {
+font-family: var(--serif); font-style: italic;
+font-size: clamp(1.1rem, 3vw, 1.4rem); line-height: 1.5;
+color: var(--ink);
+margin: 36px 0 0; padding: 22px 0 0 22px;
+border-left: 3px solid var(--teal);
+}
+
+/* ---------- toc ---------- */
+
+nav.toc {
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 14px; padding: 22px 24px 18px; margin: 8px 0 56px;
+box-shadow: var(--shadow);
+}
+nav.toc h2 {
+font-size: 0.74rem; letter-spacing: 0.08em;
+color: var(--muted); margin: 0 0 12px; font-weight: 700;
+}
+nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; }
+nav.toc li { counter-increment: toc; margin-bottom: 2px; }
+nav.toc a {
+display: flex; align-items: baseline; gap: 12px;
+color: var(--ink-soft); text-decoration: none;
+font-size: 0.95rem; padding: 6px 4px; border-radius: 8px;
+transition: color 0.15s ease, background 0.15s ease;
+}
+nav.toc a::before {
+content: counter(toc, decimal-leading-zero);
+font-family: var(--mono); font-size: 0.78rem; color: var(--muted); flex-shrink: 0;
+}
+nav.toc a:hover, nav.toc a.active { color: var(--accent-ink); background: var(--accent-soft); }
+nav.toc a.active::before { color: var(--accent); }
+
+/* ---------- filmstrip overview nav ---------- */
+
+.filmstrip-wrap { margin: 0 0 60px; }
+.filmstrip-label { font-size: 0.78rem; color: var(--muted); margin: 0 0 12px; text-align: center; }
+.filmstrip {
+display: flex; gap: 0; overflow-x: auto; padding: 10px 6px 16px;
+scrollbar-width: thin;
+}
+.f-frame {
+flex: 0 0 auto; width: 118px; margin-right: 10px;
+background: var(--surface); border: 1px solid var(--hairline); border-radius: 10px;
+padding: 14px 10px 12px; text-align: center; position: relative;
+opacity: 0.5; transition: opacity 0.4s ease, border-color 0.4s ease, transform 0.3s ease;
+}
+.f-frame::before, .f-frame::after {
+content: ""; position: absolute; top: 8px; bottom: 8px; width: 8px;
+background-image: radial-gradient(circle, var(--page) 2px, transparent 2.4px);
+background-size: 8px 12px; background-repeat: repeat-y;
+}
+.f-frame::before { left: 2px; }
+.f-frame::after { right: 2px; }
+.f-frame.active { opacity: 1; border-color: var(--accent); transform: translateY(-3px); }
+.f-frame svg { width: 30px; height: 30px; color: var(--accent); margin-bottom: 8px; }
+.f-frame .fn { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); }
+.f-frame .fl { font-size: 0.76rem; font-weight: 600; color: var(--ink); margin-top: 2px; }
+
+/* ---------- sections ---------- */
+
+section.chapter { padding: 40px 0 6px; scroll-margin-top: 24px; }
+section.chapter + section.chapter { border-top: 1px solid var(--hairline); }
+
+.shot-badge {
+display: inline-flex; align-items: center; gap: 8px;
+font-family: var(--mono); font-size: 0.82rem; color: var(--accent-ink);
+background: var(--accent-soft); padding: 5px 12px; border-radius: 20px;
+margin: 0 0 14px; font-weight: 600;
+}
+
+h2.h {
+font-family: var(--display); font-weight: 800;
+font-size: clamp(1.4rem, 4.2vw, 1.95rem);
+line-height: 1.18; letter-spacing: -0.01em;
+margin: 0 0 18px;
+}
+h3.h3 {
+font-family: var(--display); font-weight: 700;
+font-size: clamp(1.05rem, 2.8vw, 1.22rem);
+margin: 28px 0 10px;
+}
+
+p.body-text { font-size: 1.04rem; color: var(--ink); margin: 0 0 18px; }
+p.body-text.soft { color: var(--ink-soft); }
+.lede { font-size: 1.14rem; }
+
+mark.hl {
+background: var(--gold-soft); color: var(--ink);
+padding: 0.05em 0.15em; border-radius: 4px; font-weight: 600;
+}
+
+/* ---------- tip box ---------- */
+
+.tip {
+display: flex; gap: 14px; align-items: flex-start;
+background: var(--teal-soft); border: 1px solid var(--hairline);
+border-radius: 12px; padding: 16px 18px; margin: 22px 0;
+}
+.tip .tip-icon {
+flex-shrink: 0; width: 22px; height: 22px; color: var(--teal);
+margin-top: 1px;
+}
+.tip p { margin: 0; font-size: 0.94rem; color: var(--ink-soft); }
+.tip strong { color: var(--ink); }
+
+/* ---------- film frame (bordered card w/ sprocket holes) ---------- */
+
+.filmframe {
+position: relative; background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 14px; padding: 30px 34px 24px; margin: 28px 0; box-shadow: var(--shadow);
+}
+.filmframe::before, .filmframe::after {
+content: ""; position: absolute; top: 10px; bottom: 10px; width: 14px;
+background-image: radial-gradient(circle, var(--page) 3px, transparent 3.4px);
+background-size: 14px 18px; background-repeat: repeat-y;
+}
+.filmframe::before { left: 0; border-radius: 14px 0 0 14px; }
+.filmframe::after { right: 0; border-radius: 0 14px 14px 0; }
+.ff-label {
+font-size: 0.72rem; letter-spacing: 0.06em; color: var(--muted); font-weight: 700;
+margin-bottom: 4px; text-align: center;
+}
+.ff-caption { font-size: 0.9rem; color: var(--ink-soft); margin-top: 14px; text-align: center; }
+
+/* ---------- diagram: establishing shot ---------- */
+
+.est-svg { width: 100%; max-width: 340px; height: auto; display: block; margin: 0 auto; }
+.est-frame-line { stroke-dasharray: 900; stroke-dashoffset: 900; transition: stroke-dashoffset 1.6s ease; }
+.is-visible .est-frame-line { stroke-dashoffset: 0; }
+.est-figure { opacity: 0; transform: scale(0.4); transform-origin: 170px 190px; transition: opacity 0.6s ease 1s, transform 0.6s cubic-bezier(.2,.8,.3,1.2) 1s; }
+.is-visible .est-figure { opacity: 1; transform: scale(1); }
+
+/* ---------- diagram: action wide ---------- */
+
+.action-row { display: flex; justify-content: center; gap: 18px; margin: 10px 0 4px; flex-wrap: wrap; }
+.action-step { display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: 0; transform: translateY(10px); transition: opacity 0.5s ease, transform 0.5s ease; }
+.is-visible .action-step:nth-child(1) { transition-delay: 0.1s; }
+.is-visible .action-step:nth-child(2) { transition-delay: 0.35s; }
+.is-visible .action-step:nth-child(3) { transition-delay: 0.6s; }
+.is-visible .action-step { opacity: 1; transform: translateY(0); }
+.action-step .a-icon {
+width: 52px; height: 52px; border-radius: 50%; background: var(--accent-soft);
+display: flex; align-items: center; justify-content: center; color: var(--accent-ink);
+}
+.action-step .a-icon svg { width: 26px; height: 26px; }
+.action-step span { font-size: 0.78rem; color: var(--muted); text-align: center; max-width: 78px; }
+.action-arrow { align-self: center; color: var(--muted); opacity: 0; transition: opacity 0.5s ease; }
+.is-visible .action-arrow { opacity: 1; }
+.is-visible .action-arrow:nth-of-type(1) { transition-delay: 0.25s; }
+.is-visible .action-arrow:nth-of-type(2) { transition-delay: 0.5s; }
+
+/* ---------- diagram: medium shot ---------- */
+
+.med-svg { width: 100%; max-width: 340px; height: auto; display: block; margin: 0 auto; }
+.med-link { stroke-dasharray: 6 8; stroke-dashoffset: 60; animation: none; opacity: 0; transition: opacity 0.6s ease 0.4s; }
+.is-visible .med-link { opacity: 1; animation: dash-crawl 1.6s linear infinite; }
+@keyframes dash-crawl { to { stroke-dashoffset: -60; } }
+.med-cam { opacity: 0; transform: translateX(-8px); transition: opacity 0.5s ease, transform 0.5s ease; }
+.med-person { opacity: 0; transform: translateX(8px); transition: opacity 0.5s ease 0.15s, transform 0.5s ease 0.15s; }
+.is-visible .med-cam, .is-visible .med-person { opacity: 1; transform: translateX(0); }
+
+/* ---------- diagram: close-up aperture ---------- */
+
+.aperture-wrap { display: flex; justify-content: center; padding: 6px 0; }
+.aperture-svg { width: 160px; height: 160px; }
+.blade { transform-origin: 80px 80px; transition: transform 1.1s cubic-bezier(.3,.8,.3,1); }
+.is-visible .blade { transform: rotate(52deg) scale(0.28); }
+.ap-dot { opacity: 0; transition: opacity 0.4s ease 0.9s; }
+.is-visible .ap-dot { opacity: 1; }
+
+/* ---------- diagram: pov shot ---------- */
+
+.pov-svg { width: 100%; max-width: 340px; height: auto; display: block; margin: 0 auto; }
+.pov-bg { opacity: 0; transition: opacity 0.7s ease 0.2s; }
+.is-visible .pov-bg { opacity: 1; }
+.pov-fg { opacity: 0; filter: blur(4px); transition: opacity 0.7s ease; }
+.is-visible .pov-fg { opacity: 0.9; }
+.pov-lock { opacity: 0; transform: scale(1.6); transition: opacity 0.4s ease 0.9s, transform 0.4s cubic-bezier(.3,.8,.3,1.4) 0.9s; }
+.is-visible .pov-lock { opacity: 1; transform: scale(1); }
+
+/* ---------- reveal ---------- */
+
+.reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.6s cubic-bezier(.2,.7,.3,1), transform 0.6s cubic-bezier(.2,.7,.3,1); }
+.reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+/* ---------- aside / sponsor callout ---------- */
+
+.aside {
+border: 1px dashed var(--border); border-radius: 12px;
+padding: 14px 18px; margin: 26px 0; font-size: 0.92rem;
+color: var(--muted); font-style: italic;
+}
+
+.callout {
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 14px; padding: 22px 24px; margin: 26px 0;
+box-shadow: var(--shadow);
+}
+.callout h4 { margin: 0 0 8px; font-size: 0.98rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.callout h4 svg { width: 18px; height: 18px; color: var(--accent); flex-shrink: 0; }
+.callout p { margin: 0 0 10px; color: var(--ink-soft); font-size: 0.96rem; }
+.callout p:last-child { margin-bottom: 0; }
+.callout ul { margin: 0; padding-left: 20px; color: var(--ink-soft); font-size: 0.96rem; }
+.callout li { margin-bottom: 6px; }
+
+/* ---------- assembled filmstrip diagram ---------- */
+
+.assemble-wrap { display: flex; justify-content: center; align-items: center; gap: 4px; margin: 26px 0 8px; flex-wrap: wrap; }
+.a-tile {
+width: 56px; height: 56px; border-radius: 8px; background: var(--accent-soft);
+display: flex; align-items: center; justify-content: center; color: var(--accent-ink);
+font-family: var(--mono); font-weight: 700; font-size: 0.95rem;
+opacity: 0; transform: scale(0.6) rotate(-6deg); transition: opacity 0.4s ease, transform 0.4s cubic-bezier(.3,.8,.3,1.3);
+}
+.is-visible .a-tile { opacity: 1; transform: scale(1) rotate(0deg); }
+.is-visible .a-tile:nth-child(1) { transition-delay: 0.05s; }
+.is-visible .a-tile:nth-child(2) { transition-delay: 0.2s; }
+.is-visible .a-tile:nth-child(3) { transition-delay: 0.35s; }
+.is-visible .a-tile:nth-child(4) { transition-delay: 0.5s; }
+.is-visible .a-tile:nth-child(5) { transition-delay: 0.65s; }
+.a-arrow { color: var(--muted); font-size: 1rem; }
+
+/* ---------- checklist widget ---------- */
+
+.checklist { background: var(--surface); border: 1px solid var(--hairline); border-radius: 14px; padding: 22px 24px; margin: 30px 0; box-shadow: var(--shadow); }
+.checklist h4 { margin: 0 0 4px; font-size: 1rem; font-weight: 700; }
+.checklist p.ck-sub { margin: 0 0 16px; font-size: 0.86rem; color: var(--muted); }
+.ck-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--hairline); cursor: pointer; }
+.ck-row:first-of-type { border-top: none; }
+.ck-box {
+width: 22px; height: 22px; border-radius: 6px; border: 1.5px solid var(--hairline); flex-shrink: 0;
+display: flex; align-items: center; justify-content: center; transition: background 0.2s ease, border-color 0.2s ease;
+}
+.ck-box svg { width: 13px; height: 13px; color: #fff; opacity: 0; transition: opacity 0.15s ease; }
+.ck-row.done .ck-box { background: var(--accent); border-color: var(--accent); }
+.ck-row.done .ck-box svg { opacity: 1; }
+.ck-row .ck-text { font-size: 0.95rem; color: var(--ink); transition: color 0.2s ease, opacity 0.2s ease; }
+.ck-row.done .ck-text { color: var(--muted); opacity: 0.7; text-decoration: line-through; }
+.ck-progress { margin-top: 16px; height: 6px; border-radius: 4px; background: var(--hairline); overflow: hidden; }
+.ck-progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--teal)); transition: width 0.3s ease; }
+.ck-status { margin-top: 8px; font-size: 0.82rem; color: var(--muted); text-align: right; }
+
+/* ---------- closing ---------- */
+
+.closer { text-align: center; padding: 64px 0 84px; }
+.closer h2 {
+font-family: var(--display); font-weight: 800;
+font-size: clamp(1.6rem, 5.6vw, 2.2rem); line-height: 1.2; margin: 0 0 16px;
+}
+.closer p { color: var(--ink-soft); font-size: 1.02rem; max-width: 48ch; margin: 0 auto; }
+.signoff { margin-top: 30px; font-family: var(--serif); font-style: italic; color: var(--muted); }
+
+footer.site-footer {
+border-top: 1px solid var(--hairline); padding: 26px 0 calc(38px + env(safe-area-inset-bottom));
+text-align: center; font-size: 0.8rem; color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+.reveal, .est-figure, .action-step, .action-arrow, .med-link, .med-cam, .med-person,
+.blade, .ap-dot, .pov-bg, .pov-fg, .pov-lock, .a-tile, .est-frame-line { transition: none !important; animation: none !important; }
+html { scroll-behavior: auto; }
+}
+
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">◐</button>
+<button class="float-top" id="floatTop" aria-label="Back to top">↑</button>
+
+<div class="wrap">
+
+<header class="hero">
+<p class="kicker">
+<svg viewBox="0 0 24 24" fill="none"><path d="M15 8l5-3v14l-5-3" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><rect x="2" y="6" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.7"/></svg>
+Filmmaking &amp; Visual Storytelling
+</p>
+<h1 class="title">The 5 Shots That Turn Random Clips Into a Story</h1>
+<p class="dek">You don't need more gear, more time, or a sudden burst of inspiration. You need a system — five shots that, filmed in the right order, turn footage that just <em>looks</em> nice into footage that actually says something.</p>
+<div class="byline">
+<span>Solo creator notes</span>
+<span class="dot"></span>
+<span>~7 min read</span>
+<span class="dot"></span>
+<span>9 sections</span>
+</div>
+<blockquote class="hero-quote">
+"You don't need inspiration to start. Sometimes inspiration shows up after you start."
+</blockquote>
+</header>
+
+<nav class="toc reveal">
+<h2>In this piece</h2>
+<ol>
+<li><a href="#ch1">Why your footage doesn't add up</a></li>
+<li><a href="#ch2">Shot 1 — The Establishing Shot</a></li>
+<li><a href="#ch3">Shot 2 — The Wide Action Shot</a></li>
+<li><a href="#ch4">Shot 3 — The Medium Shot</a></li>
+<li><a href="#ch5">Shot 4 — The Close-Up</a></li>
+<li><a href="#ch6">Shot 5 — The POV Shot</a></li>
+<li><a href="#ch7">Putting the five together</a></li>
+<li><a href="#ch8">Filming solo: filling the gaps</a></li>
+<li><a href="#ch9">The takeaway</a></li>
+</ol>
+</nav>
+
+<div class="filmstrip-wrap">
+<p class="filmstrip-label">The five shots, at a glance — scroll to see where you are</p>
+<div class="filmstrip" id="filmstrip">
+<div class="f-frame" data-for="ch2"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="1.5" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="15" r="1.4" fill="currentColor"/><path d="M7 12l3-3 3 2 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><div class="fn">01</div><div class="fl">Establishing</div></div>
+<div class="f-frame" data-for="ch3"><svg viewBox="0 0 24 24" fill="none"><path d="M4 18l5-6 4 4 7-9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><div class="fn">02</div><div class="fl">Wide Action</div></div>
+<div class="f-frame" data-for="ch4"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><div class="fn">03</div><div class="fl">Medium</div></div>
+<div class="f-frame" data-for="ch5"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3.4" stroke="currentColor" stroke-width="1.6"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><div class="fn">04</div><div class="fl">Close-Up</div></div>
+<div class="f-frame" data-for="ch6"><svg viewBox="0 0 24 24" fill="none"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/></svg><div class="fn">05</div><div class="fl">POV</div></div>
+</div>
+</div>
+
+<!-- ===================== CH1 ===================== -->
+<section class="chapter reveal" id="ch1">
+<h2 class="h">Why your footage doesn't add up to a story</h2>
+<p class="body-text lede">You don't need to feel inspired every time you pick up a camera. In fact, it's completely normal for your mind to go blank. So you walk around, film whatever catches your eye, and hope it will somehow make sense later.</p>
+<p class="body-text soft">The problem shows up later, in the edit. You sit down with the footage and realise there's no story to tell — just a collection of beautiful shots. Footage that looks nice but doesn't actually say anything.</p>
+<p class="body-text soft">The fix isn't more talent, better timing, or waiting for creativity to strike. It's a system: five essential shots that can help you tell almost any story. Once you know them, you'll notice you already film most of them by accident — you just haven't been using them on purpose.</p>
+</section>
+
+<!-- ===================== CH2: ESTABLISHING ===================== -->
+<section class="chapter reveal" id="ch2">
+<span class="shot-badge">SHOT 01 / 05</span>
+<h2 class="h">The Establishing Shot — where are we?</h2>
+<p class="body-text lede">You can't tell a story if nobody knows where it's happening. The wider the shot, the more scale it gives the story. It's what tells someone: this is a small island, this is a packed stadium, this is the middle of nowhere. This is always the first shot to look for.</p>
+
+<div class="tip">
+<svg class="tip-icon" viewBox="0 0 24 24" fill="none"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.4 1 1.1 1 1.9V16h5v-.2c0-.8.4-1.5 1-1.9A6 6 0 0012 3z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<p><strong>What's an "establishing shot"?</strong> It's the very first, widest shot of a scene — the one that shows the whole location before the camera moves in close. It answers "where are we?" before the viewer starts asking "who?" or "what?".</p>
+</div>
+
+<div class="filmframe reveal">
+<div class="ff-label">SHOT 01 — WIDE FRAME, SMALL SUBJECT</div>
+<svg class="est-svg" viewBox="0 0 340 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect class="est-frame-line" x="10" y="10" width="320" height="200" rx="6" stroke="var(--hairline)" stroke-width="2"/>
+<path class="est-frame-line" d="M10 165 L110 120 L200 150 L330 100" stroke="var(--teal)" stroke-width="2" fill="none"/>
+<g class="est-figure">
+<circle cx="170" cy="180" r="5" fill="var(--accent)"/>
+<rect x="166" y="185" width="8" height="16" rx="3" fill="var(--accent)"/>
+</g>
+</svg>
+<p class="ff-caption">If the place is the main character, make yourself — or your subject — small in the frame. It helps the viewer feel the scale.</p>
+</div>
+
+<p class="body-text soft">If you're filming a coffee shop, start outside the building and let the atmosphere set in — the cars and motorbikes passing by. If you're hiking, don't start with your shoes; start with the mountain. If you're exploring a market, capture the whole atmosphere before you show a single stall.</p>
+
+<h3 class="h3">Filming yourself in this shot</h3>
+<p class="body-text soft">The hard part about including yourself in the establishing shot is that nobody's there to help with the framing. So block it out first: press record, walk to where you think you should stop, and check. Once it looks right, mark the spot — with your eyes, a rock, anything that reminds you where to stop. Then reset and film the real take.</p>
+<p class="body-text soft">And if you genuinely can't get the establishing shot you need — no drone, no way to physically get far enough back — stock footage can fill that gap perfectly. More on that later.</p>
+</section>
+
+<!-- ===================== CH3: ACTION WIDE ===================== -->
+<section class="chapter reveal" id="ch3">
+<span class="shot-badge">SHOT 02 / 05</span>
+<h2 class="h">The Wide Action Shot — what's happening?</h2>
+<p class="body-text lede">Once the audience knows where they are, it's time to show them what's happening. Still in a wide shot, but now the focus shifts from place to action.</p>
+
+<div class="filmframe reveal">
+<div class="ff-label">EXAMPLE — A BEACH PICNIC</div>
+<div class="action-row">
+<div class="action-step"><div class="a-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M3 18h18M3 18c0-2 4-3 9-3s9 1 9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div><span>Laying the mat down</span></div>
+<div class="action-arrow">→</div>
+<div class="action-step"><div class="a-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M6 8h12l-1 12H7L6 8z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 8V6a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.6"/></svg></div><span>Dropping the bag</span></div>
+<div class="action-arrow">→</div>
+<div class="action-step"><div class="a-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="6" r="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M12 9v6M9 20l3-5 3 5M8 13l4 2 4-2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div><span>Sitting down</span></div>
+</div>
+<p class="ff-caption">A few specific, small actions — captured in the same wide shot — tell the viewer what's about to happen.</p>
+</div>
+
+<p class="body-text soft">This shot should feel like the viewer is just observing, not like you're performing for the camera. A simple trick: put something in the foreground, between the camera and yourself, so it feels like the viewer is watching <em>through</em> something rather than being shown it directly.</p>
+
+<div class="tip">
+<svg class="tip-icon" viewBox="0 0 24 24" fill="none"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.4 1 1.1 1 1.9V16h5v-.2c0-.8.4-1.5 1-1.9A6 6 0 0012 3z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<p><strong>What's "foreground framing"?</strong> It's placing an object — a branch, a cup, someone's shoulder — close to the lens so it partially blocks the shot. It adds depth and makes the viewer feel like a fly on the wall, not an audience being addressed.</p>
+</div>
+
+<div class="aside">A quick aside from the original video: this is the point where the creator paused to remind viewers to subscribe if they were enjoying the filmmaking tips. Consider it the video's own establishing shot — showing you where the channel is coming from.</div>
+</section>
+
+<!-- ===================== CH4: MEDIUM ===================== -->
+<section class="chapter reveal" id="ch4">
+<span class="shot-badge">SHOT 03 / 05</span>
+<h2 class="h">The Medium Shot — who's it happening to?</h2>
+<p class="body-text lede">Now bring the camera a little closer. The question to ask here is: who or what is this moment happening to? The wide shot introduced you to the story. The medium shot connects you to the subject inside it.</p>
+
+<div class="filmframe reveal">
+<div class="ff-label">CAMERA MOVES CLOSER, TO THE SUBJECT</div>
+<svg class="med-svg" viewBox="0 0 340 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g class="med-cam">
+<rect x="30" y="55" width="46" height="32" rx="4" stroke="var(--ink-soft)" stroke-width="2"/>
+<path d="M76 62 L96 52 L96 90 L76 80 Z" stroke="var(--ink-soft)" stroke-width="2" stroke-linejoin="round"/>
+</g>
+<line class="med-link" x1="100" y1="70" x2="240" y2="70" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+<g class="med-person">
+<circle cx="270" cy="55" r="14" stroke="var(--teal)" stroke-width="2.5"/>
+<path d="M248 100c0-13 10-22 22-22s22 9 22 22" stroke="var(--teal)" stroke-width="2.5" stroke-linecap="round"/>
+</g>
+</svg>
+<p class="ff-caption">Same distance as before, just closer — the camera and the person are now clearly in conversation.</p>
+</div>
+
+<p class="body-text soft">Most people feel uncomfortable filming this shot, including seasoned creators — the camera is right there, and there's nowhere to hide from it. The fix isn't trying to "act natural." It's giving your hands a job before you hit record: pour something, fold something, tie your shoelace — anything.</p>
+<p class="body-text soft">Here's a trick that also makes editing easier: pick one or two actions you already did in the previous (wide) shot, and just do them again for this shot. It feels awkward and repetitive while filming — but in the edit, you'll thank yourself for pushing through, because now you have two angles of the same action to cut between.</p>
+</section>
+
+<!-- ===================== CH5: CLOSE-UP ===================== -->
+<section class="chapter reveal" id="ch5">
+<span class="shot-badge">SHOT 04 / 05</span>
+<h2 class="h">The Close-Up — the one detail</h2>
+<p class="body-text lede">After the medium shot shows the person, this is where everything slows down. The close-up is simple: it's just one detail. This is the shot that makes people say a video "feels cinematic" — and it has nothing to do with camera gear. It's just attention.</p>
+
+<div class="filmframe reveal">
+<div class="ff-label">THE APERTURE CLOSES IN ON ONE DETAIL</div>
+<div class="aperture-wrap">
+<svg class="aperture-svg" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="80" cy="80" r="70" stroke="var(--hairline)" stroke-width="2"/>
+<g>
+<polygon class="blade" points="80,20 105,45 80,80 55,45" fill="var(--accent)" opacity="0.85"/>
+<polygon class="blade" points="140,80 115,105 80,80 115,55" fill="var(--accent)" opacity="0.7" style="transform-origin:80px 80px; transform: rotate(90deg);"/>
+<polygon class="blade" points="80,140 55,115 80,80 105,115" fill="var(--accent)" opacity="0.55" style="transform-origin:80px 80px; transform: rotate(180deg);"/>
+<polygon class="blade" points="20,80 45,55 80,80 45,105" fill="var(--accent)" opacity="0.4" style="transform-origin:80px 80px; transform: rotate(270deg);"/>
+</g>
+<circle class="ap-dot" cx="80" cy="80" r="5" fill="var(--gold)"/>
+</svg>
+</div>
+<p class="ff-caption">Just like a camera's aperture closing in, this shot narrows everything down to a single point of focus.</p>
+</div>
+
+<p class="body-text soft">This is also the shot to have the most fun with — save it for last, because by this point it's basically just play. It's worth overshooting this part: the extras become <mark class="hl">b-roll</mark> you can reuse later.</p>
+
+<div class="tip">
+<svg class="tip-icon" viewBox="0 0 24 24" fill="none"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.4 1 1.1 1 1.9V16h5v-.2c0-.8.4-1.5 1-1.9A6 6 0 0012 3z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<p><strong>What's "b-roll"?</strong> It's supplementary footage — cutaways, textures, small details — that isn't the main shot, but that you layer into the edit to add rhythm, cover a jump cut, or add visual interest.</p>
+</div>
+</section>
+
+<!-- ===================== CH6: POV ===================== -->
+<section class="chapter reveal" id="ch6">
+<span class="shot-badge">SHOT 05 / 05</span>
+<h2 class="h">The POV Shot — put the viewer inside it</h2>
+<p class="body-text lede">This shot pulls the viewer into the moment instead of letting them watch it from outside. It's the first shot where they stop feeling like an observer and start feeling placed inside the scene.</p>
+
+<div class="filmframe reveal">
+<div class="ff-label">SHARP BACKGROUND, BLURRED FOREGROUND</div>
+<svg class="pov-svg" viewBox="0 0 340 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect class="pov-bg" x="14" y="14" width="312" height="152" rx="8" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+<circle class="pov-bg" cx="230" cy="90" r="26" fill="none" stroke="var(--teal)" stroke-width="2.5"/>
+<path class="pov-fg" d="M0 180 C 40 120, 60 100, 100 90 C 60 140, 40 170, 0 180 Z" fill="var(--ink-soft)" opacity="0.5"/>
+<g class="pov-lock">
+<circle cx="230" cy="90" r="14" fill="none" stroke="var(--gold)" stroke-width="2"/>
+<path d="M230 70v10M230 100v10M210 90h10M240 90h10" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"/>
+</g>
+</svg>
+<p class="ff-caption">Manual focus, locked on the background — the foreground (your shoulder, an object you're holding) stays softly blurred.</p>
+</div>
+
+<p class="body-text soft">To get this, switch to manual focus and lock it onto whatever's in the background, so your own shoulder — or whatever's in the foreground — stays blurred. This works with almost any moment. The viewer just needs to feel like someone is there with them, inside the shot.</p>
+
+<div class="tip">
+<svg class="tip-icon" viewBox="0 0 24 24" fill="none"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.4 1 1.1 1 1.9V16h5v-.2c0-.8.4-1.5 1-1.9A6 6 0 0012 3z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<p><strong>Manual focus, in plain terms:</strong> most cameras and phones auto-focus on whatever's in the center. Manual focus lets you "lock" the sharp point yourself — here, on the background — so the foreground stays soft instead of the camera constantly hunting for focus.</p>
+</div>
+</section>
+
+<!-- ===================== CH7: PUTTING TOGETHER ===================== -->
+<section class="chapter reveal" id="ch7">
+<h2 class="h">Putting the five shots together</h2>
+<p class="body-text lede">With a shot list like this, the hard part already happened back when you were filming. You already know each shot's job, so you don't need to search for a story in the edit — you're just placing five puzzle pieces in the order they already fit.</p>
+
+<div class="assemble-wrap reveal">
+<div class="a-tile">01</div><span class="a-arrow">→</span>
+<div class="a-tile">02</div><span class="a-arrow">→</span>
+<div class="a-tile">03</div><span class="a-arrow">→</span>
+<div class="a-tile">04</div><span class="a-arrow">→</span>
+<div class="a-tile">05</div>
+</div>
+<p class="ff-caption" style="margin-top:4px;">Establishing → Wide Action → Medium → Close-Up → POV. In that order, almost any moment becomes a scene.</p>
+
+<div class="tip">
+<svg class="tip-icon" viewBox="0 0 24 24" fill="none"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.4 1 1.1 1 1.9V16h5v-.2c0-.8.4-1.5 1-1.9A6 6 0 0012 3z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<p><strong>What's a "shot list"?</strong> It's simply a plan of the shots you intend to film for a scene, written out before you press record. Knowing these five roles in advance turns "what do I film next?" into a checklist.</p>
+</div>
+</section>
+
+<!-- ===================== CH8: SOLO / STORYBLOCKS ===================== -->
+<section class="chapter reveal" id="ch8">
+<h2 class="h">Filming solo: filling the gaps you can't shoot</h2>
+<p class="body-text lede">As a solo creator, you don't always have access to crazy locations or gear — most of the time it's just you and a tripod. But what you can always control is the edit. That's where a stock footage and music library becomes genuinely useful, not just a nice-to-have.</p>
+
+<div class="callout reveal">
+<h4><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/></svg>Filling in the missing Shot 1</h4>
+<p>Sometimes there's no drone, no way to physically get far enough back to show the scale an establishing shot needs. That's exactly when a stock footage library — the video mentions Storyblocks specifically — earns its keep: a wide aerial or landscape clip can stand in for the establishing shot you couldn't film yourself.</p>
+<ul>
+<li>An AI color-and-framing matching tool can help a stock clip blend with your own footage, even when the original color or framing doesn't quite fit.</li>
+<li>The library isn't just video — it also includes sound effects and motion graphic templates, all made by working filmmakers, artists, and musicians.</li>
+<li>Most platforms make you search like Google: type the exact word, hope it matches. A <strong>conversational search</strong> instead lets you describe a feeling — "something that feels lonely," "something that feels like coming home," "the calm right before a storm" — and it understands you. The same works for music and sound effects.</li>
+</ul>
+</div>
+
+<p class="body-text soft">That's really the whole point of any tool in this process — the shot list, the edit, the stock library. They all exist to support the story. You film what you can, and you find the rest where you can. But the story stays the most important part. Everything else is just there to serve it.</p>
+</section>
+
+<!-- ===================== CH9: CLOSING ===================== -->
+<section class="chapter reveal closer" id="ch9">
+<h2>Play the system, not the mood.</h2>
+<p>It's okay if your mind goes completely blank before a shoot. You don't need inspiration to start — sometimes inspiration shows up after you start. These five shots are just the cheat sheet that gets you moving.</p>
+
+<div class="checklist reveal">
+<h4>Your next shoot's checklist</h4>
+<p class="ck-sub">Tap each one off as you film it. Saved on this device.</p>
+<div class="ck-row" data-key="s1"><div class="ck-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ck-text">Establishing shot — show the place, keep the subject small</div></div>
+<div class="ck-row" data-key="s2"><div class="ck-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ck-text">Wide action shot — a few small actions, foreground in frame</div></div>
+<div class="ck-row" data-key="s3"><div class="ck-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ck-text">Medium shot — hands given a job, repeat one action from before</div></div>
+<div class="ck-row" data-key="s4"><div class="ck-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ck-text">Close-up — one detail, overshoot for spare b-roll</div></div>
+<div class="ck-row" data-key="s5"><div class="ck-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="ck-text">POV shot — manual focus locked on the background</div></div>
+<div class="ck-progress"><div class="ck-progress-fill" id="ckFill"></div></div>
+<div class="ck-status" id="ckStatus">0 of 5 shot</div>
+</div>
+
+<p class="signoff">— That's it. Now go film something.</p>
+</section>
+
+</div>
+
+<footer class="site-footer">
+<div class="wrap">Notes from a filmmaking &amp; visual storytelling video · read on any device</div>
+</footer>
+
+<script>
+(function () {
+// theme toggle
+var root = document.documentElement;
+var btn = document.getElementById('themeToggle');
+function currentTheme() {
+if (root.getAttribute('data-theme')) return root.getAttribute('data-theme');
+return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+btn.addEventListener('click', function () {
+var next = currentTheme() === 'dark' ? 'light' : 'dark';
+root.setAttribute('data-theme', next);
+btn.textContent = next === 'dark' ? '☀' : '◐';
+});
+btn.textContent = currentTheme() === 'dark' ? '☀' : '◐';
+
+// scroll progress
+var bar = document.getElementById('progress-bar');
+var floatTop = document.getElementById('floatTop');
+function onScroll() {
+var h = document.documentElement;
+var scrolled = h.scrollTop || document.body.scrollTop;
+var height = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
+var pct = height > 0 ? (scrolled / height) * 100 : 0;
+bar.style.width = pct + '%';
+if (scrolled > 500) floatTop.classList.add('show'); else floatTop.classList.remove('show');
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+floatTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+// reveal on scroll
+var revealEls = document.querySelectorAll('.reveal');
+if ('IntersectionObserver' in window) {
+var io = new IntersectionObserver(function (entries) {
+entries.forEach(function (entry) {
+if (entry.isIntersecting) {
+entry.target.classList.add('is-visible');
+io.unobserve(entry.target);
+}
+});
+}, { threshold: 0.15 });
+revealEls.forEach(function (el) { io.observe(el); });
+} else {
+revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+}
+
+// TOC + filmstrip active tracking
+var tocLinks = {};
+document.querySelectorAll('nav.toc a').forEach(function (a) {
+tocLinks[a.getAttribute('href').slice(1)] = a;
+});
+var filmFrames = {};
+document.querySelectorAll('.f-frame').forEach(function (f) {
+filmFrames[f.getAttribute('data-for')] = f;
+});
+var filmstripEl = document.getElementById('filmstrip');
+function scrollFilmstripTo(frame) {
+if (!filmstripEl || !frame) return;
+var target = frame.offsetLeft - (filmstripEl.clientWidth - frame.clientWidth) / 2;
+filmstripEl.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+}
+var chapters = document.querySelectorAll('section.chapter');
+if ('IntersectionObserver' in window) {
+var tocObserver = new IntersectionObserver(function (entries) {
+entries.forEach(function (entry) {
+var link = tocLinks[entry.target.id];
+var frame = filmFrames[entry.target.id];
+if (entry.isIntersecting) {
+if (link) { Object.values(tocLinks).forEach(function (l) { l.classList.remove('active'); }); link.classList.add('active'); }
+if (frame) {
+Object.values(filmFrames).forEach(function (f) { f.classList.remove('active'); });
+frame.classList.add('active');
+scrollFilmstripTo(frame);
+}
+}
+});
+}, { rootMargin: '-40% 0px -50% 0px' });
+chapters.forEach(function (c) { if (c.id) tocObserver.observe(c); });
+}
+
+// checklist widget
+var STORAGE_KEY = 'shot_checklist_v1';
+var rows = document.querySelectorAll('.ck-row');
+var fill = document.getElementById('ckFill');
+var status = document.getElementById('ckStatus');
+function loadState() {
+try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (e) { return {}; }
+}
+function saveState(state) {
+try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+function updateProgress() {
+var done = document.querySelectorAll('.ck-row.done').length;
+var total = rows.length;
+fill.style.width = (done / total * 100) + '%';
+status.textContent = done + ' of ' + total + ' shot' + (done === total && total > 0 ? ' — nice, you have a full scene.' : '');
+}
+var state = loadState();
+rows.forEach(function (row) {
+var key = row.getAttribute('data-key');
+if (state[key]) row.classList.add('done');
+row.addEventListener('click', function () {
+row.classList.toggle('done');
+state[key] = row.classList.contains('done');
+saveState(state);
+updateProgress();
+});
+});
+updateProgress();
+})();
+</script>
+
+</body>
+</html>
