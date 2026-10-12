@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Sound Bible: Choose Music for Your Videos</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f3ff;--card:#fff;--ink:#1b1733;--mute:#5b5780;--line:#ddd8f5;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#120f26;--card:#1e1a3b;--ink:#f2f0ff;--mute:#b3afd9;--line:#3a3470}}
+:root[data-theme="dark"]{--bg:#120f26;--card:#1e1a3b;--ink:#f2f0ff;--mute:#b3afd9;--line:#3a3470}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.55 "DM Sans",system-ui,sans-serif;overflow-x:hidden}
+h1,h2,h3{font-family:Syne,"DM Sans",sans-serif;margin:0;line-height:1.08}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.hero{padding:54px 0 20px;text-align:center}
+.hero h1{font-size:clamp(2.8rem,9vw,6rem);font-weight:800;letter-spacing:-.03em}
+.hero p{color:var(--mute);max-width:56ch;margin:14px auto 0;font-size:1.12rem}
+.eq{display:flex;gap:4px;height:120px;align-items:flex-end;justify-content:center;margin:30px 0 6px}
+.eq i{flex:1;max-width:16px;border-radius:6px 6px 0 0;background:var(--c);height:100%;transform-origin:bottom;animation:eq var(--t) ease-in-out infinite alternate;animation-delay:var(--d)}
+@keyframes eq{from{transform:scaleY(.12)}to{transform:scaleY(var(--h))}}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);display:flex;gap:8px;overflow-x:auto;padding:10px 20px;margin:0 -20px;border-bottom:1px solid var(--line)}
+nav a{white-space:nowrap;text-decoration:none;color:var(--ink);font-weight:500;font-size:.92rem;padding:6px 13px;border-radius:99px;border:2px solid var(--c);transition:.2s}
+nav a:hover{background:var(--c);color:#fff}
+section{margin:56px 0}
+section>h2{font-size:clamp(1.9rem,4.5vw,2.8rem);font-weight:800;margin-bottom:8px}
+.lead{color:var(--mute);max-width:70ch;margin:0 0 22px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
+.card{background:var(--card);border:2px solid color-mix(in srgb,var(--c,#888) 45%,var(--line));border-radius:20px;padding:18px;transition:transform .25s,box-shadow .25s}
+.card:hover{transform:translateY(-5px) rotate(-.4deg);box-shadow:0 12px 30px color-mix(in srgb,var(--c) 40%,transparent)}
+.card h3{font-size:1.35rem;color:var(--c);margin-bottom:6px}
+.card p{margin:0 0 8px;font-size:.95rem}
+.k{display:inline-block;background:color-mix(in srgb,var(--c) 18%,var(--card));color:var(--ink);border-radius:8px;padding:2px 9px;font-size:.84rem;margin:2px 3px 2px 0}
+.nm{width:38px;height:38px;border-radius:50%;background:var(--c);color:#fff;font:800 1.1rem Syne;display:grid;place-items:center;margin-bottom:10px}
+button{font:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.btn{border:0;background:var(--c);color:#fff;font-weight:700;border-radius:99px;padding:8px 16px;transition:.2s}
+.btn:hover{transform:scale(1.06)}
+.btn:active{transform:scale(.95)}
+.pill{border:2px solid var(--c);background:transparent;color:var(--ink);border-radius:99px;padding:8px 15px;font-weight:500;transition:.2s}
+.pill:hover,.pill.on{background:var(--c);color:#fff;transform:translateY(-2px)}
+.row{display:flex;flex-wrap:wrap;gap:9px;margin:10px 0 18px}
+.lab{font-weight:700;margin-top:6px}
+.deco{background:var(--card);border:2px solid var(--line);border-radius:26px;padding:24px}
+.out{margin-top:6px;border-radius:20px;padding:20px;background:color-mix(in srgb,var(--c) 14%,var(--card));border-left:8px solid var(--c);animation:in .45s}
+@keyframes in{from{opacity:0;transform:translateX(-14px)}}
+.out h3{font-size:1.7rem;color:var(--c);margin-bottom:10px}
+.out dl{display:grid;grid-template-columns:130px 1fr;gap:6px 14px;margin:0 0 14px}
+.out dt{font-weight:700}.out dd{margin:0}
+@media(max-width:560px){.out dl{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;background:var(--card);border-radius:16px;overflow:hidden}
+td,th{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top;font-size:.95rem}
+th{background:color-mix(in srgb,var(--c) 22%,var(--card));font-family:Syne}
+.scroll{overflow-x:auto;border-radius:16px;border:1px solid var(--line)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:700px){.two{grid-template-columns:1fr}}
+.big{font:800 3rem Syne;color:var(--c)}
+.mix{display:grid;gap:10px}
+.lane{display:grid;grid-template-columns:110px 1fr 70px;gap:10px;align-items:center;font-size:.92rem}
+.bar{height:16px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar b{display:block;height:100%;width:0;background:var(--c);border-radius:99px;transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+.mix.go .bar b{width:var(--w)}
+details{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px 16px;margin-bottom:10px}
+details[open]{border-color:var(--c)}
+summary{cursor:pointer;font-weight:700}
+.warn li,.chk li{margin:5px 0}
+.foot{margin:60px 0 40px;padding:34px 22px;border-radius:26px;text-align:center;color:#fff;background:linear-gradient(120deg,#ff5d73,#ffb627,#3ddc97,#5ac8fa,#c084fc);background-size:300% 300%;animation:g 9s ease infinite}
+@keyframes g{50%{background-position:100% 50%}}
+.foot h2{font-size:clamp(1.6rem,4vw,2.4rem);text-shadow:0 2px 12px #0006}
+.foot p{max-width:56ch;margin:10px auto 0;text-shadow:0 1px 8px #0007}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="hero">
+  <h1>The Sound Bible</h1>
+  <p>A beginner’s field guide to choosing music, instruments and sound effects for your videos. No sound-design experience needed.</p>
+  <div class="eq" id="eq" aria-hidden="true"></div>
+</header>
+<nav id="nav"></nav>
+
+<section id="mindset">
+<h2>1. The big idea: sound is a language</h2>
+<p class="lead">You learned English by learning letters, then words, then sentences. Sound works the same way. If you can’t choose music with your gut yet, your “sound dictionary” is small. That’s normal, and fixable.</p>
+<div class="grid" id="lang"></div>
+</section>
+
+<section id="steps">
+<h2>2. The 6-question method</h2>
+<p class="lead">Ask these in order for any clip. Tap a step to open it.</p>
+<div id="stepList"></div>
+</section>
+
+<section id="decoder">
+<h2>3. Clip decoder (try it)</h2>
+<p class="lead">Pick how much is happening on screen, then the feeling you want. You get a starter recipe. The “Hear it” button plays a rough synthesized sketch of the mood, not real instruments.</p>
+<div class="deco">
+  <div class="lab">Intensity of your clip</div>
+  <div class="row" id="inten"></div>
+  <div class="lab">Feeling you want</div>
+  <div class="row" id="feel"></div>
+  <div id="result"><p style="color:var(--mute);margin:0">Pick one of each to see your recipe.</p></div>
+</div>
+</section>
+
+<section id="instruments">
+<h2>4. Instrument families</h2>
+<p class="lead">About 15 to 20 instruments appear in most soundtracks. Learn their name, look, sound and family. Remember: the same instrument can carry opposite emotions (a violin can be horror or heartbreak). Context decides.</p>
+<div class="grid" id="fam"></div>
+</section>
+
+<section id="intensity">
+<h2>5. Match or contrast?</h2>
+<div class="two" id="mc"></div>
+</section>
+
+<section id="era">
+<h2>6. Time and place</h2>
+<p class="lead">Music can say “when” and “where,” like costume and set design do. Ask: do I want to transport viewers there, or bring that world to the present?</p>
+<div class="grid" id="eras"></div>
+</section>
+
+<section id="toolkit">
+<h2>7. YouTube creator toolkit</h2>
+<p class="lead">For a vlog or tutorial, use music in layers and by video section. Never just one track from start to end.</p>
+<div class="scroll"><table id="parts"></table></div>
+<h3 style="margin:30px 0 12px;font-size:1.5rem">Sound effects: the spice rack</h3>
+<div class="row" id="sfxBtns"></div>
+<div class="grid" id="sfx"></div>
+</section>
+
+<section id="mixing">
+<h2>8. Mixing basics</h2>
+<p class="lead">Rough starting points for talking videos. Always trust your ears and test on headphones and phone speakers.</p>
+<div class="deco">
+<div class="mix" id="mix"></div>
+<ul class="chk" style="margin:18px 0 0">
+<li><b>Voice first.</b> If viewers must strain to hear you, the music is too loud.</li>
+<li><b>Duck the music</b> under speech, then bring it up in pauses and b-roll.</li>
+<li><b>Silence is a tool.</b> A dropped-out track right before a reveal hits harder than any riser.</li>
+<li><b>Cut on the beat</b> or on a downbeat when you change scenes.</li>
+<li><b>Fade endings.</b> Don’t chop music mid-note unless it is a deliberate stop.</li>
+<li><b>Loudness:</b> YouTube plays videos at roughly -14 LUFS, so aim near it rather than maxing out.</li>
+</ul>
+</div>
+</section>
+
+<section id="practice">
+<h2>9. Train your ears</h2>
+<div class="grid" id="train"></div>
+<h3 style="margin:30px 0 12px;font-size:1.5rem">Common mistakes</h3>
+<ul class="warn" id="mist"></ul>
+</section>
+
+<section id="lab">
+<h2>11. Hear-the-difference lab</h2>
+<p class="lead">Train your ear with A/B pairs. Play both, notice what changes in your body. Use headphones if you can. These are simple synthesized sketches.</p>
+<div class="grid" id="labGrid"></div>
+</section>
+
+<section id="genres">
+<h2>12. Genre guide</h2>
+<p class="lead">When a client or your own taste says “make it feel like…”, start here.</p>
+<div class="grid" id="genreGrid"></div>
+</section>
+
+<section id="planner">
+<h2>13. Video planner</h2>
+<p class="lead">Pick the type of video you’re making and get a sound plan for it.</p>
+<div class="deco"><div class="row" id="vt"></div><div id="vtOut"><p style="color:var(--mute);margin:0">Choose a video type.</p></div></div>
+</section>
+
+<section id="pacing">
+<h2>14. Pacing, structure and where to get music</h2>
+<p class="lead">Most tracks follow a shape. Match that shape to your edit.</p>
+<div class="row" id="shape"></div>
+<div class="grid" id="pace"></div>
+</section>
+
+<section id="quiz">
+<h2>15. Test yourself</h2>
+<p class="lead">Tap the answer you’d choose.</p>
+<div id="qz"></div>
+</section>
+
+<section id="glossary">
+<h2>10. Mini glossary</h2>
+<div id="gl"></div>
+</section>
+
+<div class="foot"><h2>Rules are references, not handcuffs.</h2><p>Learn the patterns, then break them with a reason. Check the license of any music you use, and prefer royalty-free libraries to avoid copyright claims.</p></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+/* hero eq + nav */
+const COLS=["#ff5d73","#ff7a3d","#ffb627","#3ddc97","#5ac8fa","#c084fc","#f472b6"];
+$("eq").innerHTML=Array.from({length:36},(_,i)=>`<i style="--c:${COLS[Math.floor(i/36*7)]};--h:${(.35+Math.random()*.65).toFixed(2)};--t:${(.5+Math.random()*.9).toFixed(2)}s;--d:${(-Math.random()).toFixed(2)}s"></i>`).join("");
+const NAV=[["mindset","Big idea"],["steps","Method"],["decoder","Decoder"],["instruments","Instruments"],["intensity","Match/contrast"],["era","Time & place"],["toolkit","YouTube kit"],["mixing","Mixing"],["practice","Train"],["lab","Hear lab"],["genres","Genres"],["planner","Planner"],["pacing","Pacing & sources"],["quiz","Quiz"],["glossary","Glossary"]];
+$("nav").innerHTML=NAV.map((n,i)=>`<a href="#${n[0]}" style="--c:${COLS[i%7]}">${n[1]}</a>`).join("");
+const card=(c,t,b)=>`<div class="card" style="--c:${c}"><h3>${t}</h3>${b}</div>`;
+/* 1 */
+$("lang").innerHTML=[["#ff5d73","Letters = instruments","Learn what a violin, a drum or a trumpet sounds like and what family each belongs to."],["#ffb627","Words = patterns","Chases use drums. Horror leans on strings. Heroism uses brass. These repeat across films."],["#3ddc97","Sentences = your choices","Combine instrument, speed, mood and sound effects to say exactly what a scene needs."]].map(x=>card(x[0],x[1],`<p>${x[2]}</p>`)).join("");
+/* 2 steps */
+const ST=[["What is happening?","Describe the clip in one plain sentence. “A guy stares at a blank screen.” Not “sad.” Describe, then feel.","#ff5d73"],["How intense is it?","Only two buckets. High: fast cuts, fast movement, or high stakes even with little movement (a tense conversation about a bomb). Low: calm, sad, peaceful or normal talking.","#ff7a3d"],["What should the viewer feel?","Pick one main emotion: fear, heroism, sadness, calm, fun, tension, curiosity or warmth. One main feeling per scene keeps music focused.","#ffb627"],["When and where?","Is the story in a specific era or place? Use music of that world, or deliberately use modern music to feel fresh.","#3ddc97"],["Match or contrast?","In about 90% of cases music matches the visuals’ intensity. Contrast (cheerful music over something dark) is a spice for special moments.","#5ac8fa"],["Choose instruments and layer","Pick an instrument family for the feeling, set speed, then add sound effects. Test with your clip, then adjust the volume.","#c084fc"]];
+$("stepList").innerHTML=ST.map((s,i)=>`<details style="--c:${s[2]}" ${i==0?"open":""}><summary>Step ${i+1}: ${s[0]}</summary><p style="margin:10px 0 0">${s[1]}</p></details>`).join("");
+/* 3 decoder */
+const FE={
+fear:["Fear / horror","#ff5d73","dread","Minor or dissonant (notes that clash)","50 to 80 slow and uneasy, or frantic when chased","Screechy high strings, low drones, single piano notes, whispered choir","Heartbeat, creaks, sub-bass hit, reversed sounds","Bright happy major chords"],
+hero:["Heroic / epic","#ffb627","epic","Major or bold minor with big open chords","90 to 130","Brass (horns, trumpets), timpani or taiko drums, full strings, choir","Impact hit, cinematic boom, riser into a drop","Tiny, thin sounds with no low end"],
+sad:["Sad / emotional","#5ac8fa","sad","Minor, long held notes","50 to 75","Solo piano, cello, violin, soft strings","Room tone, soft rain, breathing","Busy drums and fast rhythm"],
+calm:["Peaceful / calm","#3ddc97","calm","Major, simple, repeating","60 to 80","Soft piano, acoustic guitar, flute, gentle pads","Birds, wind, water, ambience","Sudden loud hits"],
+fun:["Fun / playful","#ff7a3d","joy","Major, bouncy","100 to 130","Ukulele, plucked strings (pizzicato), xylophone, claps, light drums","Pops, boings, whooshes, sparkles","Slow low drones"],
+tens:["Tension / suspense","#c084fc","riser","Unresolved, keeps climbing","70 to 110 and building","Low string tremolo, pulsing synth, ticking percussion","Riser, ticking clock, pulse, then silence before the reveal","Resolving, comforting chords"],
+myst:["Mystery / curiosity","#f472b6","mystery","Floating, unsure, few notes","60 to 90","Celesta or music box, soft woodwinds, plucked strings, light synth","Shimmer, soft chimes, whoosh-in","Heavy percussion"],
+warm:["Nostalgia / warmth","#e8a24a","warm","Major with gentle colour notes","70 to 95","Acoustic guitar, piano, soft strings, vintage keys","Vinyl crackle, tape hiss, soft ambience","Cold, harsh synth"]};
+const IN={low:["Low intensity","Sparse and spacious: 1 to 3 layers, long notes, lots of silence, soft volume, little or no drums."],high:["High intensity","Dense and driving: more layers, faster rhythm, drums or pulses synced to cuts, bigger dynamics, louder peaks."]};
+let sI=null,sF=null;
+$("inten").innerHTML=Object.keys(IN).map(k=>`<button class="pill" style="--c:#5ac8fa" data-i="${k}">${IN[k][0]}</button>`).join("");
+$("feel").innerHTML=Object.keys(FE).map(k=>`<button class="pill" style="--c:${FE[k][1]}" data-f="${k}">${FE[k][0]}</button>`).join("");
+function show(){document.querySelectorAll("[data-i]").forEach(b=>b.classList.toggle("on",b.dataset.i==sI));document.querySelectorAll("[data-f]").forEach(b=>b.classList.toggle("on",b.dataset.f==sF));
+ if(!sI||!sF)return;const f=FE[sF];
+ $("result").innerHTML=`<div class="out" style="--c:${f[1]}"><h3>${f[0]} · ${IN[sI][0]}</h3><dl><dt>Instruments</dt><dd>${f[5]}</dd><dt>Mood</dt><dd>${f[3]}</dd><dt>Speed (BPM)</dt><dd>${f[4]}</dd><dt>Intensity tip</dt><dd>${IN[sI][1]}</dd><dt>Sound effects</dt><dd>${f[6]}</dd><dt>Avoid</dt><dd>${f[7]}</dd></dl><button class="btn" style="--c:${f[1]}" onclick="SND['${f[2]}']()">▶ Hear it (rough sketch)</button></div>`}
+document.querySelector("#decoder").addEventListener("click",e=>{const b=e.target.closest("[data-i],[data-f]");if(!b)return;if(b.dataset.i)sI=b.dataset.i;else sF=b.dataset.f;show()});
+/* audio */
+let AC;const ac=()=>{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state=="suspended")AC.resume();return AC};
+function tone(f,t,d,ty,v,lp,a,f2){const c=ac(),o=c.createOscillator(),g=c.createGain(),F=c.createBiquadFilter();o.type=ty;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);F.type="lowpass";F.frequency.value=lp||4000;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(v,t+(a||.03));g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(F);F.connect(g);g.connect(c.destination);o.start(t);o.stop(t+d+.05)}
+const kick=t=>tone(150,t,.18,"sine",.6,3000,.005,45);
+function noise(t,d,f1,f2,v){const c=ac(),n=c.sampleRate*d,b=c.createBuffer(1,n,c.sampleRate),x=b.getChannelData(0);for(let i=0;i<n;i++)x[i]=Math.random()*2-1;const s=c.createBufferSource(),F=c.createBiquadFilter(),g=c.createGain();s.buffer=b;F.type="bandpass";F.frequency.setValueAtTime(f1,t);F.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(v,t+d*.5);g.gain.linearRampToValueAtTime(.0001,t+d);s.connect(F);F.connect(g);g.connect(c.destination);s.start(t)}
+const now=()=>ac().currentTime+.02;
+const chord=(fs,ty,d,v,lp,a)=>{const t=now();fs.forEach(f=>tone(f,t,d,ty,v,lp,a))};
+const SND={
+calm:()=>chord([261.6,329.6,392,523.3],"sine",3.5,.14,2500,.7),
+sad:()=>chord([220,261.6,329.6],"triangle",3.5,.16,1400,.9),
+dread:()=>chord([55,58,110],"sawtooth",3.8,.1,260,1.3),
+epic:()=>{const t=now();[146.8,220,293.7,370].forEach(f=>tone(f,t,2.8,"sawtooth",.08,2400,.3));kick(t);kick(t+.5)},
+chase:()=>{const t=now();for(let i=0;i<14;i++){kick(t+i*.19);if(i%2)noise(t+i*.19,.1,3000,6000,.12)}},
+joy:()=>{const t=now();[523,587,659,784,880,784,659,587,523].forEach((f,i)=>tone(f,t+i*.14,.3,"triangle",.2,3500,.01))},
+mystery:()=>{const t=now();[880,1047,830,988].forEach((f,i)=>tone(f,t+i*.7,2.2,"sine",.12,5000,.01))},
+warm:()=>chord([261.6,329.6,392,493.9],"triangle",3.5,.13,1800,.9),
+riser:()=>{const t=now();tone(110,t,3,"sawtooth",.14,3000,2.7,1400);noise(t,3,200,5000,.1);tone(55,t+3,.8,"sine",.6,300,.01,30)},
+hit:()=>{const t=now();tone(100,t,1.2,"sine",.8,500,.005,28);noise(t,.5,2000,200,.25)},
+whoosh:()=>noise(now(),.7,300,3500,.35),
+heart:()=>{const t=now();[0,.35,1,1.35,2,2.35].forEach(x=>tone(70,t+x,.25,"sine",.6,300,.01,40))}};
+/* 4 families */
+const FA=[["Strings","#ff5d73","Violin, viola, cello, double bass, harp","Most emotional range. High and screechy = horror. Slow and warm = heartbreak or love.","Horror, sadness, romance. Spielberg and John Williams used violin for the horror of Schindler’s List.","Fast stabbing notes for panic."],
+["Brass","#ffb627","Trumpet, French horn, trombone, tuba","Big, bold, powerful. Gives goosebumps and a feeling of heroism or epic scale.","Hero moments, reveals, climaxes, chases (like Batman’s chase in The Dark Knight).","Overuse. If everything is epic, nothing is."],
+["Percussion","#ff7a3d","Timpani, taiko, snare, bass drum, cymbals","Energy and rhythm. Matches the speed of the picture.","Chase and fight scenes, countdowns, anything that needs intensity synced to cuts.","Add drums only when the visuals speed up."],
+["Woodwinds","#3ddc97","Flute, clarinet, oboe, bassoon","Light, airy, human. Can feel playful, pastoral or lonely.","Nature, daily life, curiosity, gentle comedy.","Low bassoon for a sneaky, funny tone."],
+["Keys","#5ac8fa","Piano, celesta or music box, organ","Piano is intimate and honest. Music box is childlike and eerie.","Emotional talking moments, reflective vlogs, story intros.","Single slow notes with space between them."],
+["Guitar and plucked","#c084fc","Acoustic guitar, electric guitar, ukulele","Acoustic is warm and friendly (great for vlogs). Electric is rebellious and edgy.","Travel, lifestyle, upbeat edits; rock for attitude.","Light ukulele for fun b-roll."],
+["Synths","#2dd4d4","Pads, arpeggios, synth bass","Modern, sci-fi, retro. Synth tones signalled the 1980s in Stranger Things.","Tech, futuristic, retro and tension building.","Slow pad for atmosphere under talking."],
+["Voice / choir","#f472b6","Choir, soft ‘ahh’ vocals, whispers","Grand, sacred, ghostly or emotional depending on how it’s used.","Epic builds, mourning, supernatural moments.","Whispered voices for creepiness."]];
+$("fam").innerHTML=FA.map(f=>card(f[1],f[0],`<p>${f[2].split(", ").map(x=>`<span class="k" style="--c:${f[1]}">${x}</span>`).join("")}</p><p><b>Feels:</b> ${f[3]}</p><p><b>Use for:</b> ${f[4]}</p><p><b>Try:</b> ${f[5]}</p>`)).join("");
+/* 5 match */
+$("mc").innerHTML=card("#3ddc97","Match (about 90% of the time)",`<p>Music mirrors the visuals’ intensity. In the Ford v Ferrari race scene, music is calm until the driver is allowed to speed up, then drums come in synced to fast cuts. When it returns to a quiet close-up, the pace drops.</p><p><b>Remember:</b> a scene can be high intensity with almost no movement if the stakes are huge (the Oppenheimer climax discussion).</p>`)+card("#ff5d73","Contrast (a special spice)",`<p>Cheerful music over something awful makes viewers uncomfortable yet entertained. Tarantino’s torture scene and American Psycho do this, and comedies and cartoons use it to make trouble funny.</p><p><b>Ask:</b> what is happening, how intense is it, and what should the audience feel?</p>`);
+/* 6 eras */
+$("eras").innerHTML=[["#c084fc","Stranger Things (1980s)","Retro synths put you straight into the 80s, mixed with the composers’ own creativity."],["#ffb627","Midnight in Paris (1920s)","Used real jazz songs of that era in France instead of a newly composed score."],["#ff5d73","Peaky Blinders (1920s)","Modern rock on purpose. It brings the past to the present and fits the gangsters’ rebellious aura."]].map(e=>card(e[0],e[1],`<p>${e[2]}</p>`)).join("");
+/* 7 toolkit */
+const PT=[["Hook / intro (0 to 15 s)","Energetic or curious, with a clear beat or riser into your first line","Whoosh, hit"],["Talking head / tutorial","Quiet, simple loop, no vocals, few instruments (soft piano, light guitar, soft pad)","Subtle pop on key words"],["B-roll montage","Mood music with rhythm; cut footage on beats","Whooshes on transitions, ambience"],["Emotional or story moment","Slow strings or piano with space; drop other layers","Room tone, heartbeat, silence"],["Big reveal / result","Riser, then silence or a hit, then full music","Riser, impact"],["Outro","Warm and resolving; fade out smoothly","Soft ambience"]];
+$("parts").style.setProperty("--c","#5ac8fa");
+$("parts").innerHTML="<tr><th>Section</th><th>Music</th><th>Sound effects</th></tr>"+PT.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join("");
+const SF=[["Whoosh","#5ac8fa","whoosh","Transitions, text sliding in, fast camera moves."],["Riser","#c084fc","riser","Builds anticipation before a reveal or big moment."],["Impact hit","#ff5d73","hit","Punctuates a bold statement, title card or cut."],["Heartbeat","#ff7a3d","heart","Nerves, fear, high stakes."]];
+$("sfxBtns").innerHTML="<span style='color:var(--mute);align-self:center'>Tap to hear rough sketches:</span>"+SF.map(s=>`<button class="btn" style="--c:${s[1]}" onclick="SND.${s[2]}()">▶ ${s[0]}</button>`).join("");
+$("sfx").innerHTML=[["#5ac8fa","Foley","<p>Sounds recorded to match on-screen actions: footsteps, clicks, cloth rustle, door.</p>"],["#3ddc97","Ambience","<p>Background atmosphere: cafe, street, wind, room tone. It makes a scene feel real and fills silence.</p>"],["#ffb627","Stingers & UI","<p>Short musical hits or pops for text, logos and key points. Keep them small and consistent.</p>"],["#f472b6","Diegetic vs score","<p>Diegetic sound exists in the scene (radio, phone ringing). Score is added on top for the audience only.</p>"]].map(x=>card(x[0],x[1]==="Foley"?"Foley":x[1],x[2])).join("");
+/* 8 mix */
+const MX=[["Voice","#ff5d73","90%","Loudest, clear"],["Music (under talking)","#ffb627","35%","Roughly 15 to 20 dB below voice"],["Music (no talking)","#3ddc97","65%","Raise in pauses and b-roll"],["Sound effects","#5ac8fa","50%","Felt, not distracting"],["Ambience","#c084fc","20%","Barely noticeable"]];
+$("mix").innerHTML=MX.map(m=>`<div class="lane" style="--c:${m[1]};--w:${m[2]}"><b>${m[0]}</b><div class="bar"><b></b></div><span style="color:var(--mute);font-size:.8rem">${m[3]}</span></div>`).join("");
+new IntersectionObserver((es,o)=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("go");o.unobserve(e.target)}}),{threshold:.3}).observe($("mix"));
+/* 9 train */
+$("train").innerHTML=[["#ff5d73","1. Watch normally","First viewing: relax and enjoy it like a regular viewer. Don’t analyze yet."],["#ffb627","2. Mark the moments","Afterwards, revisit scenes that made you feel excitement, peace, fear, heroism or tension."],["#3ddc97","3. Eyes closed","Replay the music while closing your eyes. Name the instruments and the speed."],["#5ac8fa","4. Look it up","Google the soundtrack, read reviews, or watch composer interviews to learn the thinking."],["#c084fc","5. Build a swipe file","Keep a note of scene, feeling, instruments and tempo. Patterns will appear fast."]].map(x=>card(x[0],x[1],`<p>${x[2]}</p>`)).join("");
+$("mist").innerHTML=["Using one track for the whole video","Music so loud it fights your voice","Picking music for how it sounds alone rather than for what the scene needs","Epic music on everything, so nothing feels special","Watching only one genre or language (widen your range)","Never testing on phone speakers"].map(x=>`<li>${x}</li>`).join("");
+/* new sounds */
+Object.assign(SND,{
+major:()=>chord([261.6,329.6,392],"triangle",2.8,.16,2200,.2),
+minor:()=>chord([261.6,311.1,392],"triangle",2.8,.16,2200,.2),
+slow:()=>{const t=now();for(let i=0;i<4;i++)kick(t+i*.9)},
+fast:()=>{const t=now();for(let i=0;i<14;i++)kick(t+i*.16)},
+low:()=>chord([65.4,98],"sine",3,.4,400,.3),
+high:()=>chord([1318,1568],"sine",3,.1,6000,.2),
+clash:()=>chord([261.6,277.2,370],"sawtooth",2.8,.08,1800,.1),
+sparse:()=>tone(329.6,now(),3,"triangle",.2,2000,.05),
+layered:()=>{const t=now();chord([130.8,196,261.6,329.6,392,523.3],"sawtooth",3,.06,2200,.4);kick(t);kick(t+.75);kick(t+1.5)}});
+const PAIRS=[["Major vs minor","#ffb627","major","Major","minor","Minor","One note changes and the mood flips from bright to sad."],["Slow vs fast pulse","#ff7a3d","slow","Slow","fast","Fast","Speed controls urgency: calm walk vs chase."],["Low vs high pitch","#5ac8fa","low","Low","high","High","Low feels heavy or threatening. High feels light, or anxious when piercing."],["Calm vs clashing","#ff5d73","calm","Consonant","clash","Dissonant","Notes that clash create unease, perfect for horror and tension."],["Sparse vs layered","#c084fc","sparse","Sparse","layered","Layered","Adding layers builds intensity. Removing them creates space."]];
+$("labGrid").innerHTML=PAIRS.map(p=>card(p[1],p[0],`<p>${p[6]}</p><div class="row"><button class="btn" style="--c:${p[1]}" onclick="SND.${p[2]}()">▶ ${p[3]}</button><button class="btn" style="--c:${p[1]}" onclick="SND.${p[4]}()">▶ ${p[5]}</button></div>`)).join("");
+/* genres */
+const GN=[["Lofi / chill","#c084fc","Mellow piano, dusty soft drums, warm keys","Study videos, talking, slow vlogs, background work","Slow, no big changes, so it never competes with your voice."],["Cinematic","#ffb627","Strings, brass, big drums, choir","Trailers, story videos, big reveals","Build slowly. Save the biggest moment for your best moment."],["Upbeat / corporate","#3ddc97","Claps, light guitar, bright keys, simple drums","Explainers, product videos, intros","Positive and clean. Avoid using it for emotional stories."],["Horror / dark","#ff5d73","Low drones, high strings, whispers, silence","Mystery, scary stories, suspense","Silence is as important as sound."],["Comedy / playful","#ff7a3d","Pizzicato strings, ukulele, bassoon, xylophone","Funny edits, fails, quick cuts","Time hits to the joke. Try cheerful music over bad situations."],["Travel / adventure","#5ac8fa","Acoustic guitar, hand percussion, soaring strings","Vlogs, landscapes, montages","Build from a gentle start to a bigger peak for scenic wide shots."],["Electronic / gaming","#2dd4d4","Synths, heavy bass, fast drums","Gaming, tech, fast edits","Match drops to big moments."],["Documentary / ambient","#f472b6","Soft piano, light strings, pads, textures","Interviews, essays, reflective stories","Keep it simple so the voice and ideas stay in front."]];
+$("genreGrid").innerHTML=GN.map(g=>card(g[1],g[0],`<p><b>Sounds like:</b> ${g[2]}</p><p><b>Best for:</b> ${g[3]}</p><p><b>Tip:</b> ${g[4]}</p>`)).join("");
+/* planner */
+const VT={"Tutorial":["#5ac8fa","Quiet, simple loop with few instruments (soft piano, light guitar, pad). No vocals.","Subtle clicks or pops on key steps; gentle whoosh on screen changes.","Intro: slightly more energy. During steps: music low. Outro: lift and fade.","Music that fights your voice."],"Vlog":["#3ddc97","Acoustic guitar, light drums, upbeat or warm music; change track mood with the scene.","Whooshes on cuts, ambience (street, cafe), natural sounds.","Cut on the beat in montages. Drop music during talking.","One song for the whole video."],"Short / Reel":["#ff7a3d","Hook-first: a clear beat or riser in the first second; short, punchy tracks.","Hits and whooshes on every key cut; stingers on text.","Front-load the energy. Land the payoff on a beat or drop.","Slow intros."],"Story / documentary":["#c084fc","Piano, strings and pads; let the mood follow the story’s emotion curve.","Room tone, ambience, heartbeat, silence before key lines.","Quiet start, build into the turning point, resolve softly at the end.","Epic music on everything."],"Gaming / montage":["#ff5d73","Electronic, synth bass, fast drums; sync beats to cuts.","Impact hits, riser into drops, glitch or whoosh effects.","Build to a drop for the best play; calm section between rounds.","Muddy bass that hides game audio."]};
+$("vt").innerHTML=Object.keys(VT).map(k=>`<button class="pill" style="--c:${VT[k][0]}" data-v="${k}">${k}</button>`).join("");
+$("vt").addEventListener("click",e=>{const b=e.target.closest("[data-v]");if(!b)return;const k=b.dataset.v,v=VT[k];document.querySelectorAll("[data-v]").forEach(x=>x.classList.toggle("on",x==b));
+$("vtOut").innerHTML=`<div class="out" style="--c:${v[0]}"><h3>${k}</h3><dl><dt>Music</dt><dd>${v[1]}</dd><dt>Effects</dt><dd>${v[2]}</dd><dt>Structure</dt><dd>${v[3]}</dd><dt>Avoid</dt><dd>${v[4]}</dd></dl></div>`});
+/* pacing */
+$("shape").innerHTML=["Intro","Build","Peak / drop","Breakdown","Outro"].map((s,i)=>`<span class="k" style="--c:${COLS[i]};font:700 1rem Syne;padding:8px 16px;animation:in .5s ${i*.12}s both">${s}</span>${i<4?"<span style='align-self:center'>➜</span>":""}`).join("");
+$("pace").innerHTML=[["#3ddc97","Edit with the shape","<p>Change scenes where the music changes. Put your biggest visual moment on the peak or drop. Use the breakdown for quieter explanation.</p>"],["#ffb627","Cut on the beat","<p>Cut on or just before a strong beat so edits feel rhythmic. Tap the beat in your editor and add markers.</p>"],["#5ac8fa","Loops for long videos","<p>Choose tracks with loopable sections for talking content. Overlap two tracks with a crossfade when moving between moods.</p>"],["#ff5d73","Where to get music","<p>Royalty-free libraries (YouTube Audio Library, Pixabay Music) or paid subscriptions (Epidemic Sound, Artlist). Always check current license terms, save proof of the license, and avoid popular copyrighted songs.</p>"]].map(x=>card(x[0],x[1],x[2])).join("");
+/* quiz */
+const QZ=[["A clip shows a character sitting alone by a rainy window, moving slowly. Which music?",["Fast drums and brass","Slow solo piano or cello, minor","Bouncy ukulele"],1,"Low intensity plus sadness: sparse, slow and minor."],["Fast cuts of a car chase. Which choice?",["A single low drone","Soft flute","Drums synced to the cuts"],2,"High intensity: percussion matches the visuals’ speed."],["Your friend slips and falls in a funny way. What’s a smart choice?",["Horror strings","Cheerful playful music (contrast)","Epic brass"],1,"Contrast makes trouble funny, like in comedies and cartoons."],["A talking-head tutorial. What works best?",["Quiet, simple loop under your voice","Loud song with lyrics","Epic brass"],0,"Voice comes first. Keep music simple and low."],["You want a big reveal to hit harder. Which trick?",["Keep volume constant","Riser, then a moment of silence or a hit","Add more drums throughout"],1,"A riser builds anticipation and dropping out creates impact."]];
+$("qz").innerHTML=QZ.map((q,i)=>`<div class="deco" style="margin-bottom:14px"><b>${i+1}. ${q[0]}</b><div class="row">${q[1].map((o,j)=>`<button class="pill" style="--c:${COLS[i]}" data-q="${i}" data-a="${j}">${o}</button>`).join("")}</div><div id="fb${i}" style="color:var(--mute)"></div></div>`).join("");
+$("qz").addEventListener("click",e=>{const b=e.target.closest("[data-q]");if(!b)return;const i=+b.dataset.q,q=QZ[i],ok=+b.dataset.a==q[2];$("fb"+i).innerHTML=(ok?"✅ Correct. ":"❌ Not quite. ")+q[3];if(!ok)b.style.opacity=".4"});
+/* 10 glossary */
+$("gl").innerHTML=[["BGM","Background music."],["BPM","Beats per minute, the speed of the music."],["Riser","A rising sound that builds tension."],["Hit / impact","A short, heavy accent sound."],["Stinger","A brief sound or musical sting for emphasis."],["Ambience","Background environment sound."],["Foley","Sound effects performed or recorded to match actions."],["Ducking","Automatically lowering music when a voice speaks."],["Score","Music composed to support a film or video."]].map((g,i)=>`<details style="--c:${COLS[i%7]}"><summary>${g[0]}</summary><p style="margin:8px 0 0">${g[1]}</p></details>`).join("");
+</script>
+</body>
+</html>
