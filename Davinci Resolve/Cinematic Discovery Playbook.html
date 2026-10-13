@@ -1,0 +1,812 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Cinematic Discovery Playbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a film-slate reading page. Letterboxed 2.39:1 title card, sticky chapter rail on wide screens, one reading column, interactive idea filter in the middle. */
+:root {
+  --bg: #eef0ef;
+  --surface: #f9faf9;
+  --fg: #14191c;
+  --muted: #55605f;
+  --line: #cfd6d4;
+  --accent: #14707c;
+  --accent-ink: #ffffff;
+  --glow: #c9791a;
+  --tip-bg: #e3eeee;
+  --font-display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1215; --surface: #151b1f; --fg: #e5eae9; --muted: #9aa8a7; --line: #28333a;
+    --accent: #4dc0cd; --accent-ink: #06181b; --glow: #e8a04a; --tip-bg: #16282c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1215; --surface: #151b1f; --fg: #e5eae9; --muted: #9aa8a7; --line: #28333a;
+  --accent: #4dc0cd; --accent-ink: #06181b; --glow: #e8a04a; --tip-bg: #16282c;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 1.0625rem; line-height: 1.7;
+  padding-inline: 1rem; margin: 0;
+}
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1; margin: 0; }
+p { margin: 0 0 1rem; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.mono { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+.progress { position: fixed; top: 0; left: 0; height: 3px; width: 100%; background: var(--glow); transform-origin: 0 50%; transform: scaleX(0); z-index: 50; }
+
+/* Title card */
+.card-wrap { max-width: 1120px; margin-inline: auto; padding-top: 1.25rem; }
+.title-card {
+  background: #05080a; color: #f2f5f4; border-radius: 4px;
+  aspect-ratio: 2.39 / 1; min-height: 15rem; max-width: 100%;
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: clamp(1rem, 3vw, 2.25rem); position: relative; overflow: hidden;
+}
+.title-card::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 45% 70% at 82% 45%, rgba(77,192,205,0.28), transparent 70%),
+              radial-gradient(ellipse 25% 35% at 90% 30%, rgba(232,160,74,0.25), transparent 70%);
+}
+.title-card > * { position: relative; }
+.title-card .tc { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em; color: #9fb0b0; text-transform: uppercase; }
+.title-card h1 { font-size: clamp(2.6rem, 9vw, 6.5rem); font-weight: 900; text-transform: uppercase; letter-spacing: 0.01em; max-width: 12ch; }
+.title-card h1 span { color: #4dc0cd; }
+.title-card .sub { font-size: clamp(0.9rem, 1.6vw, 1.1rem); max-width: 46ch; color: #c8d3d2; margin: 0; line-height: 1.5; }
+.rec { display: inline-block; width: 0.6rem; height: 0.6rem; border-radius: 50%; background: #e0553b; margin-right: 0.5rem; animation: blink 1.6s steps(2, jump-none) infinite; }
+@keyframes blink { 50% { opacity: 0.2; } }
+
+/* Page grid */
+.page { max-width: 1120px; margin-inline: auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 2rem; padding-block: 2.5rem 5rem; }
+.rail { display: none; }
+@media (min-width: 1000px) {
+  .page { grid-template-columns: 13.5rem minmax(0, 1fr); gap: 3.5rem; }
+  .rail { display: block; position: sticky; top: 2rem; align-self: start; }
+  .rail ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.15rem; border-left: 1px solid var(--line); }
+  .rail a { display: block; padding: 0.3rem 0.9rem; margin-left: -1px; border-left: 2px solid transparent; text-decoration: none; color: var(--muted); font-size: 0.86rem; line-height: 1.35; }
+  .rail a.on { color: var(--fg); border-left-color: var(--accent); font-weight: 600; }
+  .rail a:hover { color: var(--fg); }
+}
+.rail-title { margin-bottom: 0.8rem; }
+main { min-width: 0; max-width: 44rem; }
+
+section { padding-block: 0.5rem 3.5rem; }
+.kicker { display: block; margin-bottom: 0.6rem; color: var(--accent); }
+h2 { font-size: clamp(2.1rem, 5.5vw, 3.2rem); font-weight: 800; text-transform: uppercase; letter-spacing: 0.01em; margin-bottom: 1.2rem; }
+h3 { font-size: 1.55rem; font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase; margin: 2rem 0 0.8rem; }
+.lede { font-size: 1.2rem; line-height: 1.6; }
+strong { font-weight: 600; }
+ul.plain { padding-left: 1.2rem; margin: 0 0 1rem; }
+ul.plain li { margin-bottom: 0.35rem; }
+
+.pull {
+  margin: 1.8rem 0; padding: 1.2rem 1.4rem; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 4px;
+  font-size: 1.15rem; line-height: 1.55; font-weight: 500;
+}
+.tip {
+  margin: 1.2rem 0; padding: 0.85rem 1.1rem; background: var(--tip-bg);
+  border-radius: 4px; font-size: 0.95rem; line-height: 1.55;
+}
+.tip b { font-weight: 600; }
+
+/* Value cards */
+.values { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+.value { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 1.2rem; min-width: 0; }
+.value h3 { margin: 0.3rem 0 0.4rem; font-size: 1.45rem; }
+.value p.what { margin-bottom: 0.7rem; color: var(--muted); font-size: 0.96rem; }
+.value ul { margin: 0; padding-left: 1.1rem; font-size: 0.93rem; line-height: 1.5; }
+.value li { margin-bottom: 0.4rem; }
+
+/* Pillars */
+.pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+.pillar { padding: 1.3rem; border-radius: 4px; background: var(--surface); border: 1px solid var(--line); min-width: 0; }
+.pillar h3 { margin-top: 0.3rem; }
+.pillar ul { padding-left: 1.1rem; margin: 0 0 0.8rem; }
+.pillar li { margin-bottom: 0.3rem; }
+
+/* Idea filter */
+.filter { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: clamp(1rem, 3vw, 1.6rem); margin: 1.5rem 0; }
+.q { padding-block: 1rem; border-top: 1px solid var(--line); }
+.q:first-of-type { border-top: 0; padding-top: 0; }
+.q-text { font-weight: 600; margin-bottom: 0.2rem; }
+.q-hint { font-size: 0.92rem; color: var(--muted); margin-bottom: 0.7rem; }
+.opts { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.opts input { position: absolute; opacity: 0; pointer-events: none; }
+.opts label {
+  cursor: pointer; padding: 0.45rem 0.9rem; border: 1px solid var(--line); border-radius: 3px;
+  font-size: 0.9rem; background: var(--bg); user-select: none;
+}
+.opts input:checked + label { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.opts input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
+.score { display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; margin-top: 1.2rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+.score-num { font-family: var(--font-display); font-weight: 900; font-size: 3.6rem; line-height: 0.9; font-variant-numeric: tabular-nums; }
+.score-num small { font-size: 1.6rem; color: var(--muted); font-weight: 700; }
+.verdict { flex: 1 1 14rem; min-width: 0; font-size: 0.98rem; line-height: 1.5; }
+.meter { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-top: 0.6rem; position: relative; }
+.meter i { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.4s ease; }
+.meter::after { content: ""; position: absolute; left: 70%; top: -2px; bottom: -2px; width: 2px; background: var(--glow); }
+.legend { display: flex; gap: 1.2rem; flex-wrap: wrap; margin: 0 0 1rem; padding: 0; list-style: none; font-size: 0.92rem; }
+.legend b { font-family: var(--font-mono); color: var(--accent); margin-right: 0.3rem; }
+
+/* Sentence builder */
+.sentence { font-size: 1.1rem; line-height: 2.3; padding: 1.2rem 1.4rem; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; margin: 1.2rem 0; }
+.sentence input {
+  font: inherit; color: var(--fg); background: var(--bg); border: 0; border-bottom: 2px solid var(--accent);
+  padding: 0.1rem 0.4rem; width: min(100%, 17rem); border-radius: 0;
+}
+.sentence input::placeholder { color: var(--muted); opacity: 0.8; }
+
+/* Story arc */
+.arc { margin: 1.5rem 0; overflow-x: auto; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
+.arc svg { display: block; min-width: 560px; width: 100%; height: auto; }
+.arc .grid { stroke: var(--line); stroke-width: 1; }
+.arc .curve { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 0; }
+.arc.draw .curve { animation: draw 2.2s ease-out both; }
+@keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.arc .dot { fill: var(--bg); stroke: var(--accent); stroke-width: 3; }
+.arc .dot.hot { fill: var(--glow); stroke: var(--glow); }
+.arc text { fill: var(--fg); font-family: var(--font-display); font-weight: 800; font-size: 19px; letter-spacing: 0.04em; text-transform: uppercase; }
+.arc text.sm { fill: var(--muted); font-family: var(--font-mono); font-weight: 400; font-size: 11px; letter-spacing: 0.06em; }
+.parts { counter-reset: part; display: grid; gap: 1rem; margin: 1.5rem 0; padding: 0; list-style: none; }
+.parts li { counter-increment: part; display: grid; grid-template-columns: 2.4rem minmax(0, 1fr); gap: 0.9rem; align-items: start; }
+.parts li::before { content: counter(part); font-family: var(--font-display); font-weight: 900; font-size: 2.2rem; line-height: 0.9; color: var(--accent); }
+.parts h3 { margin: 0 0 0.2rem; font-size: 1.35rem; }
+.parts p { margin: 0; }
+
+/* Title compare */
+.compare { display: grid; gap: 0.8rem; margin: 1.5rem 0; }
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 0.6rem; }
+.pair > div { padding: 0.9rem 1.1rem; border-radius: 4px; min-width: 0; }
+.pair .weak { background: var(--surface); border: 1px dashed var(--line); color: var(--muted); }
+.pair .strong { background: var(--surface); border: 1px solid var(--accent); font-weight: 500; }
+.pair .mono { display: block; margin-bottom: 0.25rem; }
+.pair .strong .mono { color: var(--accent); }
+.formulas { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; list-style: none; margin: 1rem 0; }
+.formulas li { padding: 0.4rem 0.8rem; border: 1px solid var(--line); border-radius: 3px; background: var(--surface); font-size: 0.93rem; }
+
+/* Shots */
+.shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+.shot { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.shot svg { display: block; width: 100%; height: auto; background: #0a0f12; color: #cfe1e3; }
+.shot .body { padding: 0.9rem 1rem 1.1rem; }
+.shot h3 { margin: 0.2rem 0 0.3rem; font-size: 1.3rem; }
+.shot p { margin: 0; font-size: 0.93rem; line-height: 1.5; color: var(--muted); }
+
+/* Three methods + workflow */
+.methods { display: grid; gap: 1rem; margin: 1.5rem 0; }
+.method { padding-left: 1rem; border-left: 3px solid var(--accent); }
+.method h3 { margin: 0 0 0.3rem; font-size: 1.35rem; }
+.days { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+.day { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 1.2rem; min-width: 0; }
+.day h3 { margin: 0.2rem 0 0.7rem; }
+.day ol { padding-left: 1.2rem; margin: 0; font-size: 0.96rem; line-height: 1.55; }
+.day li { margin-bottom: 0.35rem; }
+.day p { font-size: 0.96rem; }
+
+/* Template */
+.tpl { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; margin: 1.5rem 0; overflow: hidden; }
+.tpl-bar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.7rem 1rem; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.tpl-bar button { font: inherit; font-size: 0.88rem; font-weight: 600; background: var(--accent); color: var(--accent-ink); border: 0; padding: 0.45rem 1rem; border-radius: 3px; cursor: pointer; }
+.tpl-bar button:hover { filter: brightness(1.08); }
+.tpl-body { padding: 1rem 1.2rem; max-height: 22rem; overflow: auto; }
+.tpl-body h4 { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin: 1.1rem 0 0.4rem; }
+.tpl-body h4:first-child { margin-top: 0; }
+.tpl-body ul { list-style: none; margin: 0; padding: 0; font-size: 0.93rem; }
+.tpl-body li { padding: 0.3rem 0; border-bottom: 1px dotted var(--line); }
+.tpl-body li span { color: var(--muted); }
+
+/* Metrics */
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+.metric { padding: 1rem 1.1rem; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; min-width: 0; }
+.metric h3 { margin: 0.2rem 0 0.4rem; font-size: 1.3rem; }
+.metric p { margin: 0; font-size: 0.94rem; line-height: 1.55; }
+
+/* Rules */
+.rules { list-style: none; padding: 0; margin: 1.5rem 0; counter-reset: r; display: grid; gap: 0; }
+.rules li { counter-increment: r; display: grid; grid-template-columns: 3rem minmax(0, 1fr); gap: 0.8rem; padding-block: 1rem; border-top: 1px solid var(--line); }
+.rules li:last-child { border-bottom: 1px solid var(--line); }
+.rules li::before { content: counter(r); font-family: var(--font-display); font-weight: 900; font-size: 2.6rem; line-height: 0.85; color: var(--glow); }
+.final { margin-top: 2rem; padding: clamp(1.2rem, 4vw, 2rem); background: #05080a; color: #f2f5f4; border-radius: 4px; }
+.final .mono { color: #9fb0b0; }
+.final p.big { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.7rem, 5vw, 2.5rem); line-height: 1.05; text-transform: uppercase; margin: 0.6rem 0 1rem; }
+.final p { color: #c8d3d2; margin-bottom: 0.5rem; }
+
+footer { max-width: 1120px; margin-inline: auto; padding-block: 1.5rem 2.5rem; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.9rem; }
+
+/* Gentle entrance: content is visible at rest, only a small lift on first view */
+.lift { transition: transform 0.6s ease; }
+.lift.pre { transform: translateY(14px); }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .rec { animation: none; }
+  .arc.draw .curve { animation: none; }
+  .lift, .lift.pre { transition: none; transform: none; }
+  .meter i { transition: none; }
+}
+</style>
+
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<div class="card-wrap">
+  <header class="title-card">
+    <div class="tc"><span><i class="rec"></i>Planning guide</span><span>Hyderabad / Assam</span></div>
+    <div>
+      <h1>The Cinematic <span>Discovery</span> Playbook</h1>
+    </div>
+    <p class="sub">A YouTube planning guide for us as a couple. Mostly no talking, natural sound, music and minimal text, so strangers have a real reason to click, watch and remember.</p>
+  </header>
+</div>
+
+<div class="page">
+  <nav class="rail" aria-label="Chapters">
+    <div class="mono rail-title">Chapters</div>
+    <ol id="toc">
+      <li><a href="#north-star">Why anyone should watch</a></li>
+      <li><a href="#identity">Channel identity</a></li>
+      <li><a href="#filter">The idea filter</a></li>
+      <li><a href="#story">Find the story first</a></li>
+      <li><a href="#titles">Titles</a></li>
+      <li><a href="#shots">Plan the shots</a></li>
+      <li><a href="#one-camera">One camera, two people</a></li>
+      <li><a href="#craft">Cinematography and editing</a></li>
+      <li><a href="#weekend">Weekend workflow</a></li>
+      <li><a href="#working">Is a video working?</a></li>
+      <li><a href="#template">Planning template</a></li>
+      <li><a href="#rules">Five rules</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <section id="north-star">
+      <span class="mono kicker">Chapter 01</span>
+      <h2>Our north star: why should anyone watch?</h2>
+      <p class="lede">Our goal is to create cinematic videos that give strangers a genuine reason to click, watch and remember. Our core idea is to discover interesting places, experiences, food and everyday life, then tell those stories through beautiful filmmaking.</p>
+      <div class="pull">We are not asking people to watch our lives simply because they are our lives. We are inviting them to discover something through our experiences.</div>
+      <p>People who don't know us yet need a reason to click. They might be interested in a place, curious about an experience, looking for useful information or seeking a particular feeling. Every video must offer at least one clear type of value.</p>
+
+      <h3>Four types of viewer value</h3>
+      <div class="values">
+        <article class="value lift">
+          <span class="mono">Value 1</span>
+          <h3>Practical</h3>
+          <p class="what">The viewer learns something useful.</p>
+          <ul>
+            <li>Is this peaceful escape near Dhulapally worth visiting?</li>
+            <li>What can two people do on a weekend in Hyderabad?</li>
+            <li>What should you know before visiting a particular place?</li>
+          </ul>
+        </article>
+        <article class="value lift">
+          <span class="mono">Value 2</span>
+          <h3>Discovery</h3>
+          <p class="what">The viewer finds something they didn't know existed.</p>
+          <ul>
+            <li>What does everyday life in small-town Assam really look like?</li>
+            <li>Exploring an unfamiliar neighbourhood in Hyderabad.</li>
+            <li>Discovering a local market and its food.</li>
+          </ul>
+        </article>
+        <article class="value lift">
+          <span class="mono">Value 3</span>
+          <h3>Experiential</h3>
+          <p class="what">The viewer feels as though they are there with us.</p>
+          <ul>
+            <li>A cinematic journey through the streets of Goreswar.</li>
+            <li>A morning at a quiet lakeside.</li>
+            <li>A local food experience captured through natural sounds and beautiful visuals.</li>
+          </ul>
+        </article>
+        <article class="value lift">
+          <span class="mono">Value 4</span>
+          <h3>Emotional</h3>
+          <p class="what">The viewer feels something.</p>
+          <ul>
+            <li>Returning home after months away.</li>
+            <li>Revisiting a place connected to our childhood.</li>
+            <li>Sharing a simple meal that reminds us of home.</li>
+          </ul>
+        </article>
+      </div>
+      <p>A video can deliver several types of value, but we should know which one is its main attraction.</p>
+    </section>
+
+    <section id="identity">
+      <span class="mono kicker">Chapter 02</span>
+      <h2>Our channel identity</h2>
+      <p>We focus on two connected content pillars.</p>
+      <div class="pillars">
+        <article class="pillar lift">
+          <span class="mono">Pillar A</span>
+          <h3>Discovering Hyderabad and its surroundings</h3>
+          <p>We currently live here, so this gives us regular chances to film. We can explore:</p>
+          <ul>
+            <li>Interesting places and peaceful escapes.</li>
+            <li>Local streets, markets and neighbourhoods.</li>
+            <li>Food spots and local experiences.</li>
+            <li>Unusual or worthwhile things to do nearby.</li>
+            <li>Affordable outings and weekend discoveries.</li>
+          </ul>
+          <p>The goal is not to show that we visited a place. We want to answer a question, uncover something interesting or help viewers decide whether the experience is worth their time.</p>
+        </article>
+        <article class="pillar lift">
+          <span class="mono">Pillar B</span>
+          <h3>Discovering everyday life in Assam</h3>
+          <p>Assam is part of our lives and background, which gives the channel a different perspective. In Goreswar or Dimakuchi we can capture:</p>
+          <ul>
+            <li>Local food and traditional cooking.</li>
+            <li>Markets, streets and ordinary daily routines.</li>
+            <li>Family traditions and festivals.</li>
+            <li>What returning home feels like.</li>
+            <li>Local experiences viewers from elsewhere may not know about.</li>
+          </ul>
+          <p>We don't need to portray Assam as a tourist destination in every video. Everyday life is interesting when we reveal it through a thoughtful story.</p>
+        </article>
+      </div>
+      <div class="pull">We discover interesting places, experiences and everyday life, then tell those stories cinematically.</div>
+      <p>Hyderabad and Assam are different settings within the same channel, not two unrelated niches.</p>
+    </section>
+
+    <section id="filter">
+      <span class="mono kicker">Chapter 03</span>
+      <h2>The idea filter: should we make this video?</h2>
+      <p>Before picking up the camera, answer five questions. Score each answer from 0 to 2, then add them up. Try it below with a real idea.</p>
+      <ul class="legend">
+        <li><b>0</b>No clear answer</li>
+        <li><b>1</b>Some potential, needs work</li>
+        <li><b>2</b>Clear and compelling</li>
+      </ul>
+
+      <form class="filter" id="filter-form" onsubmit="return false">
+        <div class="q">
+          <div class="q-text">1. Why would a stranger click?</div>
+          <div class="q-hint">What is interesting, surprising, useful or emotionally compelling about this idea?</div>
+          <div class="opts" role="radiogroup" aria-label="Question 1 score">
+            <input type="radio" name="q1" id="q1-0" value="0"><label for="q1-0">0 · No answer</label>
+            <input type="radio" name="q1" id="q1-1" value="1"><label for="q1-1">1 · Some potential</label>
+            <input type="radio" name="q1" id="q1-2" value="2"><label for="q1-2">2 · Compelling</label>
+          </div>
+        </div>
+        <div class="q">
+          <div class="q-text">2. What will the viewer get?</div>
+          <div class="q-hint">Will they discover something, learn something useful, experience a place or feel something?</div>
+          <div class="opts" role="radiogroup" aria-label="Question 2 score">
+            <input type="radio" name="q2" id="q2-0" value="0"><label for="q2-0">0 · No answer</label>
+            <input type="radio" name="q2" id="q2-1" value="1"><label for="q2-1">1 · Some potential</label>
+            <input type="radio" name="q2" id="q2-2" value="2"><label for="q2-2">2 · Compelling</label>
+          </div>
+        </div>
+        <div class="q">
+          <div class="q-text">3. Why this video instead of another on the same topic?</div>
+          <div class="q-hint">Maybe we have access to an unfamiliar place, a personal connection, a different perspective or a particularly interesting experience.</div>
+          <div class="opts" role="radiogroup" aria-label="Question 3 score">
+            <input type="radio" name="q3" id="q3-0" value="0"><label for="q3-0">0 · No answer</label>
+            <input type="radio" name="q3" id="q3-1" value="1"><label for="q3-1">1 · Some potential</label>
+            <input type="radio" name="q3" id="q3-2" value="2"><label for="q3-2">2 · Compelling</label>
+          </div>
+        </div>
+        <div class="q">
+          <div class="q-text">4. Is there a story?</div>
+          <div class="q-hint">Can we take viewers from a starting point, through a discovery or experience, to a satisfying ending?</div>
+          <div class="opts" role="radiogroup" aria-label="Question 4 score">
+            <input type="radio" name="q4" id="q4-0" value="0"><label for="q4-0">0 · No answer</label>
+            <input type="radio" name="q4" id="q4-1" value="1"><label for="q4-1">1 · Some potential</label>
+            <input type="radio" name="q4" id="q4-2" value="2"><label for="q4-2">2 · Compelling</label>
+          </div>
+        </div>
+        <div class="q">
+          <div class="q-text">5. Can we produce it sustainably?</div>
+          <div class="q-hint">Can we film it over a weekend without unnecessary expense, stress or an unrealistic editing workload?</div>
+          <div class="opts" role="radiogroup" aria-label="Question 5 score">
+            <input type="radio" name="q5" id="q5-0" value="0"><label for="q5-0">0 · No answer</label>
+            <input type="radio" name="q5" id="q5-1" value="1"><label for="q5-1">1 · Some potential</label>
+            <input type="radio" name="q5" id="q5-2" value="2"><label for="q5-2">2 · Compelling</label>
+          </div>
+        </div>
+        <div class="score" aria-live="polite">
+          <div class="score-num"><span id="score">0</span><small> / 10</small></div>
+          <div class="verdict">
+            <span id="verdict">Answer the five questions to see where the idea stands. The orange tick on the bar marks 7, our starting threshold.</span>
+            <div class="meter"><i id="meter"></i></div>
+          </div>
+        </div>
+      </form>
+      <p>Aim for at least 7 before committing to a video. If the idea scores poorly, improve the concept rather than hoping beautiful cinematography will rescue it. This is a planning tool, not a scientific prediction of views.</p>
+    </section>
+
+    <section id="story">
+      <span class="mono kicker">Chapter 04</span>
+      <h2>Find the story before filming</h2>
+      <p>We should not start with a shot list. First, we should know what the video is about. For every idea, complete this sentence:</p>
+      <div class="sentence">
+        We are going to <input type="text" id="s1" placeholder="explore a local market" aria-label="What we are going to do"> because we want to discover whether, why or how <input type="text" id="s2" placeholder="it is worth a weekend morning" aria-label="What we want to discover">.
+      </div>
+      <ul class="plain">
+        <li>We are going to explore a nearby nature spot because we want to discover whether it is worth visiting for a peaceful escape.</li>
+        <li>We are going to explore a local market because we want to discover what makes it interesting and what people can experience there.</li>
+        <li>We are going back to Assam because we want to capture what everyday life in our hometown really looks and feels like.</li>
+      </ul>
+      <p>This sentence gives the video a purpose. If we cannot complete it meaningfully, the idea may be a routine vlog rather than a story.</p>
+
+      <h3>The five-part story structure</h3>
+      <div class="arc" id="arc">
+        <svg viewBox="0 0 700 250" role="img" aria-label="A line that rises from the hook through setup and journey to the discovery peak, then settles at the payoff">
+          <line class="grid" x1="30" y1="200" x2="670" y2="200"/>
+          <line class="grid" x1="30" y1="40" x2="670" y2="40"/>
+          <path class="curve" pathLength="1" d="M 60 150 C 90 70, 110 70, 150 120 S 240 160, 300 140 S 400 120, 460 80 S 540 40, 560 40 S 620 110, 640 115"/>
+          <circle class="dot hot" cx="60" cy="150" r="7"/>
+          <circle class="dot" cx="170" cy="130" r="7"/>
+          <circle class="dot" cx="330" cy="138" r="7"/>
+          <circle class="dot hot" cx="560" cy="40" r="7"/>
+          <circle class="dot" cx="640" cy="115" r="7"/>
+          <text x="60" y="186" text-anchor="middle">Hook</text>
+          <text x="170" y="164" text-anchor="middle">Setup</text>
+          <text x="330" y="172" text-anchor="middle">Journey</text>
+          <text x="560" y="26" text-anchor="middle">Discovery</text>
+          <text x="640" y="146" text-anchor="middle">Payoff</text>
+          <text class="sm" x="30" y="222">00:00</text>
+          <text class="sm" x="670" y="222" text-anchor="end">END</text>
+          <text class="sm" x="30" y="242">Viewer curiosity over the length of the video</text>
+        </svg>
+      </div>
+      <ol class="parts">
+        <li><div><h3>The hook</h3><p>Show the most interesting glimpses first. Make viewers curious about what they are going to discover.</p></div></li>
+        <li><div><h3>The setup</h3><p>Establish where we are, what we are doing and why the experience matters. Use short text cards if context is necessary.</p></div></li>
+        <li><div><h3>The journey</h3><p>Show the process of getting there, exploring, trying something or experiencing the place.</p></div></li>
+        <li><div><h3>The discovery</h3><p>The heart of the video. Reveal what we found, what surprised us, what the experience was really like or what made the place meaningful.</p></div></li>
+        <li><div><h3>The payoff</h3><p>Give the viewer a satisfying conclusion. For a location guide, that might be an honest verdict on whether the place is worth visiting. For an Assam story, it might be a moment that captures the feeling of being home.</p></div></li>
+      </ol>
+      <p>Not every video needs a dramatic twist. It does need progression.</p>
+    </section>
+
+    <section id="titles">
+      <span class="mono kicker">Chapter 05</span>
+      <h2>Titles: package the idea before shooting</h2>
+      <p>A title is not just a label. It tells potential viewers why they should care. We brainstorm titles before filming so we know what promise the video has to deliver.</p>
+      <div class="compare">
+        <div class="pair lift"><div class="weak"><span class="mono">Weak</span>Our Saturday in Hyderabad.</div><div class="strong"><span class="mono">Stronger</span>We Tried Finding a Peaceful Escape Near Dhulapally.</div></div>
+        <div class="pair lift"><div class="weak"><span class="mono">Weak</span>Visiting Assam.</div><div class="strong"><span class="mono">Stronger</span>What Does Everyday Life in Small-Town Assam Really Look Like?</div></div>
+        <div class="pair lift"><div class="weak"><span class="mono">Weak</span>Food Vlog.</div><div class="strong"><span class="mono">Stronger</span>Discovering the Local Food We Had Never Tried Before.</div></div>
+      </div>
+      <p>The stronger versions create curiosity, but the video must genuinely deliver what the title promises.</p>
+      <h3>Title formulas to reuse</h3>
+      <ul class="formulas">
+        <li>We Tried Finding ______.</li>
+        <li>What Does Everyday Life in ______ Really Look Like?</li>
+        <li>Is ______ Actually Worth Visiting?</li>
+        <li>We Discovered ______ in ______.</li>
+        <li>What Happens When You ______?</li>
+        <li>A Closer Look at ______.</li>
+        <li>Returning to ______ After ______.</li>
+        <li>The Things You Might Miss in ______.</li>
+      </ul>
+      <p>Avoid adding exaggerated claims simply to attract clicks.</p>
+    </section>
+
+    <section id="shots">
+      <span class="mono kicker">Chapter 06</span>
+      <h2>Plan the shots: think in sequences</h2>
+      <p>Our style is cinematic, mostly no-talking storytelling. We don't need hundreds of beautiful clips. We need the right shots to help the story progress. For each important activity, try to capture these six types.</p>
+      <div class="shots">
+        <article class="shot lift">
+          <svg viewBox="0 0 240 135" role="img" aria-label="Tiny figure in a wide landscape"><rect x="0" y="95" width="240" height="40" fill="currentColor" opacity="0.18"/><path d="M0 95 L50 55 L90 85 L140 40 L200 85 L240 65 V95Z" fill="currentColor" opacity="0.35"/><circle cx="120" cy="104" r="3" fill="currentColor"/><rect x="118.5" y="107" width="3" height="8" fill="currentColor"/></svg>
+          <div class="body"><span class="mono">Shot 1</span><h3>Establishing</h3><p>Where are we? Show the environment.</p></div>
+        </article>
+        <article class="shot lift">
+          <svg viewBox="0 0 240 135" role="img" aria-label="Whole figure with surroundings"><rect x="0" y="100" width="240" height="35" fill="currentColor" opacity="0.18"/><rect x="20" y="40" width="40" height="60" fill="currentColor" opacity="0.3"/><rect x="180" y="55" width="40" height="45" fill="currentColor" opacity="0.3"/><circle cx="120" cy="66" r="7" fill="currentColor"/><rect x="114" y="74" width="12" height="28" fill="currentColor"/></svg>
+          <div class="body"><span class="mono">Shot 2</span><h3>Wide</h3><p>Show the person and their surroundings.</p></div>
+        </article>
+        <article class="shot lift">
+          <svg viewBox="0 0 240 135" role="img" aria-label="Figure from the waist up at a task"><circle cx="120" cy="45" r="16" fill="currentColor"/><path d="M80 135 V92 Q80 72 120 72 Q160 72 160 92 V135Z" fill="currentColor"/><rect x="140" y="95" width="50" height="8" fill="currentColor" opacity="0.5"/></svg>
+          <div class="body"><span class="mono">Shot 3</span><h3>Medium</h3><p>Show the activity happening.</p></div>
+        </article>
+        <article class="shot lift">
+          <svg viewBox="0 0 240 135" role="img" aria-label="Large detail of a bowl"><ellipse cx="120" cy="82" rx="78" ry="26" fill="currentColor" opacity="0.35"/><path d="M42 70 Q120 140 198 70Z" fill="currentColor"/><circle cx="100" cy="64" r="9" fill="currentColor" opacity="0.6"/><circle cx="130" cy="60" r="7" fill="currentColor" opacity="0.6"/></svg>
+          <div class="body"><span class="mono">Shot 4</span><h3>Close-up</h3><p>Hands, food, objects, expressions or small details.</p></div>
+        </article>
+        <article class="shot lift">
+          <svg viewBox="0 0 240 135" role="img" aria-label="Figure walking with motion lines"><line x1="20" y1="50" x2="80" y2="50" stroke="currentColor" stroke-width="3" opacity="0.4"/><line x1="10" y1="70" x2="75" y2="70" stroke="currentColor" stroke-width="3" opacity="0.4"/><line x1="25" y1="90" x2="80" y2="90" stroke="currentColor" stroke-width="3" opacity="0.4"/><circle cx="140" cy="48" r="10" fill="currentColor"/><path d="M140 58 L150 90 L170 118 M150 90 L128 116 M143 64 L172 76 M143 64 L122 84" stroke="currentColor" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+          <div class="body"><span class="mono">Shot 5</span><h3>Movement</h3><p>Walking, travelling, preparing, opening, entering or leaving.</p></div>
+        </article>
+        <article class="shot lift">
+          <svg viewBox="0 0 240 135" role="img" aria-label="Two frames linked by an arrow"><rect x="14" y="30" width="88" height="75" fill="none" stroke="currentColor" stroke-width="3"/><rect x="138" y="30" width="88" height="75" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="3"/><path d="M110 68 H130 M122 60 L130 68 L122 76" stroke="currentColor" stroke-width="3" fill="none"/></svg>
+          <div class="body"><span class="mono">Shot 6</span><h3>Transition or ending</h3><p>Connect scenes or give the story a conclusion.</p></div>
+        </article>
+      </div>
+      <p>A local food experience could include the market entrance, walking between stalls, choosing ingredients, a close-up of the food, the first bite and the final surroundings. Each shot should add information, atmosphere or emotion. Avoid capturing the same thing repeatedly from slightly different angles without a reason.</p>
+      <div class="tip">💡 <b>Establishing shot:</b> a wide opening view that tells the viewer where the scene happens. <b>POV</b> means point of view: the camera sees what we would see with our own eyes.</div>
+      <h3>Our filming rule</h3>
+      <p>Before moving to the next activity, ask:</p>
+      <div class="pull">Do we have enough footage to show where we are, what happened and why it matters?</div>
+      <p>If yes, continue enjoying the experience.</p>
+    </section>
+
+    <section id="one-camera">
+      <span class="mono kicker">Chapter 07</span>
+      <h2>How we film when only one of us holds the camera</h2>
+      <p>Either of us can operate the camera, so the shot plan has to be realistic. We use three shooting methods.</p>
+      <div class="methods">
+        <div class="method lift">
+          <h3>A. One-person filming</h3>
+          <p>One of us films the other doing something naturally: walking, choosing food, looking at a menu, exploring a market or preparing a dish. Use POV shots, close-ups and over-the-shoulder shots to create a sense of participation.</p>
+        </div>
+        <div class="method lift">
+          <h3>B. Together shots</h3>
+          <p>Use the tripod for a few planned moments: walking into a frame and continuing naturally, sitting together on a bench, preparing a meal together, packing before a journey. Give ourselves an action rather than simply posing. Set up the shot, record it and then put the camera away.</p>
+        </div>
+        <div class="method lift">
+          <h3>C. Selfie shots</h3>
+          <p>Use selfies when the story benefits from a direct moment of connection or reaction. We don't need to force a selfie into every video.</p>
+        </div>
+      </div>
+      <h3>Handling shyness in public</h3>
+      <ul class="plain">
+        <li>Start with close-ups, POV footage and environmental shots.</li>
+        <li>Film in quieter places or at less crowded times.</li>
+        <li>Take turns filming each other.</li>
+        <li>Use a tripod only when the location allows it and it feels comfortable.</li>
+        <li>Avoid intrusive filming and respect other people's privacy.</li>
+      </ul>
+      <p>We don't need elaborate shots of ourselves in every scene. The subject of the video matters more than our presence in the frame.</p>
+    </section>
+
+    <section id="craft">
+      <span class="mono kicker">Chapter 08</span>
+      <h2>Cinematography is our signature, not our entire strategy</h2>
+      <p>We enjoy cinematic footage, music, natural sound and editing. These are valuable skills, and we use them to strengthen the story.</p>
+      <h3>Shooting principles</h3>
+      <ul class="plain">
+        <li>Capture horizontal footage for the main YouTube video.</li>
+        <li>Use a wide, medium and close-up shot for important activities.</li>
+        <li>Hold the camera steady and avoid unnecessary movement.</li>
+        <li>Record natural sound separately when useful.</li>
+        <li>Look for interesting light, texture, movement and composition.</li>
+        <li>Capture enough footage to connect scenes, not just the visually impressive moments.</li>
+      </ul>
+      <h3>Editing principles</h3>
+      <ol class="parts">
+        <li><div><h3>Make the beginning compelling</h3><p>Show the reason to watch early, rather than spending a long time on generic introductions.</p></div></li>
+        <li><div><h3>Keep only shots that contribute</h3><p>Every shot should advance the story, provide useful information or create a deliberate feeling.</p></div></li>
+        <li><div><h3>Vary the pacing</h3><p>A peaceful sequence can be slow. A journey, discovery or exciting moment may benefit from quicker cuts.</p></div></li>
+        <li><div><h3>Use natural sounds intentionally</h3><p>Footsteps, birds, sizzling food, traffic, train sounds and rain can make footage immersive.</p></div></li>
+        <li><div><h3>Let music support the emotion</h3><p>Don't rely on music alone to manufacture interest. The visuals and story must work together.</p></div></li>
+        <li><div><h3>End when the story is complete</h3><p>Do not drag out a video simply because we filmed more footage.</p></div></li>
+      </ol>
+    </section>
+
+    <section id="weekend">
+      <span class="mono kicker">Chapter 09</span>
+      <h2>Our weekend production workflow</h2>
+      <p>We both have other responsibilities, so production has to fit into our weekends.</p>
+      <div class="days">
+        <article class="day lift">
+          <span class="mono">Before the weekend</span>
+          <h3>Plan</h3>
+          <ol>
+            <li>Choose one video idea.</li>
+            <li>Complete the five-question idea filter.</li>
+            <li>Brainstorm three possible titles.</li>
+            <li>Write the story in five parts.</li>
+            <li>List the shots needed for each part.</li>
+            <li>Check the route, opening hours, budget, access and weather.</li>
+            <li>Decide who will film which sequences.</li>
+          </ol>
+        </article>
+        <article class="day lift">
+          <span class="mono">Saturday</span>
+          <h3>Shoot</h3>
+          <p>Focus on capturing the main story. Get the essential shots first. Capture extra details only if time permits. Enjoy the experience rather than repeating every moment for the camera.</p>
+        </article>
+        <article class="day lift">
+          <span class="mono">Sunday</span>
+          <h3>Edit</h3>
+          <p>Review the footage and identify missing shots. Begin assembling the story, select suitable music, edit the sequences and check whether the final video delivers the title's promise.</p>
+          <p>If the editing becomes too demanding, reduce the complexity of the next shoot rather than sacrificing every weekend to post-production.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="working">
+      <span class="mono kicker">Chapter 10</span>
+      <h2>How we know whether a video is working</h2>
+      <p>We should not judge the channel solely by views, especially while it is new. After publishing, review four areas.</p>
+      <div class="metrics">
+        <article class="metric lift"><span class="mono">Check 1</span><h3>Did people click?</h3><p>Look at impressions and click-through rate together. A low rate can mean the title, thumbnail or topic needs attention, but traffic sources and audience size also matter.</p></article>
+        <article class="metric lift"><span class="mono">Check 2</span><h3>Did people keep watching?</h3><p>Look at the audience-retention graph. Find where people leave and ask whether the video starts too slowly, repeats information or fails to deliver what viewers expected.</p></article>
+        <article class="metric lift"><span class="mono">Check 3</span><h3>Right audience?</h3><p>Look at comments, subscribers gained and returning viewers. Notice which topics resonate with people who do not already know us.</p></article>
+        <article class="metric lift"><span class="mono">Check 4</span><h3>Did we enjoy making it?</h3><p>Can we repeat the process without burning out? A format that takes too much work may not be sustainable even if one video performs well.</p></article>
+      </div>
+      <div class="tip">💡 <b>Click-through rate (CTR):</b> of the people who saw your video's thumbnail and title, the share who clicked. <b>Impressions:</b> how many times they were shown. <b>Audience retention:</b> a graph in YouTube Studio showing how many viewers are still watching at each moment.</div>
+      <p>After about six videos, compare the results and look for patterns. Six videos give early evidence, not a verdict on the channel's future. Avoid changing the whole strategy after every upload.</p>
+    </section>
+
+    <section id="template">
+      <span class="mono kicker">Chapter 11</span>
+      <h2>Our reusable video planning template</h2>
+      <p>Copy this whenever we plan a new video, then paste it into a note and fill it in.</p>
+      <div class="tpl">
+        <div class="tpl-bar">
+          <span class="mono">Video planning template</span>
+          <button type="button" id="copy-tpl">Copy template</button>
+        </div>
+        <div class="tpl-body" tabindex="0" aria-label="Template preview">
+          <h4>Video idea</h4>
+          <ul>
+            <li>Working title</li><li>Location</li><li>Main topic</li>
+            <li>Target viewer <span>who would be interested in this?</span></li>
+            <li>Reason to click <span>what makes this worth watching?</span></li>
+            <li>Viewer value <span>practical / discovery / experience / emotional</span></li>
+            <li>Our unique angle <span>what makes this video distinctive?</span></li>
+          </ul>
+          <h4>Story</h4>
+          <ul>
+            <li>Hook <span>what do the first 5–15 seconds show?</span></li>
+            <li>Setup <span>what does the viewer need to understand?</span></li>
+            <li>Journey <span>what happens as we explore or try something?</span></li>
+            <li>Discovery <span>the most interesting or meaningful part</span></li>
+            <li>Payoff <span>the conclusion, experience or answer</span></li>
+          </ul>
+          <h4>Filming plan</h4>
+          <ul>
+            <li>Essential scenes (1 to 5)</li><li>Wide shots</li><li>Medium shots</li><li>Close-ups and details</li>
+            <li>Natural sounds to capture</li><li>Shots of both of us</li><li>Ending shot</li>
+          </ul>
+          <h4>Production</h4>
+          <ul>
+            <li>Shooting day</li><li>Budget</li><li>Equipment needed</li><li>Weather or access checks</li>
+            <li>Potential problems and backup plan</li><li>Target video length</li>
+          </ul>
+          <h4>Publishing</h4>
+          <ul>
+            <li>Final title</li><li>Thumbnail idea</li><li>What promise must the video fulfil?</li><li>What result will we review after publishing?</li>
+          </ul>
+        </div>
+      </div>
+      <p id="copy-note" class="mono" aria-live="polite"></p>
+    </section>
+
+    <section id="rules">
+      <span class="mono kicker">Chapter 12</span>
+      <h2>The five rules we must never forget</h2>
+      <ol class="rules">
+        <li><div><strong>Start with the viewer, not with ourselves.</strong> We need a reason a stranger would care.</div></li>
+        <li><div><strong>Make the idea interesting before making the footage beautiful.</strong> Cinematography cannot rescue an uninteresting premise.</div></li>
+        <li><div><strong>Give every video a story.</strong> Beginning, journey, discovery and payoff.</div></li>
+        <li><div><strong>Keep the production sustainable.</strong> One good video is better than a complicated format we cannot maintain.</div></li>
+        <li><div><strong>Use results to learn.</strong> Publish, review, improve and repeat.</div></li>
+      </ol>
+      <div class="final">
+        <span class="mono">The final principle</span>
+        <p class="big">A stranger should watch this video because ______.</p>
+        <p>If the answer is clear, we can start building the story.</p>
+        <p>If the answer is vague, we keep working on the idea before we pick up the camera.</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>The Cinematic Discovery Playbook · Hyderabad and Assam</footer>
+
+<script>
+(function () {
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* reading progress */
+  var bar = document.getElementById('progress');
+  function onScroll() {
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    var p = h > 0 ? Math.min(1, Math.max(0, window.scrollY / h)) : 0;
+    bar.style.transform = 'scaleX(' + p + ')';
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* chapter rail highlighting */
+  var links = Array.prototype.slice.call(document.querySelectorAll('#toc a'));
+  var secs = links.map(function (a) { return document.querySelector(a.getAttribute('href')); });
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          var i = secs.indexOf(e.target);
+          links.forEach(function (l, j) { l.classList.toggle('on', i === j); });
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    secs.forEach(function (s) { if (s) io.observe(s); });
+
+    /* small lift on first view; content is fully visible without it */
+    if (!reduce) {
+      var lifts = Array.prototype.slice.call(document.querySelectorAll('.lift'));
+      var vh = window.innerHeight;
+      lifts.forEach(function (el) {
+        if (el.getBoundingClientRect().top > vh) el.classList.add('pre');
+      });
+      var io2 = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { e.target.classList.remove('pre'); io2.unobserve(e.target); }
+        });
+      }, { threshold: 0.1 });
+      lifts.forEach(function (el) { io2.observe(el); });
+
+      var arc = document.getElementById('arc');
+      var io3 = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { arc.classList.add('draw'); io3.disconnect(); }
+        });
+      }, { threshold: 0.4 });
+      io3.observe(arc);
+    }
+  }
+
+  /* idea filter */
+  var form = document.getElementById('filter-form');
+  var scoreEl = document.getElementById('score');
+  var verdictEl = document.getElementById('verdict');
+  var meter = document.getElementById('meter');
+  function update() {
+    var total = 0, answered = 0;
+    for (var i = 1; i <= 5; i++) {
+      var c = form.querySelector('input[name="q' + i + '"]:checked');
+      if (c) { total += parseInt(c.value, 10); answered++; }
+    }
+    scoreEl.textContent = total;
+    meter.style.width = (total * 10) + '%';
+    if (answered < 5) {
+      verdictEl.textContent = answered === 0
+        ? 'Answer the five questions to see where the idea stands. The orange tick on the bar marks 7, our starting threshold.'
+        : (5 - answered) + ' question' + (5 - answered === 1 ? '' : 's') + ' left. Current total: ' + total + '.';
+    } else if (total >= 7) {
+      verdictEl.textContent = 'Clear enough to commit. Write the story in five parts and start the shot list.';
+    } else {
+      verdictEl.textContent = 'Not yet. Improve the concept first, starting with the lowest-scoring question, rather than hoping cinematography will rescue it.';
+    }
+  }
+  form.addEventListener('change', update);
+  update();
+
+  /* template copy */
+  var tplText = [
+    'VIDEO IDEA', 'Working title:', 'Location:', 'Main topic:', 'Target viewer (who would be interested in this?):',
+    'Reason to click (what makes this worth watching?):', 'Viewer value (practical / discovery / experience / emotional):',
+    'Our unique angle:', '',
+    'STORY', 'Hook (first 5-15 seconds):', 'Setup:', 'Journey:', 'Discovery:', 'Payoff:', '',
+    'FILMING PLAN', 'Essential scenes:', '1.', '2.', '3.', '4.', '5.', 'Wide shots:', 'Medium shots:',
+    'Close-ups and details:', 'Natural sounds to capture:', 'Shots of both of us:', 'Ending shot:', '',
+    'PRODUCTION', 'Shooting day:', 'Budget:', 'Equipment needed:', 'Weather or access checks:',
+    'Potential problems and backup plan:', 'Target video length:', '',
+    'PUBLISHING', 'Final title:', 'Thumbnail idea:', 'What promise must the video fulfil?',
+    'What result will we review after publishing?'
+  ].join('\n');
+  var btn = document.getElementById('copy-tpl');
+  var note = document.getElementById('copy-note');
+  function manual() {
+    var body = document.querySelector('.tpl-body');
+    var r = document.createRange(); r.selectNodeContents(body);
+    var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    note.textContent = 'Selected. Press copy on your keyboard or menu.';
+  }
+  btn.addEventListener('click', function () {
+    try {
+      navigator.clipboard.writeText(tplText).then(function () {
+        note.textContent = 'Template copied.';
+      }, manual);
+    } catch (err) { manual(); }
+  });
+})();
+</script>
+
+</body></html>
