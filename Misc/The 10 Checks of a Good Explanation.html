@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The 10 Checks of a Good Explanation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF3F5; --surface:#FFFFFF; --ink:#14232B; --muted:#4D6068; --line:#CBD8DD;
+  --accent:#1E4FD0; --mark:#FFE27A; --bad:#A63A2B; --good:#1F7A4D;
+  --head:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+  --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1A20; --surface:#17262E; --ink:#E6EEF1; --muted:#9FB2BA; --line:#2B3E47;
+    --accent:#7FA2FF; --mark:#5C4B0E; --bad:#F08C7C; --good:#6FD0A0; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1A20; --surface:#17262E; --ink:#E6EEF1; --muted:#9FB2BA; --line:#2B3E47;
+  --accent:#7FA2FF; --mark:#5C4B0E; --bad:#F08C7C; --good:#6FD0A0; color-scheme:dark;
+}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 16px);scroll-behavior:smooth}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:1.125rem/1.7 var(--body)}
+.wrap{max-width:44rem;margin:0 auto;padding:0 1.25rem}
+header.hero{padding:4rem 0 2.5rem;border-bottom:1px solid var(--line)}
+.byline{font:600 .95rem var(--head);color:var(--muted);margin:0 0 1rem}
+h1{font:800 clamp(2.4rem,7vw,4rem)/1.02 var(--head);letter-spacing:-.025em;margin:0 0 1.25rem}
+.lede{font-size:1.3rem;line-height:1.55;color:var(--muted);margin:0}
+.goal{margin:2rem 0 0;padding:1.25rem 1.5rem;background:var(--surface);border-left:6px solid var(--accent);border-radius:4px}
+.goal p{margin:.25rem 0}
+.theme{float:right;margin-top:-2.5rem;font:600 .9rem var(--head);background:none;border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:.3rem .8rem;cursor:pointer}
+nav.toc{padding:1.5rem 0;border-bottom:1px solid var(--line)}
+nav.toc ol{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:.5rem}
+nav.toc a{display:inline-block;font:600 .95rem var(--head);color:var(--ink);text-decoration:none;border:1px solid var(--line);background:var(--surface);padding:.3rem .8rem;border-radius:999px}
+nav.toc a:hover{border-color:var(--accent);color:var(--accent)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+section.attr{padding:3rem 0 .5rem}
+section.attr h2{font:800 clamp(1.7rem,4.5vw,2.3rem)/1.1 var(--head);letter-spacing:-.02em;margin:0 0 1rem;display:flex;gap:.75rem;align-items:baseline}
+section.attr h2 .n{color:var(--accent);min-width:2.2rem}
+p{margin:0 0 1rem}
+.note{color:var(--muted);font-style:italic}
+.ex{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:1rem 1.25rem;margin:1.25rem 0}
+.ex h3{font:800 1rem var(--head);margin:0 0 .5rem}
+.ex p{margin:.35rem 0}
+.bad{color:var(--bad)} .good{color:var(--good)}
+.bad b,.good b{font-family:var(--head)}
+.ask{margin:1.5rem 0 0;font:800 1.35rem/1.3 var(--head);letter-spacing:-.01em}
+.ask span{background:linear-gradient(transparent 12%,var(--mark) 12%,var(--mark) 92%,transparent 92%);padding:0 .25em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.ask small{display:block;font:600 .9rem var(--head);color:var(--muted);margin-bottom:.35rem}
+.words{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:.75rem;margin:1rem 0}
+.words div{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:.75rem 1rem;font-size:1rem;line-height:1.45}
+.words b{display:block;font-family:var(--head)}
+.words .flag{border-color:var(--accent);border-width:2px}
+.scroll{overflow-x:auto;margin:1.5rem 0}
+table{border-collapse:collapse;width:100%;min-width:30rem;font-size:1rem;background:var(--surface)}
+th,td{text-align:left;padding:.65rem .9rem;border-bottom:1px solid var(--line)}
+th{font-family:var(--head)}
+.groups{display:grid;gap:.75rem;margin:1rem 0 2rem}
+.groups div{padding:1rem 1.25rem;background:var(--surface);border-radius:6px;border-left:6px solid var(--accent)}
+.groups b{font-family:var(--head)}
+footer{padding:2rem 0 4rem;color:var(--muted);font-size:.95rem;border-top:1px solid var(--line);margin-top:2rem}
+@media (max-width:30rem){.theme{float:none;margin:0 0 1rem}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="hero">
+  <p class="byline">A plain-English guide</p>
+  <h1>The 10 checks of a good explanation</h1>
+  <p class="lede">A BBC journalist runs every explanation past ten questions. Here they are, with examples, in language you can use today.</p>
+  <div class="goal">
+    <p><strong>The goal, in two lines:</strong></p>
+    <p>Give people the information they need. Give it in a way that is easy to take in.</p>
+  </div>
+</header>
+
+<nav class="toc" aria-label="The ten checks">
+  <ol>
+    <li><a href="#a1">Simplicity</a></li>
+    <li><a href="#a2">Essential detail</a></li>
+    <li><a href="#a3">Complexity</a></li>
+    <li><a href="#a4">Efficiency</a></li>
+    <li><a href="#a5">Precision</a></li>
+    <li><a href="#a6">Context</a></li>
+    <li><a href="#a7">No distractions</a></li>
+    <li><a href="#a8">Engaging</a></li>
+    <li><a href="#a9">Useful</a></li>
+    <li><a href="#a10">Clarity of purpose</a></li>
+  </ol>
+</nav>
+
+<main>
+<section class="attr" id="a1">
+  <h2><span class="n">1</span>Simplicity</h2>
+  <p>Short words in short sentences give the reader the fewest <em>obstacles to understanding</em>. Every hard word or unneeded fact is a small wall in the way.</p>
+  <p class="note">Simple does not mean short. It means clear.</p>
+  <div class="ex">
+    <h3>Example</h3>
+    <p class="bad"><b>Hard:</b> The organisation underwent a comprehensive restructuring of its operational framework.</p>
+    <p class="good"><b>Simple:</b> The company changed how its teams work.</p>
+  </div>
+  <p class="ask"><small>Ask yourself</small><span>Is this the simplest way I can say this?</span></p>
+</section>
+
+<section class="attr" id="a2">
+  <h2><span class="n">2</span>Essential detail</h2>
+  <p>Details are your currency. They are the facts people came for. But only the details they <em>need</em>. Every extra interesting fact makes the important ones harder to find.</p>
+  <div class="ex">
+    <h3>Example</h3>
+    <p>A plumber should say: "The pipe is cracked. It needs replacing. That costs about £200."</p>
+    <p>They should not give a history of pipe materials.</p>
+  </div>
+  <p class="ask"><small>Ask yourself</small><span>What detail is essential to this explanation?</span></p>
+</section>
+
+<section class="attr" id="a3">
+  <h2><span class="n">3</span>Complexity</h2>
+  <p>Do not dodge the hard parts. If you do not understand something, you cannot explain it well. And if you feel the urge to skip a topic, that is a clue you are not ready to explain it.</p>
+  <p>Even if you end up not using what you learned, it makes you more confident in what you do say.</p>
+  <div class="ex">
+    <h3>Example</h3>
+    <p>During the Greek debt crisis, the author had to explain complex economics on live TV with no notes. He made three lists: what he understood, what he did not, and what he would discover later. He asked a colleague to explain each part, then repeated it back in simple words until it was right.</p>
+  </div>
+  <p class="ask"><small>Ask yourself</small><span>Are there elements of this subject I don't understand?</span></p>
+</section>
+
+<section class="attr" id="a4">
+  <h2><span class="n">4</span>Efficiency</h2>
+  <p>Give people as much useful information as you can for the time they spend. Steve Jobs once dropped an iPod prototype into a fish tank. Air bubbles rose. His point: "There's space in there. Make it smaller." Most explanations have air bubbles too.</p>
+  <p class="note">Efficient does not mean brief. It means nothing is wasted.</p>
+  <div class="ex">
+    <h3>Example</h3>
+    <p>The author watched a TV report on an election in Cornwall. He rewound it and watched twice, but his notepad stayed empty. Lots of scenery, almost no facts or analysis. That is an inefficient report.</p>
+  </div>
+  <p>The fix is to "tighten" in several passes. Each time, look for words or facts that can go or be shortened.</p>
+  <p class="ask"><small>Ask yourself</small><span>Is this the most succinct way I can say this?</span></p>
+</section>
+
+<section class="attr" id="a5">
+  <h2><span class="n">5</span>Precision</h2>
+  <p>Choose the exact words that say what you mean. First work out what you want to say. Then find the right words. Vague thinking produces vague sentences.</p>
+  <div class="ex">
+    <h3>Example</h3>
+    <p class="bad"><b>Vague:</b> Sales were kind of up recently.</p>
+    <p class="good"><b>Precise:</b> Sales rose 12% in March.</p>
+  </div>
+  <p>The author points to Joni Mitchell's album <em>Blue</em>. The music is spare, and the emotion is precise. When your content is strong, the words around it can be spare too.</p>
+  <p class="ask"><small>Ask yourself</small><span>Am I saying exactly what I want to communicate?</span></p>
+</section>
+
+<section class="attr" id="a6">
+  <h2><span class="n">6</span>Context</h2>
+  <p>Tell people <em>why this matters</em> and what led to it. Without context, people either do not care or do not understand.</p>
+  <div class="ex">
+    <h3>Examples</h3>
+    <p>At the dentist, it matters that your tooth has hurt for over a week.</p>
+    <p>In an interview, your sales figures mean more when you say what they were before you took over.</p>
+    <p>When asking for a team change, it matters that the structure has not changed in ten years.</p>
+  </div>
+  <p>When a politician was assassinated in Pakistan, a BBC colleague spent under a minute on the attack and the rest on background. Listeners around the world stayed glued, because he explained why it mattered.</p>
+  <p>Phrases that help: "The reason this matters is…", "To understand this, remember that…", "This is not happening in isolation."</p>
+  <p class="ask"><small>Ask yourself</small><span>Why does this matter to the people I'm addressing?</span></p>
+</section>
+
+<section class="attr" id="a7">
+  <h2><span class="n">7</span>No distractions</h2>
+  <p>Anything that pulls attention away from your point hurts it. There are two kinds.</p>
+  <h3 style="font:800 1.2rem var(--head);margin:1.5rem 0 .5rem">Words people don't know</h3>
+  <div class="ex">
+    <p>"Sam has been angry ever since the project review."</p>
+    <p>Who is Sam? What review? The listener stops to wonder, and misses what you say next.</p>
+  </div>
+  <p><strong>The NATO rule:</strong> if some people might not know a name or term, explain it or cut it. To decide, sort your words into four groups:</p>
+  <div class="words">
+    <div><b>Support words</b>the, of, then. No effort.</div>
+    <div><b>Known words</b>table, election. Easy.</div>
+    <div class="flag"><b>Partly known</b>inflation. Some won't know. Explain or cut.</div>
+    <div class="flag"><b>Unknown</b>proroguing. Most won't know. Explain or cut.</div>
+  </div>
+  <p>For partly known words, try: "As some of you may know…". It respects those who know and helps those who don't.</p>
+  <h3 style="font:800 1.2rem var(--head);margin:1.5rem 0 .5rem">Visual distractions</h3>
+  <p>Only show a picture, chart or slide at the moment you talk about it. A slide crammed with text makes people read instead of listen. The author once prepared 60 slides for a 10-minute talk, with each shown only when needed.</p>
+  <p class="ask"><small>Ask yourself</small><span>Are there verbal, written or visual distractions?</span></p>
+</section>
+
+<section class="attr" id="a8">
+  <h2><span class="n">8</span>Engaging</h2>
+  <p>If people stop listening, you have explained nothing. The author uses the <em>dial test</em>. Imagine a dial that turns up when listeners are interested and down when they drift. Where would it drop?</p>
+  <div class="ex">
+    <h3>Example</h3>
+    <p>An editor felt one middle section of a video about Afghanistan was losing momentum. They cut and reordered it. The details removed were interesting, not essential. The video passed a million views.</p>
+  </div>
+  <p>Lose people in one section and they may not come back for the next.</p>
+  <p class="ask"><small>Ask yourself</small><span>Are there moments when attention could waver?</span></p>
+</section>
+
+<section class="attr" id="a9">
+  <h2><span class="n">9</span>Useful</h2>
+  <p>Before you explain, list the questions your audience is likely to have. Then answer them.</p>
+  <div class="ex">
+    <h3>Example</h3>
+    <p>During the Australian bushfires, the team made videos around what people were asking: Was arson responsible? Did a lack of hazard-reduction burning matter? Did the coal industry affect the response? Each video answered one real question, and they were widely shared.</p>
+  </div>
+  <p class="ask"><small>Ask yourself</small><span>Have I answered the questions that people have?</span></p>
+</section>
+
+<section class="attr" id="a10">
+  <h2><span class="n">10</span>Clarity of purpose</h2>
+  <p>Know your main point before you start. Then test every sentence: does it support that point? If not, cut it.</p>
+  <div class="ex">
+    <h3>Examples</h3>
+    <p><strong>Essay:</strong> the exact question decides what goes in.</p>
+    <p><strong>Budget briefing:</strong> include only what explains the budget and its effects.</p>
+    <p><strong>Charity event:</strong> everything should move people toward donating.</p>
+  </div>
+  <p>The author once DJed a set of great tracks that did not fit together, so the crowd drifted. Good ingredients, no direction. Explanations fail the same way.</p>
+  <p class="ask"><small>Ask yourself</small><span>Above all else, what am I trying to explain?</span></p>
+</section>
+
+<section class="attr" id="summary">
+  <h2>The big picture</h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>#</th><th>Check</th><th>Question to ask</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Simplicity</td><td>Is this the simplest way I can say this?</td></tr>
+      <tr><td>2</td><td>Essential detail</td><td>What detail is essential?</td></tr>
+      <tr><td>3</td><td>Complexity</td><td>What don't I understand?</td></tr>
+      <tr><td>4</td><td>Efficiency</td><td>Is this the most succinct way?</td></tr>
+      <tr><td>5</td><td>Precision</td><td>Am I saying exactly what I mean?</td></tr>
+      <tr><td>6</td><td>Context</td><td>Why does this matter to them?</td></tr>
+      <tr><td>7</td><td>No distractions</td><td>Is anything confusing or distracting?</td></tr>
+      <tr><td>8</td><td>Engaging</td><td>Where might attention drop?</td></tr>
+      <tr><td>9</td><td>Useful</td><td>Have I answered their questions?</td></tr>
+      <tr><td>10</td><td>Clarity of purpose</td><td>What am I trying to explain?</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>An easy way to remember them:</p>
+  <div class="groups">
+    <div><b>1 to 5: what you say.</b> Clear, essential, tight and accurate.</div>
+    <div><b>6 to 7: making it land.</b> Give context and remove confusion.</div>
+    <div><b>8 to 10: the audience and the goal.</b> Keep them listening, answer their questions, stay on point.</div>
+  </div>
+  <p>At first, ask the ten questions on purpose. In time, they become habit.</p>
+</section>
+</main>
+
+<footer>A study guide based on ideas about explanation from a BBC journalist's book. Examples marked as the author's are summarised in my own words.</footer>
+</div>
+<script>
+(function(){
+  try{
+    var b=document.createElement('button');
+    b.className='theme';b.type='button';b.textContent='Switch theme';
+    b.addEventListener('click',function(){
+      var r=document.documentElement;
+      var dark=r.getAttribute('data-theme')?r.getAttribute('data-theme')==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
+      r.setAttribute('data-theme',dark?'light':'dark');
+    });
+    var h=document.querySelector('header.hero');
+    h.insertBefore(b,h.firstChild);
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
