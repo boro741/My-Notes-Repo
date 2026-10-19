@@ -1,0 +1,1521 @@
+<title>Online Writing Playbook</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap" rel="stylesheet">
+<style>
+  /* Layout: a sticky chapter rail beside one narrow reading column. The highlighter mark is the one bold move; it copies the book's advice to make every page skimmable. */
+  :root {
+    --bg: #F3F4F7;
+    --surface: #FFFFFF;
+    --ink: #16181D;
+    --muted: #586071;
+    --rule: #D8DCE4;
+    --accent: #0A6C74;
+    --accent-soft: #DCEEEF;
+    --hi: #FFE46A;
+    --hi-block: #FFE46A;
+    --hi-block-ink: #16181D;
+    --weak: #9A3F2C;
+    --f-display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+    --f-body: "Literata", Georgia, "Times New Roman", serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #101216;
+      --surface: #171A20;
+      --ink: #E9ECF1;
+      --muted: #A0A8B8;
+      --rule: #2B303A;
+      --accent: #5CCFC6;
+      --accent-soft: #12302F;
+      --hi: rgba(255, 214, 10, 0.34);
+      --hi-block: #3A3411;
+      --hi-block-ink: #FBEFA8;
+      --weak: #F0907A;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #101216;
+    --surface: #171A20;
+    --ink: #E9ECF1;
+    --muted: #A0A8B8;
+    --rule: #2B303A;
+    --accent: #5CCFC6;
+    --accent-soft: #12302F;
+    --hi: rgba(255, 214, 10, 0.34);
+    --hi-block: #3A3411;
+    --hi-block-ink: #FBEFA8;
+    --weak: #F0907A;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 1.125rem;
+    line-height: 1.7;
+    padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 2rem 4rem;
+    -webkit-text-size-adjust: 100%;
+  }
+  a { color: var(--accent); text-underline-offset: 3px; }
+  a:focus-visible, summary:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  mark {
+    background: linear-gradient(transparent 36%, var(--hi) 36% 94%, transparent 94%);
+    color: inherit;
+    padding: 0 0.1em;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  .shell { max-width: 1120px; margin-inline: auto; display: grid; gap: 2rem; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 1000px) {
+    .shell { grid-template-columns: 230px minmax(0, 44rem); gap: 4rem; justify-content: center; }
+  }
+
+  /* Chapter rail */
+  .rail { min-width: 0; }
+  .rail details { border-top: 2px solid var(--ink); }
+  .rail summary {
+    font-family: var(--f-mono); font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 0.8rem 0; cursor: pointer; list-style: none; color: var(--ink);
+  }
+  .rail summary::-webkit-details-marker { display: none; }
+  .rail ol { list-style: none; margin: 0; padding: 0 0 1rem; display: flex; flex-direction: column; gap: 0.1rem; }
+  .rail a {
+    display: grid; grid-template-columns: 2.1rem 1fr; gap: 0.4rem; align-items: baseline;
+    padding: 0.32rem 0; text-decoration: none; color: var(--muted);
+    font-family: var(--f-display); font-size: 0.95rem; line-height: 1.3;
+  }
+  .rail a .n { font-family: var(--f-mono); font-size: 0.75rem; }
+  .rail a:hover { color: var(--ink); }
+  .rail a[aria-current="true"] { color: var(--ink); font-weight: 700; }
+  .rail a[aria-current="true"] .t { background: linear-gradient(transparent 62%, var(--hi) 62%); }
+  @media (min-width: 1000px) {
+    .rail { position: sticky; top: 1.5rem; align-self: start; max-height: calc(100vh - 3rem); overflow-y: auto; }
+    .rail summary { pointer-events: none; }
+  }
+
+  /* Reading column */
+  .article { min-width: 0; display: flex; flex-direction: column; gap: 4.5rem; }
+  .chapter { display: flex; flex-direction: column; gap: 1.15rem; min-width: 0; scroll-margin-top: 1.5rem; }
+  .chapter p, .chapter ul, .chapter ol { margin: 0; }
+  .chapter ul, .chapter ol.plain { padding-left: 1.3rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .chapter li::marker { color: var(--accent); }
+  .chapter strong { font-weight: 600; }
+  .chapter h3 {
+    font-family: var(--f-display); font-weight: 700; font-size: 1.4rem; line-height: 1.25;
+    margin: 0; padding-top: 1.1rem; text-wrap: balance;
+  }
+  .chapter h4 {
+    font-family: var(--f-display); font-weight: 700; font-size: 1.1rem; line-height: 1.3;
+    margin: 0; padding-top: 0.4rem; text-wrap: balance;
+  }
+  .kicker {
+    font-family: var(--f-mono); font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .chapter h2 {
+    font-family: var(--f-display); font-weight: 700; font-size: clamp(2rem, 5vw, 2.9rem); line-height: 1.08;
+    letter-spacing: -0.01em; margin: 0; text-wrap: balance;
+  }
+  .oneline {
+    font-family: var(--f-display); font-size: 1.25rem; line-height: 1.4; color: var(--muted);
+    border-top: 1px solid var(--rule); padding-top: 0.9rem; text-wrap: pretty;
+  }
+  .oneline b { color: var(--ink); font-weight: 500; }
+
+  /* Hero */
+  .hero { display: flex; flex-direction: column; gap: 1.4rem; padding-bottom: 0.5rem; }
+  .hero h1 {
+    font-family: var(--f-display); font-weight: 700; font-size: clamp(2.8rem, 9vw, 5.4rem); line-height: 0.98;
+    letter-spacing: -0.025em; margin: 0; text-wrap: balance;
+  }
+  .hero .lede { font-family: var(--f-display); font-size: clamp(1.2rem, 2.6vw, 1.5rem); line-height: 1.4; margin: 0; max-width: 34rem; text-wrap: pretty; }
+  .hero .meta { font-family: var(--f-mono); font-size: 0.82rem; color: var(--muted); margin: 0; display: flex; flex-wrap: wrap; gap: 0.3rem 1.2rem; }
+  .note {
+    font-size: 0.92rem; line-height: 1.55; color: var(--muted); margin: 0;
+    border-top: 1px solid var(--rule); padding-top: 0.9rem; max-width: 36rem;
+  }
+
+  /* Components */
+  .label {
+    font-family: var(--f-mono); font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; margin: 0;
+  }
+  .takeaway { background: var(--hi-block); color: var(--hi-block-ink); padding: 1.1rem 1.3rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .takeaway .label { opacity: 0.75; }
+  .takeaway p, .takeaway li { font-family: var(--f-display); font-weight: 500; font-size: 1.15rem; line-height: 1.45; }
+  .takeaway ul { padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem; margin: 0; }
+  .takeaway li::marker { color: currentColor; }
+  .tenlines { padding: 1.3rem 1.4rem; }
+  .tenlines li { font-size: 1.05rem; }
+
+  .try { background: var(--accent-soft); padding: 1.1rem 1.3rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .try .label { color: var(--accent); }
+  .try p { font-size: 1.02rem; line-height: 1.6; }
+
+  .ex { background: var(--surface); border: 1px solid var(--rule); padding: 1.1rem 1.3rem; display: flex; flex-direction: column; gap: 0.6rem; }
+  .ex .label { color: var(--muted); }
+  .ex p, .ex li { font-size: 1.02rem; line-height: 1.6; }
+  .ex ul { padding-left: 1.2rem; margin: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+  .ex blockquote { margin: 0; font-style: italic; }
+
+  .pair { display: grid; gap: 1rem; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 640px) { .pair { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .pane { background: var(--surface); border: 1px solid var(--rule); padding: 1rem 1.15rem; display: flex; flex-direction: column; gap: 0.5rem; min-width: 0; }
+  .pane p { font-size: 1rem; line-height: 1.6; }
+  .pane .label.bad { color: var(--weak); }
+  .pane .label.good { color: var(--accent); }
+  .pane.plain-wide { grid-column: 1 / -1; }
+
+  .stack { display: flex; flex-direction: column; gap: 0.7rem; }
+  .step { display: grid; grid-template-columns: 4.6rem minmax(0, 1fr); gap: 0.9rem; align-items: baseline; border-top: 1px solid var(--rule); padding-top: 0.7rem; }
+  .step .label { color: var(--muted); }
+  .step p { font-family: var(--f-display); font-size: 1.05rem; line-height: 1.4; }
+  .step.last p { font-weight: 700; }
+
+  .anatomy { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  .anatomy .piece { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; flex: 1 1 8rem; }
+  .anatomy .chip { background: var(--surface); border: 1px solid var(--rule); font-family: var(--f-display); font-weight: 700; font-size: 1.05rem; padding: 0.55rem 0.7rem; line-height: 1.25; }
+  .anatomy .piece:nth-child(5) .chip { background: var(--hi-block); color: var(--hi-block-ink); border-color: transparent; }
+  .anatomy .why { font-size: 0.86rem; line-height: 1.45; color: var(--muted); }
+
+  .rhythm { margin: 0; display: grid; gap: 0.9rem 1.5rem; grid-template-columns: minmax(0, 1fr); align-items: start; background: var(--surface); border: 1px solid var(--rule); padding: 1rem 1.15rem; }
+  @media (min-width: 560px) { .rhythm { grid-template-columns: 210px minmax(0, 1fr); } }
+  .rhythm .viz { display: flex; flex-direction: column; gap: 7px; max-width: 210px; }
+  .rhythm .p { display: flex; flex-wrap: wrap; gap: 3px; }
+  .rhythm .c { height: 7px; background: var(--ink); opacity: 0.8; }
+  .rhythm .hd { height: 11px; width: 55%; background: var(--accent); margin-block: 3px; }
+  .rhythm .bls { display: flex; flex-direction: column; gap: 4px; padding-left: 10px; }
+  .rhythm .bl { width: 38%; height: 6px; background: var(--accent); position: relative; display: block; }
+  .rhythm figcaption { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+  .rhythm figcaption b { font-family: var(--f-mono); font-size: 0.95rem; font-weight: 500; }
+  .rhythm figcaption span { font-size: 0.96rem; line-height: 1.55; color: var(--muted); }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--rule); background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; min-width: 34rem; font-size: 0.96rem; line-height: 1.5; }
+  th, td { text-align: left; vertical-align: top; padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--rule); }
+  tr:last-child td { border-bottom: 0; }
+  th { font-family: var(--f-mono); font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+  td:first-child { font-family: var(--f-display); font-weight: 700; white-space: nowrap; }
+
+  .timeline { list-style: none; padding: 0; display: flex; flex-direction: column; }
+  .timeline li { display: grid; grid-template-columns: 5.4rem minmax(0, 1fr); gap: 0.9rem; padding: 0.75rem 0; border-top: 1px solid var(--rule); font-size: 1.02rem; line-height: 1.55; }
+  .timeline time { font-family: var(--f-mono); font-size: 0.8rem; color: var(--muted); padding-top: 0.2rem; }
+
+  .levels { list-style: none; padding: 0; display: flex; flex-direction: column; }
+  .levels li { display: grid; grid-template-columns: 4.6rem minmax(0, 1fr); gap: 0.9rem; padding: 0.7rem 0; border-top: 1px solid var(--rule); font-size: 1.02rem; line-height: 1.5; }
+  .levels .lv { font-family: var(--f-mono); font-size: 0.8rem; color: var(--muted); padding-top: 0.25rem; }
+  .levels b { font-family: var(--f-display); }
+
+  .phases { list-style: none; padding: 0; display: grid; gap: 0.8rem; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 700px) { .phases { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.5rem; } }
+  .phases li { background: var(--surface); border: 1px solid var(--rule); padding: 0.8rem 0.85rem; display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.9rem; line-height: 1.45; }
+  .phases li b { font-family: var(--f-display); font-size: 1rem; line-height: 1.25; }
+  .phases li .label { color: var(--muted); }
+  .phases li.window { background: var(--hi-block); color: var(--hi-block-ink); border-color: transparent; }
+  .phases li.window .label { color: inherit; opacity: 0.75; }
+
+  .chapter .checks { list-style: none; padding: 0; gap: 0; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--rule); }
+  .checks li { border-top: 1px solid var(--rule); }
+  .checks li:first-child { border-top: 0; }
+  .checks label { display: grid; grid-template-columns: 1.4rem minmax(0, 1fr); gap: 0.8rem; padding: 0.8rem 1rem; cursor: pointer; font-size: 1.02rem; line-height: 1.5; }
+  .checks input { width: 1.15rem; height: 1.15rem; margin: 0.25rem 0 0; accent-color: var(--accent); }
+  .checks input:checked + span { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--rule); }
+
+  .glossary { display: grid; gap: 0; grid-template-columns: minmax(0, 1fr); margin: 0; border-top: 2px solid var(--ink); }
+  .glossary > div { border-bottom: 1px solid var(--rule); padding: 0.8rem 0; display: grid; gap: 0.15rem; }
+  @media (min-width: 640px) { .glossary > div { grid-template-columns: 13rem minmax(0, 1fr); gap: 1.2rem; } }
+  .glossary dt { font-family: var(--f-display); font-weight: 700; }
+  .glossary dd { margin: 0; font-size: 1rem; line-height: 1.55; color: var(--muted); }
+
+  .foot { font-size: 0.92rem; line-height: 1.6; color: var(--muted); border-top: 2px solid var(--ink); padding-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .foot p { margin: 0; }
+</style>
+
+<div class="shell">
+  <aside class="rail" aria-label="Chapters">
+    <details open id="railDetails">
+      <summary>Chapters</summary>
+      <ol id="railList">
+        <li><a href="#intro"><span class="n">Intro</span><span class="t">Why writing online is a game</span></a></li>
+        <li><a href="#ch1"><span class="n">1</span><span class="t">Don’t start a blog</span></a></li>
+        <li><a href="#ch2"><span class="n">2</span><span class="t">Your writing is a data machine</span></a></li>
+        <li><a href="#ch3"><span class="n">3</span><span class="t">The 7 levels of the game</span></a></li>
+        <li><a href="#ch4"><span class="n">4</span><span class="t">Where to write online</span></a></li>
+        <li><a href="#ch5"><span class="n">5</span><span class="t">How not to give up</span></a></li>
+        <li><a href="#ch6"><span class="n">6</span><span class="t">The 5 forms of writing</span></a></li>
+        <li><a href="#ch7"><span class="n">7</span><span class="t">Headlines people click</span></a></li>
+        <li><a href="#ch8"><span class="n">8</span><span class="t">How to structure a post</span></a></li>
+        <li><a href="#ch9"><span class="n">9</span><span class="t">Talking about yourself</span></a></li>
+        <li><a href="#ch10"><span class="n">10</span><span class="t">Your content roadmap</span></a></li>
+        <li><a href="#ch11"><span class="n">11</span><span class="t">Pillar pieces</span></a></li>
+        <li><a href="#ch12"><span class="n">12</span><span class="t">How writers make money</span></a></li>
+        <li><a href="#ch13"><span class="n">13</span><span class="t">The one habit</span></a></li>
+        <li><a href="#cheatsheet"><span class="n">+</span><span class="t">Checklist and glossary</span></a></li>
+      </ol>
+    </details>
+  </aside>
+
+  <main class="article">
+
+    <header class="hero">
+      <p class="label" style="color: var(--muted)">A plain-English guide to the book by Nicolas Cole</p>
+      <h1>Online Writing Playbook</h1>
+      <p class="lede">Writing online is a game with rules. This guide walks through every chapter of <em>The Art and Business of Online Writing</em> in simple words, with examples you can copy.</p>
+      <p class="meta"><span>13 chapters</span><span id="readtime">About 60 minute read</span><span>Skim the highlights first</span></p>
+      <p class="note">This is an independent summary written in my own words. The ideas and stories belong to the author, and the book is worth reading in full. It came out in 2020, so the platform details reflect that year. The principles are what last.</p>
+
+      <div class="takeaway tenlines">
+        <p class="label">The whole book in ten lines</p>
+        <ul>
+          <li>Don’t start a blog. Write on platforms that already have readers.</li>
+          <li>Treat every post as data. Publish, watch what happens, adjust.</li>
+          <li>Play on purpose. Pick a category, write fast, be specific.</li>
+          <li>Credibility can be earned for free by showing up for a long time.</li>
+          <li>In the end, build your own category. Different beats better.</li>
+          <li>Write consistently for six months before you judge anything.</li>
+          <li>Use the five forms of writing and a headline that makes readers curious.</li>
+          <li>Keep posts short, skimmable and shaped with rhythm.</li>
+          <li>Talk about yourself only as context for the reader’s problem.</li>
+          <li>Build a library, turn winners into bigger pieces, then sell. The one habit is writing a lot.</li>
+        </ul>
+      </div>
+    </header>
+
+    <!-- INTRO -->
+    <section class="chapter" id="intro">
+      <p class="kicker">Start here</p>
+      <h2>Why writing online is a game</h2>
+      <p class="oneline"><b>The author’s own story is the proof.</b> He began as a teenager with no money and no website skills, and learned the rules by playing.</p>
+
+      <p>Nicolas Cole opens with a story about video games. At 17 he was one of the top <em>World of Warcraft</em> players in North America. He found a social site for gamers where the best bloggers sat on a leaderboard. He decided to climb it.</p>
+      <p>His first guess was wrong. He wrote tips and team strategies, but the posts that rose were full of <mark>drama and real life</mark>. Readers wanted to be entertained as well as taught. He started writing about his own life, and soon had 10,000 readers a day.</p>
+      <p>Years later, a college professor told his class that nobody could be a credible internet writer without 10,000 readers. Cole raised his hand and said he had that many. The professor did not believe him.</p>
+
+      <h3>The Quora years turned a hobby into a career</h3>
+      <p>After college he worked at an ad agency and discovered Quora, a question-and-answer site. He treated every question as a writing prompt. Then he made a rule: <mark>one answer, every single day</mark>.</p>
+
+      <ol class="timeline">
+        <li><time>Age 17</time><span>Starts a gaming blog and learns that readers love real stories.</span></li>
+        <li><time>2014</time><span>Answers one Quora question a day. The first answer gets 37 views. The next gets about 1,000.</span></li>
+        <li><time>Jan 2015</time><span>A three-paragraph answer with a before-and-after photo reaches the front page of Reddit. It hits 1,000,000 views in a week. He builds a website that weekend and sells two e-books. First $2,000.</span></li>
+        <li><time>2015</time><span>Big publications start republishing his answers. By year end he is the most-read writer on all of Quora.</span></li>
+        <li><time>2016</time><span>Writes a column for <em>Inc.</em> Magazine, paid per page view: $3,000 the first month, $5,000 the second. He quits his job in July and publishes his first book the same day.</span></li>
+        <li><time>2016–17</time><span>A former CEO asks him to ghostwrite. One client becomes two, then four. With a friend he starts a ghostwriting company called Digital Press, which grows to 20 employees and more than 300 clients.</span></li>
+      </ol>
+
+      <h3>This book is for anyone who wants attention for their ideas</h3>
+      <p>Cole says writing online is not just for writers. It helps authors, freelancers, speakers, founders, executives, investors and consultants. The goal is to be seen as someone worth listening to.</p>
+      <p>If you learn the game, he says you can build an audience, earn credibility badges, meet useful people, get invited to speak, write for big publications, and turn attention into bigger things like a book deal, consulting work or an investor.</p>
+
+      <div class="takeaway">
+        <p class="label">Remember</p>
+        <p>The first answer got 37 views. Most people quit at that point. Gamers know you replay Level 1 until you can beat it.</p>
+      </div>
+    </section>
+
+    <!-- CHAPTER 1 -->
+    <section class="chapter" id="ch1">
+      <p class="kicker">Chapter 1</p>
+      <h2>Want to start writing online? Don’t start a blog</h2>
+      <p class="oneline"><b>A blog starts with zero readers,</b> and getting readers needs skills that have nothing to do with writing.</p>
+
+      <p>Most people hear “write online” and picture their own website with their own posts. Cole says that picture is stuck in 1995. He pulls apart three things people mix up.</p>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Thing</th><th>What it really is</th><th>What it is for</th></tr></thead>
+          <tbody>
+            <tr><td>Blog</td><td>Your own site where you publish posts and wait for people to arrive.</td><td>Running a business: ads or selling a product or service.</td></tr>
+            <tr><td>Website</td><td>A business card. Visitors check who you are and whether you look credible.</td><td>Quick proof of who you are and what you have done.</td></tr>
+            <tr><td>Online writing</td><td>Sharing thoughts, stories and opinions on a platform that already has an audience.</td><td>Reaching readers right now.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>A new blog needs traffic, and traffic is a different job</h3>
+      <p>A new site has no visitors. To get them you can buy ads, learn search engine optimization (SEO), or build a following on social media and send people over. All three are marketing skills. None of them is writing.</p>
+      <p>Cole’s view is that writers want to share ideas in the right place and be heard. Spending months on keywords and ad budgets is a detour.</p>
+
+      <div class="ex">
+        <p class="label">Example</p>
+        <p>You write a great post about dealing with a bad boss. On your new blog, five people read it, and three are your relatives. The same post on a platform where millions of people search for work advice can reach thousands in a day, and you also see who liked it.</p>
+      </div>
+
+      <h3>There are two times a blog makes sense</h3>
+      <ul>
+        <li><strong>A company selling something.</strong> HubSpot sells software. Its blog works like a magazine for marketers, so anyone searching for marketing help finds the company, then the product.</li>
+        <li><strong>A solopreneur who wants to own a topic.</strong> The site Kindlepreneur teaches self-publishing. Visitors read the free guides, join the email list and sometimes buy. People remember the site name, not the writer’s name. That is a clue the site is about the topic.</li>
+      </ul>
+      <p>There is a third path, the outlier. Mark Manson blogged for years on his own site before <em>The Subtle Art of Not Giving a F*ck</em> became a huge bestseller. Cole says that path is outdated, because Quora, Medium and LinkedIn publishing did not exist when Manson started. Everything a blog did in ten years can now be done in a tenth of the time.</p>
+
+      <h3>Cole sold e-books and still did not blog</h3>
+      <p>Cole had fitness e-books to sell in 2015, but he didn’t want to run a fitness encyclopedia. His long-term goal was writing, not fitness. So he kept writing on Quora and linked to the books inside his answers.</p>
+
+      <div class="takeaway">
+        <p class="label">Remember</p>
+        <p>If you want to build a company, start a blog. If you want to share ideas and build your name, go where readers already are.</p>
+      </div>
+    </section>
+
+    <!-- CHAPTER 2 -->
+    <section class="chapter" id="ch2">
+      <p class="kicker">Chapter 2</p>
+      <h2>Your writing is a data machine</h2>
+      <p class="oneline"><b>Data tells you what is working</b> faster and more honestly than any teacher, agent or friend.</p>
+
+      <p>Writers used to wait. A novelist read pages aloud in a bar. A newspaper columnist learned a month later whether anyone cared. Today the feedback loop shrank from months to seconds. You can see views, likes, shares and comments almost at once.</p>
+      <p>Cole splits writers into two kinds: those who use data to improve and those who fail.</p>
+
+      <h3>The old publishing path is slow and blind</h3>
+      <p>In his last college class, the teacher explained how to get published. Print the manuscript, mail it to publishers in manila envelopes, then wait up to six months for a reply. Cole asked “Six months?” out loud. The room silently agreed.</p>
+      <p>Most online advice he found was backward too. Finish the book, then rush to find readers with ads and press. His idea was the reverse. <mark>Write online first, find your audience, learn what they want, and then launch your product.</mark></p>
+
+      <h3>Most people only guess what readers want</h3>
+      <p>Cole says 99% of people think they know what to write about, who their audience is and which part of their story matters. They don’t have data to check any of it. They have guesses.</p>
+
+      <div class="ex">
+        <p class="label">Example</p>
+        <p>You assume readers want your tips on running a small bakery. You post five tips and get few reactions. Then you post the story of the morning your oven died before a big order. That one gets shared fifty times. The data just told you which of your stories people want.</p>
+      </div>
+
+      <h3>Four reasons to write online first</h3>
+      <ul>
+        <li><strong>Risk.</strong> You learn what people like and dislike faster, and for free.</li>
+        <li><strong>Voice.</strong> Paying attention to data changes how you write. The way you write today will not be how you write next year.</li>
+        <li><strong>Audience.</strong> You start building readers on day one, not after the project is finished.</li>
+        <li><strong>Insight.</strong> You see what people want. Manson’s blog data shaped the title, structure and idea of his book.</li>
+      </ul>
+
+      <h3>The Writing Data Flywheel</h3>
+      <p>Each post gives you feedback in words (“Great perspective!” or a nasty comment) and numbers. You use it for the next post. You double down on topics that pull readers, retell stories that get comments, and copy headline styles that worked. More data leads to better writing, which leads to more readers, and the wheel spins faster.</p>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Signal</th><th>What the reader is saying</th></tr></thead>
+          <tbody>
+            <tr><td>Views</td><td>“This strikes a chord. There’s something valuable here.”</td></tr>
+            <tr><td>Likes</td><td>“I approve. Nice job.”</td></tr>
+            <tr><td>Shares</td><td>“More people need to know this. It represents me.”</td></tr>
+            <tr><td>Comments</td><td>“This made me think. I agree or disagree, and here is why.”</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Practice in public, like every performer you admire</h3>
+      <p>Justin Bieber sang on the sidewalk. Ed Sheeran played in subways for years. The Beatles played six nights a week in a club in Hamburg before they were famous. Cole grew up in a house where someone was always practicing an instrument, and his mother would shout from another room when he hit a wrong note. It was annoying, and it made him better.</p>
+      <p>His own version came early. He once used the wrong “their” in a blog post, and a stranger told him to quit blogging. It stung. He Googled the difference, never made the mistake again, and kept writing.</p>
+      <p>People who hide their work are managing risk. They want a publisher to say they are a real writer before they let anyone judge them. Cole’s answer is to <mark>run straight at the fear</mark>. That is how you become the person worth listening to.</p>
+
+      <div class="takeaway">
+        <p class="label">Remember</p>
+        <p>Waiting for permission is the slow path. Public practice gives you proof, feedback and readers all at once.</p>
+      </div>
+    </section>
+
+    <!-- CHAPTER 3 -->
+    <section class="chapter" id="ch3">
+      <p class="kicker">Chapter 3</p>
+      <h2>The 7 levels of the online writing game</h2>
+      <p class="oneline"><b>Readers are always choosing one writer over another,</b> so you need to know how that competition works.</p>
+
+      <p>Every reader makes a choice, and in that choice one writer wins and another loses. You also compete with cat videos and memes. Most people think the problem is their website design or lack of press. Cole says the biggest problem is the writing itself, and the fact that they don’t understand the game.</p>
+
+      <ol class="levels">
+        <li><span class="lv">Level 1</span><span><b>Play consciously.</b> Know you are in the game.</span></li>
+        <li><span class="lv">Level 2</span><span><b>Choose a category.</b> Know which shelf you are on.</span></li>
+        <li><span class="lv">Level 3</span><span><b>Define your style.</b> Pick a spot on the spectrum from educating to entertaining.</span></li>
+        <li><span class="lv">Level 4</span><span><b>Optimize for speed.</b> Reveal new information fast.</span></li>
+        <li><span class="lv">Level 5</span><span><b>Be specific.</b> Specificity is the secret.</span></li>
+        <li><span class="lv">Level 6</span><span><b>Engineer credibility.</b> Use the three layers.</span></li>
+        <li><span class="lv">Level 7</span><span><b>Create your own category.</b> Stop competing on someone else’s turf.</span></li>
+      </ol>
+
+      <h3>Level 1: Everyone online is playing, so play on purpose</h3>
+      <p>A photo of you and your grandmother and an influencer posing by a sports car are the same thing: a piece of yourself shared digitally. One person plays consciously and the other unconsciously. Cole is not saying everyone should chase influence. He is saying you either choose your goal or end up wherever the feed takes you.</p>
+      <p>If writing is purely a hobby, write what you like wherever you like. But if only two people clap, <mark>you can’t blame the algorithm</mark>. You chose the two-clap club.</p>
+
+      <h3>Level 2: Know which category you are really in</h3>
+      <p>A category is a shelf in a bookstore. When you walk in looking for a legal thriller, you head to fiction, then thrillers, then law. Only then do you ask who is the best author on this shelf. Websites and social feeds sort the same way.</p>
+
+      <div class="ex">
+        <p class="label">Example</p>
+        <p>You write about yoga. Are you in the yoga category, or the comedy category because your stories about awkward classes are funny? Or take a tech writer. Are you in tutorials, because you teach how to use a tool, or in tech news, because you explain what it means for the industry? You compete against different people in each.</p>
+      </div>
+
+      <p>Each category has its own native language, tried-and-true formats and dominant writers. Your job is to study it until you can name the people you want to pass.</p>
+
+      <h3>Level 3: Your style is where you sit on the writing spectrum</h3>
+      <p>All writing sits somewhere between <b>educating</b> (textbooks, news) and <b>entertaining</b> (stories, sitcoms). A memorable style is a choice to sit somewhere <mark>unexpected for your category</mark>. If everyone sounds the same, do the opposite.</p>
+
+      <div class="ex">
+        <p class="label">Example</p>
+        <p>Every restaurant reviewer writes like a formal essay. Then someone starts writing comic reviews as “Cindy,” a part-time food blogger at a failing magazine who pretends to be an Instagram star, knows nothing about food and gets too drunk at tastings. In that category, that is unexpected, so it stands out.</p>
+      </div>
+
+      <p>A good sign is that people in your category comment on your style. Some will love it and some will feel threatened. Cole’s advice is not to sit and think about your style. Publish, study the data, and let your voice develop.</p>
+
+      <h3>Level 4: The internet rewards speed, and speed is the rate of revelation</h3>
+      <p>People don’t read online. They skim. If something catches their eye in two to ten seconds they start reading, and when momentum drops they are gone. His college teacher used to say: if your story depends on the reader getting through the first few pages, you probably don’t need those pages.</p>
+      <p>The <b>Rate of Revelation</b> is how fast you give the reader something new. Compare these two paragraphs about habits.</p>
+
+      <div class="pair">
+        <div class="pane">
+          <p class="label bad">Slow</p>
+          <p>Habits are hard to build. It can take years. Each of us struggles with different parts of life, so it takes a long time to see which habits need work. And spotting them is only the first step. Real progress takes even longer.</p>
+        </div>
+        <div class="pane">
+          <p class="label good">Fast</p>
+          <p>Habits are hard to build for four reasons. First, motivation is hard to find, and bad habits often cover a deeper problem. Second, a habit can take 30 days or more to form. Third, good habits don’t pay off right away, so old ones pull you back. Fourth, your habits mirror your friends, and friends are hard to change overnight.</p>
+        </div>
+      </div>
+
+      <p>The slow version makes one point and keeps repeating it. You could delete everything except the first sentence and lose nothing. The fast version reveals something new in every sentence. Cole adds a warning: speed is not dumbing down. Some great styles are slow on purpose. Just understand the role speed plays.</p>
+
+      <h3>Level 5: Specificity is the secret</h3>
+      <p>Vague phrases like “we tell human stories” try to be for everyone and end up for no one. Being specific forces a choice. The reader either says “Yes, that’s for me,” or walks away. Cole’s own title is an example. “The Art of Writing” would be vague. <em>The Art and Business of Online Writing</em> makes you decide whether you want the digital, money side.</p>
+      <p>The flip side is a rule worth memorizing: <mark>the broader you are, the more confusing you are.</mark></p>
+
+      <div class="ex">
+        <p class="label">Make it more specific</p>
+        <ul>
+          <li>“I want to learn to cook” becomes “I want to learn to cook chicken tikka masala.”</li>
+          <li>“She walked into the store” becomes “She dragged her feet into the bodega.”</li>
+          <li>“He saved his money” becomes “He put one dollar in a shoebox under his bed every night.”</li>
+        </ul>
+      </div>
+
+      <p>The same works for categories. Cole’s own ladder: “Marketing” is broad. “Content marketing” is better. “Content marketing for high-growth businesses” is better still. “Content marketing for founders and executives of high-growth businesses” is a niche you can own. He tells writers not to fear the box. Early on, a box is what you want, because it tells readers where to file you.</p>
+      <p>The question to ask forever: <mark>could this be more specific?</mark> Start in a niche and then expand.</p>
+
+      <h3>Level 6: Credibility comes in three layers</h3>
+      <p>Credibility is not the key to being popular. Levels 1 to 5 have nothing to do with it. When Cole started, he was 23, with no portfolio and long hair. He had to earn it, and says you can too.</p>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Layer</th><th>What it is</th><th>Examples</th></tr></thead>
+          <tbody>
+            <tr><td>Implied</td><td>Your content is better than the rest of the category, so readers do not need to check your bio.</td><td>Strong profile photo, a bio that says who you are and what you write, good image quality, few errors, tidy organization, specific writing.</td></tr>
+            <tr><td>Perceived</td><td>Signals from other people that say “trust this person.” Many people want only this layer.</td><td>Testimonials, press logos, big follower counts, a published book, badges like “best-selling author,” money earned.</td></tr>
+            <tr><td>Earned</td><td>Proof you have done the work, and it cannot be bought.</td><td>How long you have written, how often, how much, how many people read it, how well one piece performed.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Perceived credibility works, but it backfires often. When you show off logos and endorsements you make a promise. If your writing is weaker than the promise, readers notice within three paragraphs. You captured their attention, and you didn’t keep it.</p>
+      <p>Earned credibility is the most undervalued. Picture two Instagram pages. One has a nice bio and four photos from three years ago. The other has a post from 36 minutes ago and years of history. You follow the second one because it shows consistency.</p>
+
+      <h3>Wear every badge you earn</h3>
+      <p>When Quora named Cole a Top Writer, almost nobody outside Quora knew what that meant. He put it in every bio, on his website and in his answers. Hosts then introduced him as “Nicolas Cole, a Top Writer on Quora.” Publications added it to the bottom of his republished pieces. The badge was small, but because he wore it proudly, everyone else did too.</p>
+      <div class="ex">
+        <p class="label">Example</p>
+        <ul>
+          <li>One article hits 10,000 views. Add to your bio: “Read my most popular article, with 10,000+ views.”</li>
+          <li>You have written every week for five years. Say so: “Writing every week online since 2020.”</li>
+          <li>A well-known person praises a piece. Quote them.</li>
+        </ul>
+      </div>
+
+      <h3>Level 7: Create your own category</h3>
+      <p>Competing in other people’s categories is hard. How do you become better at horror than Stephen King, at legal thrillers than John Grisham, or at wizard schools than J.K. Rowling? You probably can’t. So the best writers make a new category.</p>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Writer</th><th>New category</th><th>What changed</th></tr></thead>
+          <tbody>
+            <tr><td>Malcolm Gladwell</td><td>Pop science</td><td>Research-based books written for non-academic readers.</td></tr>
+            <tr><td>J.K. Rowling</td><td>Wizardry for kids</td><td>Fantasy and magic aimed at younger readers, not a better Tolkien.</td></tr>
+            <tr><td>Jen Sincero, Mark Manson</td><td>No-nonsense self-help</td><td>Readers choose between a calm self-help book and one that tells them to wake up.</td></tr>
+            <tr><td>Tucker Max</td><td>“Fratire”</td><td>A new category that nobody could enter without being compared to him.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Cole says categories come from unlikely intersections. Treat it as a matching game.</p>
+      <ul>
+        <li><strong>Audience × genre.</strong> Adult historical fiction is crowded. Historical fiction for war veterans, written in their own lingo, is a smaller shelf you could own.</li>
+        <li><strong>Genre × genre.</strong> Sci-fi plus memoir. How-to plus fiction. The odder the pairing, the more different the result.</li>
+        <li><strong>Audience or genre × tone.</strong> The same topic with a different tone creates a new niche.</li>
+      </ul>
+      <p>Then explain it. Your <b>point of view</b> is how you see the world, and it tells readers why your category is different. “Military romance” is a clear example. Readers must decide: any romance novel, or one set in the military? Once they pick the category they ask who the best writer in it is. If you taught them the category, the answer is you.</p>
+
+      <div class="takeaway">
+        <p class="label">Remember</p>
+        <p>Different always beats better. Learn the rules on someone else’s shelf, then build your own.</p>
+      </div>
+    </section>
+
+    <!-- CHAPTER 4 -->
+    <section class="chapter" id="ch4">
+      <p class="kicker">Chapter 4</p>
+      <h2>Where to write online, and where not to</h2>
+      <p class="oneline"><b>Start on social platforms,</b> not on your own site or in a big publication.</p>
+
+      <p>Cole defines online writing as sharing on a platform with an existing audience. Many people assume that means a major magazine. He wrote for <em>Inc.</em> for almost three years and says that is overrated. He lists five myths.</p>
+
+      <h3>Myth 1: Writing for a big publication does not guarantee millions of views</h3>
+      <p>Of his 409 columns for <em>Inc.</em>, only 44 passed 10,000 views in 2017. The site gets tens of millions of views a month, but your single article gets a tiny slice. Readers on major sites spend less than a minute and many leave after one article, because the business model is ads.</p>
+
+      <h3>Myth 2: You can write whatever you want</h3>
+      <p>Think of yourself as an employee. Publications hire columnists to fill gaps in their coverage. Cole’s editor kept nudging him back toward topics they needed. A very successful executive he ghostwrote for was told to write like a journalist, not an expert.</p>
+
+      <h3>Myth 3: You can promote yourself all day</h3>
+      <p>The average column gets under 1,000 views. The ones that go viral are about a hugely successful company, a surprising take on a trending topic, or personal development. Nine of his top ten columns of 2017 were personal development. Readers want help, opinions or news. They don’t wake up wanting to read about your book.</p>
+      <div class="ex">
+        <p class="label">His top Quora answers show the same thing</p>
+        <ul>
+          <li>How to become more confident (800,000+ views)</li>
+          <li>How to stop being average (783,000+)</li>
+          <li>What it feels like to go from unattractive to attractive (507,000+)</li>
+          <li>Why having everything you want won’t make you happy (412,000+)</li>
+        </ul>
+        <p>Every one is about the reader’s life.</p>
+      </div>
+
+      <h3>Myth 4: Big publications give you the most reach</h3>
+      <p>A great month at <em>Inc.</em> brought 300,000 views. On Medium, that was average. On Quora in 2014 to 2018, he considered 300,000 a failure and averaged over a million. Quora had around 300 million users and Medium around 30 million.</p>
+
+      <h3>Myth 5: You own your audience</h3>
+      <p>Once your piece goes live, it belongs to the site. There is usually no follow button for you, no email signup and almost no reader data. You mostly learn views and where they came from.</p>
+
+      <h3>What a publication is good for</h3>
+      <ul>
+        <li><strong>Perceived credibility.</strong> You can say “Published in…” and use their logo.</li>
+        <li><strong>SEO.</strong> Links from big sites boost your own site in search. Cole owns the first several pages of Google results for his name this way.</li>
+        <li><strong>Social exposure.</strong> The publication’s account may tweet your piece and tag you. Often they only do this for popular writers.</li>
+        <li><strong>Money.</strong> Pay is usually per page view, so you need huge volume or luck. One friend’s article got 20 million views in a month and earned $20,000. Most writers earn little or nothing.</li>
+      </ul>
+
+      <h3>Social platforms give more of what a writer needs</h3>
+      <p>Cole picks platforms that have a big user base, fit your category and, most important, give you analytics. The goal is to publish and gather data, not to pat yourself on the back.</p>
+      <div class="pair">
+        <div class="pane">
+          <p class="label good">Pros</p>
+          <p>Readers can find you. You earn credibility through views, shares and badges. You meet other writers and readers. You grow faster. You keep ownership of your content, so you can post it elsewhere. Social posts feel more open and objective than a personal blog. They are far more likely to be shared and syndicated.</p>
+        </div>
+        <div class="pane">
+          <p class="label bad">Cons (mostly fear)</p>
+          <p>Feedback is instant, which scares people. Criticism is direct. Some high-status people say “anyone can write there.” Cole thinks all of these are self-inflicted, rooted in fear or insecurity.</p>
+        </div>
+      </div>
+
+      <h3>Platforms Cole recommended in 2020</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Platform</th><th>Why he liked it then</th></tr></thead>
+          <tbody>
+            <tr><td>Quora</td><td>300M+ users. Low barrier, high reward. Great for how-to, life advice and nonfiction.</td></tr>
+            <tr><td>Medium</td><td>Best place for opinion pieces and building a columnist audience, with reader data.</td></tr>
+            <tr><td>LinkedIn</td><td>Underrated for business, productivity, tech and news writing.</td></tr>
+            <tr><td>Wattpad</td><td>Strong for fiction. Anna Todd got over a billion reads, then a book deal and a movie sale.</td></tr>
+            <tr><td>Twitter</td><td>Try niches, find a voice, then launch a product. @VeryShortStory told a full story in each tweet.</td></tr>
+            <tr><td>Amazon</td><td>Works, but costs more time and money to learn. Better to publish proven material there.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Because every site has a limited lifespan, Cole warns against getting married to one.</p>
+
+      <h3>Every platform goes through five phases</h3>
+      <p>Where you should write today may not be where you should write tomorrow. The best moment to join is Phase 3, the window.</p>
+      <ol class="phases">
+        <li><span class="label">Phase 1</span><b>New platform appears</b><span>Early users flock in. Big upside, high risk it dies.</span></li>
+        <li><span class="label">Phase 2</span><b>Gains traction</b><span>Early users turn into “influencers.” The ladder becomes visible. Funding grows to tens of millions.</span></li>
+        <li class="window"><span class="label">Phase 3 · the window</span><b>Established</b><span>Safe enough to invest in, no heavy ads yet, so nearly everyone who follows you sees you.</span></li>
+        <li><span class="label">Phase 4</span><b>Ads arrive</b><span>Reach falls as ads take feed space. Facebook is the famous case, where under 3% of fans see a post unless you pay.</span></li>
+        <li><span class="label">Phase 5</span><b>Mature</b><span>Reach keeps shrinking. Stay if it still pays, or move your audience to the next Phase 2 or 3 platform.</span></li>
+      </ol>
+
+      <div class="ex">
+        <p class="label">His timing examples</p>
+        <ul>
+          <li><strong>Quora, 2014:</strong> a Phase 3 platform. The Top Writer ladder existed, and ads were nearly absent. His reach in 2015 beat his reach in 2018.</li>
+          <li><strong>Medium, 2017:</strong> he waited until it matured, then republished old Quora and <em>Inc.</em> pieces daily. He gained 55,000+ followers, 20 million+ views and close to $100,000 after the paid program began in 2018.</li>
+          <li><strong>Substack, 2020:</strong> still in Phase 1 when he wrote the book. He moved his own newsletter there.</li>
+        </ul>
+      </div>
+
+      <div class="takeaway">
+        <p class="label">Remember</p>
+        <p>Platforms change. The rules of capturing attention stay the same. Learn where a platform sits in its life, and use the window.</p>
+      </div>
+    </section>
+
+    <!-- CHAPTER 5 -->
+    <section class="chapter" id="ch5">
+      <p class="kicker">Chapter 5</p>
+      <h2>How writing on social platforms works, and how not to give up</h2>
+      <p class="oneline"><b>The writers who win are the most consistent,</b> not the most talented.</p>
+
+      <p>Most of us suffer from instant gratification syndrome. People write one article, see 37 views and decide it isn’t working. Nobody gets 10 million views on a first post. Posts you spend hours on may flop, and a 20-minute one may hit the front page of Reddit, which is what happened to Cole.</p>
+      <p>He also has a rule: <mark>the hours you spend consuming should never equal or exceed the hours you spend creating.</mark> Social platforms are for publishing first and reading second. You become a writer by writing a lot.</p>
+
+      <h3>Stage 1: Just start, and expect to be nervous</h3>
+      <p>Everyone feels anxiety about the first post. Cole says the root of the fear is fear of regret. You worry that the person you are today will embarrass the person you become tomorrow. But if your first post were your best ever, you would have a bigger problem, because you would be getting worse.</p>
+      <p>He shows his first Quora answer, from April 2014. It is clearly the work of a younger writer, and he feels astonishment at his improvement, not regret. He also notices a pattern in the first few posts on any new platform.</p>
+      <div class="ex">
+        <p class="label">The usual first four posts</p>
+        <ul>
+          <li>Post 1: “Hello! Thank you for having me. It’s an honor to be here.”</li>
+          <li>Post 2: “Alright, here’s the real deal. I’m going to give it to you straight.”</li>
+          <li>Post 3: “What is life, and does any of this matter?”</li>
+          <li>Post 4: the novelty fades, the data shows you aren’t an overnight success, and many people quit.</li>
+        </ul>
+      </div>
+
+      <h3>Stage 2: Write consistently for six months, then decide</h3>
+      <p>You can’t judge a platform or your message in a few weeks. Cole’s ghostwriting company required six-month contracts for the same reason. In those six months you have three jobs.</p>
+
+      <h4>Job 1: See if you can be consistent</h4>
+      <p>Nothing else matters if you don’t publish. His minimums:</p>
+      <ul>
+        <li><strong>Once a month</strong> is the absolute floor, and only works for people who already have a network.</li>
+        <li><strong>Twice a month</strong> is his recommended minimum to be taken seriously.</li>
+        <li><strong>Several times a week, or daily</strong> is the most reliable route to success.</li>
+      </ul>
+      <p>He gives three reasons for volume. A social algorithm is like a roulette wheel, and each post is a spin. Monthly posting gives you 6 spins in six months, and daily posting gives you 180. Readers are fickle, and if you disappear they find someone else. And you can’t predict which post will hit. A relationship article he nearly skipped republishing became one of his top Medium pieces, with 200,000+ views and 20,000 claps.</p>
+
+      <h4>Job 2: Find your content that works</h4>
+      <p>Spend this time discovering, not establishing. With clients, Cole picked three buckets, such as their industry, their role and a personal interest, then alternated posts until a pattern appeared. A biotech CEO’s most popular posts were not about biotech. They were about mountain biking trips and the self-discipline lessons from them.</p>
+      <p>Now you choose: follow the data, follow your heart, or both. Cole says <mark>do both</mark>. Use the topics that win to bring attention to the work you care about. He wrote a poetry book, so he shares poems on social platforms and mentions the book in this one. Data shows what readers want most, and he still keeps his passion project alive.</p>
+
+      <h4>Job 3: Measure yourself against the top of the ladder</h4>
+      <p>People make this harder than it is. To pass the best writer in a category, do what they do, more consistently. If they publish seven days a week, you publish seven days a week. If they write 3,000-word stories, write 3,000-word stories. If they answer every reply, answer every reply.</p>
+      <div class="ex">
+        <p class="label">Questions to ask about any top writer</p>
+        <ul>
+          <li>Why do they write titles in all caps? Did they always? What happened to their numbers after they started?</li>
+          <li>Why does every sentence get its own paragraph? What does that do to you as a reader?</li>
+          <li>Why a high-quality photo at the top of every post?</li>
+        </ul>
+        <p>Nothing a creator does repeatedly is accidental. Find the pattern, copy it, then shape it into your own style.</p>
+      </div>
+      <p>Cole’s own recipe to “beat him”: publish daily, write fast articles with short paragraphs and a subhead for each main point, mix advice with personal stories, use professional photos, write more than 3,000 articles, land big publications, speak, and appear on 100+ podcasts. Every item is just a step on a staircase, and the staircase is visible from the first week.</p>
+
+      <h3>Stage 3: Once you are consistent, add the growth tactics</h3>
+      <p>If you can’t stay consistent for six months, he says bluntly that you are not a writer yet. Being a writer is not a destination. It is an action, and you are one while you do it. Find the mistakes, face the fears and start again today.</p>
+      <p>With a steady base, these tactics help. They work on any platform.</p>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Tactic</th><th>What it means</th><th>Example</th></tr></thead>
+          <tbody>
+            <tr><td>Audience hacking</td><td>Team up with a writer whose audience is about your size. You introduce each other.</td><td>Co-write an article, interview each other, share each other’s posts, swap testimonials. Cole and Dr. Benjamin Hardy swapped book testimonials.</td></tr>
+            <tr><td>Trend jacking</td><td>Hop on a news story to borrow its attention.</td><td>When Mark Zuckerberg changed Facebook’s mission, Cole wrote a piece summing up the new mission in one sentence. It got hundreds of thousands of views in days.</td></tr>
+            <tr><td>Engagement hacking</td><td>Leave thoughtful comments for the audiences of other writers in your category.</td><td>Make a list of 10 to 15 writers slightly bigger than you. Reply to a comment on their latest post with a useful addition. Readers click your profile.</td></tr>
+            <tr><td>Hashtag stacking</td><td>A hashtag is a folder, so tag posts with folders people really use.</td><td>Use a mix of big tags like #writing and niche ones like #businesswriting. Skip made-up ones like #myfirstposteveromg.</td></tr>
+            <tr><td>Publishing hacking</td><td>Reuse your library in more places.</td><td>See below.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Publishing hacking: publish once per place, share forever</h3>
+      <p><b>Publishing</b> is the first time a piece goes on a platform. Do it once per platform. <b>Sharing</b> is posting the link again and again. An article from three years ago is still fair game to share, especially a good one.</p>
+      <ol class="plain">
+        <li><strong>Delete and republish with a change.</strong> If a post flopped because of timing or headline, you can delete it and post a new version, for example as an answer to a different question. Do it within 24 to 48 hours, before people link to it. Cole prefers writing a new, improved version instead.</li>
+        <li><strong>Build syndication relationships.</strong> Syndication means another publication republishes your piece. One of his articles got about 70,000 views on <em>Inc.</em>. After <em>Business Insider</em> syndicated it, it got over 3,000,000. Six months later they reposted it and it got 5,000,000 more. Luck matters, so put your work in many places.</li>
+        <li><strong>Create your own publication.</strong> A site that looks like a small magazine can partner with bigger ones, and you pitch as the partnerships person, not as one writer.</li>
+      </ol>
+      <p>On “duplicate content,” which is Google’s dislike of the same text on many sites, Cole disagrees. It only matters if you are trying to rank one page for a search phrase. That is blogging, not online writing. If your goal is reach, put the same article on Quora, Medium, LinkedIn and anywhere else. He used this to get nearly 100 articles republished in places like <em>Fortune</em> and <em>TIME</em>.</p>
+
+      <div class="ex">
+        <p class="label">His pitch message, shortened</p>
+        <blockquote>“Hi, I write about personal development habits on Quora and Medium. Since your publication covers the same topics, would you be open to syndicating my pieces for free? Here are three of my most popular articles. Happy to send more.”</blockquote>
+      </div>
+      <p>His reasoning for free syndication: as a rising writer, he did not want $100 for an article. He wanted the floodgates opened for dozens of articles, free marketing and perceived credibility.</p>
+
+      <div class="takeaway">
+        <p class="label">Remember</p>
+        <p>Consistency beats talent. Use the first six months to find out what works, then add growth tactics on top.</p>
+      </div>
+    </section>
+
+    <!-- CHAPTER 6 -->
+    <section class="chapter" id="ch6">
+      <p class="kicker">Chapter 6</p>
+      <h2>Five forms of writing that people want to read</h2>
+      <p class="oneline"><b>Every piece online is one of five forms.</b> Name the form, then make the best version of it in your category.</p>
+
+      <p>Whenever you read a post, an email course or an e-book, ask what type of writing it is. The five forms are the Actionable Guide, the Opinion, the Curated List, the Story and the Credible Talking Head. Your job is to write the single best version of whatever form you chose.</p>
+
+      <h3>Ask three questions before you write</h3>
+      <ol class="plain">
+        <li>What type of writing is this? “How to” is a dead giveaway for an actionable guide.</li>
+        <li>How can I make it the ultimate version? Google the topic and read the competition. Where did they go wrong or go too shallow?</li>
+        <li>Can I make it more specific? Am I stuffing too much into one piece?</li>
+      </ol>
+      <p>Length is a poor measure of value. The aim is the most value without confusing the reader or wasting their time. Stay on one topic. If a thought isn’t about that topic, it belongs in another piece.</p>
+      <div class="ex">
+        <p class="label">Example</p>
+        <p>A guide titled “How to Land Your First Client as a Freelance Photographer” should only cover landing clients. Choosing a first lens is a second article. Handling your accounting is a third. If you mix them, you promised a guide and delivered a list, and the reader feels let down.</p>
+      </div>
+
+      <h3>Form 1: Actionable Guide</h3>
+      <p>The goal is that someone bookmarks it, because that means they will come back to you. Here are ways to beat other guides.</p>
+      <ul>
+        <li><strong>Better quality.</strong> Everyone writes short and shallow? Go deep. Everyone writes long and boring? Condense.</li>
+        <li><strong>Better voice.</strong> Dense competitors? Be fast and casual. Too casual? Be formal.</li>
+        <li><strong>Better organization.</strong> Big paragraphs and no subheads? Win by looking easier to read.</li>
+        <li><strong>Better position.</strong> Flip the problem. Instead of “How to get your first client,” try “Why you shouldn’t charge your first client anything.”</li>
+        <li><strong>Better for the audience.</strong> Use the exact vocabulary of one niche, or go universal if everyone else is niche.</li>
+        <li><strong>Better experience.</strong> If others give 10% free and hold back 90% for a course, give away the whole thing.</li>
+      </ul>
+
+      <h3>Form 2: Opinion</h3>
+      <p>Opinion is the most popular form, and the one most likely to blend in, because everyone has one. “Just having an opinion” is not enough. The same tricks above work, plus these.</p>
+      <ul>
+        <li><strong>Better data.</strong> Bring facts to a feelings fight. Or if everyone drowns in stats, build the piece around one fact.</li>
+        <li><strong>Better quotes.</strong> Back yourself up with credible voices.</li>
+        <li><strong>Better insight.</strong> Bring an idea from outside the industry. Or if everyone is broad, bring it down to one key insight.</li>
+        <li><strong>Better stories.</strong> Tell a story that proves the point. Ryan Holiday often tells a historical story and then adds his view.</li>
+        <li><strong>Better clarity.</strong> Say it so plainly that one sentence rings louder than an essay. Viral tweets are usually clear, not just clever.</li>
+      </ul>
+
+      <h3>Form 3: Curated List</h3>
+      <p>Lists got a bad name from BuzzFeed. But a list is just a way to organize information: candidates for president, books for a well-rounded person, the greatest basketball players. A good list needs two things.</p>
+      <ul>
+        <li><strong>Specificity.</strong> Every item must fit the promise. A list of vampire books with three werewolf books in it will annoy readers.</li>
+        <li><strong>Speed.</strong> Give the item and a quick reason it belongs. Nothing extra.</li>
+      </ul>
+      <div class="pair">
+        <div class="pane">
+          <p class="label bad">Fast, no substance</p>
+          <p>“3 Things You Need to Know About Business”: work hard, make a profit, be successful.</p>
+        </div>
+        <div class="pane">
+          <p class="label bad">Substance, no speed</p>
+          <p>“3 Things to Know Before Starting Your First Business”: how to form an LLC, do your own accounting and land a client. Useful, but rambling for pages.</p>
+        </div>
+      </div>
+      <p>Ways to beat other lists: use unexpected examples instead of Michael Jordan again, clean up the structure (a subhead and one sentence each), and write full-sentence subheads so that skimming the subheads gives the gist. Also add an introduction that says why you curated this list and what you are trying to do.</p>
+
+      <h3>Form 4: Story</h3>
+      <p>Stories are not just for fiction writers. They are a hook. The best answers on Quora start at the peak of the story: “The first time I became a millionaire, I was living in my parents’ basement.” You are inside it before you decide whether you want to be.</p>
+      <p>Josh Fechter used this on LinkedIn in 2018. While others wrote short “here’s what I’m thinking” updates, he wrote short business stories with a fast pace, each sentence on its own line. His posts looked more like haiku than status updates, and they drew hundreds of millions of views.</p>
+      <ul>
+        <li><strong>Better openers.</strong> Start at the conflict or the win. If it gets good four paragraphs in, delete the first four.</li>
+        <li><strong>Better transitions.</strong> Tell a whole story in four sentences, add a break and move on.</li>
+        <li><strong>Better characters.</strong> If everyone names their hero John, call yours XY-2, and give them odd hobbies like tie-dyeing safari hats.</li>
+        <li><strong>Better language.</strong> Try a dialect only your loyal readers get. <em>A Clockwork Orange</em> built a cult following this way.</li>
+        <li><strong>Better category.</strong> Instead of one more recipe with a short anecdote, write “Recipes That Became Family Stories.”</li>
+      </ul>
+
+      <h3>Form 5: Credible Talking Head</h3>
+      <p>Some things get read because of who wrote them. When news breaks, people want to know what the <em>New York Times</em> says. When a drug launches, readers want doctors. Look for topics where you are the most qualified. Sometimes credibility decides your topic, and other times your topic tells you what credibility to build. Cole wrote about personal development at 24 with no credentials and grew into it as more people read him.</p>
+      <ul>
+        <li><strong>Better association.</strong> Write about your time around people your readers recognize. Name-dropping tells readers you know what you are talking about.</li>
+        <li><strong>Better context.</strong> “Here are five things about ghostwriting” is weaker than “I built a multi-million-dollar ghostwriting company, and here are five things.”</li>
+        <li><strong>Better arguments.</strong> Challenge the conventional wisdom. Write what <em>not</em> to do, or what most people never learn.</li>
+        <li><strong>Better perception.</strong> If every e-book cover looks alike, hire a designer with the opposite style. If everyone’s photos look amateur, pay for professional ones.</li>
+      </ul>
+
+      <div class="takeaway">
+        <p class="label">Remember</p>
+        <p>Name the form. Then ask what the others in your category are doing, and do the opposite where it helps the reader.</p>
+      </div>
+    </section>
+
+    <!-- CHAPTER 7 -->
+    <section class="chapter" id="ch7">
+      <p class="kicker">Chapter 7</p>
+      <h2>The perfect post starts with a headline people can’t help but read</h2>
+      <p class="oneline"><b>A headline tells the reader three things at once:</b> what this is about, who it is for, and what it promises.</p>
+
+      <p>Every form of online writing has a headline. The first line of a Facebook post, the title of an e-book and the front page of a company site are all headlines. Cole calls the trio of answers the <b>Curiosity Gap</b>: the headline says what, who and promise, but not the answer itself.</p>
+      <p>Writers often try to be clever. Cole says true creativity here is clarity. If you are vague, nobody knows what it is. If you are unspecific, nobody knows it is for them. If the promise is weak, nobody cares.</p>
+
+      <div class="stack">
+        <div class="step"><p class="label">Vague</p><p>“The Big Idea”</p></div>
+        <div class="step"><p class="label">Clearer</p><p>“The Big Idea That Needs to Get Through Politicians’ Heads to Fix Racial Inequality in America”</p></div>
+        <div class="step"><p class="label">Specific</p><p>“3 Big Ideas From Steve Jobs, Elon Musk and Jeff Bezos That Changed the World Forever”</p></div>
+        <div class="step last"><p class="label">Big promise</p><p>“This 1 Big Idea Will Change the Way You Think About College”</p></div>
+      </div>
+
+      <p>Then keep the promise. <mark>Clickbait is not a style of headline. It is a broken promise.</mark> Numbers and lists are fine. Readers get angry only when you trick them. Cole also dislikes lazy tricks like “You’ll never believe what happened next.”</p>
+      <p>Book titles do this well. <em>The 4-Hour Workweek: Escape 9–5, Live Anywhere, and Join the New Rich</em> uses two puzzle pieces, a catchy name plus a clear promise. <em>Ready Player One</em> tells gamers right away it is for them. Titles that answer one of the three questions are weak, two are good, all three are exceptional.</p>
+
+      <h3>The size of your audience equals the size of your question</h3>
+      <p>Before you write, decide who it is for. Most writers treat audience and subject as separate, and then wonder how to get a billion readers. Cole says the subject decides the audience.</p>
+      <ul>
+        <li>Few people wake up wondering what’s new in biotechnology. That topic has a small audience.</li>
+        <li>Many people wake up asking how to be happier, whether their relationship is healthy or how to make more money. Those topics have huge audiences.</li>
+        <li>“The Day Humans Went Extinct” reaches more people than “The Day Vampires Went Extinct,” which reaches more than “The Day Caterpillar-Vampires Went Extinct.”</li>
+      </ul>
+      <p>You can get the best of both: use a niche topic to answer a universal question.</p>
+      <div class="ex">
+        <p class="label">Widening a headline</p>
+        <ul>
+          <li>“The Future of the Biotechnology Industry” becomes “How the Future of Biotechnology Is Going to Make All of Us Happier, Healthier and Live Longer.”</li>
+          <li>“How to Be a Better Writer” becomes “How to Become a Better Writer, Journal More Often and Live a More Present Life.”</li>
+        </ul>
+      </div>
+      <p>Bigger questions bring bigger audiences. Niche questions bring niche audiences. Wide audiences like simple, universal words. Niche audiences like very specific words.</p>
+
+      <h3>The parts of a perfect headline</h3>
+      <p>Here is a headline of Cole’s that got over 200,000 views, taken apart.</p>
+      <div class="anatomy">
+        <div class="piece"><span class="chip">The 1</span><span class="why">Opens with a number. It sounds short and confident.</span></div>
+        <div class="piece"><span class="chip">Question</span><span class="why">What the 1 is. A noun that stirs curiosity (reason, mistake, habit).</span></div>
+        <div class="piece"><span class="chip">That gets</span><span class="why">The connector. Keep these few and strong.</span></div>
+        <div class="piece"><span class="chip">Every single millennial</span><span class="why">The who. Then ask: which part of that group?</span></div>
+        <div class="piece"><span class="chip">in trouble</span><span class="why">The promise. It brings out emotion.</span></div>
+      </div>
+      <p>Readers mostly scan the beginning and the end. They want to know what the thing is, and what will happen if they read it. A good promise is an outcome the reader wants or wants to avoid. Make it emotional and measurable.</p>
+      <ul>
+        <li>“Become rich” is fine. “Become so rich you never have to think about money again” is stronger.</li>
+        <li>“Not lose your job” is fine. “Not get fired on your first day” is easier to picture.</li>
+        <li>“Get married” is fine. “Get married and stay together more than 20 years” can be measured.</li>
+      </ul>
+
+      <h3>Proven headline formats</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Format</th><th>Why it works</th><th>Example</th></tr></thead>
+          <tbody>
+            <tr><td>Big numbers</td><td>Concrete, easy to picture, and unexpectedly large.</td><td>“3,000 People Just Filed for Unemployment in This Small Town. Here’s Why.”</td></tr>
+            <tr><td>Dollar signs</td><td>Money is universal, and big sums widen the gap.</td><td>“$400 Million Is What You Need to Afford This Mansion in Malibu”</td></tr>
+            <tr><td>Credible names</td><td>A famous name is a hook.</td><td>“Will Smith’s Advice on Living a Fulfilling Life Will Change How You See the World”</td></tr>
+            <tr><td>This just happened</td><td>Words like “just” and “today” signal priority.</td><td>“Michael Jordan Just Gave a Press Conference and NBA Executives Are Furious”</td></tr>
+            <tr><td>Success story</td><td>A rare, amazing event.</td><td>“How This Small Team Landed a Six-Figure Investment in Under a Week”</td></tr>
+            <tr><td>Things that shouldn’t go together</td><td>Odd pairs force a pause.</td><td>“What Jay-Z, Pablo Escobar and Oprah Can Teach Us About Leadership”</td></tr>
+            <tr><td>For the industry</td><td>Calls out a specific audience.</td><td>“3 Things All Successful Small Business Owners Do to Stay Profitable”</td></tr>
+            <tr><td>Topic within the topic</td><td>A hint of inside scoop.</td><td>“7 Ways the Real Estate Industry Is Changing (and How You Should Be Investing)”</td></tr>
+            <tr><td>Question and answer</td><td>Start with the problem, hint at the fix.</td><td>“Can’t Be Productive in the Office? Try Organizing Your Calendar Like This”</td></tr>
+            <tr><td>X number</td><td>Low barrier. It says how much you are signing up for.</td><td>“13 Things Mentally Strong People Don’t Do”</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>You can combine them: “The 1 Thing LeBron James Does Every Morning That Earns Him an Extra $10 Million Per Year.” Fiction writers can use these for content marketing, such as “8 Timeless Sci-Fi Characters That Defined the Genre,” which draws readers who may love your own sci-fi.</p>
+
+      <h3>How to rewrite a headline</h3>
+      <p>BuzzFeed has a rule that writers draft 30 versions of a headline. Cole’s process has four moves. He used to write headlines last and now thinks that is backward, because the headline is a mini version of the whole piece. If you can’t say it in twelve words, you likely can’t say it in 800.</p>
+      <div class="stack">
+        <div class="step"><p class="label">Draft</p><p>“The 8 Things You Should Do on a Daily Basis in Order to Become the Best Person You Can Possibly Become, No Matter What Obstacles Are in Your Way”</p></div>
+        <div class="step"><p class="label">Promise</p><p>“The 8 Things You Should Do on a Daily Basis in Order to Get More Done, Achieve Your Goals and Start Living Your Best Life”</p></div>
+        <div class="step"><p class="label">Sharpen</p><p>“The 8 Things You Should Do on a Daily Basis to Be Productive, Achieve Success and Gain True Financial Freedom”</p></div>
+        <div class="step last"><p class="label">Trim</p><p>“8 Daily Habits That Will Make You More Productive, Achieve Success and Gain True Financial Freedom”</p></div>
+      </div>
+      <p>Finally add <b>power phrases</b> that signal importance: “7 little-known ways,” “9 memorable truths,” “11 painful mistakes,” “4 emerging trends you should know.”</p>
+
+      <div class="try">
+        <p class="label">Try it</p>
+        <p>Take a post idea and write the headline 10 ways. For each one, check: does it say what, who and the promise? Cut every small word you can.</p>
+      </div>
+    </section>
+
+    <!-- CHAPTER 8 -->
+    <section class="chapter" id="ch8">
+      <p class="kicker">Chapter 8</p>
+      <h2>How to structure the perfect post</h2>
+      <p class="oneline"><b>Introduction, main points, conclusion.</b> Move fast, respect the reader’s time, and shape the rhythm.</p>
+
+      <p>There is no one correct way to write online, and new writers keep rewriting the rules. But writing that thrives today respects scarce attention. If you can say it in three sentences instead of five, try two. If it fits in two, try one.</p>
+      <p>Viral posts and Twitter threads follow the same shape: <b>Introduction</b>, then <b>Main Points</b>, then <b>Conclusion</b>.</p>
+
+      <h3>The introduction answers three questions fast</h3>
+      <p>The reader wants to know what it is about, whether it is for them, and what you promise and how sure they can be you will deliver. The first sentence is the most important. Keep it short enough to fly through. Success is nailing the whole point in ten words or fewer.</p>
+      <div class="ex">
+        <p class="label">Opening lines from Cole’s viral pieces</p>
+        <ul>
+          <li>“Success doesn’t happen in an instant.”</li>
+          <li>“There are only 2 ways to become rich.”</li>
+          <li>“Most people don’t believe me when I say I write 10,000 words per day, every day.”</li>
+        </ul>
+      </div>
+      <p>After the first sentence, shape the rest with a rhythm. Each rhythm is written as numbers of sentences per block. Below, each short bar is one sentence.</p>
+
+      <figure class="rhythm" data-p="1 3 1">
+        <div class="viz"></div>
+        <figcaption><b>1 / 3 / 1</b><span>The best place to start. One opener, three sentences of clarifying and proof, one conclusion that leads into the next section. It looks light, so readers feel they can start.</span></figcaption>
+      </figure>
+      <div class="ex">
+        <p class="label">Example in 1/3/1</p>
+        <p><strong>Money is a skill.</strong> Nobody teaches it in school. Most people learn it by making mistakes. And those mistakes get expensive. <strong>That can change.</strong></p>
+      </div>
+
+      <figure class="rhythm" data-p="1 5 1">
+        <div class="viz"></div>
+        <figcaption><b>1 / 5 / 1</b><span>Same as 1/3/1 with more room in the middle for context or a short story. Past 1/7/1, you are cramming in too much.</span></figcaption>
+      </figure>
+      <figure class="rhythm" data-p="1 3 2 1">
+        <div class="viz"></div>
+        <figcaption><b>1 / 3 / 2 / 1</b><span>A slightly longer intro. Still one single-sentence opener and one single-sentence conclusion, so the reader can see the end coming.</span></figcaption>
+      </figure>
+      <figure class="rhythm" data-p="1 4 1 1">
+        <div class="viz"></div>
+        <figcaption><b>1 / 4 / 1 / 1</b><span>Two punchlines instead of one. The only change from 1/3/1 is rhythm, and it feels stronger and more opinionated.</span></figcaption>
+      </figure>
+      <figure class="rhythm" data-p="1 3 1 H 1 3 1">
+        <div class="viz"></div>
+        <figcaption><b>1 / 3 / 1 + 1 / 3 / 1</b><span>For a long introduction. Repeat the shape with a subhead in between, or merge the last line of the first part and the first line of the second into one subhead. It forces you to be clear on each point.</span></figcaption>
+      </figure>
+      <figure class="rhythm" data-p="1 3 1 b4">
+        <div class="viz"></div>
+        <figcaption><b>1 / 3 / 1 + bullets</b><span>Use bullets to replace five or more sentences. Only works if every bullet is valuable, since weak bullets feel like a waste of time.</span></figcaption>
+      </figure>
+      <figure class="rhythm" data-p="1 H">
+        <div class="viz"></div>
+        <figcaption><b>1 + subhead</b><span>One sentence frames the piece, then a subhead hits the first milestone. The reader feels they stepped into the middle. Don’t use it for everything.</span></figcaption>
+      </figure>
+
+      <p>Notice that every shape opens with one sentence and ends with one sentence. Two sentences in the first paragraph is weaker. Three or more is tiring. Cole’s image for the ideal: <mark>crescendo and decrescendo</mark>. Start with one sentence, build to three, four or five, drop to two, drop to one, and repeat. That makes the reader feel like they are riding waves, and waves feel good.</p>
+
+      <h3>Main points are the reason the reader clicked</h3>
+      <p>Many readers skip the intro and just start at the first main point. Many skim only the subheads to decide if the post is worth reading. A good sweet spot for an online piece is 800 to 1,200 words, so pack the most value in without inflating the count.</p>
+      <p>Write backwards. Skeleton the piece first by listing the main points. Then think about space. <mark>More main points means less explanation for each. Fewer means more.</mark></p>
+      <div class="ex">
+        <p class="label">A skeleton before writing</p>
+        <ul>
+          <li>Smart people read a lot.</li>
+          <li>Smart people hang around other smart people.</li>
+          <li>Smart people love making mistakes.</li>
+          <li>Smart people see value in all types of knowledge.</li>
+          <li>Smart people work very, very hard.</li>
+        </ul>
+      </div>
+
+      <h4>Three or fewer main points: 1 / 2 / 5 / 3 / 1</h4>
+      <p>Opener, then two lines to clarify and say why the reader should care. Then five sentences that expand, tell a story or give a credible insight, add something new and end with a small conclusion. Then three that recap, reinforce and drive the point home. Then one that sums up. Each section opens and closes with a clear sentence, and the bulk lives in the middle.</p>
+
+      <h4>Four or more main points: 1 / 3 / 1</h4>
+      <p>The more points, the shorter each one should be. Give the opener, clarify, say why it matters, give a mini-conclusion, and say why it matters to your target reader. Skip the extra explaining.</p>
+      <div class="ex">
+        <p class="label">From his list of 12 signs of intelligence</p>
+        <p><strong>1. Showing up on time.</strong> The most simple indicator of all. If you are late, you are disrespectful. It doesn’t matter the circumstance, unless both of you are stuck in the same traffic. <strong>Rule of thumb: if you’re not early, you’re late.</strong></p>
+      </div>
+      <p>It may look thin, but readers of a 12-point list want the 12 points, not a thesis on each. That piece got over 250,000 views in under seven days.</p>
+
+      <h4>Single-sentence runs: 1 / 1 / 1+</h4>
+      <p>Nothing moves a reader faster than a single sentence. But too many in a row feels over-caffeinated. Use runs of short lines at the beginning or end of a section, then settle into a longer paragraph.</p>
+      <div class="ex">
+        <p class="label">Example</p>
+        <p>I did this for 2 years.<br>Two. Years.<br>Not 3 days.<br>Not a few weeks.<br>Two entire years. I started to see how the people around me weren’t helping me become who I wanted to be.</p>
+      </div>
+
+      <h4>Very long lists: Main point + 1, 2 or 3 sentences</h4>
+      <p>If you have twenty points in a 1,000-word piece, each gets about 50 words. Make those words count, because some readers only read the bolded points. And make the subheads full thoughts, not single words.</p>
+      <div class="pair">
+        <div class="pane">
+          <p class="label bad">Hard to skim</p>
+          <p><strong>Imagination.</strong> <strong>Dreams.</strong> <strong>Friends.</strong></p>
+          <p>The reader has to read the details to learn what the point is.</p>
+        </div>
+        <div class="pane">
+          <p class="label good">Easy to skim</p>
+          <p><strong>Most people are scared of imagination.</strong> <strong>Your dream doesn’t matter to anyone else.</strong> <strong>Friends are relative to where you are in life.</strong></p>
+          <p>The subheads alone carry the message.</p>
+        </div>
+      </div>
+
+      <h3>Rhythm tricks that make writing feel alive</h3>
+      <ul>
+        <li><strong>Bolded statements.</strong> Readers look for bold text because it feels like a shortcut. Cole shows the same passage twice, with and without bold lines. The words are identical, but you read them differently.</li>
+        <li><strong>Short, long, long, short.</strong> Think about paragraph length, not just sentence length. Never stack three long paragraphs. If two long ones sit together, make one a pile of short sentences and the other a single winding one. End with a single sentence so the chord resolves, like music.</li>
+        <li><strong>Repetition.</strong> Repetition works like a bulleted list written in prose. “If you don’t floss, you’re practicing not-flossing. If you watch TV instead of working on your book, you’re practicing postponing your dream.”</li>
+        <li><strong>First, second.</strong> Spelling out “First,” and “Second,” in the subheads makes it sound like speech, and the repetition shows the piece was organized on purpose.</li>
+        <li><strong>Bold half sentences.</strong> Bold the first half of one sentence per paragraph to signal what the paragraph is about. Use it for separate chapters of a story, one bold opener each, and keep each bold line tied to one paragraph.</li>
+      </ul>
+
+      <h3>Conclusions are optional</h3>
+      <p>In a story, the climax has happened and the ending is only reflection, which is less exciting. Online, the last main point is the climax. Once readers are done, they swipe away. A conclusion should be a paragraph or a single sentence. These work.</p>
+      <ul>
+        <li><strong>The Cliff.</strong> Finish your last main point and stop. Leave them wanting more. Great for lists. It nudges readers to click your next piece.</li>
+        <li><strong>The Extended Final Main Point.</strong> Fold the takeaway into the last point so the reader feels a neat bow without a whole new section.</li>
+        <li><strong>The Summary.</strong> A short bulleted recap, good for long guides, plus one closing sentence.</li>
+        <li><strong>Strong Opinion.</strong> Don’t restate. Say something new and actionable that could be a main point on its own.</li>
+      </ul>
+      <p>Cole warns against lazy endings like “If you want to know more, check my website and YouTube.” Readers hate that. Say what you came to say and be done. Let there be some dissonance in the air.</p>
+
+      <h3>Language rules</h3>
+      <ul>
+        <li><strong>Write for the everyday person.</strong> Skip semicolons. If a simpler word exists, use it.</li>
+        <li><strong>Write how you speak.</strong> Record yourself explaining a topic and transcribe it. People who try to sound professional end up sounding fake.</li>
+        <li><strong>Avoid long sentences,</strong> unless you use one deliberately to balance many short ones.</li>
+        <li><strong>Alternate lengths.</strong> If everything is the same length you have a rhythm problem.</li>
+        <li><strong>Be declarative.</strong> Hedging makes writing say nothing. A strong take gets “I strongly agree” or “I strongly disagree,” both better than “Meh.”</li>
+      </ul>
+
+      <div class="takeaway">
+        <p class="label">Remember</p>
+        <p>One sentence in, one sentence out, and clear rhythm in between. Make the subheads tell the story.</p>
+      </div>
+    </section>
+
+    <!-- CHAPTER 9 -->
+    <section class="chapter" id="ch9">
+      <p class="kicker">Chapter 9</p>
+      <h2>How to talk about yourself without making it all about you</h2>
+      <p class="oneline"><b>The more you promote yourself, the less people listen.</b> The reader is the main character.</p>
+
+      <p>Companies and writers make the same mistake: they write only about themselves or their product. But people only care about their own wants. Talking about yourself is not banned. Credentials give context. If a piece about real estate trends says “I founded a multi-billion-dollar real estate firm,” you trust it more.</p>
+      <p>The difference is why you mention it.</p>
+
+      <h3>The Golden Intersection</h3>
+      <p>Compare these two statements.</p>
+      <div class="pair">
+        <div class="pane">
+          <p class="label bad">About me</p>
+          <p>“I’m a 4x Top Writer on Quora with tens of millions of views.”</p>
+          <p>You are the main character, and you hope the reader cares.</p>
+        </div>
+        <div class="pane">
+          <p class="label good">About you</p>
+          <p>“I want to show you how to become a Top Writer with tens of millions of views. Here is how I did it.”</p>
+          <p>The reader is the main character, and your story is context.</p>
+        </div>
+      </div>
+      <div class="takeaway">
+        <p class="label">The Golden Intersection</p>
+        <p>The reader’s question × an entertaining story from you.</p>
+      </div>
+      <ul>
+        <li>Writing about learning a skill? Tell how you learned it.</li>
+        <li>Writing about falling out of love? Tell about a time you did.</li>
+        <li>Writing about the future of technology? Tell what you have seen over the years.</li>
+        <li>Writing about politics? Tell how you got involved.</li>
+      </ul>
+
+      <h3>Example: promoting a book without promoting it</h3>
+      <p>Cole invents a book called <em>Green at Home</em>, about growing vegetables in your kitchen for under $50 a month. Most authors do the same three things. They post once and get upset when millions don’t read it. They hire a PR firm, which wins a column that gets under 1,000 views because nobody wakes up to read an ad. Or they write a blog post full of salesy language.</p>
+      <p>The Golden Intersection fixes this by putting the reader’s problem first.</p>
+      <div class="ex">
+        <p class="label">Better titles to promote the same book</p>
+        <ul>
+          <li>7 Mistakes People Make When Growing Vegetables at Home for the First Time</li>
+          <li>How to Grow Tomatoes in Your Kitchen for Under $50 a Month: 3 Easy Steps</li>
+          <li>The 1 Life Lesson You’ll Learn When You Stop Grocery Shopping and Start Growing Your Own Food</li>
+        </ul>
+        <p>And inside the piece, in the fourth point, the author might write: “The fourth mistake is starting with too many vegetables. I tell this story in my new book, but the first time I tried, I spent hundreds of dollars thinking what worked for tomatoes would work for zucchini.” The first sentence speaks to the reader. The story supports it.</p>
+      </div>
+
+      <h3>Example: hiring without a job ad</h3>
+      <p>Say you run an ad agency and want content marketers to apply. A typical plan is a “join our amazing family” post that nobody engages with, a job board listing, and a PR firm. Instead, write what your target reader reads: “6 Tools Every Content Marketer Needs in 2020,” or “Are You a Freelance Content Marketer? 9 Clever Ways to Find More Clients.”</p>
+      <p>Inside the piece, mention how your team holds weekly workshops where marketers share growth tricks, so nobody feels alone. That speaks to a talented person who wants a place to keep learning. You never wrote an ad.</p>
+
+      <h3>The humble brag, done right</h3>
+      <p>At dinner parties people say “for context.” “That’s a great point. I own a design firm and we design clothes for big artists, and one thing we’ve learned about trends is…” It gives enough credibility to pique interest. Done too often, it is a neon sign that says you only care about yourself. Rules:</p>
+      <ul>
+        <li><strong>Bring it back to the reader.</strong> One or two sentences about you is usually plenty.</li>
+        <li><strong>Only mention what is relevant.</strong> Don’t plug a sales tool or a friend’s cookbook just because.</li>
+        <li><strong>Make it part of a bigger point.</strong> Don’t give it its own section.</li>
+        <li><strong>Use casual language.</strong> “I originally told this story in my book” beats “Enter: Company X.”</li>
+        <li><strong>Make your product the setting.</strong> “Every morning at my company, the first thing we do is…” makes it an example of the point.</li>
+      </ul>
+
+      <h3>Calls to action (CTAs)</h3>
+      <p>A CTA points readers to something you want them to see. Cole shows three levels.</p>
+      <ol class="plain">
+        <li><strong>The signature.</strong> A short note at the very end, such as “Want to learn how I built my personal brand? Take the free email course.” It separates the reader’s piece from your interest.</li>
+        <li><strong>Credibility plus CTA.</strong> Inside a relevant paragraph: “I’ve helped people build their personal brands for more than five years, and over 10,000 have taken my free email course (link).”</li>
+        <li><strong>The hidden link.</strong> Link a phrase like “helping people build their personal brands online” straight to the course, with no explanation. Readers who need help will click.</li>
+      </ol>
+      <p>His preference is to make the offer feel like a helpful resource and never give it the spotlight. If the reader wants it, they will go there. If not, let them keep reading in peace.</p>
+
+      <div class="takeaway">
+        <p class="label">Remember</p>
+        <p>Talk about yourself as proof for the reader’s problem. Two sentences, then back to them.</p>
+      </div>
+    </section>
+
+    <!-- CHAPTER 10 -->
+    <section class="chapter" id="ch10">
+      <p class="kicker">Chapter 10</p>
+      <h2>Your content roadmap: build a sticky web</h2>
+      <p class="oneline"><b>Anyone can write one great article.</b> The real test is writing a thousand.</p>
+
+      <p>Writers who win have the biggest libraries. More material means more spins of the wheel and more chances for new readers to find you. The more you write in one category, the more dominant your voice. In the end, writers in your category compare themselves to you.</p>
+
+      <h3>Timeless beats timely over the long run</h3>
+      <p>Timely writing rides today’s news. It can catch fire, but it has a short shelf life. A timeless piece, such as a story, insight or guide, can be read ten years later. A timely post might get 10,000 views in a day and vanish. A timeless one might get 5,000 views every year for ten years. Cole prefers the latter.</p>
+      <p>His proof: when he joined Medium in 2017 he already had over 2,000 usable articles. He republished one a day. He wrote fewer than 30 new pieces there, and in a year had tens of thousands of followers, millions of views and Top Writer status in more than 15 categories. All from old material. It was only possible because 99% of it was timeless. He calls this earning dividends on old work.</p>
+      <div class="takeaway">
+        <p class="label">Remember</p>
+        <p>Volume wins, and timeless volume wins most.</p>
+      </div>
+
+      <h3>Pick three content buckets</h3>
+      <p>Spend the first six months exploring and gathering data. Then narrow to three buckets.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Bucket</th><th>What it is</th><th>Cole’s own</th></tr></thead>
+          <tbody>
+            <tr><td>General audience</td><td>Universal topics like habits, life lessons or productivity, seen through your own lens.</td><td>Life advice and self-mastery from his life as a writer, entrepreneur, bodybuilder and gamer.</td></tr>
+            <tr><td>Niche audience</td><td>Hyper-relevant to your expertise. Use universal topics to widen the reach, and also speak directly to this group’s pain.</td><td>Online writing advice, self-publishing and content marketing.</td></tr>
+            <tr><td>Company or industry</td><td>The environment you work in. Usually the easiest to spot.</td><td>Thought leadership and personal branding for executives, founders and investors.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="ex">
+        <p class="label">Example: a VP of Marketing at a software company</p>
+        <ul>
+          <li><strong>General:</strong> life lessons and time management from being a VP of Marketing.</li>
+          <li><strong>Niche:</strong> content marketing.</li>
+          <li><strong>Industry:</strong> software as a service (SaaS).</li>
+        </ul>
+      </div>
+      <p>Buckets change. Cole tried gaming, bodybuilding and big-brand advertising before data showed writing and content marketing pulled the most steady attention.</p>
+
+      <h3>The Endless Idea Generator</h3>
+      <p>If you think you have nothing to say, use a three-step formula.</p>
+      <ol class="plain">
+        <li><strong>Pick the form.</strong> Actionable Guide, Opinion, Curated List, Story or Credible Talking Head.</li>
+        <li><strong>Pick the idea.</strong> Explanation, Habits, Mistakes, Lessons, Tips, Stories or Timely Events. Each ties to a destination, goal or state of being. Timely events are only one of seven, so give them the smallest share of your library.</li>
+        <li><strong>Pick why you.</strong> Either “I’m an expert, here’s what I think,” or “I talked to all the trusted experts, here’s everything in one place,” or “It’s just my opinion, but it’s the most articulate.”</li>
+      </ol>
+      <p>Combine the three and you get an outline.</p>
+      <div class="ex">
+        <p class="label">Examples</p>
+        <ul>
+          <li>Curated List × Mistakes × 7 industry experts = “7 Founders Share the Biggest Mistakes They Made Raising Money for Their First Startups.”</li>
+          <li>Credibility × Explanation × Expert = “I Was a Professional World of Warcraft Gamer as a Teenager. Here’s Why eSports Will Be a Multi-Billion-Dollar Industry.”</li>
+        </ul>
+      </div>
+
+      <h3>The content roadmap template</h3>
+      <ol class="plain">
+        <li><strong>List your three buckets.</strong> For example: Productivity, SaaS startups, project management software.</li>
+        <li><strong>List three or more topics under each.</strong> Under productivity: productivity tips, time management, curated insights.</li>
+        <li><strong>Plug and play.</strong> Under each topic, run the generator to produce dozens of headlines.</li>
+      </ol>
+      <div class="ex">
+        <p class="label">Headline families for one topic: how to be more productive</p>
+        <ul>
+          <li><strong>How to:</strong> “How Anyone Can Be More Productive With X Small Shifts in Their Morning Routine”</li>
+          <li><strong>Thought leaders:</strong> “Oprah’s Morning Routine Will Inspire You to Be More Productive”</li>
+          <li><strong>Books:</strong> “This 1 Book on Productivity Will Inspire You to Stop Working After 3 p.m.”</li>
+          <li><strong>Habits:</strong> “X Nighttime Habits That Ruin Your Sleep and Your Productivity the Next Day”</li>
+          <li><strong>Mistakes:</strong> “X Apps People Think Make Them Productive but Actually Make It Worse”</li>
+          <li><strong>Myths:</strong> “X Productivity Hacks the World Loves to Preach but Are Just Quick Fixes”</li>
+          <li><strong>Distractions:</strong> “X Distractions That Need to Be Removed Before You Start a New Routine”</li>
+          <li><strong>Stats:</strong> “X% of Employees Want to Track Their Own Productivity. Here’s How to Empower Them”</li>
+        </ul>
+      </div>
+      <p>There will be overlaps, and that is fine. Writing at length about the same few topics, and finding new angles each time, is how you become an influential voice. Repetition is a feature.</p>
+
+      <h3>Three questions before you write anything</h3>
+      <ol class="plain">
+        <li>Does this idea fall inside one of my three buckets?</li>
+        <li>Will this piece stand the test of time?</li>
+        <li>Have I written about this before? If so, how can I tell it in a new way?</li>
+      </ol>
+      <p>Cole has told the story of becoming a top <em>World of Warcraft</em> player at 17 hundreds of times, each through a different lens: work ethic, obsession, the fallacy of achievement, his parents. It became one of his <b>core narratives</b>. People learn to link the story to him, and him to the story.</p>
+
+      <div class="takeaway">
+        <p class="label">Remember</p>
+        <p>Repetition is how people remember you.</p>
+      </div>
+    </section>
+
+    <!-- CHAPTER 11 -->
+    <section class="chapter" id="ch11">
+      <p class="kicker">Chapter 11</p>
+      <h2>Pillar pieces: turn proven writing into bigger assets</h2>
+      <p class="oneline"><b>Let data tell you when to launch a website,</b> and what to put on it first.</p>
+
+      <p>The Writing Data Flywheel becomes your unfair advantage. When one piece outperforms everything else, don’t just celebrate it. Ask why it worked and how to expand it into something longer and more valuable.</p>
+      <p>This answers the question, “When should I launch my own website?” Cole says you are ready when your writing can become a business. That means you start doing at least one of these:</p>
+      <ul>
+        <li>Capturing email addresses</li>
+        <li>Earning from ads</li>
+        <li>Earning from paid subscriptions</li>
+        <li>Selling products or services</li>
+        <li>Speaking, coaching, consulting or advising</li>
+      </ul>
+
+      <h3>Double down on the winner, then build a pillar piece</h3>
+      <div class="ex">
+        <p class="label">Example</p>
+        <p>You have written a dozen sales-advice posts, and the one on “cold email outreach” beat the rest. First, check it was not a fluke by writing more on it. If more data agrees, narrow your niche to “cold email outreach for sales.” Now you know how to greet readers on your site: “Looking for cold email strategies? You’ve come to the right place.”</p>
+      </div>
+      <p>Moving readers off a platform to your site is hard. Every second they are on your site, they wonder why they are still there. So exceed expectations. Send them from an article they liked to a longer, more extensive resource they will want to bookmark. That is a <b>pillar piece</b>: the most valuable, comprehensive, engaging version of something that has already proven itself.</p>
+
+      <h3>Five ways to grow an article into a pillar piece</h3>
+      <ol class="plain">
+        <li><strong>Combine content.</strong> Merge your best posts, or 100 tweets, into one guide. The reader gets convenience.</li>
+        <li><strong>Curate expert opinions.</strong> Interview experts or quote their podcasts, articles and posts.</li>
+        <li><strong>Add statistics.</strong> A few relevant stats make a piece feel more professional.</li>
+        <li><strong>Tell personal stories.</strong> A long piece has room for the stories that did not fit in 800 words.</li>
+        <li><strong>Give more examples.</strong> This book is itself an example. An 800-word idea could be 5,000 words with dozens of concrete cases.</li>
+      </ol>
+      <p>The goal is not to inflate the word count. It is to make one piece on one topic as potent as possible.</p>
+
+      <h3>The Reader Acquisition Flywheel and the sticky web</h3>
+      <ol class="plain">
+        <li>Write in each of your three content buckets.</li>
+        <li>Use data to pick the topic that deserves a pillar piece.</li>
+        <li>Create the pillar piece on your website.</li>
+        <li>Keep writing about that topic on social platforms, and link to the pillar piece whenever it fits.</li>
+      </ol>
+      <p>For a pillar piece called “The Ultimate Guide to Cold Email Outreach,” you could write a Medium article about freelancer mistakes with cold email and mention in one point: “I explain why short emails work in my guide.” Then a LinkedIn piece on why cold email is a top sales strategy, linking the same guide. Soon hundreds of pieces point to your site without feeling pushy. The library becomes a <b>sticky web</b>.</p>
+
+      <h3>Turn pillar pieces into email courses, newsletters and downloads</h3>
+      <p>Once readers are on your site, capture their email. Again, let data decide. If one pillar piece gets the most traffic, turn it into a downloadable guide or a 7-day email course. Build a road: an article leads to a more valuable resource, which leads to a more valuable one still.</p>
+      <p>Readers don’t just “sign up” for your newsletter. They judge opt-ins even harder than articles, so your offer must be more relevant and valuable than your free writing. Most writers withhold their best stuff. Then their free posts are fluff, nobody reads them, and the website gets no traffic.</p>
+      <div class="takeaway">
+        <p class="label">Give away 99% of your best writing for free</p>
+        <p>Only monetize the last 1%, and make that 1% worth as much as the other 99%.</p>
+      </div>
+
+      <h3>Ideas for opt-ins</h3>
+      <ul>
+        <li><strong>One hyper-specific problem.</strong> “7 Days to Buying Your First Rental Property.”</li>
+        <li><strong>Credible case studies.</strong> “10 Fiction Writers Who Earn $100,000+ a Year Self-Publishing on Amazon.”</li>
+        <li><strong>Early or exclusive content.</strong> The first chapter of your upcoming novel, or extra side plots. Say exactly what they get, because “Subscribe for more of my writing” is too vague.</li>
+        <li><strong>Different levels of audience.</strong> One free course for beginners, another for advanced and another for experts.</li>
+        <li><strong>Templates and worksheets.</strong> Workout plans, a memoir template, a team-building worksheet.</li>
+      </ul>
+      <p>Cole’s own first opt-in was a 7-day email course on building a personal brand. People kept asking him how to start, so he combined his popular articles into a course. It captured tens of thousands of emails.</p>
+
+      <h3>Only then, sell something</h3>
+      <p>After six to twelve months of writing, a clear set of buckets, a website, a few pillar pieces and some opt-ins, it is time to sell. Cole points out how linear the path is, and how many questions you would still have if you had started by writing a book or course. Getting data seems like the long road but is actually the shortcut.</p>
+      <p>He quotes his friend, copywriter Craig Clemens: <mark>people don’t buy products, they buy solutions to problems.</mark> Writers who guess the problem often launch to silence. They didn’t know how to talk to their target reader, so the reader didn’t listen.</p>
+
+      <h3>Why did you buy this book if it’s mostly free?</h3>
+      <p>Cole points out that almost every idea in the book is already free online. He says people still buy for three reasons.</p>
+      <ul>
+        <li><strong>Convenience.</strong> You didn’t want to dig through 3,000 articles.</li>
+        <li><strong>Specificity.</strong> You wanted one resource on one topic.</li>
+        <li><strong>Depth.</strong> You wanted 200+ pages, examples and stories.</li>
+      </ul>
+      <p>Digital Press worked the same way. The answers on personal branding are out there. Busy executives don’t have time to learn them, so they hire someone who writes about it. The best products and services reflect your proven topics. If readers love your posts on writing a memoir, offer memoir coaching. If they love your stories about working at Facebook, make a paid newsletter. If they love your opinions on brand messaging, offer messaging as a service.</p>
+
+      <div class="takeaway">
+        <p class="label">Remember</p>
+        <p>Let readers tell you what they want more of, and what they will pay for.</p>
+      </div>
+    </section>
+
+    <!-- CHAPTER 12 -->
+    <section class="chapter" id="ch12">
+      <p class="kicker">Chapter 12</p>
+      <h2>How to make money online as a writer</h2>
+      <p class="oneline"><b>There are only three ways to earn:</b> ads, paywalls or services. Money comes last on purpose.</p>
+
+      <p>This is the first question most writers ask, so Cole answers it last. Money should not be a priority until you have proven three things.</p>
+      <ul>
+        <li>You can and want to write <em>in public</em> on a regular basis. Once a month barely counts, twice a month is OK, four times is getting somewhere, and daily is rare.</li>
+        <li>You have clear content buckets and know your high-performing topics.</li>
+        <li>You have a website and have planted your flag in your niche.</li>
+      </ul>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Model</th><th>Also called</th><th>How it works</th></tr></thead>
+          <tbody>
+            <tr><td>Advertising</td><td>The attention model</td><td>You sell your audience’s attention to brands.</td></tr>
+            <tr><td>Paywall</td><td>The exclusivity model</td><td>You charge for access to your content.</td></tr>
+            <tr><td>Services</td><td>The “I’ll do it for you” model</td><td>You sell your skill to others.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Model 1: Advertising needs a huge amount of attention</h3>
+      <p>YouTubers earn from pre-roll ads. Instagrammers earn from product posts. Bloggers earn from Google Ads. The trade is attention for dollars. At <em>Inc.</em>, Cole was paid a small amount per page view, so even millions of views didn’t mean yacht shopping.</p>
+      <p>The model has four flaws.</p>
+      <ol class="plain">
+        <li><strong>People hate ads.</strong> The page freezes, then a video ad takes over. That hurts loyalty.</li>
+        <li><strong>People don’t trust a flood of sponsors.</strong> Promote a new product every week and readers see you as fake.</li>
+        <li><strong>Ads need massive volume.</strong> You often need hundreds of thousands of views a month to reach $1,000. Count your hours and you earn below minimum wage.</li>
+        <li><strong>Ads are volatile.</strong> Some months paid him $3,000, others $400. He did not quit his job until months of data showed steady income.</li>
+      </ol>
+      <p>Ways to do it anyway:</p>
+      <ul>
+        <li><strong>Sell ad space in your content.</strong> You need roughly 5,000 to 10,000 followers and 50,000 to 100,000 monthly views. You are paid for impressions (views), clicks or conversions (a lead or sale). It’s a lot of work. Only possible on social platforms, since major publications ban paid mentions.</li>
+        <li><strong>Land a brand sponsorship.</strong> One brand sponsors your site for a month, often with a banner. Common in other fields, rare in writing so far. You find the brand and handle the invoices.</li>
+        <li><strong>Run Google Ads.</strong> Easy and passive, but you lose control of what appears, the site looks cheap, and more ads means a worse reading experience. Cole isn’t a fan.</li>
+        <li><strong>Become an affiliate.</strong> You earn a commission for sales you send. For example, recommend ClickFunnels in a post on direct-response marketing, or link Amazon books to mystery readers. Disclose the link. Affiliate marketing is a $7 billion industry, though it suits marketers more than novelists.</li>
+        <li><strong>Monetize your personality instead.</strong> Send readers to a YouTube channel, podcast or Instagram about writing. You may earn more from writing tutorials than from writing. It may feel like giving up, but diversifying protects you if book sales or traffic fall.</li>
+      </ul>
+
+      <h3>Model 2: Paywalls need fewer fans</h3>
+      <p>Cole’s first writing income was selling e-books in 2015. His million Quora views earned $0 from ads but thousands from selling access. With the paywall model you can start on day one, but you still need an audience and data.</p>
+      <p>He recommends Kevin Kelly’s essay “1,000 True Fans”: if 1,000 people each spend $100 a year on everything you make, that’s $100,000 a year.</p>
+      <p>The challenges:</p>
+      <ul>
+        <li>You still need attention first, though a niche audience of about 1,000 is enough to start.</li>
+        <li>Paid content must be better than free content. If you can’t hold attention for free, you aren’t ready to charge.</li>
+        <li>Paid content needs more care. Customers expect quality, on time, in a professional way.</li>
+      </ul>
+      <p>Ways to do it:</p>
+      <ul>
+        <li><strong>Write behind a paywall.</strong> Platforms like Medium and Wattpad pay writers from subscriptions. Wattpad’s Paid Stories lets readers buy coins to unlock chapters, but it was open only to top writers then.</li>
+        <li><strong>Create a product.</strong> A book is a product, and so are a workbook, a calendar, a journal, a candle or a deck of cards. Ryan Holiday sells coins, rings and a card deck at dailystoic.com.</li>
+        <li><strong>Sell a course.</strong> To make $1 million you need 100,000 buyers of a $10 book, or 5,000 buyers of a $200 course. James Clear sells a $299 video course that walks through the ideas in his book, and Mark Manson sells six life-advice courses.</li>
+        <li><strong>Start a paid newsletter.</strong> His favorite. Think of it as a micro-paywall with monthly income. 1,000 true fans at $10 a month is $10,000 a month. You could even publish a book chapter by chapter. “Who says a book needs to be a book anymore?”</li>
+        <li><strong>Host a workshop or event.</strong> A live class, panel or mastermind. Cole’s college writing class had students read aloud, and hearing his own words showed him what dragged. He used the same method at Digital Press.</li>
+      </ul>
+
+      <h3>Model 3: Services sell what you already know how to do</h3>
+      <p>If you can write viral content, people will pay you to write theirs. If you can get a book to number one on Amazon, people will pay you to help them do it. Most writers underrate their own skills because they feel like common knowledge.</p>
+      <ul>
+        <li><strong>Content writing.</strong> Every company, founder, investor and university needs content. The mistake is selling words. “Example 1: Most content writing jobs hyper-focus on word count” and “Giraffes eat purple but sunshine is the reason” are both eight words, and only one is useful. Price on results, not word count.</li>
+        <li><strong>Ghostwriting and speechwriting.</strong> Luxury content writing for the people who run companies. You get paid to build a network, it earns more, and it teaches you many voices. It is closer to co-writing: your pen, their ideas.</li>
+        <li><strong>Copywriting.</strong> Writing that drives a financial result, such as sales pages, emails and ads. Top copywriters can earn six figures for one sales letter plus a share of profit. It also teaches you how to sell ideas, which every writer does.</li>
+        <li><strong>Messaging, consulting and advising.</strong> Help companies say who they are and speak to customers differently. If you have mastered Facebook ads, pitch decks or niche fiction, people will pay for that expertise.</li>
+      </ul>
+
+      <h3>Final thoughts: you are also an entrepreneur</h3>
+      <p>The dream that a publisher swoops in and brings you tea while you write the great American novel is dead. Successful writers today are brands and solo-run companies. They are the publisher, creative director, distributor and writer. They accept the extra work because it gives them ownership and control.</p>
+      <p>Cole quotes his 8th grade math teacher: <mark>“You can either get on the bus, or you can get off the bus. Either way, we’re leaving.”</mark></p>
+    </section>
+
+    <!-- CHAPTER 13 -->
+    <section class="chapter" id="ch13">
+      <p class="kicker">Chapter 13</p>
+      <h2>The one habit every writer needs</h2>
+      <p class="oneline"><b>Writing a lot.</b> It sounds too simple, which is why most people skip it.</p>
+
+      <p>Cole says most readers of his book won’t apply it. The reason isn’t about writing. It is about discipline, self-belief and understanding the path of mastery.</p>
+      <p>He knows the methods work because he lived them, because friends who followed them got hundreds of thousands to tens of millions of views and had pieces republished, and because his company used them with more than 300 founders, executives, investors, musicians and athletes.</p>
+      <p>Every result came from one habit. <mark>Writing, a lot.</mark></p>
+
+      <h3>People want the outcome without the habit</h3>
+      <p>Writers often ask how to get views or get published, with a hint of entitlement. They treat writing as a weekend hobby. They don’t learn the business, and they don’t sit down day after day. Instead they think about writing and hope that is enough.</p>
+      <p>His dad used to wear a worn-out shirt in the basement gym with a basketball player on the back and a paragraph that said, roughly, somewhere someone is practicing harder, faster and longer than you, and when you meet them they will win.</p>
+
+      <p>Online writing is a game. So are bestselling books, ghostwriting, consulting, and a fiction series that becomes a movie and then a line of action figures. Anyone can play, and anyone can master it.</p>
+
+      <div class="takeaway">
+        <p class="label">The final question</p>
+        <p>Do your habits reflect your desires? Do you truly deserve to win?</p>
+      </div>
+    </section>
+
+    <!-- CHEAT SHEET -->
+    <section class="chapter" id="cheatsheet">
+      <p class="kicker">Keep this part</p>
+      <h2>Checklist and glossary</h2>
+      <p class="oneline"><b>Run this list before every post.</b> Your ticks are saved in this browser only.</p>
+
+      <h3>Before you hit publish</h3>
+      <ul class="checks" id="checks">
+        <li><label><input type="checkbox" id="ck0"><span>I can name the category I’m competing in.</span></label></li>
+        <li><label><input type="checkbox" id="ck1"><span>The headline says what it is, who it is for and the promise.</span></label></li>
+        <li><label><input type="checkbox" id="ck2"><span>The first sentence is short and carries the whole point.</span></label></li>
+        <li><label><input type="checkbox" id="ck3"><span>The intro has a clean shape, like 1/3/1.</span></label></li>
+        <li><label><input type="checkbox" id="ck4"><span>Every main point has a subhead, and the subheads alone tell the story.</span></label></li>
+        <li><label><input type="checkbox" id="ck5"><span>Paragraph lengths vary, and no three long ones sit in a row.</span></label></li>
+        <li><label><input type="checkbox" id="ck6"><span>Every sentence adds something new (rate of revelation).</span></label></li>
+        <li><label><input type="checkbox" id="ck7"><span>I looked for places to be more specific.</span></label></li>
+        <li><label><input type="checkbox" id="ck8"><span>The reader is the main character. My story is context.</span></label></li>
+        <li><label><input type="checkbox" id="ck9"><span>It fits one of my three content buckets, and it will still be useful in a year.</span></label></li>
+        <li><label><input type="checkbox" id="ck10"><span>Any call to action sits at the end or inside a relevant sentence.</span></label></li>
+        <li><label><input type="checkbox" id="ck11"><span>The piece keeps the promise the headline made.</span></label></li>
+      </ul>
+
+      <h3>Terms used in the book</h3>
+      <dl class="glossary">
+        <div><dt>Practicing in public</dt><dd>Publishing early and often so feedback and data shape you.</dd></div>
+        <div><dt>Writing Data Flywheel</dt><dd>Publish, read the signals, improve, repeat. Each turn speeds the next.</dd></div>
+        <div><dt>Category</dt><dd>The shelf your writing sits on, with its own rules and top writers.</dd></div>
+        <div><dt>Writing spectrum</dt><dd>The line from educating to entertaining. Your style is where you sit on it.</dd></div>
+        <div><dt>Rate of Revelation</dt><dd>How fast you give the reader new information.</dd></div>
+        <div><dt>Implied, perceived and earned credibility</dt><dd>Quality of the work, outside signals, and proof from consistent effort.</dd></div>
+        <div><dt>Category King</dt><dd>The writer people see as the best on a given shelf.</dd></div>
+        <div><dt>Point of view</dt><dd>How you explain why your new category is different.</dd></div>
+        <div><dt>Content bucket</dt><dd>One of your three main topic areas: general, niche, industry.</dd></div>
+        <div><dt>Audience hacking</dt><dd>Teaming up with a similar-sized writer to share audiences.</dd></div>
+        <div><dt>Trend jacking</dt><dd>Using a news moment to draw attention to your own piece.</dd></div>
+        <div><dt>Engagement hacking</dt><dd>Commenting thoughtfully where your future readers already hang out.</dd></div>
+        <div><dt>Hashtag stacking</dt><dd>Mixing broad and niche hashtags that people really use as folders.</dd></div>
+        <div><dt>Syndication</dt><dd>Another publication republishing your work, usually crediting the original.</dd></div>
+        <div><dt>Duplicate content</dt><dd>Google’s term for the same text on many sites. Matters only if you are chasing search rankings.</dd></div>
+        <div><dt>Curiosity Gap</dt><dd>A headline that says what, who and the promise, without the answer.</dd></div>
+        <div><dt>POWER phrase</dt><dd>A small phrase like “little-known” or “painful” that sharpens the promise.</dd></div>
+        <div><dt>Main points</dt><dd>The core of a post, the reason the reader clicked.</dd></div>
+        <div><dt>The Cliff</dt><dd>Ending right after the last point, leaving the reader wanting more.</dd></div>
+        <div><dt>Golden Intersection</dt><dd>The reader’s question combined with your story as context.</dd></div>
+        <div><dt>CTA</dt><dd>Call to action, a pointer to something you want readers to see.</dd></div>
+        <div><dt>Core narrative</dt><dd>A signature story you retell many ways until people link it to you.</dd></div>
+        <div><dt>Pillar piece</dt><dd>A long, thorough version of a proven topic that lives on your site.</dd></div>
+        <div><dt>Sticky web</dt><dd>Many posts linking readers deeper into your best resources.</dd></div>
+        <div><dt>1,000 true fans</dt><dd>The idea that 1,000 people paying $100 a year can sustain a writer.</dd></div>
+      </dl>
+
+      <div class="foot">
+        <p>Source: <em>The Art and Business of Online Writing: How to Beat the Game of Capturing and Keeping Attention</em> by Nicolas Cole (2020). This page is an unofficial study guide with short, paraphrased examples. Please buy the book for the full text and the author’s own stories.</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+(function () {
+  // Sentence-shape figures: numbers are blocks of sentences, H is a subhead, bN is N bullets.
+  var widths = [34, 22, 41, 27, 36];
+  document.querySelectorAll('.rhythm').forEach(function (fig) {
+    var viz = fig.querySelector('.viz');
+    var tokens = (fig.getAttribute('data-p') || '').split(/\s+/).filter(Boolean);
+    var k = 0;
+    tokens.forEach(function (t) {
+      var el = document.createElement('div');
+      if (t === 'H') {
+        el.className = 'hd';
+      } else if (/^b\d+$/.test(t)) {
+        el.className = 'bls';
+        for (var i = 0; i < Number(t.slice(1)); i++) {
+          var b = document.createElement('span');
+          b.className = 'bl';
+          el.appendChild(b);
+        }
+      } else {
+        el.className = 'p';
+        for (var j = 0; j < Number(t); j++) {
+          var c = document.createElement('span');
+          c.className = 'c';
+          c.style.width = (t === '1' ? 40 : widths[k++ % widths.length]) + '%';
+          el.appendChild(c);
+        }
+      }
+      viz.appendChild(el);
+    });
+    viz.setAttribute('aria-hidden', 'true');
+  });
+
+  // Collapse the chapter list on narrow screens.
+  var details = document.getElementById('railDetails');
+  try {
+    if (details && window.matchMedia('(max-width: 999px)').matches) details.open = false;
+  } catch (e) {}
+
+  // Highlight the chapter in view.
+  var links = Array.prototype.slice.call(document.querySelectorAll('#railList a'));
+  var byId = {};
+  links.forEach(function (a) { byId[a.getAttribute('href').slice(1)] = a; });
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) {
+          links.forEach(function (a) { a.removeAttribute('aria-current'); });
+          var a = byId[en.target.id];
+          if (a) a.setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-15% 0px -75% 0px' });
+    document.querySelectorAll('.chapter').forEach(function (s) { io.observe(s); });
+  }
+
+  // Remember ticked checklist items in this browser.
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('#checks input'));
+  var KEY = 'olp-checks';
+  try {
+    var saved = JSON.parse(localStorage.getItem(KEY) || '[]');
+    boxes.forEach(function (b) { if (saved.indexOf(b.id) > -1) b.checked = true; });
+  } catch (e) {}
+  boxes.forEach(function (b) {
+    b.addEventListener('change', function () {
+      try {
+        localStorage.setItem(KEY, JSON.stringify(boxes.filter(function (x) { return x.checked; }).map(function (x) { return x.id; })));
+      } catch (e) {}
+    });
+  });
+})();
+</script>
