@@ -1,0 +1,661 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Someday Is Today for SDETs</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+/* Layout concept: one reading column with a sticky idea index on wide screens.
+   Each idea runs idea, example from an SDET's week, diagram, then a small action. */
+:root{
+  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --bg:#F2F6F3;
+  --surface:#FFFFFF;
+  --surface-2:#E6EEEA;
+  --ink:#14231D;
+  --ink-2:#47594F;
+  --line:#CCD8D1;
+  --accent:#0B7A75;
+  --accent-ink:#065A56;
+  --accent-soft:#D6EEEB;
+  --on-accent:#FFFFFF;
+  --mark:#F6C453;
+  --mark-soft:#FBE9B7;
+  --warn:#A8620B;
+  --code-bg:#10201A;
+  --code-ink:#DCEBE4;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1512;--surface:#15201C;--surface-2:#1D2B26;--ink:#E4EEE9;--ink-2:#A7BAB1;--line:#2B3C35;
+    --accent:#4FD1C5;--accent-ink:#86E6DC;--accent-soft:#123531;--on-accent:#06201D;
+    --mark:#E3B23C;--mark-soft:#3A3014;--warn:#E8A94F;--code-bg:#09100D;--code-ink:#D5E6DE;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1512;--surface:#15201C;--surface-2:#1D2B26;--ink:#E4EEE9;--ink-2:#A7BAB1;--line:#2B3C35;
+  --accent:#4FD1C5;--accent-ink:#86E6DC;--accent-soft:#123531;--on-accent:#06201D;
+  --mark:#E3B23C;--mark-soft:#3A3014;--warn:#E8A94F;--code-bg:#09100D;--code-ink:#D5E6DE;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--body);font-size:1.125rem;line-height:1.65;
+  padding-block:2rem 5rem;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  -webkit-text-size-adjust:100%;
+}
+a{color:var(--accent-ink);text-underline-offset:3px}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:4px}
+p{margin:0 0 1.1em;max-width:65ch}
+strong{font-weight:600}
+
+/* progress + back to top */
+#bar{position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);height:3px;background:var(--accent);transform:scaleX(0);transform-origin:left;z-index:20}
+.top{
+  position:fixed;z-index:20;
+  right:calc(16px + env(safe-area-inset-right,0px));
+  bottom:calc(16px + env(safe-area-inset-bottom,0px));
+  width:44px;height:44px;border-radius:50%;border:1px solid var(--line);
+  background:var(--surface);color:var(--ink);font:600 1.1rem var(--display);
+  display:grid;place-items:center;cursor:pointer;
+}
+
+.shell{max-width:62rem;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr);gap:2rem}
+main{min-width:0}
+.toc{display:none}
+@media (min-width:1100px){
+  .shell{grid-template-columns:13rem minmax(0,40rem);gap:4rem;justify-content:center}
+  .toc{display:block;position:sticky;top:2rem;align-self:start;padding-top:.5rem}
+}
+.toc h2{font:700 .72rem var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);margin:0 0 .9rem}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:.15rem;counter-reset:t}
+.toc a{display:block;padding:.4rem .6rem;border-radius:6px;text-decoration:none;color:var(--ink-2);font:500 .92rem/1.3 var(--display);counter-increment:t}
+.toc a::before{content:counter(t,decimal-leading-zero) "  ";font-family:var(--mono);font-size:.75rem;color:var(--ink-2)}
+.toc a:hover{background:var(--surface-2);color:var(--ink)}
+.toc a.on{background:var(--accent-soft);color:var(--accent-ink);font-weight:700}
+
+/* hero */
+.hero{padding-block:1.5rem 2.5rem}
+.eyebrow{font:600 .75rem var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);margin:0 0 1rem}
+h1{
+  font:800 clamp(2.9rem,12vw,5.2rem)/.95 var(--display);letter-spacing:-.03em;
+  margin:0 0 1.5rem;text-wrap:balance;
+}
+h1 s{color:var(--ink-2);text-decoration-color:var(--accent);text-decoration-thickness:.09em;font-weight:700}
+h1 .today{background:linear-gradient(transparent 58%, var(--mark) 58%, var(--mark) 92%, transparent 92%);padding:0 .08em}
+.lede{font-size:1.28rem;line-height:1.55;color:var(--ink);max-width:36rem}
+.meta{display:flex;flex-wrap:wrap;gap:.5rem 1.2rem;font:500 .8rem var(--mono);color:var(--ink-2);margin-top:1.4rem}
+
+/* sections */
+h2{font:800 clamp(1.7rem,6vw,2.3rem)/1.1 var(--display);letter-spacing:-.02em;margin:0 0 .8rem;text-wrap:balance}
+h3{font:700 1.15rem/1.25 var(--display);margin:0 0 .5rem}
+.block{padding-block:1.5rem}
+.story{border-top:1px solid var(--line)}
+
+.glance{list-style:none;margin:1rem 0 0;padding:0;border-top:1px solid var(--line)}
+.glance li{border-bottom:1px solid var(--line);animation:rise .5s ease backwards;animation-delay:calc(var(--i) * 60ms)}
+.glance a{display:grid;grid-template-columns:2.6rem minmax(0,1fr);gap:.2rem .5rem;padding:.9rem .4rem;text-decoration:none;color:var(--ink)}
+.glance a:hover{background:var(--surface-2)}
+.glance .n{font:600 .85rem var(--mono);color:var(--accent-ink);padding-top:.25rem}
+.glance .name{font:700 1.1rem/1.3 var(--display)}
+.glance .one{display:block;color:var(--ink-2);font-size:1rem;line-height:1.45}
+@keyframes rise{from{transform:translateY(10px);opacity:.4}to{transform:none;opacity:1}}
+
+section.tip{padding-block:3rem 1rem;border-top:1px solid var(--line);scroll-margin-top:1rem}
+.kicker{font:600 .75rem var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink);margin:0 0 .6rem}
+.gist{font:600 1.3rem/1.4 var(--display);margin:0 0 1rem;max-width:34rem}
+.bug{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:.2rem .6rem;border:1px solid var(--line);border-radius:6px;padding:.35rem .7rem;margin:0 0 1.6rem;font:500 .9rem/1.35 var(--display);background:var(--surface)}
+.bug b{font:600 .7rem var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--warn)}
+
+.example{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:1.1rem 1.2rem .4rem;margin:1.6rem 0;position:relative}
+.example>.tag{display:inline-block;font:600 .68rem var(--mono);letter-spacing:.12em;text-transform:uppercase;background:var(--surface-2);color:var(--ink-2);padding:.25rem .55rem;border-radius:4px;margin-bottom:.8rem}
+.tipbox{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.7rem;align-items:start;background:var(--mark-soft);border-radius:8px;padding:.85rem 1rem;margin:1.2rem 0;font-size:1rem;line-height:1.5}
+.tipbox p{margin:0}
+.tipbox .ic{font-size:1.2rem;line-height:1.3}
+.mine{font-size:1rem;color:var(--ink-2);border-top:1px dashed var(--line);padding-top:.8rem;margin-top:1rem}
+.mine b{font:600 .68rem var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);margin-right:.4rem}
+.try{background:var(--accent-soft);border-radius:10px;padding:1rem 1.2rem .3rem;margin:1.8rem 0 1rem}
+.try .lab2{font:700 .72rem var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink);margin:0 0 .4rem;display:block}
+
+pre{background:var(--code-bg);color:var(--code-ink);border-radius:8px;padding:1rem 1.1rem;overflow-x:auto;margin:1rem 0 1.2rem;font:400 .82rem/1.6 var(--mono);max-width:100%}
+code{font-family:var(--mono)}
+.menu{margin:0 0 1rem;padding:0;list-style:none;display:grid;gap:.6rem}
+.menu li{display:grid;grid-template-columns:5.2rem minmax(0,1fr);gap:.2rem .8rem;font-size:1rem;line-height:1.5}
+.menu b{font:600 .8rem var(--mono);color:var(--accent-ink);padding-top:.15rem}
+
+/* diagrams */
+figure.diagram{margin:1.8rem 0;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:.9rem .9rem .6rem}
+figure.diagram svg{display:block;width:100%;height:auto;overflow:visible}
+figcaption{font:500 .85rem/1.45 var(--display);color:var(--ink-2);margin-top:.5rem}
+.t{font-family:var(--display);font-size:13px;font-weight:600;fill:var(--ink)}
+.t2{fill:var(--ink-2);font-weight:500}
+.lab{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.06em;fill:var(--ink-2)}
+.dash{stroke:var(--ink-2);stroke-width:2;stroke-dasharray:5 6;fill:none}
+.gate{fill:var(--surface);stroke:var(--ink-2);stroke-width:2}
+.go,.acc{stroke:var(--accent);fill:none;stroke-linecap:round;stroke-linejoin:round}
+.go{stroke-width:3.5}
+.acc{stroke-width:2.5}
+.ink{stroke:var(--ink-2);stroke-width:2;fill:none;stroke-linecap:round}
+.pad{fill:var(--surface-2);stroke:var(--accent);stroke-width:2}
+.hopline{stroke:var(--line);stroke-width:2;stroke-dasharray:4 5;fill:none}
+.seg{fill:var(--accent)}
+.box{fill:var(--surface-2);stroke:var(--line);stroke-width:1.5}
+.boxa{fill:var(--accent)}
+.draw{stroke-dasharray:1;stroke-dashoffset:0}
+.play .draw{animation:draw 1.5s ease both}
+@keyframes draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+.play .bar{transform-box:fill-box;transform-origin:50% 100%;animation:grow .7s ease backwards;animation-delay:calc(var(--d) * 110ms)}
+@keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.frog{transform:translate(55px,97px)}
+.play .frog{animation:hop 11s ease-in-out infinite}
+@keyframes hop{
+  0%,10%{transform:translate(55px,97px)}
+  20%,30%{transform:translate(260px,102px)}
+  40%,50%{transform:translate(150px,47px)}
+  60%,70%{transform:translate(465px,92px)}
+  80%,90%{transform:translate(365px,42px)}
+  100%{transform:translate(55px,97px)}
+}
+.play .piano{animation:drop 1s cubic-bezier(.5,0,.9,.6) .9s backwards}
+@keyframes drop{from{transform:translateY(-150px)}to{transform:translateY(0)}}
+
+/* checklist */
+.checks{list-style:none;margin:1rem 0 0;padding:0;display:grid;gap:.5rem}
+.checks label{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.8rem;align-items:start;padding:.8rem 1rem;border:1px solid var(--line);border-radius:8px;background:var(--surface);cursor:pointer;font-size:1rem;line-height:1.5}
+.checks input{width:1.3rem;height:1.3rem;margin:.1rem 0 0;accent-color:var(--accent)}
+.checks b{font:700 .95rem var(--display);display:block}
+.checks label:has(input:checked){background:var(--accent-soft)}
+.checks label:has(input:checked) b{text-decoration:line-through;text-decoration-color:var(--accent)}
+.count{font:600 .85rem var(--mono);color:var(--accent-ink);margin-top:1rem}
+.foot{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--line);font-size:.95rem;color:var(--ink-2)}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+
+<div id="bar" aria-hidden="true"></div>
+<button class="top" id="top" type="button" aria-label="Back to top" hidden>↑</button>
+
+<div class="shell">
+<nav class="toc" aria-label="The seven ideas">
+  <h2>The 7 ideas</h2>
+  <ol>
+    <li><a href="#parking-lot">Parking lot</a></li>
+    <li><a href="#minutes">Minutes mindset</a></li>
+    <li><a href="#lily-pad">Lily pad</a></li>
+    <li><a href="#horizon">Horizon habit</a></li>
+    <li><a href="#piano">Piano precedent</a></li>
+    <li><a href="#hundred">100-year-old plan</a></li>
+    <li><a href="#purpose">Purposeful approach</a></li>
+    <li><a href="#checklist">Your checklist</a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="hero">
+  <p class="eyebrow">Book notes for SDETs</p>
+  <h1><s>Someday</s> is <span class="today">Today</span></h1>
+  <p class="lede">Seven ideas from Matthew Dicks' book, in plain English. Each one comes with an example from an SDET's week, because that's your week. After seven years in testing you probably have a someday list too: the framework rewrite, the talk, the blog, the course. This is about starting it.</p>
+  <div class="meta"><span>10 min read</span><span>7 ideas</span><span>1 checklist</span></div>
+</header>
+
+<section class="block story" aria-labelledby="story-h">
+  <h2 id="story-h">Where the book comes from</h2>
+  <p>Dicks survived three near-death moments, including a bad car crash and being held at gunpoint at 22. He says he didn't feel fear in the moment. He felt regret, because he hadn't done anything he wanted with his life.</p>
+  <p>Afterwards he went from broke, living in his car and working at McDonald's, to best-selling author, world champion storyteller and award-winning journalist. The message is in the title. Stop waiting for someday and use the time you have right now.</p>
+  <p>These notes are based on a video summary of the book, so they cover the main ideas and not every detail.</p>
+</section>
+
+<section class="block" aria-labelledby="glance-h">
+  <h2 id="glance-h">The 7 ideas in one minute</h2>
+  <ol class="glance">
+    <li style="--i:0"><a href="#parking-lot"><span class="n">01</span><span><span class="name">Parking Lot Practice</span><span class="one">Start anywhere, even somewhere ugly.</span></span></a></li>
+    <li style="--i:1"><a href="#minutes"><span class="n">02</span><span><span class="name">Minutes Mindset</span><span class="one">Plan in minutes, not hours.</span></span></a></li>
+    <li style="--i:2"><a href="#lily-pad"><span class="n">03</span><span><span class="name">Lily Pad Method</span><span class="one">Hop between tasks by mood. You don't need to start at step one.</span></span></a></li>
+    <li style="--i:3"><a href="#horizon"><span class="n">04</span><span><span class="name">Horizon Habit</span><span class="one">Aim at a direction, not a number you can't control.</span></span></a></li>
+    <li style="--i:4"><a href="#piano"><span class="n">05</span><span><span class="name">Piano Precedent</span><span class="one">Make a plan, and expect surprises.</span></span></a></li>
+    <li style="--i:5"><a href="#hundred"><span class="n">06</span><span><span class="name">100-Year-Old Plan</span><span class="one">At a crossroads, ask your oldest self.</span></span></a></li>
+    <li style="--i:6"><a href="#purpose"><span class="n">07</span><span><span class="name">Purposeful Approach</span><span class="one">Be efficient to free time for what matters.</span></span></a></li>
+  </ol>
+</section>
+
+<!-- 1 -->
+<section class="tip" id="parking-lot" aria-labelledby="h1-t">
+  <p class="kicker">Idea 1 of 7</p>
+  <h2 id="h1-t">The Parking Lot Practice</h2>
+  <p class="gist">You don't need the right place, the right mood or a free afternoon. You need a laptop and ten minutes.</p>
+  <p class="bug"><b>Bug it fixes</b> Waiting for the perfect setup before starting</p>
+
+  <p>Dicks arrived early for a dentist appointment. Most people would scroll their phone. He parked, opened his laptop and wrote part of his novel right there in the car park. His line for it is that productivity isn't pretty.</p>
+  <p>The pretty version is the colour-coded notes, the tidy desk and the café with the perfect latte. The video's host admits he once thought he needed exactly that to write his own book. Dicks points out that soldiers in the First World War trenches wrote in small journals while shells landed nearby. If they could write there, a parking lot is fine.</p>
+  <p>The same goes for the gym, eating well and starting a business. If you wait for the timing to be right, you wait a very long time.</p>
+
+  <div class="example">
+    <span class="tag">Example · your week</span>
+    <p>You want to build a clean Playwright framework with proper layers. You keep telling yourself you need a free weekend. Instead, you have ten minutes before standup. Open the repo and write one ugly test for the bug that hurt you last sprint.</p>
+    <pre><code># Ugly on purpose. It runs, and that's the win.
+def test_checkout_rejects_expired_card(page):
+    page.goto(STAGING_URL + "/checkout")
+    page.fill("#card", EXPIRED_TEST_CARD)   # TODO: move to fixtures
+    page.click("text=Pay")
+    assert "expired" in page.inner_text(".error").lower()</code></pre>
+    <p>It's hardcoded and messy. It also runs, and it catches a real bug. You can refactor on Thursday. A passing ugly test beats a beautiful framework that doesn't exist yet.</p>
+  </div>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 520 190" role="img" aria-label="Two paths. Waiting for a perfect setup ends at someday. Starting in the parking lot ends with one passing test.">
+      <text class="lab" x="16" y="24">WAIT FOR THE PERFECT SETUP</text>
+      <line class="dash" x1="16" y1="62" x2="400" y2="62"/>
+      <circle class="gate" cx="130" cy="62" r="6"/>
+      <circle class="gate" cx="250" cy="62" r="6"/>
+      <circle class="gate" cx="370" cy="62" r="6"/>
+      <text class="t t2" x="130" y="46" text-anchor="middle">quiet 2 hrs</text>
+      <text class="t t2" x="250" y="46" text-anchor="middle">clean desk</text>
+      <text class="t t2" x="370" y="46" text-anchor="middle">ideal setup</text>
+      <text class="t t2" x="414" y="67" opacity=".75">someday…</text>
+      <text class="lab" x="16" y="116">START IN THE PARKING LOT</text>
+      <line class="go draw" pathLength="1" x1="16" y1="152" x2="392" y2="152"/>
+      <circle cx="404" cy="152" r="12" fill="var(--accent)"/>
+      <path d="M398 152 l4.5 4.5 l8 -9.5" fill="none" stroke="var(--on-accent)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <text class="t" x="424" y="157">1 ugly test</text>
+    </svg>
+    <figcaption>The top path waits for conditions to be perfect. The bottom path starts now and reaches a passing test.</figcaption>
+  </figure>
+
+  <div class="try">
+    <span class="lab2">Try this week</span>
+    <p>Next time you have a gap and a laptop, work on your someday project for ten minutes, wherever you are. Don't tidy the setup first.</p>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="tip" id="minutes" aria-labelledby="h2-t">
+  <p class="kicker">Idea 2 of 7</p>
+  <h2 id="h2-t">The Minutes Mindset</h2>
+  <p class="gist">Plan your day in minutes, not hours. Small gaps add up faster than you think.</p>
+  <p class="bug"><b>Bug it fixes</b> Losing small gaps to scrolling</p>
+
+  <p>Most of us plan in hour-sized blocks. That hides a lot of waste. A gap of seven minutes doesn't feel like a block, so we spend it on our phones.</p>
+  <p>Dicks tells a story about meeting an aspiring writer for breakfast. She turned up seven minutes late and apologised. He wasn't annoyed. He had used those seven minutes to write a few sentences, and he showed her the screen. When he asks writers how much they've written, he says the answer is almost always none.</p>
+  <p>Since his near-death experiences he tries to get value from every minute. Ten minutes won't write a chapter. It can polish the last three paragraphs or produce five good sentences.</p>
+  <p>The video's host did something similar while working full time as a doctor. Between patients and at lunch he added bullet points to video scripts and brainstormed titles, while colleagues scrolled.</p>
+  <p>Neither of them says to skip rest. The host's own book spends three chapters on it. The question is only what you do by default in the small pockets of time.</p>
+
+  <div class="example">
+    <span class="tag">Example · your week</span>
+    <p>Your pipeline takes eight minutes. You know what usually happens. Slack, then email, then the build finishes and you've lost the thread. Keep a menu by length instead.</p>
+    <ul class="menu">
+      <li><b>3 min</b><span>Rename one unclear test. Write a test title for a bug ticket. Add a note to your learning log.</span></li>
+      <li><b>5 min</b><span>Improve one weak assertion message. Read the last three failures of your flakiest test. Outline a blog post.</span></li>
+      <li><b>10 min</b><span>Write one new test. Review a small PR properly. Fix one flaky wait.</span></li>
+    </ul>
+  </div>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 520 200" role="img" aria-label="Five bars, Monday to Friday, each made of three 8-minute gaps, totalling 24 minutes a day and 2 hours a week.">
+      <text class="lab" x="16" y="24">THREE 8-MINUTE GAPS A DAY</text>
+      <text class="lab" x="504" y="24" text-anchor="end">= 2 HOURS A WEEK</text>
+      <g>
+        <g class="bar" style="--d:0"><rect class="seg" x="40" y="139" width="56" height="31" rx="3"/><rect class="seg" x="40" y="105" width="56" height="31" rx="3"/><rect class="seg" x="40" y="71" width="56" height="31" rx="3"/></g>
+        <g class="bar" style="--d:1"><rect class="seg" x="132" y="139" width="56" height="31" rx="3"/><rect class="seg" x="132" y="105" width="56" height="31" rx="3"/><rect class="seg" x="132" y="71" width="56" height="31" rx="3"/></g>
+        <g class="bar" style="--d:2"><rect class="seg" x="224" y="139" width="56" height="31" rx="3"/><rect class="seg" x="224" y="105" width="56" height="31" rx="3"/><rect class="seg" x="224" y="71" width="56" height="31" rx="3"/></g>
+        <g class="bar" style="--d:3"><rect class="seg" x="316" y="139" width="56" height="31" rx="3"/><rect class="seg" x="316" y="105" width="56" height="31" rx="3"/><rect class="seg" x="316" y="71" width="56" height="31" rx="3"/></g>
+        <g class="bar" style="--d:4"><rect class="seg" x="408" y="139" width="56" height="31" rx="3"/><rect class="seg" x="408" y="105" width="56" height="31" rx="3"/><rect class="seg" x="408" y="71" width="56" height="31" rx="3"/></g>
+      </g>
+      <line class="ink" x1="24" y1="170" x2="496" y2="170"/>
+      <g class="t t2" text-anchor="middle">
+        <text x="68" y="62">24 min</text><text x="160" y="62">24 min</text><text x="252" y="62">24 min</text><text x="344" y="62">24 min</text><text x="436" y="62">24 min</text>
+        <text x="68" y="190">Mon</text><text x="160" y="190">Tue</text><text x="252" y="190">Wed</text><text x="344" y="190">Thu</text><text x="436" y="190">Fri</text>
+      </g>
+    </svg>
+    <figcaption>Each block in a bar is one 8-minute gap. This is an example, so use your own numbers.</figcaption>
+  </figure>
+
+  <div class="try">
+    <span class="lab2">Try this week</span>
+    <p>Write a list of five 5-minute tasks for your someday project. Next time something is loading, pick one.</p>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="tip" id="lily-pad" aria-labelledby="h3-t">
+  <p class="kicker">Idea 3 of 7</p>
+  <h2 id="h3-t">The Lily Pad Method</h2>
+  <p class="gist">Big goals feel like mountains because we think we must start at step one. You don't.</p>
+  <p class="bug"><b>Bug it fixes</b> Feeling stuck on step one</p>
+
+  <p>Dicks says the only real failure for a creator is to stop making things. The trouble is that big projects feel heavy: a novel, an exam, a business, a new framework. Looking at the whole thing can be daunting.</p>
+  <p>We usually treat goals as a straight line, A then B then C. The lily pad method treats the tasks as pads on a pond. Break the goal into tasks, then hop to whichever pad suits your mood today. You'll land on all of them eventually.</p>
+  <p>Dicks coached a woman who wanted to write a memoir and didn't know where to begin. He asked if she had moments she knew she wanted in it. She did, so he told her to write those. Chapter 15 is fine if that's what you can write today.</p>
+  <p>Mo Gawdat, who has written many books, works on five or six at once. Each morning he asks which one he feels most pulled toward and writes that one for a few hours. He describes those hours as full of joy.</p>
+
+  <div class="example">
+    <span class="tag">Example · your week</span>
+    <p>Say the goal is a test framework for a new service. The pads might be the first smoke test, a CI run, reporting, a test data factory and a flaky-test triage doc. On a high-energy morning, design the retry logic. On a tired afternoon, tidy the test data. If one pad makes you groan, hop to another. You're still moving.</p>
+  </div>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 520 190" role="img" aria-label="Five lily pads labelled smoke test, CI run, reports, test data and triage. A frog hops between them in no fixed order.">
+      <polyline class="hopline" points="55,130 260,135 150,80 465,125 365,75"/>
+      <ellipse class="pad" cx="55" cy="130" rx="44" ry="26"/>
+      <ellipse class="pad" cx="150" cy="80" rx="44" ry="26"/>
+      <ellipse class="pad" cx="260" cy="135" rx="44" ry="26"/>
+      <ellipse class="pad" cx="365" cy="75" rx="44" ry="26"/>
+      <ellipse class="pad" cx="465" cy="125" rx="44" ry="26"/>
+      <g class="t" text-anchor="middle" dominant-baseline="middle">
+        <text x="55" y="131">Smoke test</text>
+        <text x="150" y="81">CI run</text>
+        <text x="260" y="136">Reports</text>
+        <text x="365" y="76">Test data</text>
+        <text x="465" y="126">Triage</text>
+      </g>
+      <g class="frog">
+        <circle r="8" fill="var(--mark)" stroke="var(--ink)" stroke-width="2"/>
+        <circle cx="-3" cy="-2" r="1.7" fill="var(--ink)"/>
+        <circle cx="3" cy="-2" r="1.7" fill="var(--ink)"/>
+      </g>
+      <text class="lab" x="260" y="182" text-anchor="middle">ANY ORDER · HOP BY MOOD</text>
+    </svg>
+    <figcaption>The dotted line shows one possible route. Today's route can be different.</figcaption>
+  </figure>
+
+  <p class="mine"><b>A guardrail from me</b>Hopping is for beating overwhelm, not for avoiding the hard pad forever. Keep the list visible and tick pads off. The ones you keep skipping are the ones to look at.</p>
+
+  <div class="try">
+    <span class="lab2">Try this week</span>
+    <p>Take one big someday goal and split it into five pads. Pick today's pad by mood, not by order.</p>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="tip" id="horizon" aria-labelledby="h4-t">
+  <p class="kicker">Idea 4 of 7</p>
+  <h2 id="h4-t">The Horizon Habit</h2>
+  <p class="gist">Aim at a direction on the horizon, not a number you can't control.</p>
+  <p class="bug"><b>Bug it fixes</b> Goals that depend on things you can't control</p>
+
+  <div class="tipbox"><span class="ic" aria-hidden="true">💡</span><p><strong>SMART goals</strong> are a popular goal format: Specific, Measurable, Achievable, Relevant and Time-bound. For example, "Reach 80% API test coverage by June."</p></div>
+
+  <p>A SMART goal can still point at something you don't control. The video's example is a new YouTuber who aims for a million subscribers. It's specific, measurable and time-bound, and it depends on an algorithm and on other people. Chasing it can wear you down.</p>
+  <p>Dicks prefers horizon goals. A horizon goal is a loose direction, far away. "I'm going to be a storyteller" is one. It leaves room for teaching storytelling, consulting, or writing for advertising, which he has done. A goal is a destination, not a method. A horizon takes the pressure off, and your path can change without the goal failing.</p>
+  <p>The music version: if you want to be a musician, you could join a band, but you could also write songs, DJ, present radio, produce, teach, or share what you learn online. All of those are on the music horizon.</p>
+
+  <div class="example">
+    <span class="tag">Example · your week</span>
+    <p>A SMART goal: "Get promoted to Principal SDET by March." That depends on budget, headcount and your manager's calendar. A horizon goal: "I'm the person who makes quality easy for the team." The paths are many. Test architecture, developer tooling, performance and reliability, security testing, engineering lead, teaching and conference talks. If promotions freeze, you're still moving along the horizon.</p>
+  </div>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 520 222" role="img" aria-label="A person at the bottom with five paths fanning out to a horizon. The horizon goal is make quality easy. The paths are architect, dev tooling, the goal itself, teaching and engineering lead.">
+      <text class="lab" x="260" y="34" text-anchor="middle">HORIZON: MAKE QUALITY EASY</text>
+      <path d="M238 80 A22 22 0 0 1 282 80 Z" fill="var(--mark)"/>
+      <line class="ink" x1="10" y1="80" x2="510" y2="80"/>
+      <g class="acc">
+        <line class="draw" pathLength="1" x1="260" y1="188" x2="55" y2="86"/>
+        <line class="draw" pathLength="1" x1="260" y1="188" x2="150" y2="86"/>
+        <line class="draw" pathLength="1" x1="260" y1="188" x2="260" y2="86"/>
+        <line class="draw" pathLength="1" x1="260" y1="188" x2="375" y2="86"/>
+        <line class="draw" pathLength="1" x1="260" y1="188" x2="465" y2="86"/>
+      </g>
+      <g class="t t2" text-anchor="middle">
+        <text x="55" y="68">Architect</text>
+        <text x="150" y="68">Dev tooling</text>
+        <text x="375" y="68">Teaching</text>
+        <text x="465" y="68">Eng. lead</text>
+      </g>
+      <circle cx="260" cy="196" r="7" fill="var(--ink)"/>
+      <text class="t t2" x="260" y="217" text-anchor="middle">you, today</text>
+    </svg>
+    <figcaption>One direction, many routes. If one route closes, the others still lead the same way.</figcaption>
+  </figure>
+
+  <p class="mine"><b>My add-on</b>Pair the horizon with something small you control each week, like one flaky test fixed or one post drafted. The horizon sets the direction and the weekly action keeps you moving.</p>
+
+  <div class="try">
+    <span class="lab2">Try this week</span>
+    <p>Write one horizon goal in a single sentence. Under it, list three different jobs or projects that would count as being on that horizon.</p>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="tip" id="piano" aria-labelledby="h5-t">
+  <p class="kicker">Idea 5 of 7</p>
+  <h2 id="h5-t">The Piano Precedent</h2>
+  <p class="gist">Make a plan, then expect a piano to land on it.</p>
+  <p class="bug"><b>Bug it fixes</b> Plans that break and take your motivation with them</p>
+
+  <p>A line from the book says five-year plans invite the universe to drop a piano on you. If you plan your life in fine detail, something will break the plan.</p>
+  <p>That doesn't mean skip planning. The video makes the other point too. Many people who ask for life advice can't say what they want. There's a famous exchange in Alice in Wonderland about this. If you don't know where you want to end up, it doesn't matter which road you take.</p>
+  <p>The video also describes a graph, which it attributes, with some doubt, to Darren Brown's book on Stoicism. Put your plans on one axis and fate on the other. Your life ends up somewhere between the two. You'll rarely follow the plan exactly. Still, a plan lets you steer instead of being pushed around by the wind.</p>
+
+  <div class="tipbox"><span class="ic" aria-hidden="true">💡</span><p><strong>Stoicism</strong> is an old philosophy that says to put your effort into what you control and accept the rest.</p></div>
+
+  <div class="example">
+    <span class="tag">Example · your week</span>
+    <p>Picture a five-year automation roadmap. Migrate the Selenium suite in year two, build custom reporting in year three. Then comes a reorg, a product pivot, or a new tool that changes the whole approach. The roadmap becomes a museum piece. If you've been in testing for seven years, you've likely seen one get rewritten.</p>
+  </div>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 520 220" role="img" aria-label="A dashed straight line shows the plan. A wavy solid line shows what actually happens. A piano lands on the path, and the path continues toward the same destination.">
+      <text class="lab" x="480" y="36" text-anchor="end">THE 5-YEAR PLAN</text>
+      <line class="dash" x1="20" y1="160" x2="480" y2="50"/>
+      <path class="acc draw" pathLength="1" style="stroke-width:3.5" d="M20 160 C90 150 130 105 190 128 S255 182 305 150 S410 95 480 80"/>
+      <text class="lab" x="20" y="190">YOUR REAL PATH</text>
+      <g transform="translate(212,122)">
+        <g class="piano">
+          <rect width="46" height="28" rx="3" fill="var(--ink)"/>
+          <rect x="5" y="14" width="6" height="11" fill="var(--surface)"/>
+          <rect x="13" y="14" width="6" height="11" fill="var(--surface)"/>
+          <rect x="21" y="14" width="6" height="11" fill="var(--surface)"/>
+          <rect x="29" y="14" width="6" height="11" fill="var(--surface)"/>
+          <rect x="37" y="14" width="5" height="11" fill="var(--surface)"/>
+        </g>
+      </g>
+    </svg>
+    <figcaption>The dashed line is the plan. The solid line is what happens. You still end up near the same destination.</figcaption>
+  </figure>
+
+  <p class="mine"><b>A rule of thumb from me</b>Plan the next 90 days in detail, the next year loosely, and treat the five-year view as a horizon (idea 4). When a piano lands, you redo a quarter, not a whole life.</p>
+
+  <div class="try">
+    <span class="lab2">Try this week</span>
+    <p>Write a 90-day plan for one goal. Next to it, write the one thing you'd change if a piano landed on it next month.</p>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="tip" id="hundred" aria-labelledby="h6-t">
+  <p class="kicker">Idea 6 of 7</p>
+  <h2 id="h6-t">The 100-Year-Old Plan</h2>
+  <p class="gist">At a crossroads, ask what you'd tell yourself at 100.</p>
+  <p class="bug"><b>Bug it fixes</b> Choosing the urgent thing over the important thing</p>
+
+  <p>When you can't decide, picture yourself at 100 and ask what advice that person would give. Dicks' example: he's at his desk with deadlines, and his son asks him to play tag. Working is the disciplined option. His 100-year-old self says to go and play, because one day the kid won't want to.</p>
+  <p>The video mentions a similar habit from Alex Hormozi, who journals as a conversation with his 85-year-old self. That older self knows his context and goals, so the advice is the kind he trusts. The host says he has started doing a version of it too.</p>
+  <p>Why it works: short-term thinking makes us choose what's urgent over what's important. The host admits he still picks work over friends too often, because work is fun and has a deadline.</p>
+
+  <div class="example">
+    <span class="tag">Example · your week</span>
+    <p>It's Friday at 6pm. One flaky test is red on the release candidate. A close friend is leaving the country and tonight is the farewell dinner. Urgent says stay and babysit the pipeline. Ask the 100-year-old. They'd probably say go to dinner, because the pipeline will still be there on Monday.</p>
+    <p>Not every case goes that way. If production is down, you stay. The point is to make the urgent thing prove it deserves your evening.</p>
+  </div>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 520 190" role="img" aria-label="Two choices now, babysit the pipeline or go to a friend's farewell dinner. A timeline leads to age 100, where the older self says go to dinner.">
+      <text class="lab" x="16" y="14">THE CHOICE</text>
+      <rect x="16" y="22" width="196" height="32" rx="6" class="box"/>
+      <text class="t" x="30" y="43">Babysit the pipeline</text>
+      <rect x="16" y="62" width="196" height="32" rx="6" class="box"/>
+      <text class="t" x="30" y="83">Friend's farewell dinner</text>
+      <line class="dash" x1="60" y1="100" x2="60" y2="130"/>
+      <line class="ink draw" pathLength="1" x1="30" y1="140" x2="490" y2="140"/>
+      <circle cx="60" cy="140" r="8" fill="var(--accent)"/>
+      <circle cx="460" cy="140" r="8" fill="var(--mark)" stroke="var(--ink)" stroke-width="2"/>
+      <text class="lab" x="60" y="166" text-anchor="middle">NOW</text>
+      <text class="lab" x="460" y="166" text-anchor="middle">AGE 100</text>
+      <rect x="270" y="22" width="222" height="58" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>
+      <path d="M446 80 L458 104 L470 80" fill="var(--surface)" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>
+      <line x1="447.5" y1="80" x2="468.5" y2="80" stroke="var(--surface)" stroke-width="3"/>
+      <text class="t" x="286" y="48">Go to dinner.</text>
+      <text class="t t2" x="286" y="68">The pipeline will keep.</text>
+    </svg>
+    <figcaption>Look at the choice from the far end of the timeline. It often looks different from there.</figcaption>
+  </figure>
+
+  <div class="tipbox"><span class="ic" aria-hidden="true">💡</span><p><strong>A prompt to copy:</strong> "Dear me at 100, I'm choosing between ___ and ___. What would you say?"</p></div>
+
+  <div class="try">
+    <span class="lab2">Try this week</span>
+    <p>Pick one decision this week. Write the prompt above and answer it in the voice of your 100-year-old self.</p>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="tip" id="purpose" aria-labelledby="h7-t">
+  <p class="kicker">Idea 7 of 7</p>
+  <h2 id="h7-t">The Purposeful Approach</h2>
+  <p class="gist">Be efficient so you have time for what you actually care about.</p>
+  <p class="bug"><b>Bug it fixes</b> Productivity that feels empty</p>
+
+  <p>Productivity talk often turns into work, hustle and money. The video asks why you want to get things done efficiently. Its answer is that productivity is about spending more time on what you want to do. Get the must-do things done faster, so you can reach the want-to-do things.</p>
+  <p>Dicks likes what he calls soft goals. They don't look productive by the usual definitions, but they're intentional and meaningful to you. The video shares a client who wanted to watch the fifty greatest movies of all time on the couch with her husband. She felt it wasn't productive. The coach told her it was very productive, because it was her dream. The job was to trim wasted time elsewhere so she could do it.</p>
+  <p>It works the other way too. Being really efficient at work, study and chores frees time and energy for the things that matter.</p>
+
+  <div class="example">
+    <span class="tag">Example · your week</span>
+    <p>You already do this at work. You automate regression so people can spend their time on exploratory testing. Treat your life the same way. Speed up the repetitive parts, like admin, chores and busywork, so there's room for your soft goals.</p>
+  </div>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 520 190" role="img" aria-label="Two rows. At work, automated regression frees hours for exploratory testing. In life, faster chores and admin free hours for soft goals.">
+      <text class="lab" x="10" y="22">IN YOUR JOB</text>
+      <rect class="box" x="10" y="32" width="150" height="44" rx="8"/>
+      <rect class="boxa" x="185" y="32" width="150" height="44" rx="8"/>
+      <rect class="box" x="360" y="32" width="150" height="44" rx="8"/>
+      <path class="acc draw" pathLength="1" d="M163 54 H183 M177 49 L183 54 L177 59"/>
+      <path class="acc draw" pathLength="1" d="M338 54 H358 M352 49 L358 54 L352 59"/>
+      <g text-anchor="middle">
+        <text class="t" x="85" y="59">Automated regression</text>
+        <text class="t" x="260" y="59" style="fill:var(--on-accent)">Free hours</text>
+        <text class="t" x="435" y="59">Exploratory testing</text>
+      </g>
+      <text class="lab" x="10" y="108">IN YOUR LIFE</text>
+      <rect class="box" x="10" y="118" width="150" height="44" rx="8"/>
+      <rect class="boxa" x="185" y="118" width="150" height="44" rx="8"/>
+      <rect class="box" x="360" y="118" width="150" height="44" rx="8"/>
+      <path class="acc draw" pathLength="1" d="M163 140 H183 M177 135 L183 140 L177 145"/>
+      <path class="acc draw" pathLength="1" d="M338 140 H358 M352 135 L358 140 L352 145"/>
+      <g text-anchor="middle">
+        <text class="t" x="85" y="145">Faster chores, admin</text>
+        <text class="t" x="260" y="145" style="fill:var(--on-accent)">Free hours</text>
+        <text class="t" x="435" y="145">Your soft goals</text>
+      </g>
+    </svg>
+    <figcaption>Efficiency is the means. The free hours are the point.</figcaption>
+  </figure>
+
+  <p>Some prompts to get you thinking: learn an instrument, cook one hard recipe a month, finish a game you keep restarting, take long walks without a podcast, or write something nobody asked for. Which one would you add?</p>
+
+  <div class="try">
+    <span class="lab2">Try this week</span>
+    <p>Write down one soft goal. Block one slot in your calendar for it this week and protect it like a release meeting.</p>
+  </div>
+</section>
+
+<!-- checklist -->
+<section class="tip" id="checklist" aria-labelledby="hc-t">
+  <p class="kicker">Put it to work</p>
+  <h2 id="hc-t">Your someday-to-today checklist</h2>
+  <p>One small action per idea. Tick them off over the week. Your ticks are saved in this browser.</p>
+  <ul class="checks">
+    <li><label for="c1"><input type="checkbox" id="c1"><span><b>Parking lot</b>Write one ugly test in a gap before a meeting.</span></label></li>
+    <li><label for="c2"><input type="checkbox" id="c2"><span><b>Minutes</b>List five 5-minute tasks for your someday project.</span></label></li>
+    <li><label for="c3"><input type="checkbox" id="c3"><span><b>Lily pad</b>Split one big goal into five pads and pick one by mood.</span></label></li>
+    <li><label for="c4"><input type="checkbox" id="c4"><span><b>Horizon</b>Write a horizon goal and three routes to it.</span></label></li>
+    <li><label for="c5"><input type="checkbox" id="c5"><span><b>Piano</b>Write a 90-day plan and one thing you'd change if a piano landed.</span></label></li>
+    <li><label for="c6"><input type="checkbox" id="c6"><span><b>100-year-old</b>Answer one decision in your oldest self's voice.</span></label></li>
+    <li><label for="c7"><input type="checkbox" id="c7"><span><b>Purpose</b>Pick a soft goal and block one slot for it.</span></label></li>
+  </ul>
+  <p class="count" id="count" aria-live="polite">0 of 7 done</p>
+
+  <p class="foot">Based on a video summary of <em>Someday Is Today</em> by Matthew Dicks. The ideas in the "from me" notes are my own additions, and the book itself has more detail than this summary.</p>
+</section>
+</main>
+</div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var bar = document.getElementById('bar');
+  var topBtn = document.getElementById('top');
+  function onScroll(){
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    var p = max > 0 ? window.scrollY / max : 0;
+    bar.style.transform = 'scaleX(' + Math.min(1, Math.max(0, p)) + ')';
+    topBtn.hidden = window.scrollY < 600;
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+  topBtn.addEventListener('click', function(){
+    window.scrollTo({top:0, behavior: reduce ? 'auto' : 'smooth'});
+  });
+
+  var figs = document.querySelectorAll('figure.diagram');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting) { e.target.classList.add('play'); io.unobserve(e.target); }
+      });
+    }, {threshold:0.35});
+    figs.forEach(function(f){ io.observe(f); });
+
+    var links = document.querySelectorAll('.toc a');
+    var map = {};
+    links.forEach(function(l){ map[l.getAttribute('href').slice(1)] = l; });
+    var io2 = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting) {
+          links.forEach(function(l){ l.classList.remove('on'); });
+          var l = map[e.target.id];
+          if (l) l.classList.add('on');
+        }
+      });
+    }, {rootMargin:'-25% 0px -65% 0px'});
+    document.querySelectorAll('section.tip').forEach(function(s){ io2.observe(s); });
+  } else {
+    figs.forEach(function(f){ f.classList.add('play'); });
+  }
+
+  var KEY = 'sit-checks-v1';
+  var boxes = document.querySelectorAll('.checks input');
+  var out = document.getElementById('count');
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { saved = {}; }
+  function update(){
+    var n = 0;
+    boxes.forEach(function(b){ if (b.checked) n++; });
+    out.textContent = n + ' of ' + boxes.length + ' done';
+  }
+  boxes.forEach(function(b){
+    if (saved[b.id]) b.checked = true;
+    b.addEventListener('change', function(){
+      var s = {};
+      boxes.forEach(function(x){ if (x.checked) s[x.id] = 1; });
+      try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {}
+      update();
+    });
+  });
+  update();
+})();
+</script>
+
+</body></html>
