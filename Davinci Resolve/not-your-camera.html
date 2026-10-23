@@ -1,0 +1,980 @@
+<title>Not Your Camera</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Hanken+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout concept: a dark set. Tungsten amber is the light, teal is the shadow.
+   A call-sheet rail on the left, wide "monitor" figures on the right, one live lab in the middle. */
+:root{
+  --ink:#090d13;
+  --ink-2:#0f1620;
+  --ink-3:#172130;
+  --line:#243245;
+  --text:#d8dee7;
+  --dim:#8795a8;
+  --tungsten:#ffb454;
+  --tungsten-hot:#ffe6b8;
+  --teal:#43bdb4;
+  --bad:#ff7d68;
+  --f-display:'Big Shoulders Display','Arial Narrow',Impact,sans-serif;
+  --f-body:'Hanken Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--text);font-family:var(--f-body);font-size:18px;line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;opacity:.07;mix-blend-mode:screen;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+a{color:var(--tungsten);text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--tungsten);outline-offset:3px}
+.wrap{max-width:1180px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.mono{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+#prog{position:fixed;left:0;top:env(safe-area-inset-top,0px);height:3px;width:100%;transform-origin:left;transform:scaleX(0);background:linear-gradient(90deg,var(--teal),var(--tungsten));z-index:60}
+
+/* HERO */
+.hero{position:relative;padding-block:clamp(48px,9vw,110px) 56px;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:-20% -10% auto 20%;height:140%;pointer-events:none;
+  background:conic-gradient(from 195deg at 78% -8%,transparent 0 12deg,rgba(255,180,84,.16) 24deg,rgba(255,180,84,.03) 40deg,transparent 52deg)}
+.hero .wrap{position:relative}
+.kicker{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;margin-bottom:28px}
+.kicker .rec{display:inline-flex;align-items:center;gap:8px;color:var(--bad)}
+.kicker .rec i{width:9px;height:9px;border-radius:50%;background:var(--bad);display:block}
+h1{font-family:var(--f-display);font-weight:900;text-transform:uppercase;font-size:clamp(60px,13.2vw,184px);line-height:.86;letter-spacing:-.005em;margin:0;color:#617286;text-wrap:balance;--mx:74%;--my:34%}
+@supports ((-webkit-background-clip:text) or (background-clip:text)){
+  h1{background:radial-gradient(circle 420px at var(--mx) var(--my),#fff3d9 0%,var(--tungsten) 26%,#6d7e92 62%,#4a5a6e 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+}
+.lede{max-width:34em;font-size:clamp(19px,2.2vw,23px);line-height:1.5;margin:32px 0 0;color:var(--text)}
+.byline{margin-top:22px}
+
+/* LEDGER */
+.ledger{margin-top:56px;border-top:1px solid var(--line)}
+.lrow{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.2fr) minmax(0,1.1fr) minmax(0,1.6fr);gap:8px 28px;padding:22px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.lrow.head{padding:12px 0}
+.lrow .price{font-family:var(--f-display);font-weight:800;font-size:clamp(40px,5vw,60px);line-height:1;color:var(--tungsten)}
+.lrow .price small{display:block;font-family:var(--f-body);font-weight:400;font-size:14px;color:var(--dim);line-height:1.35;margin-top:6px}
+.lrow .lab{display:none}
+.verdict b{color:var(--tungsten-hot);font-weight:700}
+@media (max-width:820px){
+  .lrow{grid-template-columns:1fr;gap:6px}
+  .lrow.head{display:none}
+  .lrow .lab{display:block;margin-top:6px}
+}
+
+/* INTRO + TOC */
+.intro{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;padding-block:56px 24px}
+.intro p{margin:0 0 1em;max-width:34em}
+.toc{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.toc li{border-bottom:1px solid var(--line)}
+.toc a{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px;padding:9px 0;color:var(--text);text-decoration:none;font-size:16px}
+.toc a:hover{color:var(--tungsten)}
+.toc .n{font-family:var(--f-mono);font-size:12px;color:var(--dim);letter-spacing:.08em;padding-top:3px}
+@media (max-width:860px){.intro{grid-template-columns:1fr;gap:32px}}
+
+/* CHAPTERS */
+.ch{display:grid;grid-template-columns:190px minmax(0,1fr);gap:0 48px;padding-block:72px;border-top:1px solid var(--line)}
+.rail{align-self:start;position:sticky;top:calc(24px + env(safe-area-inset-top,0px))}
+.rail .no{font-family:var(--f-display);font-weight:900;font-size:88px;line-height:.85;color:var(--ink-3);-webkit-text-stroke:1px var(--line);display:block}
+.rail .tag{display:block;margin-top:10px;color:var(--tungsten)}
+.body{min-width:0}
+.body h2{font-family:var(--f-display);font-weight:800;font-size:clamp(40px,6vw,76px);line-height:.95;text-transform:uppercase;margin:0 0 28px;text-wrap:balance;color:#f1f4f8}
+.body p{margin:0 0 1.1em;max-width:39em}
+.body p.lead{font-size:21px;line-height:1.5;color:#eef2f7}
+.body em{color:var(--tungsten-hot);font-style:normal}
+@media (max-width:860px){
+  .ch{grid-template-columns:1fr;padding-block:56px}
+  .rail{position:static;display:flex;align-items:baseline;gap:14px;margin-bottom:12px}
+  .rail .no{font-size:52px}
+  .rail .tag{margin:0}
+}
+
+/* FIGURES */
+.fig{margin:36px 0 12px}
+.frame{border:1px solid var(--line);background:var(--ink-2)}
+figcaption{margin-top:12px;font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;color:var(--dim);max-width:62em;line-height:1.55}
+.note{margin:32px 0;padding:20px 22px 20px;border:1px solid var(--line);background:linear-gradient(180deg,var(--ink-2),var(--ink));max-width:44em}
+.note .mono{display:block;margin-bottom:8px;color:var(--teal)}
+.note.warn .mono{color:var(--bad)}
+.note p{margin:0;font-size:16.5px;line-height:1.6}
+.pq{font-family:var(--f-display);font-weight:900;text-transform:uppercase;font-size:clamp(44px,8vw,112px);line-height:.9;margin:40px 0 28px;color:#e8edf4;text-wrap:balance;
+  text-shadow:0 0 60px rgba(255,180,84,.18)}
+.pq span{color:var(--tungsten)}
+
+/* COMPARE */
+.cmp{position:relative;aspect-ratio:8/5;max-width:100%;overflow:hidden;background:#000;--p:50%;touch-action:pan-y;user-select:none}
+.cmp canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.cmp .cB{clip-path:inset(0 0 0 var(--p))}
+.cmp .ln{position:absolute;top:0;bottom:0;left:var(--p);width:2px;margin-left:-1px;background:var(--tungsten-hot);box-shadow:0 0 18px rgba(255,180,84,.7);pointer-events:none}
+.cmp .ln::after{content:"◂ ▸";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:54px;height:30px;display:grid;place-items:center;background:var(--ink);border:1px solid var(--tungsten);color:var(--tungsten);font-size:12px;letter-spacing:.2em;white-space:nowrap}
+.cmp:focus-within .ln::after{outline:2px solid var(--tungsten-hot);outline-offset:2px}
+.cmp input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:ew-resize}
+.cmp .t{position:absolute;bottom:12px;max-width:44%;padding:5px 9px;background:rgba(5,8,12,.78);font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text);pointer-events:none;line-height:1.35}
+.cmp .t.a{left:12px}
+.cmp .t.b{right:12px;text-align:right;color:var(--tungsten-hot)}
+
+/* LAB */
+.lab-sec{padding-block:72px;border-top:1px solid var(--line);background:radial-gradient(900px 400px at 70% 0%,rgba(67,189,180,.07),transparent 70%)}
+.lab-head{max-width:46em;margin-bottom:30px}
+.lab-head h2{font-family:var(--f-display);font-weight:900;font-size:clamp(46px,8vw,104px);line-height:.9;text-transform:uppercase;margin:10px 0 18px;color:#f3f6fa}
+.lab-head p{margin:0;max-width:36em}
+.lab{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:960px){.lab{grid-template-columns:1fr}}
+.mon{position:relative;border:1px solid var(--line);background:#000;padding:10px}
+.mon .screen{position:relative;aspect-ratio:8/5}
+.mon canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.mon .hud{position:absolute;inset:0;pointer-events:none;font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;color:rgba(255,255,255,.78);text-transform:uppercase}
+.hud i{position:absolute;width:22px;height:22px;border:1px solid rgba(255,255,255,.55)}
+.hud i:nth-of-type(1){left:14px;top:14px;border-right:0;border-bottom:0}
+.hud i:nth-of-type(2){right:14px;top:14px;border-left:0;border-bottom:0}
+.hud i:nth-of-type(3){left:14px;bottom:14px;border-right:0;border-top:0}
+.hud i:nth-of-type(4){right:14px;bottom:14px;border-left:0;border-top:0}
+.hud .tl{position:absolute;left:44px;top:16px;display:flex;align-items:center;gap:8px}
+.hud .tl b{width:8px;height:8px;border-radius:50%;background:var(--bad);display:block}
+.hud .tr{position:absolute;right:44px;top:16px}
+.hud .bl{position:absolute;left:44px;bottom:16px}
+.hud .br{position:absolute;right:44px;bottom:16px}
+.meters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-top:0}
+.meters div{background:var(--ink-2);padding:12px 14px;min-width:0}
+.meters dt{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.meters dd{margin:4px 0 0;font-size:15px;line-height:1.35}
+.meters dd b{font-family:var(--f-display);font-size:30px;font-weight:800;line-height:1;margin-right:6px;color:var(--tungsten-hot)}
+.meters dd.bad b{color:var(--bad)}
+.meters dd.ok b{color:var(--teal)}
+@media (max-width:560px){.meters{grid-template-columns:1fr}}
+.panel{border:1px solid var(--line);background:var(--ink-2);padding:18px;display:grid;gap:16px}
+.presets{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:inherit;font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;background:var(--ink-3);color:var(--text);border:1px solid var(--line);padding:8px 11px;cursor:pointer;line-height:1.2}
+.btn:hover{border-color:var(--tungsten);color:var(--tungsten-hot)}
+.btn[aria-pressed="true"]{background:var(--tungsten);color:#1a1106;border-color:var(--tungsten)}
+.ctl label,.seg legend,.tog legend{display:flex;justify-content:space-between;gap:12px;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+.ctl output{color:var(--tungsten-hot)}
+input[type=range]{width:100%;accent-color:var(--tungsten);height:24px;margin:0}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+.seg legend,.tog legend{padding:0}
+.seg .opts{display:flex;flex-wrap:wrap}
+.seg label{display:block;margin:0}
+.seg input,.tog input{position:absolute;opacity:0;width:1px;height:1px}
+.seg span,.tog span{display:block;padding:8px 12px;border:1px solid var(--line);background:var(--ink-3);font-family:var(--f-body);font-size:14px;letter-spacing:0;text-transform:none;color:var(--text);cursor:pointer;margin:0 -1px -1px 0}
+.seg input:checked+span,.tog input:checked+span{background:var(--tungsten);border-color:var(--tungsten);color:#1a1106;position:relative;z-index:1;font-weight:700}
+.seg input:focus-visible+span,.tog input:focus-visible+span{outline:2px solid var(--tungsten-hot);outline-offset:2px;z-index:2}
+.tog .opts{display:flex;flex-wrap:wrap}
+.tog label{display:block;margin:0}
+#plan{width:100%;height:auto;display:block;background:var(--ink);border:1px solid var(--line);touch-action:none;cursor:grab}
+#plan text{font-family:var(--f-mono);font-size:8.5px;letter-spacing:.08em;fill:var(--dim)}
+.planhint{margin:6px 0 0;font-size:13px;color:var(--dim);line-height:1.4}
+
+/* SVG diagrams */
+svg .s-line{stroke:var(--line);fill:none}
+svg .s-dim{fill:var(--dim);font-family:var(--f-mono);font-size:11px;letter-spacing:.08em}
+svg .s-key{fill:var(--tungsten-hot);font-family:var(--f-mono);font-size:11px;letter-spacing:.1em}
+.diag{padding:18px}
+.diag svg{display:block;width:100%;height:auto}
+
+/* MODIFIERS */
+.mods{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-top:30px}
+.mod{background:var(--ink-2);padding:20px 18px 22px;min-width:0}
+.mod h3{font-family:var(--f-display);font-weight:800;font-size:28px;line-height:1;text-transform:uppercase;margin:12px 0 8px;color:#f1f4f8}
+.mod p{font-size:15.5px;line-height:1.5;margin:0;color:var(--text)}
+.chip{display:inline-block;font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border:1px solid var(--teal);color:var(--teal)}
+
+/* WAYS */
+.ways{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin:30px 0}
+@media (max-width:760px){.ways{grid-template-columns:1fr}}
+.way{border:1px solid var(--line);background:var(--ink-2);padding:20px}
+.way h3{margin:6px 0 14px;font-family:var(--f-display);font-size:30px;font-weight:800;text-transform:uppercase;line-height:1}
+.way.no h3{color:var(--bad)}
+.way.yes h3{color:var(--teal)}
+.way ol{margin:0;padding-left:1.2em;font-size:16px;line-height:1.55}
+.way li{margin-bottom:6px}
+.big7{font-family:var(--f-display);font-weight:900;font-size:clamp(120px,22vw,260px);line-height:.8;color:var(--tungsten);text-shadow:0 0 80px rgba(255,180,84,.35);display:flex;align-items:flex-end;gap:18px;margin:8px 0 20px}
+.big7 small{font-family:var(--f-body);font-size:17px;font-weight:400;line-height:1.4;text-shadow:none;color:var(--text);max-width:16em;padding-bottom:14px}
+
+/* SYMPTOM TABLE */
+.fix{width:100%;border-collapse:collapse;margin:26px 0;max-width:46em}
+.fix th,.fix td{text-align:left;padding:13px 14px 13px 0;border-bottom:1px solid var(--line);font-size:16.5px;vertical-align:baseline}
+.fix th{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:400}
+.fix td:last-child{color:var(--tungsten-hot);font-weight:700}
+
+/* GOLDEN */
+.sun3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.sun3{grid-template-columns:1fr}}
+.sun3 figure{margin:0;border:1px solid var(--line);background:var(--ink-2)}
+.sun3 svg{display:block;width:100%;height:auto}
+.sun3 .cap{padding:12px 14px 16px;display:grid;gap:4px}
+.sun3 .cap b{font-family:var(--f-display);font-size:30px;font-weight:800;line-height:1}
+.sun3 .cap span{font-size:14.5px;line-height:1.45;color:var(--text)}
+
+/* GEAR */
+.tiers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:32px 0}
+@media (max-width:980px){.tiers{grid-template-columns:1fr}}
+.tier{border:1px solid var(--line);background:var(--ink-2);padding:22px 20px 24px;min-width:0}
+.tier .nm{color:var(--teal)}
+.tier .pr{font-family:var(--f-display);font-weight:900;font-size:84px;line-height:.9;color:var(--tungsten);margin:6px 0 14px}
+.tier h4{margin:18px 0 6px;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:400}
+.tier ul{margin:0;padding:0;list-style:none;font-size:15.5px;line-height:1.45}
+.tier li{padding:7px 0;border-bottom:1px solid var(--line)}
+.tier li:last-child{border-bottom:0}
+.tier li b{color:#f1f4f8}
+.bars{display:grid;gap:10px;margin:26px 0 8px;max-width:46em}
+.bar{display:grid;grid-template-columns:130px minmax(0,1fr) 70px;gap:12px;align-items:center;font-size:14.5px}
+.bar .tr{height:14px;background:var(--ink-3);position:relative}
+.bar .tr i{position:absolute;left:0;top:0;bottom:0;background:var(--tungsten);display:block}
+.bar .v{font-family:var(--f-mono);font-size:12.5px;text-align:right;color:var(--tungsten-hot)}
+@media (max-width:520px){.bar{grid-template-columns:96px minmax(0,1fr) 60px;gap:8px;font-size:13px}}
+
+/* CHECKLIST */
+.check{list-style:none;margin:28px 0;padding:0;border-top:1px solid var(--line);max-width:46em}
+.check li{border-bottom:1px solid var(--line)}
+.check label{display:grid;grid-template-columns:30px minmax(0,1fr);gap:14px;padding:14px 0;cursor:pointer;align-items:start;font-size:17px;line-height:1.5}
+.check input{appearance:none;-webkit-appearance:none;width:22px;height:22px;border:1px solid var(--dim);background:var(--ink-2);margin:2px 0 0;display:grid;place-items:center;cursor:pointer}
+.check input:checked{background:var(--tungsten);border-color:var(--tungsten)}
+.check input:checked::after{content:"";width:5px;height:11px;border:solid #1a1106;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.check input:checked+span{color:var(--dim);text-decoration:line-through;text-decoration-color:var(--line)}
+.score{display:flex;align-items:center;gap:16px;max-width:46em}
+.score .tr{flex:1;height:8px;background:var(--ink-3);position:relative}
+.score .tr i{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,var(--teal),var(--tungsten));display:block;transition:width .25s}
+@media (prefers-reduced-motion:reduce){.score .tr i{transition:none}html{scroll-behavior:auto}}
+
+/* SLATE */
+.slate{margin:20px 0 80px;border:2px solid #e9eef5;max-width:640px;background:#0b0f15}
+.clap{height:44px;background:repeating-linear-gradient(115deg,#e9eef5 0 34px,#0b0f15 34px 68px);border-bottom:2px solid #e9eef5}
+.slate dl{margin:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.slate dl div{padding:12px 14px;border-right:1px solid #55657a;border-bottom:1px solid #55657a;min-width:0}
+.slate dl div:nth-child(3n){border-right:0}
+.slate dl div.w{grid-column:1/-1;border-right:0}
+.slate dl div:last-child{border-bottom:0}
+.slate dt{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.slate dd{margin:2px 0 0;font-family:var(--f-display);font-weight:800;font-size:30px;line-height:1.05;text-transform:uppercase;color:#f1f4f8}
+.slate dd.s{font-size:20px;font-family:var(--f-mono);font-weight:500;letter-spacing:.04em;text-transform:none}
+@media (max-width:520px){.slate dl{grid-template-columns:1fr 1fr}.slate dl div:nth-child(3n){border-right:1px solid #55657a}.slate dl div:nth-child(2n){border-right:0}}
+.foot{padding-bottom:max(48px,env(safe-area-inset-bottom,0px));color:var(--dim);font-size:14px}
+</style>
+
+<div id="prog" aria-hidden="true"></div>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div class="kicker mono"><span class="rec"><i></i>Field guide</span><span>Lighting for short films, YouTube, social and small studios</span><span>Based on a 20-minute video lesson</span></div>
+    <h1 id="h1">It's not<br>your camera.<br>It's your light.</h1>
+    <p class="lede">Lots of people think their videos look bad because of the camera. Nope. It's almost always the lighting. This guide teaches you the basics, and there's a little simulator in the middle where you can move the lights yourself.</p>
+
+    <div class="ledger" role="table" aria-label="Three cameras, three lighting setups">
+      <div class="lrow head mono" role="row"><span>Camera</span><span>Lighting</span><span>Cost</span><span>What happened</span></div>
+      <div class="lrow" role="row">
+        <div class="price" role="cell">$100<small>15-year-old plastic camera from eBay</small></div>
+        <div role="cell"><span class="lab mono">Lighting</span>Shaped light plus haze all through the building</div>
+        <div role="cell"><span class="lab mono">Rig</span>A used camera</div>
+        <div class="verdict" role="cell"><span class="lab mono">Result</span>Looked like a Gatorade ad. <b>Nobody guessed the camera.</b></div>
+      </div>
+      <div class="lrow" role="row">
+        <div class="price" role="cell">$6,000<small>Full cinema rig</small></div>
+        <div role="cell"><span class="lab mono">Lighting</span>Ugly office ceiling lights. That's it.</div>
+        <div role="cell"><span class="lab mono">Rig</span>Cinema camera, lens and stands</div>
+        <div class="verdict" role="cell"><span class="lab mono">Result</span>Flat and cheap. <b>The fancy gear couldn't save it.</b></div>
+      </div>
+      <div class="lrow" role="row">
+        <div class="price" role="cell">iPhone<small>The one in your pocket</small></div>
+        <div role="cell"><span class="lab mono">Lighting</span>Professional lighting</div>
+        <div role="cell"><span class="lab mono">Rig</span>A phone</div>
+        <div class="verdict" role="cell"><span class="lab mono">Result</span>Next to the $6,000 rig, <b>the lighting wins easily.</b></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="intro">
+    <div>
+      <p>Lighting is a filmmaker's secret weapon, and most beginners skip it. It feels awkward at first. You're not sure what a light is supposed to do, so you just leave it alone.</p>
+      <p>It gets fun once you can look at a shot and feel that something is missing. So you add a lamp. Put a bit of light on the wall. Take a bit off the face. And suddenly it clicks. Crews on big movies will spend thirty minutes nudging a single light to get that feeling.</p>
+      <p>By the end you'll know what to buy, where to put it, and how to add lamps, haze and texture. Most chapters have a slider you can drag to see the effect yourself.</p>
+    </div>
+    <ol class="toc" aria-label="Chapters">
+      <li><a href="#three-point"><span class="n">01</span>Three-point lighting (and why nobody uses it)</a></li>
+      <li><a href="#rembrandt"><span class="n">02</span>Rembrandt lighting</a></li>
+      <li><a href="#shadow-side"><span class="n">03</span>Shoot the shadow side</a></li>
+      <li><a href="#motivated"><span class="n">04</span>Motivated light</a></li>
+      <li><a href="#soft"><span class="n">05</span>Soft light and hard light</a></li>
+      <li><a href="#golden"><span class="n">06</span>Golden hour</a></li>
+      <li><a href="#practicals"><span class="n">07</span>The background and practicals</a></li>
+      <li><a href="#modifiers"><span class="n">08</span>Shaping your light</a></li>
+      <li><a href="#expose"><span class="n">09</span>Set up the background first</a></li>
+      <li><a href="#texture"><span class="n">10</span>Texture and gobos</a></li>
+      <li><a href="#haze"><span class="n">11</span>Fog and haze</a></li>
+      <li><a href="#negative"><span class="n">12</span>Negative fill (a fancy word for shadow)</a></li>
+      <li><a href="#gear"><span class="n">13</span>Gear at three budgets</a></li>
+      <li><a href="#recap"><span class="n">14</span>Recap and checklist</a></li>
+    </ol>
+  </section>
+</div>
+
+<!-- LAB -->
+<section class="lab-sec" id="lab">
+  <div class="wrap">
+    <div class="lab-head">
+      <span class="mono">The simulator</span>
+      <h2>Light the shot</h2>
+      <p>A simple 3D head, one main light and a room. Drag the light around, switch the camera to the other side, or tap a preset. Keep an eye on the three boxes under the screen.</p>
+    </div>
+    <div class="lab">
+      <div>
+        <div class="mon">
+          <div class="screen">
+            <canvas id="labCanvas" width="480" height="300" role="img" aria-label="Simulated portrait lit by the current settings"></canvas>
+            <div class="hud" aria-hidden="true">
+              <i></i><i></i><i></i><i></i>
+              <span class="tl"><b></b>A-CAM</span>
+              <span class="tr" id="hudKey">KEY 7%</span>
+              <span class="bl" id="hudCam">SHADOW SIDE</span>
+              <span class="br">24 FPS · 180°</span>
+            </div>
+          </div>
+        </div>
+        <dl class="meters">
+          <div><dt>Contrast</dt><dd id="mContrast"></dd></div>
+          <div><dt>Skin exposure</dt><dd id="mSkin"></dd></div>
+          <div><dt>Motivation</dt><dd id="mMotiv"></dd></div>
+        </dl>
+      </div>
+      <div class="panel">
+        <div>
+          <div class="mono" style="margin-bottom:8px">Presets</div>
+          <div class="presets" id="presets">
+            <button class="btn" type="button" data-p="ring">Ring-light flat</button>
+            <button class="btn" type="button" data-p="three">Three-point</button>
+            <button class="btn" type="button" data-p="one">One light</button>
+            <button class="btn" type="button" data-p="full" aria-pressed="true">Full recipe</button>
+          </div>
+        </div>
+        <div>
+          <svg id="plan" viewBox="0 0 240 220" role="img" aria-label="Top-down plan of the set. Drag the key light around the subject."></svg>
+          <p class="planhint">This is the room seen from above. Drag the orange light around the dotted circle, or use the slider.</p>
+        </div>
+        <div class="ctl"><label for="az">Key position <output id="azo"></output></label><input type="range" id="az" min="-80" max="80" step="1" value="50"></div>
+        <div class="ctl"><label for="soft">Softness <output id="softo"></output></label><input type="range" id="soft" min="0" max="100" step="1" value="55"></div>
+        <div class="ctl"><label for="keyp">Key power <output id="keyo"></output></label><input type="range" id="keyp" min="0" max="100" step="1" value="7"></div>
+        <fieldset class="seg"><legend>Camera side</legend><div class="opts">
+          <label><input type="radio" name="cam" value="key"><span>Key side</span></label>
+          <label><input type="radio" name="cam" value="shadow" checked><span>Shadow side</span></label></div></fieldset>
+        <fieldset class="seg"><legend>Fill</legend><div class="opts">
+          <label><input type="radio" name="fill" value="none"><span>None</span></label>
+          <label><input type="radio" name="fill" value="white"><span>White bounce</span></label>
+          <label><input type="radio" name="fill" value="black" checked><span>Black flag</span></label></div></fieldset>
+        <fieldset class="tog"><legend>Scene</legend><div class="opts">
+          <label><input type="checkbox" id="tHair"><span>Hair light</span></label>
+          <label><input type="checkbox" id="tPrac" checked><span>Practical lamp</span></label>
+          <label><input type="checkbox" id="tGobo" checked><span>Gobo</span></label>
+          <label><input type="checkbox" id="tHaze" checked><span>Haze</span></label></div></fieldset>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+<!-- 01 -->
+<section class="ch" id="three-point">
+  <div class="rail"><span class="no">01</span><span class="mono tag">Fundamentals</span></div>
+  <div class="body">
+    <h2>Three-point lighting (and why nobody uses it)</h2>
+    <p class="lead">You've probably heard of three-point lighting. It's the first thing everyone teaches. You point three lights at one person and get a neat, flattering picture.</p>
+    <div class="fig frame diag">
+      <svg viewBox="0 0 560 330" role="img" aria-label="Top-down diagram: key light at 45 degrees to one side, fill light on the other side, hair light behind and above the subject, camera in front.">
+        <defs>
+          <linearGradient id="kb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffb454" stop-opacity=".55"/><stop offset="1" stop-color="#ffb454" stop-opacity=".05"/></linearGradient>
+          <linearGradient id="fb" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#43bdb4" stop-opacity=".35"/><stop offset="1" stop-color="#43bdb4" stop-opacity=".04"/></linearGradient>
+          <linearGradient id="hb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bcd8ff" stop-opacity=".4"/><stop offset="1" stop-color="#bcd8ff" stop-opacity=".04"/></linearGradient>
+        </defs>
+        <circle cx="280" cy="150" r="118" class="s-line" stroke-dasharray="2 6"/>
+        <polygon points="150,300 168,312 262,170 296,150" fill="url(#kb)"/>
+        <polygon points="410,300 392,312 298,170 264,150" fill="url(#fb)"/>
+        <polygon points="262,32 298,32 292,140 268,140" fill="url(#hb)"/>
+        <!-- subject -->
+        <ellipse cx="280" cy="156" rx="34" ry="14" fill="#2b3a4f"/>
+        <circle cx="280" cy="150" r="15" fill="#d6a58a"/>
+        <polygon points="280,170 274,160 286,160" fill="#d6a58a"/>
+        <!-- camera -->
+        <rect x="262" y="296" width="36" height="22" fill="#e9eef5"/><polygon points="268,296 292,296 286,286 274,286" fill="#e9eef5"/>
+        <text x="280" y="330" text-anchor="middle" class="s-dim">CAMERA</text>
+        <!-- key -->
+        <g transform="translate(160 306) rotate(-35)"><rect x="-22" y="-7" width="44" height="14" fill="#ffb454"/></g>
+        <text x="46" y="296" class="s-key">KEY</text><text x="46" y="312" class="s-dim">~45° to one side</text>
+        <!-- fill -->
+        <g transform="translate(400 306) rotate(35)"><rect x="-15" y="-6" width="30" height="12" fill="#43bdb4"/></g>
+        <text x="420" y="296" class="s-key" style="fill:#43bdb4">FILL</text><text x="420" y="312" class="s-dim">subtle, or a bounce card</text>
+        <!-- hair -->
+        <rect x="258" y="22" width="44" height="12" fill="#bcd8ff"/>
+        <text x="316" y="30" class="s-key" style="fill:#bcd8ff">HAIR / BACK</text><text x="316" y="46" class="s-dim">behind and higher</text>
+        <!-- ring -->
+        <circle cx="280" cy="307" r="31" fill="none" stroke="#ff7d68" stroke-width="2" stroke-dasharray="4 4"/>
+        <text x="190" y="214" class="s-dim" style="fill:#ff7d68">RING LIGHT: NO SHADOWS</text>
+      </svg>
+      <figcaption>View from above. The camera is at the bottom. The red dotted circle around the lens is where a ring light sits, which is why it wipes out every shadow.</figcaption>
+    </div>
+    <p>The <em>key light</em> is your main light. It goes off to one side at about 45°, so it puts some shadow on the face. That's why ring lights, the kind TikTokers use, are the least cinematic light you can buy. They sit around the camera, so there are no shadows and no shape. Fine for a dance video. Not for a film.</p>
+    <p>The <em>fill light</em> sits on the other side and gently lifts the shadows. Often it isn't even a light. It's just a white board that bounces a little of the key back onto the face. The <em>hair light</em> sits behind and higher up. It outlines the shoulders and hair so the person pops out from the background.</p>
+    <p class="lead">Here's the catch with three-point lighting: almost nobody actually uses it.</p>
+    <p>No filmmaker walks into a room and thinks, "where does my three-point setup go?" Do learn what each light does. But a stock setup gives you a stock-looking shot. Below, the left side is a clean, by-the-book three-point setup. The right side uses just one light. Drag the handle and see.</p>
+    <figure class="fig" style="margin-top:26px">
+      <div class="cmp frame" data-a='{"az":45,"soft":0.6,"key":9,"cam":"key","fill":"white","hair":true}' data-b='{"az":55,"soft":0.55,"key":7,"cam":"shadow","fill":"black","practical":true,"gobo":true}' data-la="Three-point, camera on key side" data-lb="One light, shadow side, lamp, gobo"></div>
+      <figcaption>Why the right side wins: the camera is on the shadow side, a lamp explains where the light comes from, the colors contrast, the wall has texture, there's shadow on purpose, and the whole thing feels deep.</figcaption>
+    </figure>
+    <div class="note warn"><span class="mono">Buying advice</span><p>Please don't buy a ring light.</p></div>
+  </div>
+</section>
+
+<!-- 02 -->
+<section class="ch" id="rembrandt">
+  <div class="rail"><span class="no">02</span><span class="mono tag">Key light</span></div>
+  <div class="body">
+    <h2>Rembrandt lighting</h2>
+    <p class="lead">When you place your key light, think of Rembrandt, the famous Dutch painter. His portraits have a little upside-down triangle of light on the cheek that's away from the lamp.</p>
+    <div class="fig frame diag" style="max-width:520px">
+      <svg viewBox="0 0 400 300" role="img" aria-label="Face diagram with a bright half on the left, a dark half on the right and an inverted triangle of light on the dark cheek.">
+        <defs>
+          <clipPath id="faceclip"><ellipse cx="200" cy="150" rx="86" ry="112"/></clipPath>
+          <linearGradient id="lit" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e8bda0"/><stop offset="1" stop-color="#c58f72"/></linearGradient>
+        </defs>
+        <g clip-path="url(#faceclip)">
+          <rect x="100" y="30" width="200" height="240" fill="#1d2a38"/>
+          <rect x="100" y="30" width="102" height="240" fill="url(#lit)"/>
+          <polygon points="219,168 276,168 247,214" fill="#c9926f"/>
+          <ellipse cx="236" cy="150" rx="10" ry="4" fill="#0a0e14" opacity=".7"/>
+          <ellipse cx="166" cy="150" rx="10" ry="4" fill="#5a3e30" opacity=".7"/>
+          <path d="M200 160 L194 196 L206 196Z" fill="#a67659" opacity=".6"/>
+          <ellipse cx="200" cy="262" rx="60" ry="14" fill="#07090d" opacity=".7"/>
+        </g>
+        <ellipse cx="200" cy="150" rx="86" ry="112" class="s-line" stroke-width="1.5"/>
+        <line x1="276" y1="190" x2="330" y2="190" stroke="#ffb454"/>
+        <text x="336" y="186" class="s-key">TRIANGLE</text><text x="336" y="202" class="s-dim">on the shadow cheek</text>
+        <line x1="150" y1="266" x2="70" y2="266" stroke="#43bdb4"/>
+        <text x="20" y="262" class="s-key" style="fill:#43bdb4">CHIN</text><text x="20" y="278" class="s-dim">soft drop shadow</text>
+        <path d="M80 70 L120 110" stroke="#ffb454" stroke-width="2"/><text x="20" y="62" class="s-key">KEY</text><text x="20" y="78" class="s-dim">45°, above</text>
+      </svg>
+    </div>
+    <p>This look keeps shadows on the face but still shows off the eyes and cheekbones. You also get a soft shadow under the chin. It looks natural and flattering. It isn't a rule for every shot, but if you can spot that little triangle, your light is probably in a good spot.</p>
+  </div>
+</section>
+
+<!-- 03 -->
+<section class="ch" id="shadow-side">
+  <div class="rail"><span class="no">03</span><span class="mono tag">Camera placement</span></div>
+  <div class="body">
+    <h2>Shoot the shadow side</h2>
+    <p class="lead">This tip costs nothing and instantly makes your shots look better.</p>
+    <p>Your key light is set. Now where does the camera go? Imagine a line down the middle of your subject. If the light is on one side, put the camera on the other side. Don't put it on the same side as the light.</p>
+    <figure class="fig">
+      <div class="cmp frame" data-a='{"az":55,"soft":0.6,"key":8,"cam":"key","fill":"none","practical":true}' data-b='{"az":55,"soft":0.6,"key":8,"cam":"shadow","fill":"none","practical":true}' data-la="Camera on the key side" data-lb="Camera on the shadow side"></div>
+      <figcaption>Same light, same position, same subject. Only the camera moved.</figcaption>
+    </figure>
+    <p>Watch any Hollywood movie and try to spot a shot taken from the lit side of an actor's face. You'll hardly find any. The shadow side feels more dramatic and makes the face look round and real instead of flat.</p>
+    <p>Filming in a kitchen? Walk to the other side of your light. Outside, with the sun as your key? Walk to the other side of the sun. You're not making a silhouette, just a more cinematic look. It's a tiny move with a big payoff.</p>
+    <div class="note"><span class="mono">Try it in the simulator</span><p>Flip the camera between "Key side" and "Shadow side" and watch the Contrast box. The picture gets moodier on the shadow side, even though the light never moved.</p></div>
+  </div>
+</section>
+
+<!-- 04 -->
+<section class="ch" id="motivated">
+  <div class="rail"><span class="no">04</span><span class="mono tag">Motivation</span></div>
+  <div class="body">
+    <h2>Motivated light</h2>
+    <p class="lead">Nothing breaks the spell faster than a bright light hitting someone's face for no reason.</p>
+    <p>Motivated light just means the audience can see where the light seems to come from: a lamp, a window, a screen, a neon sign, a TV. That makes the light feel natural. The thing in the shot doesn't have to do the real lighting. It only has to <em>explain</em> it.</p>
+    <figure class="fig">
+      <div class="cmp frame" data-a='{"az":55,"soft":0.6,"key":8,"cam":"shadow","fill":"black","practical":false}' data-b='{"az":55,"soft":0.6,"key":8,"cam":"shadow","fill":"black","practical":true}' data-la="Light from nowhere" data-lb="Lamp on the key side"></div>
+      <figcaption>Same key light. The lamp adds almost nothing to the face, but your brain decides it's the source.</figcaption>
+    </figure>
+    <div class="note"><span class="mono">On screen</span><p>David Fincher and Stanley Kubrick fill their frames with lamps. The camera moves around a lot, and they want the light to make sense from every angle, even though big studio lights above are doing the real work. In Martin Scorsese's <i>Silence</i>, the characters get harsh side light. A wide shot shows one window behind them with light landing on the wall, and that explains the side light.</p></div>
+    <p>So find something to put in the scene. Even a tiny bulb can explain a whole lighting setup. A window in the corner of the frame is enough, and it can even be fake.</p>
+  </div>
+</section>
+
+<!-- 05 -->
+<section class="ch" id="soft">
+  <div class="rail"><span class="no">05</span><span class="mono tag">Quality of light</span></div>
+  <div class="body">
+    <h2>Soft light and hard light</h2>
+    <p class="lead">Soft light fades gently, makes shadows smooth and skin look nice. Hard light makes sharp-edged, harsh shadows.</p>
+    <p>Both have their uses. When in doubt, go soft on faces, unless the scene needs drama.</p>
+    <figure class="fig">
+      <div class="cmp frame" data-a='{"az":50,"soft":0.04,"key":7,"cam":"shadow","fill":"none","practical":true}' data-b='{"az":50,"soft":0.95,"key":7,"cam":"shadow","fill":"none","practical":true}' data-la="Bare light, no softbox" data-lb="Giant softbox, close"></div>
+      <figcaption>Same light. Only the size of the source changed.</figcaption>
+    </figure>
+    <p>The best trick for soft light: <em>make the light source bigger</em>. You don't need a pricier light, just a bigger softbox (a fabric box that spreads the light out). The closer it is to your subject, the bigger it looks, and the softer the light. Pros often park it just a hair outside the frame.</p>
+    <table class="fix">
+      <thead><tr><th>Cheap trick</th><th>Same thing as</th></tr></thead>
+      <tbody>
+        <tr><td>Hang a white sheet and shine the light through it</td><td>A giant softbox</td></tr>
+        <tr><td>A thin cloth or a shower curtain</td><td>A silk</td></tr>
+        <tr><td>Bounce off a wall or ceiling</td><td>A bounce board</td></tr>
+      </tbody>
+    </table>
+    <p>Film sets do the same thing with a big 8×8 fabric called a silk. It's fancier than a bedsheet, but the idea is identical. If your footage looks harsh, cheap or "video-y", the light is probably too hard about 90% of the time. Bring it closer and make it softer.</p>
+  </div>
+</section>
+
+<!-- 06 -->
+<section class="ch" id="golden">
+  <div class="rail"><span class="no">06</span><span class="mono tag">Outdoors</span></div>
+  <div class="body">
+    <h2>Golden hour</h2>
+    <p class="lead">Outside, the sun is the boss. The best times to shoot are the first hour after sunrise and the last hour before sunset.</p>
+    <div class="fig sun3">
+      <figure>
+        <svg viewBox="0 0 300 200" role="img" aria-label="Morning: low sun on the left, long soft shadow to the right">
+          <defs><linearGradient id="skyA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a7aa6"/><stop offset=".7" stop-color="#e9a47c"/><stop offset="1" stop-color="#f5c08a"/></linearGradient>
+          <radialGradient id="sunA"><stop offset="0" stop-color="#fff4d6"/><stop offset=".3" stop-color="#ffd08a" stop-opacity=".85"/><stop offset="1" stop-color="#ffb066" stop-opacity="0"/></radialGradient></defs>
+          <rect width="300" height="200" fill="url(#skyA)"/><circle cx="46" cy="140" r="64" fill="url(#sunA)"/><circle cx="46" cy="140" r="9" fill="#fff6e0"/>
+          <rect y="168" width="300" height="32" fill="#2a2e38"/>
+          <ellipse cx="228" cy="176" rx="74" ry="4.5" fill="#12141a" opacity=".45"/>
+          <circle cx="160" cy="128" r="8" fill="#e0b392"/><rect x="153" y="136" width="14" height="34" fill="#1c2432"/>
+        </svg>
+        <div class="cap"><span class="mono">7:00 a.m.</span><b>Golden</b><span>Low sun, long soft shadows, warm glow. Looks like a movie.</span></div>
+      </figure>
+      <figure>
+        <svg viewBox="0 0 300 200" role="img" aria-label="Noon: sun overhead, tiny hard shadow under the figure">
+          <defs><linearGradient id="skyB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6e9bd1"/><stop offset="1" stop-color="#c9dcf0"/></linearGradient>
+          <radialGradient id="sunB"><stop offset="0" stop-color="#ffffff"/><stop offset=".25" stop-color="#ffffff" stop-opacity=".8"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient></defs>
+          <rect width="300" height="200" fill="url(#skyB)"/><circle cx="150" cy="30" r="60" fill="url(#sunB)"/><circle cx="150" cy="30" r="9" fill="#fff"/>
+          <rect y="168" width="300" height="32" fill="#2e3139"/>
+          <ellipse cx="150" cy="175" rx="16" ry="3" fill="#0a0b0e" opacity=".85"/>
+          <circle cx="150" cy="128" r="8" fill="#e0b392"/><ellipse cx="146" cy="128" rx="2.6" ry="1.8" fill="#6a4a38"/><ellipse cx="154" cy="128" rx="2.6" ry="1.8" fill="#6a4a38"/><rect x="143" y="136" width="14" height="34" fill="#1c2432"/>
+        </svg>
+        <div class="cap"><span class="mono">12:00 p.m.</span><b>Harsh</b><span>Sun straight overhead, hard shadows pooling under the eyes. Ugly, whatever you do.</span></div>
+      </figure>
+      <figure>
+        <svg viewBox="0 0 300 200" role="img" aria-label="Evening: low sun on the right, long soft shadow to the left">
+          <defs><linearGradient id="skyC" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3f4f86"/><stop offset=".65" stop-color="#d9805c"/><stop offset="1" stop-color="#f0a060"/></linearGradient>
+          <radialGradient id="sunC"><stop offset="0" stop-color="#fff0cc"/><stop offset=".3" stop-color="#ffb066" stop-opacity=".85"/><stop offset="1" stop-color="#ff8a4a" stop-opacity="0"/></radialGradient></defs>
+          <rect width="300" height="200" fill="url(#skyC)"/><circle cx="254" cy="142" r="66" fill="url(#sunC)"/><circle cx="254" cy="142" r="9" fill="#fff0d0"/>
+          <rect y="168" width="300" height="32" fill="#27262e"/>
+          <ellipse cx="74" cy="176" rx="74" ry="4.5" fill="#0f0f14" opacity=".45"/>
+          <circle cx="140" cy="128" r="8" fill="#d9a07e"/><rect x="133" y="136" width="14" height="34" fill="#1c2432"/>
+        </svg>
+        <div class="cap"><span class="mono">7:00 p.m.</span><b>Golden</b><span>Low sun again, even and flattering. Looks like a movie.</span></div>
+      </figure>
+    </div>
+    <p>Three shots, one day: 7 a.m., noon and 7 p.m. Easy to tell which ones look cinematic, right? The only thing that changed was the time. The iPhone 17 ad in the video was shot just as the sun went down, so the light was soft and even. At noon it would have looked awful.</p>
+    <p>During golden hour, try putting the sun <em>behind</em> your subject and shooting toward it. You get pretty glowing flares. At other times of day, pointing at the sun usually turns the sky into a white blob.</p>
+  </div>
+</section>
+
+<!-- 07 -->
+<section class="ch" id="practicals">
+  <div class="rail"><span class="no">07</span><span class="mono tag">Environment</span></div>
+  <div class="body">
+    <h2>The background and practicals</h2>
+    <p class="lead">Nobody says "I can't wait to light the background!" That's exactly why it's the most overlooked part of lighting.</p>
+    <p>Most people light the person first and forget everything behind them. But the background needs to feel alive too. Light only the subject and your shot looks like someone standing in a spotlight on a stage.</p>
+    <p>The fix is almost always <em>practicals</em>: lights you can actually see in the shot. Lamps, candles, windows, LED strips, signs. They do three jobs. They explain where your light comes from. They give the background depth. And they add warmth and life.</p>
+    <table class="fix">
+      <thead><tr><th>If the scene feels</th><th>Add</th></tr></thead>
+      <tbody>
+        <tr><td>Dead</td><td>One practical</td></tr>
+        <tr><td>Empty</td><td>Two practicals</td></tr>
+        <tr><td>Flat and monotone</td><td>A practical in a contrasting color</td></tr>
+      </tbody>
+    </table>
+    <div class="note"><span class="mono">On screen</span><p>Watch any movie and you'll spot lamps in hallways where nobody would put a lamp in real life. They're not there to make it brighter. Cinematographers know how a lamp changes the feel of a scene. Steven Spielberg has even been seen adding lamps and leaving them switched off, just so the set looks lived-in.</p></div>
+    <p>You can put lamps behind your subject, bounce a light off the wall behind them, or fake a window. Don't forget the background. It helps your light look good.</p>
+  </div>
+</section>
+
+<!-- 08 -->
+<section class="ch" id="modifiers">
+  <div class="rail"><span class="no">08</span><span class="mono tag">Control</span></div>
+  <div class="body">
+    <h2>Shaping your light</h2>
+    <p class="lead">Beginners spray light everywhere. Too dark? Add another light! Pros take the light they already have and shape it.</p>
+    <p>Shaping means not blasting everything with the same brightness. You block some light, cut some away, and choose where it lands. You decide what's soft, what's hard, where the shadows go, and where the viewer looks. Each tool below controls one thing about your light.</p>
+    <div class="mods">
+      <div class="mod"><span class="chip">Softness</span><h3>Softbox</h3><p>Soft light that wraps nicely around a face. Bigger box, softer light.</p></div>
+      <div class="mod"><span class="chip">Room glow</span><h3>Lantern</h3><p>Spreads light in all directions. Great for a gentle, natural glow in the room.</p></div>
+      <div class="mod"><span class="chip">Stray light</span><h3>Barn doors</h3><p>Metal flaps on the front of a light. They keep the beam off the wall or ceiling.</p></div>
+      <div class="mod"><span class="chip">Fill</span><h3>Reflector or bounce</h3><p>Bounces light back onto the subject, no extra lamp needed.</p></div>
+      <div class="mod"><span class="chip">Brightness</span><h3>Scrim</h3><p>Makes the light dimmer without changing how soft it is. Like tinted car windows.</p></div>
+      <div class="mod"><span class="chip">Blocking</span><h3>Flag</h3><p>A black panel that blocks light from where you don't want it. No barn doors? A flag does the same job.</p></div>
+      <div class="mod"><span class="chip">Aim</span><h3>Honeycomb grid</h3><p>Comes with most softboxes. Narrows the beam so only your subject gets lit. Think barn doors for a softbox.</p></div>
+      <div class="mod"><span class="chip">Shape</span><h3>Projector and gobos</h3><p>Projects shapes onto walls: window streaks, blinds, logos, textures.</p></div>
+    </div>
+    <p style="margin-top:30px">Having a light is good. Shaping it is what tells the story. That's the gap between a shot that's merely lit and one that looks like a movie.</p>
+  </div>
+</section>
+
+<!-- 09 -->
+<section class="ch" id="expose">
+  <div class="rail"><span class="no">09</span><span class="mono tag">Workflow</span></div>
+  <div class="body">
+    <h2>Set up the background first</h2>
+    <div class="big7">7%<small>That's how strong the key light was in the lesson's shot. At 100%, you're doing it wrong.</small></div>
+    <p class="lead">Light the room first. Then put your subject in it and slowly turn the key up from zero until they fit in.</p>
+    <div class="ways">
+      <div class="way no"><span class="mono">The usual order</span><h3>Subject first</h3>
+        <ol><li>Put the person in place.</li><li>Turn on every light.</li><li>Turn the camera brightness down until the face looks right.</li><li>Oops, the background is now black.</li></ol></div>
+      <div class="way yes"><span class="mono">The better order</span><h3>Room first</h3>
+        <ol><li>Light the background. Turn on lamps. Add texture.</li><li>Set the camera brightness for the background you want.</li><li>Put the person in. Start the key at 0%.</li><li>Slowly raise the key until they look like they belong.</li></ol></div>
+    </div>
+    <figure class="fig">
+      <div class="cmp frame" data-a='{"az":50,"soft":0.6,"key":100,"ev":-3.84,"cam":"shadow","fill":"none","practical":false,"gobo":false}' data-b='{"az":50,"soft":0.6,"key":7,"cam":"shadow","fill":"black","practical":true,"gobo":true}' data-la="Key at 100%, camera brightness turned down" data-lb="Room first, key at 7%"></div>
+      <figcaption>Left: the face looks fine but the room is black. Right: the person looks like they actually live there.</figcaption>
+    </figure>
+    <p>The same trick fixes blown-out windows, where the window turns pure white behind your subject. Set the camera for the window first. Then bring in your key light and raise it until the person matches that background. Get the background looking right and blend the person into it, not the other way around.</p>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="ch" id="texture">
+  <div class="rail"><span class="no">10</span><span class="mono tag">Texture</span></div>
+  <div class="body">
+    <h2>Texture and gobos</h2>
+    <p class="lead">Texture means light that isn't flat and even across a wall. Streaks, beams, patterns, anything that breaks up the space behind your subject.</p>
+    <figure class="fig">
+      <div class="cmp frame" data-a='{"az":50,"soft":0.6,"key":7,"cam":"shadow","fill":"black","practical":true,"gobo":false}' data-b='{"az":50,"soft":0.6,"key":7,"cam":"shadow","fill":"black","practical":true,"gobo":true}' data-la="Plain wall" data-lb="Gobo texture on the wall"></div>
+      <figcaption>Nothing else changed. The wall went from an empty bedroom corner to somewhere real people live.</figcaption>
+    </figure>
+    <p>Real places are full of shadows and patterns from plants, windows and lamps. So you make your own. For a long time the author's shots had a lit subject and good brightness, but the background still felt dead. Then they bought a projector attachment with gobos, and now use it on almost every shot, from ads to simple talking-head videos.</p>
+    <p>A <em>gobo</em> is a little cutout pattern that sits in front of a light, usually inside a projector attachment. Slide in window blinds, tree branches or a random shape, and it shows up on the background. Keep it sharp for a dramatic streak. Blur it for a soft, subtle texture.</p>
+    <div class="note"><span class="mono">On screen</span><p>In the last season of <i>Stranger Things</i>, look at the hospital scenes. Almost every wall has a soft, blurry pattern on it. Someone did that on purpose. A flat wall looks like a cheap set. A textured wall looks real.</p></div>
+    <p>If you're buying one add-on, a gobo projector is one of the cheapest ways to make your footage look expensive.</p>
+  </div>
+</section>
+
+<!-- 11 -->
+<section class="ch" id="haze">
+  <div class="rail"><span class="no">11</span><span class="mono tag">Atmosphere</span></div>
+  <div class="body">
+    <h2>Fog and haze</h2>
+    <p class="lead">Add a little haze and a so-so shot suddenly looks like it came from a $20,000 cinema camera. Nothing else changed.</p>
+    <figure class="fig">
+      <div class="cmp frame" data-a='{"az":50,"soft":0.6,"key":7,"cam":"shadow","fill":"black","practical":true,"gobo":true,"haze":false}' data-b='{"az":50,"soft":0.6,"key":7,"cam":"shadow","fill":"black","practical":true,"gobo":true,"haze":true}' data-la="Clean air" data-lb="Haze"></div>
+      <figcaption>Haze catches the light beams, makes the darkest parts a bit lighter and gives lamps a soft glow.</figcaption>
+    </figure>
+    <p>Haze does two things: it makes your light visible, and it softens it. A sharp light like a flashlight shows up as a beam. Softer lights get a gentle glow. The Gatorade ad shot on the $100 camera had haze all through the building, so every light had a beam. It works for product videos, short films and interviews. Even a little bit makes things look way more expensive.</p>
+    <p>Haze outdoors is harder. Rental machines cost thousands and need a crew. The video's trick: an <em>insect fogger</em> filled with mineral oil instead of bug spray. Instantly, an outdoor fog machine.</p>
+    <div class="note warn"><span class="mono">Safety</span><p>The video says never use this fogger indoors. It's very powerful. Outside only, follow the maker's instructions, and keep it away from people and pets.</p></div>
+  </div>
+</section>
+
+<!-- 12 -->
+<section class="ch" id="negative">
+  <div class="rail"><span class="no">12</span><span class="mono tag">Shadows</span></div>
+  <div class="body">
+    <h2>Negative fill (a fancy word for shadow)</h2>
+    <p class="lead">Fill light brightens the shadow side of a face. Negative fill does the opposite: it keeps the shadows deep.</p>
+    <p>Crews often put a white board next to the actor to bounce light back onto the face. For negative fill, swap it for a black flag or black cloth just outside the shot. It soaks up light, so nothing bounces off the wall onto the face. It works outdoors in the sun too, keeping shadows on the face. The effect is subtle, but it adds shape, even in a bright place.</p>
+    <figure class="fig">
+      <div class="cmp frame" data-a='{"az":55,"soft":0.5,"key":8,"cam":"shadow","fill":"white","practical":true,"gobo":true}' data-b='{"az":55,"soft":0.5,"key":8,"cam":"shadow","fill":"black","practical":true,"gobo":true}' data-la="White bounce" data-lb="Black flag"></div>
+      <figcaption>Same key. Same room. Only the card beside the actor changed color.</figcaption>
+    </figure>
+    <div class="pq">Shadows are<br><span>not mistakes.</span></div>
+    <p>The video's author says modern movies confuse them. Cameras can now see in the dark so well that filmmakers have to choose what to hide, and "show everything" has somehow become the idea of cinematic. It isn't. Films from before 2010 have deep shadows, realistic light and carefully shaped faces. These days faces get blasted with light and shadows disappear. Then we wonder why the movie feels fake, flat or too clean. That's the author's opinion.</p>
+    <p>Too many creators panic when they see a shadow. They think something's wrong, so they add more LEDs and lamps and bounce boards until the shot is bright, even and boring. If your lighting looks flat, try taking light away instead of adding it. Behind-the-scenes clips of pro interviews and ads show negative fill everywhere. Let the shadows stay and make them look intentional.</p>
+  </div>
+</section>
+
+<!-- 13 -->
+<section class="ch" id="gear">
+  <div class="rail"><span class="no">13</span><span class="mono tag">Gear</span></div>
+  <div class="body">
+    <h2>Gear at three budgets</h2>
+    <p class="lead">Buy what you can afford and grow your kit slowly. The author's first lights were cheap photo softboxes and Home Depot lamps.</p>
+    <p>Think in three groups: lights, shaping tools (modifiers) and stands and holders (grip). For lights, the author uses and recommends <em>Nanlite</em>. Their view: quality close to Aputure for a lot less money, and nowhere near the roughly $15,000 an ARRI SkyPanel costs. Every shot in the video used Nanlite. Treat it as one person's pick.</p>
+    <div class="tiers">
+      <div class="tier"><span class="mono nm">Beginner</span><div class="pr">$700</div>
+        <h4>Lights</h4><ul><li><b>FS-150B</b> main light</li><li><b>FS-60B</b> hair light and accents</li></ul>
+        <h4>Modifiers</h4><ul><li><b>Forza projection attachment</b> for texture. Prefer a softbox? Take that now and add the projector later.</li></ul>
+        <h4>Grip</h4><ul><li>Simple light stands from Amazon</li><li>Homemade bounce boards</li><li>Black sheets to hang for negative fill</li></ul></div>
+      <div class="tier"><span class="mono nm">Intermediate</span><div class="pr">$1,800</div>
+        <h4>Lights</h4><ul><li><b>300D</b> main light</li><li><b>60D</b> backlights</li><li><b>Pavo tubes</b></li></ul>
+        <h4>Modifiers</h4><ul><li>Softbox</li><li>Projector mount</li></ul>
+        <h4>Grip</h4><ul><li>A couple of light stands</li><li>C-stand</li><li>Flag and scrim</li></ul>
+        <p style="font-size:14.5px;color:var(--dim);margin:14px 0 0">The author's go-to for nearly any scenario.</p></div>
+      <div class="tier"><span class="mono nm">Advanced</span><div class="pr">$3,500</div>
+        <h4>Lights</h4><ul><li><b>Forza 50D II</b> main light</li><li><b>30D II</b> secondary or room light</li><li><b>Two Forza 60D</b> for hair light and background texture</li><li><b>A couple of Pavo tubes</b> for color and practical motivation</li></ul>
+        <h4>Modifiers</h4><ul><li>Larger softbox and grid</li><li>Forza 60 projection mount</li><li>Full gobo kit</li></ul>
+        <h4>Grip</h4><ul><li>Heavy-duty C-stands and grip arms</li><li>4×4 flag kit with negative bounce, diffusion and fill</li></ul></div>
+    </div>
+    <p style="font-size:15px;color:var(--dim);max-width:44em">Model names are written the way they were said in the video. Check the video description links for exact products.</p>
+    <div class="mono" style="margin-top:34px">How the budgets compare</div>
+    <div class="bars" role="img" aria-label="Bar chart: beginner kit 700 dollars, intermediate 1,800 dollars, advanced 3,500 dollars, the author's own collection over 20,000 dollars.">
+      <div class="bar"><span>Beginner</span><div class="tr"><i style="width:3.5%"></i></div><span class="v">$700</span></div>
+      <div class="bar"><span>Intermediate</span><div class="tr"><i style="width:9%"></i></div><span class="v">$1,800</span></div>
+      <div class="bar"><span>Advanced</span><div class="tr"><i style="width:17.5%"></i></div><span class="v">$3,500</span></div>
+      <div class="bar"><span>Author's own</span><div class="tr"><i style="width:100%;background:var(--teal)"></i></div><span class="v">$20,000+</span></div>
+    </div>
+    <p>That last bar took years of filming to build, and the author still wouldn't use more than a couple of lights on an interview. Maybe the intermediate kit. Being able to buy the priciest light doesn't mean you should. Pick the budget that fits what you shoot, then add pieces when you need them.</p>
+  </div>
+</section>
+
+<!-- 14 -->
+<section class="ch" id="recap">
+  <div class="rail"><span class="no">14</span><span class="mono tag">Recap</span></div>
+  <div class="body">
+    <h2>Recap and checklist</h2>
+    <p class="lead">Learn these, practice them, and your footage will improve faster than any new camera could manage. Tick each one off as you try it.</p>
+    <ul class="check" id="check">
+      <li><label><input type="checkbox"><span>Place the key at about 45° and look for the Rembrandt triangle.</span></label></li>
+      <li><label><input type="checkbox"><span>Put the camera on the shadow side to give the face depth.</span></label></li>
+      <li><label><input type="checkbox"><span>Give every light a reason, so it feels natural.</span></label></li>
+      <li><label><input type="checkbox"><span>Make light soft or hard to match the mood.</span></label></li>
+      <li><label><input type="checkbox"><span>Add lamps and background light so the room feels alive.</span></label></li>
+      <li><label><input type="checkbox"><span>Shape your light with flags, diffusion and other tools.</span></label></li>
+      <li><label><input type="checkbox"><span>Add texture, haze and gobos for mood and interest.</span></label></li>
+      <li><label><input type="checkbox"><span>Use negative fill for shadows, and let darkness exist.</span></label></li>
+      <li><label><input type="checkbox"><span>Build in layers: background first, then the room, then blend your subject in.</span></label></li>
+      <li><label><input type="checkbox"><span>Start a kit that fits what you shoot and grow it slowly.</span></label></li>
+    </ul>
+    <div class="score"><span class="mono" id="scoreTxt">0 of 10 ready for set</span><div class="tr"><i id="scoreBar"></i></div></div>
+    <div class="note" style="margin-top:40px"><span class="mono">Where to go next</span><p>The video's makers sell a course called the Filmmaker's Blueprint for $47, taught by a working cinematographer (DP). It lights dozens of scenes twice, once with expensive lights and once with only $200 of gear, and adds lighting diagrams, common mistakes and on-set fixes. The goal of the video is to make lighting clear, exciting and less scary. Now go grab a light and play.</p></div>
+  </div>
+</section>
+
+<div class="slate" aria-label="Slate">
+  <div class="clap"></div>
+  <dl>
+    <div><dt>Prod.</dt><dd>Lighting</dd></div>
+    <div><dt>Scene</dt><dd>Outro</dd></div>
+    <div><dt>Take</dt><dd>5</dd></div>
+    <div class="w"><dt>Note</dt><dd class="s">"This is the only acting task you have, and it is the fifth take."</dd></div>
+  </dl>
+</div>
+<p class="foot">A picture-book version of a video lesson on lighting. The faces are drawn live in your browser by a simple 3D model, so they show the ideas, not real photos.</p>
+</div>
+
+<script>
+(function(){
+'use strict';
+var clamp=function(v,a,b){return v<a?a:v>b?b:v};
+var sstep=function(a,b,x){var t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t)};
+var hs=function(x,y){var h=(Math.imul(x,374761393)+Math.imul(y,668265263))|0;h=Math.imul(h^(h>>>13),1274126177);return((h^(h>>>16))>>>0)/4294967296};
+
+var BASE={az:50,soft:.55,key:7,ev:0,cam:'shadow',fill:'none',hair:false,practical:false,gobo:false,haze:false};
+var ELL=[
+ {cx:0,cy:.2,cz:0,rx:.36,ry:.5,rz:.4},
+ {cx:0,cy:-.42,cz:-.02,rx:.16,ry:.34,rz:.16},
+ {cx:0,cy:-1.02,cz:-.05,rx:.84,ry:.46,rz:.36},
+ {cx:0,cy:.1,cz:.4,rx:.055,ry:.11,rz:.09},
+ {cx:-.355,cy:.17,cz:-.02,rx:.05,ry:.1,rz:.06},
+ {cx:.355,cy:.17,cz:-.02,rx:.05,ry:.1,rz:.06}
+];
+var KC=[1,.93,.82],AC=[.55,.75,1],FC=[1,.97,.92],RC=[.75,.88,1],PC=[1,.58,.25],WC=[.12,.3,.36],GC=[.6,.85,1],HZ=[.8,.88,1];
+var SK=[.82,.58,.46],HR=[.05,.04,.04],CL=[.13,.15,.2];
+function camAngle(P){var s=P.az>=0?1:-1,a=Math.abs(P.az);return P.cam==='key'?s*Math.min(25,a):-s*25}
+function nrm(a){var l=Math.sqrt(a[0]*a[0]+a[1]*a[1]+a[2]*a[2])||1;return[a[0]/l,a[1]/l,a[2]/l]}
+
+function render(cv,P){
+  var W=cv.width,H=cv.height,ctx=cv.getContext('2d'),img=ctx.createImageData(W,H),d=img.data;
+  var S=H/2,ox=W/2,oy=H*.55;
+  var s=Math.sin(((P.az-camAngle(P))*Math.PI/180))>=0?1:-1;
+  var rel=(P.az-camAngle(P))*Math.PI/180,el=32*Math.PI/180;
+  var L=[Math.sin(rel)*Math.cos(el),Math.sin(el),Math.cos(rel)*Math.cos(el)];
+  var Hh=nrm([L[0],L[1],L[2]+1]);
+  var F=nrm([-Math.sin(rel)*.9,.12,.7]);
+  var R=nrm([-.35*s,.75,-.65]);
+  var Pp=nrm([s*.9,.1,.4]);
+  var keyI=P.key/100*8.5,E=Math.pow(2,P.ev||0),k=.04+P.soft*.75;
+  var amb=(P.fill==='black'?.012:.045)+(P.practical?.012:0);
+  var fillOn=P.fill==='white';
+  var lx=s*.95,ly=.2,gx=-s*.85,gy=.25;
+  var out=[0,0,0],skinL=[],n=0;
+  for(var py=0;py<H;py++){
+    var y=(oy-py)/S;
+    for(var px=0;px<W;px++){
+      var x=(px-ox)/S;
+      var bz=-9,bi=-1,nx=0,ny=0,nz=0;
+      for(var i=0;i<6;i++){
+        var e=ELL[i],dx=(x-e.cx)/e.rx,dy=(y-e.cy)/e.ry,q=dx*dx+dy*dy;
+        if(q<1){var z=e.cz+e.rz*Math.sqrt(1-q);if(z>bz){bz=z;bi=i;nx=dx/e.rx;ny=dy/e.ry;nz=(z-e.cz)/(e.rz*e.rz)}}
+      }
+      var ldx=x-lx,ldy=y-ly,d2=ldx*ldx+ldy*ldy,gw=P.practical?Math.exp(-d2/.6):0;
+      var isSk=false;
+      if(bi>=0){
+        var nl=Math.sqrt(nx*nx+ny*ny+nz*nz);nx/=nl;ny/=nl;nz/=nl;
+        var ndl=nx*L[0]+ny*L[1]+nz*L[2];
+        var t=sstep(-k,k,ndl);
+        var sh=t*(.4+.6*Math.pow(ndl>0?ndl:0,.7));
+        var alb=SK,hairy=false;isSk=true;
+        if(bi===0){var yl=(y-.2)/.5,xl=x/.36;if(yl>.42-.12*xl*xl||(Math.abs(xl)>.88&&yl>-.35)){hairy=true;alb=HR;isSk=false}}
+        else if(bi===2){alb=CL;isSk=false}
+        var ao=1;
+        if((bi===0&&!hairy)||bi===3){
+          var ex=Math.abs(x)-.135,ey=y-.24;
+          ao*=1-.6*Math.exp(-(ex*ex/.0035+ey*ey/.0012));
+          ao*=1-.35*Math.exp(-(x*x/.006+(y+.015)*(y+.015)/.0006));
+          ao*=1-.3*Math.exp(-(x*x/.012+(y+.13)*(y+.13)/.0004));
+        }
+        if(bi===1)ao=.25+.75*sstep(-.3,-.75,y);
+        if(bi===2)ao=.45+.55*sstep(0,.35,Math.abs(x));
+        var ndh=nx*Hh[0]+ny*Hh[1]+nz*Hh[2];
+        var spec=(isSk?.12:hairy?.5:.04)*Math.pow(ndh>0?ndh:0,hairy?18:32)*keyI*(1-.75*P.soft)*t;
+        var ndf=nx*F[0]+ny*F[1]+nz*F[2];
+        var fill=fillOn?keyI*.2*(.45+.55*(ndf>0?ndf:0)):0;
+        var ndr=nx*R[0]+ny*R[1]+nz*R[2];
+        var rim=P.hair?.7*Math.pow(ndr>0?ndr:0,1.3):0;
+        var ndp=P.practical?.08*Math.max(nx*Pp[0]+ny*Pp[1]+nz*Pp[2],0):0;
+        var dif=keyI*sh;
+        for(var c=0;c<3;c++){
+          out[c]=alb[c]*ao*(KC[c]*dif+FC[c]*fill+AC[c]*amb)+ao*(KC[c]*spec+(rim*RC[c]+ndp*PC[c])*(.3+alb[c]));
+        }
+        if(isSk&&bi<4&&y>-.3){skinL.push((.2126*out[0]+.7152*out[1]+.0722*out[2])*E)}
+      }else{
+        var ws=.05+.012*keyI+(P.practical?.01:0);
+        for(var c2=0;c2<3;c2++)out[c2]=ws*WC[c2];
+        if(P.practical){
+          var gl=Math.exp(-d2/.06)*.9+Math.exp(-d2/.7)*.22;
+          for(var c3=0;c3<3;c3++)out[c3]+=PC[c3]*gl*.6;
+          if(Math.abs(ldx)<.07&&Math.abs(ldy)<.08){out[0]=1.9;out[1]=1.2;out[2]=.5}
+          else if(Math.abs(ldx)<.008&&ldy<-.08){out[0]=out[1]=.002;out[2]=.003}
+        }
+        if(P.gobo){
+          var m=sstep(.75,.15,Math.sqrt(((x-gx)/.6)*((x-gx)/.6)+((y-gy)/.9)*((y-gy)/.9)));
+          var v=(y+x*.5)*6,edge=P.haze?.45:.2;
+          var st=sstep(.5-edge,.5+edge,.5+.5*Math.sin(v*6.2832));
+          var gb=m*st*.18;
+          for(var c4=0;c4<3;c4++)out[c4]+=GC[c4]*gb;
+        }
+      }
+      if(P.haze){
+        var hz=.03+.1*gw*(P.practical?1:0)+(keyI>0?.004*keyI:0);
+        for(var c5=0;c5<3;c5++)out[c5]=out[c5]*.88+HZ[c5]*hz*(c5===0&&P.practical?1.15:1);
+      }
+      var vg=1-.55*sstep(.3,1.9,x*x*.45+y*y*.6);
+      var o=(py*W+px)*4,nz2=(hs(px,py)-.5)*.025;
+      for(var c6=0;c6<3;c6++){
+        var cc=1-Math.exp(-1.35*out[c6]*E*vg);
+        cc=Math.pow(cc,.4545)+nz2;
+        d[o+c6]=clamp(cc,0,1)*255;
+      }
+      d[o+3]=255;
+    }
+  }
+  ctx.putImageData(img,0,0);
+  var res={stops:0,ire:0};
+  if(skinL.length>20){
+    var arr=Float32Array.from(skinL).sort(),len=arr.length;
+    var p10=arr[Math.floor(len*.1)],p90=arr[Math.floor(len*.9)],p50=arr[Math.floor(len*.5)];
+    res.stops=Math.log((p90+.002)/(p10+.002))/Math.LN2;
+    res.ire=Math.pow(1-Math.exp(-1.35*p50),.4545)*100;
+  }
+  return res;
+}
+
+/* ---------- compare wipes ---------- */
+var cmps=[].slice.call(document.querySelectorAll('.cmp'));
+cmps.forEach(function(el,idx){
+  var A=Object.assign({},BASE,JSON.parse(el.dataset.a)),B=Object.assign({},BASE,JSON.parse(el.dataset.b));
+  el.innerHTML='<canvas class="cA" width="480" height="300"></canvas><canvas class="cB" width="480" height="300"></canvas><div class="ln"></div><span class="t a"></span><span class="t b"></span><input type="range" min="2" max="98" value="50" aria-label="Wipe between the two versions">';
+  el.querySelector('.t.a').textContent=el.dataset.la;
+  el.querySelector('.t.b').textContent=el.dataset.lb;
+  var inp=el.querySelector('input');
+  inp.addEventListener('input',function(){el.style.setProperty('--p',inp.value+'%')});
+  setTimeout(function(){render(el.querySelector('.cA'),A)},30+idx*40);
+  setTimeout(function(){render(el.querySelector('.cB'),B)},50+idx*40);
+});
+
+/* ---------- lab ---------- */
+var PRESETS={
+  ring:{az:0,soft:.9,key:12,cam:'key',fill:'none',hair:false,practical:false,gobo:false,haze:false},
+  three:{az:45,soft:.6,key:9,cam:'key',fill:'white',hair:true,practical:false,gobo:false,haze:false},
+  one:{az:55,soft:.55,key:7,cam:'shadow',fill:'black',hair:false,practical:true,gobo:false,haze:false},
+  full:{az:50,soft:.55,key:7,cam:'shadow',fill:'black',hair:false,practical:true,gobo:true,haze:true}
+};
+var st=Object.assign({},BASE,PRESETS.full);
+var lab=document.getElementById('labCanvas');
+var az=document.getElementById('az'),soft=document.getElementById('soft'),keyp=document.getElementById('keyp');
+var tHair=document.getElementById('tHair'),tPrac=document.getElementById('tPrac'),tGobo=document.getElementById('tGobo'),tHaze=document.getElementById('tHaze');
+var plan=document.getElementById('plan');
+var pending=false;
+function schedule(){if(pending)return;pending=true;requestAnimationFrame(function(){pending=false;draw()})}
+function syncUI(){
+  az.value=st.az;soft.value=Math.round(st.soft*100);keyp.value=st.key;
+  tHair.checked=st.hair;tPrac.checked=st.practical;tGobo.checked=st.gobo;tHaze.checked=st.haze;
+  [].forEach.call(document.querySelectorAll('input[name=cam]'),function(r){r.checked=r.value===st.cam});
+  [].forEach.call(document.querySelectorAll('input[name=fill]'),function(r){r.checked=r.value===st.fill});
+}
+function drawPlan(){
+  var c=camAngle(st),a=st.az*Math.PI/180,ca=c*Math.PI/180,sx=120,sy=92,s=st.az>=0?1:-1;
+  var kx=sx+72*Math.sin(a),ky=sy+72*Math.cos(a),cx=sx+106*Math.sin(ca),cy=sy+106*Math.cos(ca);
+  var dx=sx-kx,dy=sy-ky,dl=Math.sqrt(dx*dx+dy*dy)||1;dx/=dl;dy/=dl;var px=-dy,py=dx;
+  var ang=Math.atan2(dy,dx)*180/Math.PI-90;
+  var h='<ellipse cx="'+sx+'" cy="'+sy+'" rx="72" ry="72" fill="none" stroke="#243245" stroke-dasharray="2 5"/>';
+  if(st.practical)h+='<line x1="30" y1="14" x2="210" y2="14" stroke="#243245"/><circle cx="'+(sx+s*78)+'" cy="14" r="6" fill="#ff9a45"/><text x="'+(sx+s*78-(s>0?0:0))+'" y="30" text-anchor="middle">LAMP</text>';
+  h+='<polygon points="'+(kx+px*9)+','+(ky+py*9)+' '+(kx-px*9)+','+(ky-py*9)+' '+(sx-px*26)+','+(sy-py*26)+' '+(sx+px*26)+','+(sy+py*26)+'" fill="#ffb454" fill-opacity=".2"/>';
+  if(st.fill!=='none'){var fx=sx-s*74,fy=sy+30;h+='<rect x="'+(fx-3)+'" y="'+(fy-18)+'" width="6" height="36" fill="'+(st.fill==='white'?'#e8edf3':'#04060a')+'" stroke="#8795a8" stroke-width=".8" transform="rotate('+(s*24)+' '+fx+' '+fy+')"/><text x="'+fx+'" y="'+(fy+32)+'" text-anchor="middle">'+(st.fill==='white'?'BOUNCE':'FLAG')+'</text>'}
+  if(st.hair)h+='<rect x="'+(sx-s*28-12)+'" y="40" width="24" height="7" fill="#bcd8ff"/><text x="'+(sx-s*28)+'" y="36" text-anchor="middle">HAIR</text>';
+  h+='<g transform="translate('+sx+' '+sy+') rotate('+(-c)+')"><ellipse cx="0" cy="0" rx="22" ry="9" fill="#2b3a4f"/><circle cx="0" cy="0" r="11" fill="#d6a58a"/><polygon points="0,15 -4,9 4,9" fill="#d6a58a"/></g>';
+  h+='<g transform="translate('+cx+' '+cy+') rotate('+(-c)+')"><rect x="-11" y="-3" width="22" height="14" fill="#e9eef5"/><polygon points="-6,-3 6,-3 9,-11 -9,-11" fill="#e9eef5"/></g><text x="'+cx+'" y="'+(cy+24)+'" text-anchor="middle" style="fill:#e9eef5">CAM</text>';
+  h+='<g transform="translate('+kx+' '+ky+') rotate('+ang+')"><rect x="-15" y="-5" width="30" height="10" fill="#ffb454"/></g><circle id="knob" cx="'+kx+'" cy="'+ky+'" r="14" fill="none" stroke="#ffe6b8" stroke-width="1.2"/><text x="'+kx+'" y="'+(ky-20)+'" text-anchor="middle" style="fill:#ffe6b8">KEY</text>';
+  plan.innerHTML=h;
+}
+function draw(){
+  var r=render(lab,st);
+  drawPlan();
+  document.getElementById('azo').textContent=Math.abs(st.az)+'° '+(st.az<0?'left':st.az>0?'right':'on axis');
+  document.getElementById('softo').textContent=Math.round(st.soft*100)+'%';
+  document.getElementById('keyo').textContent=st.key+'%';
+  document.getElementById('hudKey').textContent='KEY '+st.key+'%';
+  document.getElementById('hudCam').textContent=(st.cam==='key'?'KEY SIDE':'SHADOW SIDE');
+  var mc=document.getElementById('mContrast'),ms=document.getElementById('mSkin'),mm=document.getElementById('mMotiv');
+  mc.innerHTML='<b>'+r.stops.toFixed(1)+'</b>stops, '+(r.stops<1.8?'flat':r.stops<3.4?'shaped':'dramatic');
+  var ire=Math.round(r.ire);
+  var cls=ire>85?'bad':(ire<28?'bad':'ok');
+  ms.className=cls;
+  ms.innerHTML='<b>'+ire+'</b>IRE, '+(ire>85?'blown out':ire<28?'underexposed':ire>=45&&ire<=78?'good midtones':ire<45?'low':'bright');
+  if(st.key<2){mm.className='bad';mm.innerHTML='<b>No</b>key light'}
+  else if(st.practical){mm.className='ok';mm.innerHTML='<b>Yes</b>lamp motivates it'}
+  else{mm.className='bad';mm.innerHTML='<b>No</b>light from nowhere'}
+  [].forEach.call(document.querySelectorAll('#presets .btn'),function(b){b.setAttribute('aria-pressed','false')});
+  for(var k in PRESETS){var p=PRESETS[k],same=true;for(var q in p){if(p[q]!==st[q])same=false}if(same)document.querySelector('#presets [data-p='+k+']').setAttribute('aria-pressed','true')}
+}
+az.addEventListener('input',function(){st.az=+az.value;schedule()});
+soft.addEventListener('input',function(){st.soft=soft.value/100;schedule()});
+keyp.addEventListener('input',function(){st.key=+keyp.value;schedule()});
+[].forEach.call(document.querySelectorAll('input[name=cam]'),function(r){r.addEventListener('change',function(){st.cam=r.value;schedule()})});
+[].forEach.call(document.querySelectorAll('input[name=fill]'),function(r){r.addEventListener('change',function(){st.fill=r.value;schedule()})});
+tHair.addEventListener('change',function(){st.hair=tHair.checked;schedule()});
+tPrac.addEventListener('change',function(){st.practical=tPrac.checked;schedule()});
+tGobo.addEventListener('change',function(){st.gobo=tGobo.checked;schedule()});
+tHaze.addEventListener('change',function(){st.haze=tHaze.checked;schedule()});
+[].forEach.call(document.querySelectorAll('#presets .btn'),function(b){b.addEventListener('click',function(){st=Object.assign({},BASE,PRESETS[b.dataset.p]);syncUI();schedule()})});
+var dragging=false;
+function dragTo(ev){
+  var bb=plan.getBoundingClientRect(),sc=240/bb.width;
+  var x=(ev.clientX-bb.left)*sc-120,y=(ev.clientY-bb.top)*sc-92;
+  var a=Math.atan2(x,y)*180/Math.PI;
+  st.az=Math.round(clamp(a,-80,80));syncUI();schedule();
+}
+plan.addEventListener('pointerdown',function(ev){dragging=true;try{plan.setPointerCapture(ev.pointerId)}catch(e){}dragTo(ev);plan.style.cursor='grabbing'});
+plan.addEventListener('pointermove',function(ev){if(dragging)dragTo(ev)});
+plan.addEventListener('pointerup',function(){dragging=false;plan.style.cursor='grab'});
+plan.addEventListener('pointercancel',function(){dragging=false;plan.style.cursor='grab'});
+syncUI();draw();
+
+/* ---------- hero spotlight ---------- */
+var h1=document.getElementById('h1');
+document.getElementById('top').addEventListener('pointermove',function(ev){
+  var b=h1.getBoundingClientRect();
+  h1.style.setProperty('--mx',(ev.clientX-b.left)+'px');
+  h1.style.setProperty('--my',(ev.clientY-b.top)+'px');
+});
+
+/* ---------- scroll progress ---------- */
+var prog=document.getElementById('prog');
+function onScroll(){var h=document.documentElement.scrollHeight-window.innerHeight;prog.style.transform='scaleX('+(h>0?clamp(window.scrollY/h,0,1):0)+')'}
+window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+/* ---------- checklist ---------- */
+var boxes=[].slice.call(document.querySelectorAll('#check input'));
+var KEY='nyc-check';
+function upd(){
+  var n=boxes.filter(function(b){return b.checked}).length;
+  document.getElementById('scoreTxt').textContent=n+' of '+boxes.length+' ready for set';
+  document.getElementById('scoreBar').style.width=(n/boxes.length*100)+'%';
+  try{localStorage.setItem(KEY,JSON.stringify(boxes.map(function(b){return b.checked})))}catch(e){}
+}
+try{var sv=JSON.parse(localStorage.getItem(KEY)||'null');if(sv&&sv.length===boxes.length)boxes.forEach(function(b,i){b.checked=!!sv[i]})}catch(e){}
+boxes.forEach(function(b){b.addEventListener('change',upd)});
+upd();
+})();
+</script>
