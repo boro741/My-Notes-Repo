@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0D2236">
+<title>Software Architecture in 10 Minutes</title>
+<meta name="description" content="A 10-minute summary of the core ideas of Head First Software Architecture, with one big example that connects them all.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5F0E6; --surface: #FBF8F1; --ink: #1B2733; --ink-2: #33414F; --muted: #566270;
+    --rule: #E2DACB; --accent: #B04813; --accent-soft: #F6E6D3;
+    --navy: #0D2236; --recap-bg: #0D2236;
+    --blue: #245D93; --blue-soft: #EAF1F9; --blue-line: rgba(36,93,147,.22);
+    --green: #2B7A4B; --green-soft: #E8F4ED;
+    --amber: #9A6B00; --amber-soft: #FCF3DA; --amber-line: rgba(154,107,0,.28);
+    --red: #B0372E; --red-soft: #FBEBE8; --red-line: rgba(176,55,46,.25);
+    --code-bg: #0F1D2C; --code-fg: #E7EEF6; --shadow: 0 14px 34px -22px rgba(13,34,54,.45);
+    --f-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+    --f-body: "Newsreader", "Iowan Old Style", Georgia, serif;
+    --f-ui: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --hero-accent: #F2A36C; --hero-accent-2: #E8C25A; --hero-accent-hover: #F7B988;
+    --glow-1: rgba(242,163,108,.22); --glow-2: rgba(36,93,147,.35);
+    --text: var(--ink); --hero-text: #FFFFFF; --hero-text-2: rgba(255,255,255,.82); --hero-text-3: rgba(255,255,255,.72); --recap-text: #E6EDF4;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #002B36; --surface: #073642; --ink: #C9D5D2; --ink-2: #A8B6B5; --muted: #93A1A1;
+      --rule: #12505F; --accent: #35B2A8; --accent-soft: #0B4651;
+      --navy: #00212B; --recap-bg: #073642;
+      --blue: #5AA9E6; --blue-soft: #08394D; --blue-line: rgba(38,139,210,.45);
+      --green: #9DB02C; --green-soft: #0B3B35;
+      --amber: #D9A520; --amber-soft: #1D3A2D; --amber-line: rgba(181,137,0,.5);
+      --red: #F06B66; --red-soft: #2E2D36; --red-line: rgba(220,50,47,.5);
+      --code-bg: #00212B; --code-fg: #A5B4B4; --shadow: 0 14px 34px -22px rgba(0,0,0,.7);
+      --hero-accent: #36B7AA; --hero-accent-2: #9DB02C; --hero-accent-hover: #5CCBBF;
+      --glow-1: rgba(42,161,152,.28); --glow-2: rgba(38,139,210,.28);
+      --text: #A9B7B5; --hero-text: #D3DEDB; --hero-text-2: #A9BAB7; --hero-text-3: #93A8A5; --recap-text: #BFCBC8;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #002B36; --surface: #073642; --ink: #C9D5D2; --ink-2: #A8B6B5; --muted: #93A1A1;
+    --rule: #12505F; --accent: #35B2A8; --accent-soft: #0B4651;
+    --navy: #00212B; --recap-bg: #073642;
+    --blue: #5AA9E6; --blue-soft: #08394D; --blue-line: rgba(38,139,210,.45);
+    --green: #9DB02C; --green-soft: #0B3B35;
+    --amber: #D9A520; --amber-soft: #1D3A2D; --amber-line: rgba(181,137,0,.5);
+    --red: #F06B66; --red-soft: #2E2D36; --red-line: rgba(220,50,47,.5);
+    --code-bg: #00212B; --code-fg: #A5B4B4; --shadow: 0 14px 34px -22px rgba(0,0,0,.7);
+    --hero-accent: #36B7AA; --hero-accent-2: #9DB02C; --hero-accent-hover: #5CCBBF;
+    --glow-1: rgba(42,161,152,.28); --glow-2: rgba(38,139,210,.28);
+    --text: #A9B7B5; --hero-text: #D3DEDB; --hero-text-2: #A9BAB7; --hero-text-3: #93A8A5; --recap-text: #BFCBC8;
+      color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; font-size: calc(100% * var(--scale, 1)); }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--f-body); font-size: 1.25rem; line-height: 1.8;
+    text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+  strong { font-weight: 600; }
+  ::selection { background: var(--accent); color: #fff; }
+  .skip { position: absolute; left: -9999px; }
+  .skip:focus { left: 16px; top: 12px; z-index: 60; background: var(--ink); color: var(--bg); padding: 8px 12px; border-radius: 6px; font-family: var(--f-ui); }
+
+  /* Top bar */
+  .bar { position: sticky; top: 0; z-index: 30; background: var(--navy); color: var(--hero-text); border-bottom: 1px solid rgba(255,255,255,.08); }
+  .bar-in { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 20px; height: 58px; }
+  .brand { font-family: var(--f-display); font-weight: 600; font-size: 1.08rem; letter-spacing: -.01em; color: var(--hero-text); text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .brand i { font-style: italic; color: var(--hero-accent); font-weight: 500; }
+  .bar-links { display: flex; align-items: center; gap: 18px; }
+  .bar-links a { font: 500 .8rem var(--f-ui); color: var(--hero-text-2); text-decoration: none; }
+  .bar-links a:hover { color: var(--hero-text); }
+  #theme {
+    font: 500 .76rem var(--f-ui); color: var(--hero-text); background: rgba(255,255,255,.08); white-space: nowrap;
+    border: 1px solid rgba(255,255,255,.22); border-radius: 999px; padding: 7px 14px; cursor: pointer;
+  }
+  #theme:hover { background: rgba(255,255,255,.16); }
+  .progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; pointer-events: none; }
+  .progress i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, var(--hero-accent), var(--hero-accent-2)); transform-origin: 0 50%; transform: scaleX(0); }
+
+  /* Hero */
+  .hero {
+    color: var(--hero-text); overflow: hidden;
+    background:
+      radial-gradient(900px 420px at 88% -10%, var(--glow-1), transparent 60%),
+      radial-gradient(700px 400px at -5% 110%, var(--glow-2), transparent 60%),
+      linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px) 0 0 / 44px 44px,
+      linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px) 0 0 / 44px 44px,
+      var(--navy);
+  }
+  .hero-in { max-width: 1180px; margin: 0 auto; padding: 76px 20px 84px; display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, .88fr); gap: 48px; align-items: center; }
+  .eyebrow { display: flex; align-items: center; gap: 12px; font: 600 .74rem var(--f-ui); letter-spacing: .18em; text-transform: uppercase; color: var(--hero-accent); margin: 0 0 20px; }
+  .eyebrow::before { content: ""; width: 34px; height: 1px; background: var(--hero-accent); }
+  .hero h1 { font-family: var(--f-display); font-weight: 600; font-size: clamp(2.7rem, 6.2vw, 5rem); line-height: 1.02; letter-spacing: -.028em; margin: 0 0 24px; text-wrap: balance; }
+  .hero h1 em { font-style: italic; font-weight: 500; color: var(--hero-accent); }
+  .hero-sub { font-size: 1.32rem; line-height: 1.55; color: var(--hero-text-2); max-width: 34rem; margin: 0 0 30px; text-wrap: pretty; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 30px; }
+  .btn { display: inline-block; font: 600 .92rem var(--f-ui); text-decoration: none; padding: 13px 24px; border-radius: 999px; transition: transform .15s, background .15s; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn-primary { background: var(--hero-accent); color: #07202A; }
+  .btn-primary:hover { background: var(--hero-accent-hover); }
+  .btn-ghost { color: var(--hero-text); border: 1px solid rgba(255,255,255,.35); }
+  .btn-ghost:hover { background: rgba(255,255,255,.1); }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 0 0 22px; }
+  .meta li { font: 500 .78rem var(--f-ui); color: var(--hero-text-2); background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.16); border-radius: 999px; padding: 6px 14px; margin: 0; }
+  .meta b { color: var(--hero-accent); font-weight: 600; }
+  .credit { font: 400 .8rem/1.55 var(--f-ui); color: var(--hero-text-3); max-width: 34rem; margin: 0; }
+  .hero-art { width: 100%; max-width: 520px; justify-self: end; height: auto; filter: drop-shadow(0 30px 40px rgba(0,0,0,.35)); }
+  .bp-bg { fill: var(--navy); }
+  .bp-title { font: 600 17px var(--f-ui); fill: var(--hero-text); }
+  .bp-sub { font: 400 12.5px var(--f-ui); fill: rgba(255,255,255,.72); }
+  .bp-mono { font: 500 11px var(--f-mono); fill: rgba(255,255,255,.55); letter-spacing: .08em; }
+
+  /* The journey: chapters grouped into parts */
+  .journey { max-width: 1180px; margin: 0 auto; padding: 84px 20px 20px; }
+  .section-kicker { font: 600 .74rem var(--f-ui); letter-spacing: .18em; text-transform: uppercase; color: var(--accent); margin: 0 0 12px; }
+  .journey h2 { font-family: var(--f-display); font-weight: 600; font-size: clamp(2.1rem, 4.6vw, 3.2rem); line-height: 1.05; letter-spacing: -.02em; margin: 0 0 20px; }
+  .welcome-p { max-width: 46rem; font-size: 1.22rem; color: var(--ink-2); margin: 0 0 1rem; }
+  .part { margin-top: 56px; }
+  .part-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 14px; border-bottom: 1px solid var(--rule); padding-bottom: 14px; margin-bottom: 20px; }
+  .part-kicker { font: 600 .72rem var(--f-ui); letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
+  .part-title { font-family: var(--f-display); font-weight: 600; font-size: 1.6rem; letter-spacing: -.01em; margin: 0; }
+  .part-desc { flex-basis: 100%; font: 400 .95rem/1.55 var(--f-ui); color: var(--muted); margin: 4px 0 0; max-width: 44rem; }
+  .cards { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .cards li { margin: 0; }
+  .card {
+    display: flex; flex-direction: column; height: 100%; text-decoration: none; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 18px; padding: 20px 22px 18px;
+    transition: border-color .18s, transform .18s, box-shadow .18s; position: relative; overflow: hidden;
+  }
+  .card::after { content: ""; position: absolute; left: 0; top: 0; height: 3px; width: 100%; background: linear-gradient(90deg, var(--accent), var(--hero-accent-2)); transform: scaleX(0); transform-origin: 0 50%; transition: transform .25s; }
+  .card:hover { border-color: transparent; transform: translateY(-4px); box-shadow: var(--shadow); }
+  .card:hover::after { transform: scaleX(1); }
+  .card-no { font-family: var(--f-display); font-weight: 600; font-size: 2.6rem; line-height: 1; color: var(--accent); opacity: .9; letter-spacing: -.03em; }
+  .card-title { font-family: var(--f-display); font-weight: 600; font-size: 1.22rem; line-height: 1.2; letter-spacing: -.01em; margin: 10px 0 8px; }
+  .card-lede { font: 400 .88rem/1.55 var(--f-ui); color: var(--muted); margin: 0 0 14px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .card-foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; font: 500 .74rem var(--f-ui); color: var(--muted); }
+  .card-foot b { color: var(--accent); font-weight: 600; transition: transform .18s; }
+  .card:hover .card-foot b { transform: translateX(4px); }
+  .skipped { font: 400 .9rem/1.55 var(--f-ui); color: var(--muted); margin: 32px 0 0; padding: 14px 18px; border: 1px dashed var(--rule); border-radius: 12px; max-width: 46rem; }
+
+  /* Two-column reading layout */
+  .layout { max-width: 1180px; margin: 0 auto; padding: 0 20px 72px; display: grid; grid-template-columns: 264px minmax(0, 1fr); gap: 64px; align-items: start; }
+  .rail { position: sticky; top: 84px; max-height: calc(100vh - 104px); overflow-y: auto; padding-right: 8px; scrollbar-width: thin; font-family: var(--f-ui); }
+  .rail-title { font: 600 .7rem var(--f-ui); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); padding: 0 0 12px; margin: 0; }
+  .rail-ch { border-bottom: 1px solid var(--rule); }
+  .rail-ch > summary { display: flex; gap: 10px; align-items: baseline; padding: 11px 0; cursor: pointer; list-style: none; font-weight: 600; font-size: .86rem; line-height: 1.35; }
+  .rail-ch > summary::-webkit-details-marker { display: none; }
+  .rail-ch > summary::after { content: "+"; margin-left: auto; font-family: var(--f-mono); color: var(--muted); }
+  .rail-ch[open] > summary::after { content: "\2212"; }
+  .rail-ch > summary .num { font: 500 .68rem var(--f-mono); color: var(--accent); min-width: 44px; white-space: nowrap; }
+  .rail-ch ul { list-style: none; margin: 0 0 12px; padding: 0 0 0 54px; font-size: .82rem; }
+  .rail-ch li { margin: 0; }
+  .rail-ch li a { display: block; color: var(--muted); text-decoration: none; line-height: 1.35; padding: 5px 0 5px 12px; border-left: 2px solid var(--rule); }
+  .rail-ch li a:hover { color: var(--ink); }
+  .rail-ch li a.is-active { color: var(--ink); font-weight: 600; border-left-color: var(--accent); }
+
+  .content { min-width: 0; max-width: 40rem; }
+
+  /* Chapters */
+  .chapter { position: relative; margin-top: 110px; scroll-margin-top: 84px; counter-reset: sec; }
+  .chapter:first-of-type { margin-top: 24px; }
+  .chapter-head { position: relative; margin-bottom: 26px; padding-top: 18px; }
+  .chapter-head::before {
+    content: attr(data-num); position: absolute; right: -6px; top: -34px; z-index: 0; pointer-events: none;
+    font-family: var(--f-display); font-weight: 700; font-size: clamp(7rem, 22vw, 13.5rem); line-height: .8;
+    color: var(--accent); opacity: .09; letter-spacing: -.05em;
+  }
+  .chapter-head > * { position: relative; z-index: 1; }
+  .chapter-num { display: flex; align-items: center; flex-wrap: wrap; gap: 0; font: 600 .74rem var(--f-ui); letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin: 0 0 10px; }
+  .chapter-num .part-tag { color: var(--muted); font-weight: 500; }
+  .chapter-num .part-tag::before { content: "\00B7"; margin: 0 .8em; }
+  .read-time { font: 500 .78rem var(--f-ui); color: var(--muted); margin: 0 0 20px; }
+  .chapter h2 { font-family: var(--f-display); font-weight: 600; font-size: clamp(2.2rem, 5.2vw, 3.4rem); line-height: 1.04; letter-spacing: -.025em; margin: 0 0 22px; text-wrap: balance; scroll-margin-top: 84px; }
+  .lede { font-size: 1.34rem; line-height: 1.55; color: var(--ink-2); margin: 0; text-wrap: pretty; padding-top: 4px; }
+  .lede::before { content: ""; display: block; width: 56px; height: 3px; background: var(--accent); margin-bottom: 18px; border-radius: 3px; }
+
+  .chapter .inchap { background: var(--surface); border: 1px solid var(--rule); border-radius: 18px; padding: 20px 26px 16px; margin: 0 0 40px; }
+  .inchap-label { font: 600 .7rem var(--f-ui); letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin: 0; }
+  .chapter .inchap ol { counter-reset: ic; list-style: none; padding: 0; margin: 10px 0 0; columns: 2; column-gap: 32px; }
+  .chapter .inchap li { counter-increment: ic; break-inside: avoid; margin: 0; padding: 6px 0 6px 32px; position: relative; font: 500 .9rem/1.35 var(--f-ui); }
+  .chapter .inchap li::before { content: counter(ic, decimal-leading-zero); position: absolute; left: 0; top: 7px; font: 500 .7rem var(--f-mono); color: var(--accent); }
+  .chapter .inchap a { color: var(--ink-2); text-decoration: none; }
+  .chapter .inchap a:hover { color: var(--accent); }
+
+  .chapter h3 { counter-increment: sec; font-family: var(--f-display); font-weight: 600; font-size: clamp(1.55rem, 3.4vw, 2rem); line-height: 1.14; letter-spacing: -.018em; margin: 3.4rem 0 1rem; scroll-margin-top: 84px; text-wrap: balance; }
+  .chapter h3::before { content: counter(sec, decimal-leading-zero); display: block; font: 500 .72rem var(--f-mono); letter-spacing: .14em; color: var(--accent); margin-bottom: 8px; }
+  .chapter h4 { font-family: var(--f-display); font-weight: 600; font-size: 1.22rem; line-height: 1.3; margin: 2rem 0 .5rem; letter-spacing: -.01em; scroll-margin-top: 84px; }
+  p, ul, ol { margin: 0 0 1.4rem; }
+  li { margin: .45rem 0; }
+  .chapter ul, .chapter ol { padding-left: 1.45rem; }
+  li::marker { color: var(--accent); }
+  .chapter strong { color: var(--ink); }
+
+  code { font-family: var(--f-mono); font-size: .82em; background: var(--accent-soft); color: var(--ink); padding: .12em .42em; border-radius: 6px; }
+  pre {
+    background: var(--code-bg); color: var(--code-fg); padding: 20px 24px; border-radius: 16px; overflow-x: auto;
+    font-size: .84rem; line-height: 1.7; margin: 1.8rem 0 2rem; border: 1px solid rgba(255,255,255,.07); box-shadow: var(--shadow);
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; border-radius: 0; }
+
+  table {
+    width: 100%; border-collapse: separate; border-spacing: 0; font: 400 .92rem/1.5 var(--f-ui);
+    display: block; overflow-x: auto; margin: 1.8rem 0 2rem; border: 1px solid var(--rule); border-radius: 14px; background: var(--surface);
+  }
+  th { font: 600 .68rem var(--f-ui); letter-spacing: .1em; text-transform: uppercase; text-align: left; padding: 12px 16px; background: var(--accent-soft); color: var(--ink); border-bottom: 1px solid var(--rule); white-space: nowrap; }
+  td { padding: 11px 16px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  tbody tr:nth-child(even) td { background: rgba(127,127,127,.045); }
+
+  /* Callouts */
+  .analogy, .example, .tip, .warning { position: relative; margin: 2.1rem 0; padding: 22px 26px; border-radius: 18px; }
+  .analogy::before, .example::before, .tip::before, .warning::before {
+    display: block; font: 600 .68rem var(--f-ui); letter-spacing: .16em; text-transform: uppercase; margin-bottom: 10px;
+  }
+  .analogy > :last-child, .example > :last-child, .tip > :last-child, .warning > :last-child { margin-bottom: 0; }
+  .analogy p, .example p, .tip p, .warning p { margin-bottom: .9rem; }
+
+  .analogy { background: var(--blue-soft); border: 1px solid var(--blue-line); }
+  .analogy::before { content: "\25C6  Think of it this way"; color: var(--blue); }
+  .analogy::after { content: "\201C"; position: absolute; right: 22px; top: 6px; font: 600 5rem/1 var(--f-display); color: var(--blue); opacity: .15; pointer-events: none; }
+
+  .example { background: var(--surface); border: 1px solid var(--rule); border-top: 4px solid var(--green); box-shadow: var(--shadow); }
+  .example::before { content: "\25C6  Example"; color: var(--green); }
+  .example h4 { margin: 0 0 10px; font-size: 1.35rem; }
+
+  .tip { background: var(--amber-soft); border: 1px solid var(--amber-line); }
+  .tip::before { content: "\25C6  Remember this"; color: var(--amber); }
+
+  .warning { background: var(--red-soft); border: 1px solid var(--red-line); }
+  .warning::before { content: "\25C6  Watch out"; color: var(--red); }
+
+  /* Recap */
+  .takeaways { background: var(--recap-bg); color: var(--recap-text); border-radius: 22px; padding: 30px 32px 24px; margin: 3.4rem 0 1.6rem; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,.06); box-shadow: var(--shadow); }
+  .takeaways::before { content: "Quick recap"; display: block; font: 600 .72rem var(--f-ui); letter-spacing: .18em; text-transform: uppercase; color: var(--hero-accent); margin-bottom: 16px; }
+  .takeaways h3 { display: none; }
+  .takeaways ul { list-style: none; padding: 0; margin: 0; }
+  .takeaways li { position: relative; padding-left: 32px; margin: 0 0 14px; font-size: 1.08rem; line-height: 1.55; }
+  .takeaways li::before { content: ""; position: absolute; left: 3px; top: .5em; width: 13px; height: 7px; border-left: 2px solid var(--hero-accent); border-bottom: 2px solid var(--hero-accent); transform: rotate(-45deg); }
+  .takeaways strong { color: var(--hero-text); }
+  .takeaways code { background: rgba(255,255,255,.12); color: var(--hero-text); }
+
+  .next { display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 20px 26px; border: 1px solid var(--rule); border-radius: 18px; background: var(--surface); color: var(--ink); text-decoration: none; transition: transform .18s, box-shadow .18s, border-color .18s; }
+  .next:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: var(--accent); }
+  .next small { display: block; font: 600 .68rem var(--f-ui); letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+  .next strong { font-family: var(--f-display); font-weight: 600; font-size: 1.25rem; line-height: 1.2; letter-spacing: -.01em; }
+  .next::after { content: "\2192"; font-size: 1.6rem; color: var(--accent); }
+
+  .closing { margin-top: 110px; padding: 38px 0 0; border-top: 1px solid var(--rule); }
+  .closing p { font-size: 1.28rem; line-height: 1.55; color: var(--ink-2); }
+  .back-top { font: 600 .84rem var(--f-ui); color: var(--accent); text-decoration: none; }
+
+  footer.foot { background: var(--navy); color: var(--hero-text-3); }
+  footer.foot .foot-in { max-width: 1180px; margin: 0 auto; padding: 36px 20px 48px; font: 400 .84rem/1.65 var(--f-ui); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px 40px; }
+  footer.foot p { margin: 0; max-width: 46rem; }
+  footer.foot strong { color: var(--hero-text); font-family: var(--f-display); font-weight: 600; font-size: 1.05rem; display: block; margin-bottom: 6px; }
+  footer.foot a { color: var(--hero-accent); }
+
+  @media (max-width: 999px) {
+    .layout { grid-template-columns: 1fr; gap: 0; }
+    .rail { position: static; max-height: none; overflow: visible; margin-bottom: 40px; background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 16px 18px 4px; }
+    .hero-in { grid-template-columns: 1fr; padding: 56px 20px 64px; }
+    .hero-art { justify-self: center; max-width: 440px; }
+  }
+  @media (min-width: 1000px) {
+    .rail-title { display: none; }
+  }
+  @media (max-width: 640px) {
+    body { font-size: 1.15rem; }
+    .bar-links a { display: none; }
+    .brand { font-size: 1.02rem; }
+    .brand i { display: none; }
+    .chapter { margin-top: 84px; }
+    .chapter .inchap ol { columns: 1; }
+    .chapter-num .part-tag { flex-basis: 100%; margin-top: 4px; }
+    .chapter-num .part-tag::before { content: none; }
+    .takeaways { padding: 24px 22px 14px; }
+    .analogy, .example, .tip, .warning { padding: 18px 20px; }
+    .cards { grid-template-columns: 1fr; }
+    .journey { padding-top: 60px; }
+  }
+
+
+  /* Words to know */
+  .words { background: var(--accent-soft); border-left: 4px solid var(--accent); border-radius: 14px; padding: 18px 24px; margin: 0 0 2.2rem; }
+  .words::before { content: "Words to know"; display: block; font: 600 .68rem var(--f-ui); letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+  .words ul { list-style: none; margin: 0; padding: 0; }
+  .words li { margin: 0 0 .55rem; font-size: .98rem; line-height: 1.6; }
+  .words li:last-child { margin-bottom: 0; }
+  .words strong { color: var(--ink); }
+
+  /* Reading comfort */
+  .chapter h2, .chapter h3, .chapter h4, .journey h2, .part-title, .card-title, .next strong, .example h4, .welcome-p strong { color: var(--ink); }
+  .welcome-p, .closing p { color: var(--text); }
+  .size-ctl { display: flex; gap: 6px; }
+  .size-ctl button { font: 600 .76rem var(--f-ui); color: var(--hero-text); background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.22); border-radius: 999px; padding: 6px 11px; cursor: pointer; }
+  .size-ctl button:hover { background: rgba(255,255,255,.16); }
+  @media (max-width: 640px) { .bar-in { gap: 8px; } .brand { font-size: .95rem; } }
+  @media print {
+    .bar, .rail, .skip, #theme, .progress, .hero-art, .cta, .next { display: none !important; }
+    .layout { display: block; }
+    body { background: #fff; color: #000; }
+    .hero { background: #fff; color: #000; }
+    .chapter { break-before: page; }
+  }
+
+  /* single-column summary page */
+  .solo { max-width: 40rem; margin: 0 auto; padding: 0 20px 72px; }
+  .summary-hero .hero-in { padding: 64px 20px 72px; }
+  .style-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 16px 20px 6px; margin: 0 0 12px; }
+  .style-card h4 { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; margin: 0 0 8px; font-size: 1.2rem; }
+  .style-card h4 span { font: 500 .72rem var(--f-ui); letter-spacing: .04em; color: var(--muted); }
+  .style-card p { margin: 0 0 .7rem; font-size: 1rem; line-height: 1.65; }
+  #example h3::before { display: none; }
+  .more { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin: 2.4rem 0 0; padding: 20px 26px; border: 1px solid var(--rule); border-radius: 18px; background: var(--surface); font: 500 .95rem/1.5 var(--f-ui); color: var(--text); }
+  .more a { font-weight: 600; }
+</style>
+</head>
+<body id="top">
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="bar">
+  <div class="bar-in">
+    <a class="brand" href="#top">Architecture<i> in 10 minutes</i></a>
+    <div class="bar-links">
+      <a href="#example">Big example</a>
+      <div class="size-ctl" role="group" aria-label="Text size"><button id="smaller" type="button" aria-label="Smaller text">A&minus;</button><button id="larger" type="button" aria-label="Larger text">A+</button></div>
+      <button id="theme" type="button" aria-label="Switch color theme">Dark</button>
+    </div>
+  </div>
+  <div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
+</div>
+
+<header class="hero summary-hero">
+  <div class="hero-in">
+    <div class="hero-copy">
+      <p class="eyebrow">The short version</p>
+      <h1>Software architecture in <em>10 minutes</em>.</h1>
+      <p class="hero-sub">The core ideas of <em>Head First Software Architecture</em> on one page, with one big example that ties them together.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#big-picture">Start reading</a>
+        <a class="btn btn-ghost" href="#example">Jump to the example</a>
+      </div>
+      <ul class="meta">
+        <li><b>~8</b> min read</li>
+        <li><b>6</b> core ideas</li>
+        <li><b>1</b> big example</li>
+      </ul>
+      <p class="credit">My own summary in simple words. It is not the book itself.</p>
+    </div>
+    <svg class="hero-art" viewBox="0 0 520 450" role="img" aria-label="Four dimensions of software architecture: characteristics, decisions, components and style, arranged around one central architecture node">
+      <g fill="none" stroke="rgba(255,255,255,.38)" stroke-width="1.2" stroke-dasharray="5 6">
+        <line x1="260" y1="225" x2="130" y2="100"/>
+        <line x1="260" y1="225" x2="390" y2="100"/>
+        <line x1="260" y1="225" x2="130" y2="350"/>
+        <line x1="260" y1="225" x2="390" y2="350"/>
+      </g>
+
+      <g transform="translate(30,30)">
+        <rect width="200" height="140" rx="18" class="bp-bg"/>
+        <rect width="200" height="140" rx="18" fill="rgba(242,163,108,.12)" stroke="#F2A36C" stroke-width="1.5"/>
+        <g fill="#F2A36C"><rect x="22" y="44" width="8" height="14" rx="1.5"/><rect x="34" y="36" width="8" height="22" rx="1.5"/><rect x="46" y="28" width="8" height="30" rx="1.5"/></g>
+        <text class="bp-title" x="22" y="96">Characteristics</text>
+        <text class="bp-sub" x="22" y="118">What it must be good at</text>
+      </g>
+
+      <g transform="translate(290,30)">
+        <rect width="200" height="140" rx="18" class="bp-bg"/>
+        <rect width="200" height="140" rx="18" fill="rgba(141,184,232,.12)" stroke="#8DB8E8" stroke-width="1.5"/>
+        <g fill="none" stroke="#8DB8E8" stroke-width="2" stroke-linecap="round"><rect x="22" y="24" width="30" height="36" rx="5"/><line x1="29" y1="35" x2="45" y2="35"/><line x1="29" y1="43" x2="45" y2="43"/><line x1="29" y1="51" x2="38" y2="51"/></g>
+        <text class="bp-title" x="22" y="96">Decisions</text>
+        <text class="bp-sub" x="22" y="118">The rules we agreed on</text>
+      </g>
+
+      <g transform="translate(30,280)">
+        <rect width="200" height="140" rx="18" class="bp-bg"/>
+        <rect width="200" height="140" rx="18" fill="rgba(127,208,160,.12)" stroke="#7FD0A0" stroke-width="1.5"/>
+        <g fill="rgba(127,208,160,.25)" stroke="#7FD0A0" stroke-width="2"><rect x="22" y="26" width="14" height="14" rx="3"/><rect x="40" y="26" width="14" height="14" rx="3"/><rect x="31" y="44" width="14" height="14" rx="3"/></g>
+        <text class="bp-title" x="22" y="96">Components</text>
+        <text class="bp-sub" x="22" y="118">The building blocks</text>
+      </g>
+
+      <g transform="translate(290,280)">
+        <rect width="200" height="140" rx="18" class="bp-bg"/>
+        <rect width="200" height="140" rx="18" fill="rgba(232,194,90,.12)" stroke="#E8C25A" stroke-width="1.5"/>
+        <path d="M22 46 L37 28 L52 46 V60 H22 Z" fill="none" stroke="#E8C25A" stroke-width="2" stroke-linejoin="round"/>
+        <text class="bp-title" x="22" y="96">Style</text>
+        <text class="bp-sub" x="22" y="118">The overall shape</text>
+      </g>
+
+      <circle cx="260" cy="225" r="48" class="bp-bg" stroke="#fff" stroke-width="1.6"/>
+      <circle cx="260" cy="225" r="56" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1" stroke-dasharray="2 5"/>
+      <text x="260" y="222" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#fff">Software</text>
+      <text x="260" y="240" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#fff">architecture</text>
+
+      <g stroke="rgba(255,255,255,.4)" stroke-width="1"><line x1="30" y1="440" x2="490" y2="440"/><line x1="30" y1="434" x2="30" y2="446"/><line x1="490" y1="434" x2="490" y2="446"/></g>
+      <text class="bp-mono" x="260" y="436" text-anchor="middle">FOUR DIMENSIONS · ONE SYSTEM</text>
+    </svg>
+  </div>
+</header>
+
+<main class="solo" id="main">
+<section class="chapter" id="big-picture">
+  <header class="chapter-head" data-num="01">
+    <p class="chapter-num">Idea 1</p>
+    <h2>What architecture is</h2>
+    <p class="lede">Architecture is the structure of a system, and the big choices behind it. It is the part that is hard and costly to change later.</p>
+  </header>
+  <p>Think of a house. Paint is easy to change. Walls are not. Software is the same. The book describes architecture with <strong>four dimensions</strong>. You need all four.</p>
+  <ul>
+    <li><strong>Characteristics.</strong> The qualities the system must have, like speed or safety.</li>
+    <li><strong>Decisions.</strong> Big choices and rules, like "the screen never talks to the database directly".</li>
+    <li><strong>Logical components.</strong> The building blocks. Each one has one clear job.</li>
+    <li><strong>Style.</strong> The overall shape, such as layered or microservices.</li>
+  </ul>
+  <p>Architecture is about structure. Design is about detail, like how a screen looks. To tell them apart, ask three questions about any decision. Is it long term? Is it hard to change? Are its trade-offs big? More "yes" answers mean more architecture.</p>
+</section>
+
+<section class="chapter" id="characteristics">
+  <header class="chapter-head" data-num="02">
+    <p class="chapter-num">Idea 2</p>
+    <h2>Characteristics come first</h2>
+    <p class="lede">Before you pick a database or a style, learn what the system must be good at.</p>
+  </header>
+  <p>A characteristic is a quality the system needs to succeed. Examples are <strong>scalability</strong> (handles more users), <strong>availability</strong> (stays up), testability, and security. They are not business features. They shape the structure.</p>
+  <ul>
+    <li><strong>Keep the list short.</strong> About seven at most. Every extra one adds cost and complexity.</li>
+    <li><strong>Find the hidden ones.</strong> Some are implicit. Nobody writes them down, but the situation makes them clear.</li>
+    <li><strong>Translate business words.</strong> "Thousands of users" can mean three things: how many in total (scalability), how many at once (concurrency), and how fast they arrive (elasticity).</li>
+    <li><strong>Ask "why?"</strong> Customers often ask for a solution. Keep asking until you find the real need.</li>
+    <li><strong>Make it measurable.</strong> Words like "fast" and "reliable" are too vague. Turn them into numbers.</li>
+  </ul>
+</section>
+
+<section class="chapter" id="laws">
+  <header class="chapter-head" data-num="03">
+    <p class="chapter-num">Idea 3</p>
+    <h2>The two laws</h2>
+    <p class="lede">There are no "best practices" in architecture. There are trade-offs, and there are reasons.</p>
+  </header>
+  <p><strong>First Law: everything is a trade-off.</strong> You gain one thing and give up another. If you cannot see the downside of a choice, look again.</p>
+  <div class="example">
+    <h4>Queue or topic?</h4>
+    <p>A sneaker app must tell other services when a shoe is listed. A <strong>queue</strong> sends the message to chosen receivers. You get control and security. But adding a new receiver means changing the sender. A <strong>topic</strong> broadcasts to anyone who listens. New listeners are easy to add. But everyone gets the same message. Neither wins. It depends on what the business needs most.</p>
+  </div>
+  <p><strong>Second Law: why is more important than how.</strong> Anyone can see what you built. Nobody can see why. So write it down in an <strong>Architecture Decision Record (ADR)</strong>. It has seven parts: title (numbered, like 001), status, context, decision, consequences, governance, and notes. The status is RFC, Proposed, Accepted, or Superseded. Never edit an Accepted ADR. Write a new one that replaces it.</p>
+</section>
+
+<section class="chapter" id="components">
+  <header class="chapter-head" data-num="04">
+    <p class="chapter-num">Idea 4</p>
+    <h2>Logical components</h2>
+    <p class="lede">Components are the rooms of your system. Find them, give each one a clear job, and keep them from getting tangled.</p>
+  </header>
+  <p>Repeat these four steps for the whole life of the system.</p>
+  <ol>
+    <li>Find the first components. Follow a user's workflow, or list the actors and their actions.</li>
+    <li>Give every requirement to a component.</li>
+    <li>Check each component's job. <strong>Cohesion</strong> is high when all its functions belong together.</li>
+    <li>Check the characteristics. Split a component if it hurts scalability, availability, or performance.</li>
+  </ol>
+  <div class="warning">
+    <p>Avoid the <strong>entity trap</strong>. Names like "Order Manager" turn into dumping grounds for everything about orders.</p>
+  </div>
+  <p><strong>Coupling</strong> is how much components depend on each other. <strong>Afferent</strong> coupling counts how many components depend on me. <strong>Efferent</strong> coupling counts how many I depend on. The <strong>Law of Demeter</strong> says a component should know as little as possible about the others. But moving knowledge does not remove it. Loose coupling spreads the workflow knowledge across the system. That is a trade-off too.</p>
+</section>
+
+<section class="chapter" id="styles">
+  <header class="chapter-head" data-num="05">
+    <p class="chapter-num">Idea 5</p>
+    <h2>A map of styles</h2>
+    <p class="lede">There are hundreds of styles. Two questions place any of them.</p>
+  </header>
+  <ol>
+    <li><strong>How is the code divided?</strong> Technical partitioning splits it by job: screens, rules, data. Domain partitioning splits it by business area.</li>
+    <li><strong>How is it deployed?</strong> A <strong>monolith</strong> is one unit. A <strong>distributed</strong> system is many units that talk over a network.</li>
+  </ol>
+  <p>A monolith is simple, cheap, and easy to debug. But it scales all or nothing, and every change means deploying everything. A distributed system scales parts separately and keeps failures inside one part. But the network is slow and unreliable. It costs more and is hard to debug.</p>
+  <p>The book covers five styles. The star ratings below come from the book. One star is poor. Five stars is excellent.</p>
+  <div class="style-card"><h4>Layered <span>Technical &middot; monolith &middot; cost $</span></h4>
+    <p><strong>Good at:</strong> being simple (5 stars) and quick to start.</p>
+    <p><strong>Weak at:</strong> domain changes spread across layers. Scalability, elasticity, and fault tolerance get 1 star.</p></div>
+  <div class="style-card"><h4>Modular monolith <span>Domain &middot; monolith &middot; cost $$</span></h4>
+    <p><strong>Good at:</strong> keeping changes inside one business area. Maintainability, testability, and deployability get 3 stars.</p>
+    <p><strong>Weak at:</strong> it is still one unit. Scalability, elasticity, and fault tolerance get 1 star.</p></div>
+  <div class="style-card"><h4>Microkernel <span>Small core plus plugins &middot; cost $</span></h4>
+    <p><strong>Good at:</strong> customization. You add features without touching the core.</p>
+    <p><strong>Weak at:</strong> the core must stay stable. Scalability, elasticity, and fault tolerance get 1 star.</p></div>
+  <div class="style-card"><h4>Microservices <span>Many small services &middot; cost $$$$$</span></h4>
+    <p><strong>Good at:</strong> maintainability, testability, deployability, scalability, and fault tolerance get 5 stars.</p>
+    <p><strong>Weak at:</strong> simplicity gets 1 star and performance gets 2.</p></div>
+  <div class="style-card"><h4>Event-driven <span>Services react to events &middot; cost $$$</span></h4>
+    <p><strong>Good at:</strong> performance, scalability, and fault tolerance get 5 stars.</p>
+    <p><strong>Weak at:</strong> simplicity gets 1 star and testability gets 2. Error handling is harder.</p></div>
+  <p><strong>Two details worth remembering.</strong> In microservices, each service has one purpose and owns its data. For one request that needs many services, choose <strong>orchestration</strong> (one manager) or <strong>choreography</strong> (services pass work along). In event-driven design, an <strong>event</strong> says something already happened. Async calls make it fast, but errors are harder to handle.</p>
+  <div class="tip">
+    <p>No style is "best". Match the style to the characteristics you need, not to what is popular.</p>
+  </div>
+</section>
+
+<section class="chapter" id="habits">
+  <header class="chapter-head" data-num="06">
+    <p class="chapter-num">Idea 6</p>
+    <h2>Habits of a good architect</h2>
+  </header>
+  <ul>
+    <li><strong>Keep writing code</strong>, but stay off the critical path. Build small proofs of concept.</li>
+    <li><strong>Show results, do not argue.</strong> Test the options and show the numbers.</li>
+    <li><strong>Speak business value.</strong> Say "we never lose an order", not "we need a queue".</li>
+    <li><strong>Draw clear diagrams.</strong> Add a title and a key. Use solid lines for sync and dotted lines for async.</li>
+    <li><strong>Grow your breadth.</strong> Knowing five ways to solve a problem beats knowing one deeply.</li>
+  </ul>
+</section>
+
+<section class="chapter" id="example">
+  <header class="chapter-head" data-num="07">
+    <p class="chapter-num">The big example</p>
+    <h2>QuickBite: all the ideas together</h2>
+    <p class="lede">This example is my own, not from the book. It follows one food-delivery startup from day one to its first big problem.</p>
+  </header>
+
+  <h3>Step 1: Find the characteristics</h3>
+  <p>The founder says: "We must launch in three months. Dinner time is crazy, with thousands of orders in one hour. And never lose a payment." You translate:</p>
+  <ul>
+    <li>"Launch in three months" means <strong>simplicity</strong> and <strong>deployability</strong>.</li>
+    <li>"Thousands of orders in one hour, then quiet" means <strong>scalability</strong> and <strong>elasticity</strong>.</li>
+    <li>"Never lose a payment" means <strong>data integrity</strong>.</li>
+  </ul>
+  <p>The founder also says, "Let us use microservices, like the big apps." That is a solution, not a need. You ask why. The answer is "to survive the dinner rush". That is scalability, so now you know the real need.</p>
+
+  <h3>Step 2: Find the components</h3>
+  <p>Follow one customer: browse the menu, fill the cart, place the order, pay, the restaurant accepts, a rider delivers. Your first components are <strong>Menu, Cart, Order Placement, Payment, Restaurant Dispatch, and Delivery Tracking</strong>. You avoid the entity trap, so there is no "Order Manager".</p>
+  <p>Then you check each job. Order Placement also charges cards. That is low cohesion, so you move it to Payment. Order Placement also knows the restaurant's stock rules. By the Law of Demeter, it should only ask, "Is this dish available?" So you move those rules to Restaurant Dispatch.</p>
+
+  <h3>Step 3: Choose a style for launch</h3>
+  <p>The team is small and the deadline is close. Microservices score 1 star for simplicity and have the highest cost. A layered app is quick, but the menu and offers change every week. Those changes would spread across every layer.</p>
+  <p>So you choose a <strong>modular monolith</strong>. It is one deployment and one database. Menu, Orders, Payments, and Delivery are modules. Each module has its own tables and talks to the others only through a public API. The trade-off you accept: scalability is only 1 star.</p>
+
+  <h3>Step 4: Write it down</h3>
+  <pre><code>ADR 001: Use a modular monolith for launch
+Status:       Accepted
+Context:      3-month deadline, 5 developers, menu rules change weekly
+Decision:     One deployable app, split into business modules
+Consequences: + Simple, cheap, changes stay inside one module
+              - Cannot scale one module on its own
+Governance:   A build test fails if a module reaches into another</code></pre>
+
+  <h3>Step 5: The dinner rush arrives</h3>
+  <p>Six months later, the rush crashes the app. Scalability and elasticity now matter most. You change the order flow to <strong>event-driven</strong>. When an order is placed, Order Placement publishes an "Order Placed" event. Payment, Restaurant Dispatch, and Notification all react at the same time. The customer sees "order placed" fast, because nobody waits for anyone.</p>
+  <p>Queue or topic? Many services want this event, and the founder wants analytics next month. A <strong>topic</strong> lets you add a listener without touching Order Placement. The trade-off is that every listener gets the same message. So the event carries only the order ID, not card details.</p>
+  <p>There is a cost, too. If the payment fails, nobody tells the customer. So Payment publishes "Payment Failed", and Notification asks for another card. Async makes error handling harder.</p>
+  <p>You write <strong>ADR 014</strong> for this change. You do not edit ADR 001.</p>
+
+  <h3>Step 6: Is this decision architectural?</h3>
+  <p>Ask the three questions about "use async between Order and Payment". Is it strategic? No, it is tactical. Is it hard to change? No, the effort is low. Are the trade-offs big? Yes, because of error handling. The answer lands in the middle, so you involve the architect.</p>
+
+  <h3>Step 7: Use the habits</h3>
+  <p>The product owner worries about cost. You do not argue. You run a load test with 5,000 orders and show the results. You say, "We never lose a dinner order." You draw the flow with a title and a key, using dotted lines for async calls.</p>
+
+  <h3>How it all connects</h3>
+  <table>
+    <thead><tr><th>Idea</th><th>Where it appeared in QuickBite</th></tr></thead>
+    <tbody>
+      <tr><td>Characteristics</td><td>Simplicity, scalability, elasticity, data integrity</td></tr>
+      <tr><td>Ask "why?"</td><td>"Use microservices" became "survive the dinner rush"</td></tr>
+      <tr><td>Logical components</td><td>Menu, Cart, Order Placement, Payment, and others</td></tr>
+      <tr><td>Cohesion and Demeter</td><td>Payment moved out of Order Placement. Stock rules moved to Restaurant Dispatch</td></tr>
+      <tr><td>Style and trade-offs</td><td>Modular monolith first, then event-driven for orders</td></tr>
+      <tr><td>Queue or topic</td><td>A topic, so analytics can join later</td></tr>
+      <tr><td>ADRs</td><td>ADR 001 and ADR 014, never edited</td></tr>
+      <tr><td>Three questions</td><td>Async between Order and Payment needs an architect</td></tr>
+      <tr><td>Architect habits</td><td>A load test, business words, a clear diagram</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<div class="takeaways">
+  <h3>Quick recap</h3>
+  <ul>
+    <li>Architecture is the structure that is hard to change. It has four dimensions: characteristics, decisions, components, and style.</li>
+    <li>Pick a few characteristics first. Everything else depends on them.</li>
+    <li>Everything is a trade-off, and why is more important than how. Write ADRs.</li>
+    <li>Find components, give each one a clear job, and watch the coupling.</li>
+    <li>Place any style with two questions: how is the code divided, and how is it deployed.</li>
+    <li>No style is best. Match the style to your characteristics.</li>
+  </ul>
+</div>
+
+  <div class="more">
+    <span>Want the full story with every example?</span>
+    <a href="Head_First_Software_Architecture_Blog.html">Read the full guide &rarr;</a>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="foot-in">
+    <p><strong>Software Architecture in 10 Minutes</strong>A short summary of the ideas in <em>Head First Software Architecture</em> by Raju Gandhi, Mark Richards &amp; Neal Ford (O'Reilly, 2024), written in my own words. The QuickBite example is my own.</p>
+    <p><a href="#top">Back to top</a></p>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    var btn = document.getElementById('theme');
+    function currentTheme() {
+      var e = root.getAttribute('data-theme');
+      if (e) return e;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    function label() {
+      var dark = currentTheme() === 'dark';
+      btn.textContent = dark ? 'Light' : 'Dark';
+      btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function () {
+      var next = currentTheme() === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('hfsa-theme', next); } catch (e) {}
+      label();
+    });
+    try { var saved = localStorage.getItem('hfsa-theme'); if (saved) root.setAttribute('data-theme', saved); } catch (e) {}
+    label();
+
+    var scale = 1;
+    try { var sv = parseFloat(localStorage.getItem('hfsa-scale')); if (sv >= .85 && sv <= 1.4) scale = sv; } catch (e) {}
+    function applyScale() { root.style.setProperty('--scale', scale); try { localStorage.setItem('hfsa-scale', scale); } catch (e) {} }
+    document.getElementById('smaller').addEventListener('click', function () { scale = Math.max(.85, Math.round((scale - .1) * 100) / 100); applyScale(); });
+    document.getElementById('larger').addEventListener('click', function () { scale = Math.min(1.4, Math.round((scale + .1) * 100) / 100); applyScale(); });
+    root.style.setProperty('--scale', scale);
+
+    var bar = document.getElementById('progressBar');
+    function progress() {
+      var h = document.documentElement, max = h.scrollHeight - h.clientHeight;
+      bar.style.transform = 'scaleX(' + (max > 0 ? Math.min(1, Math.max(0, h.scrollTop / max)) : 0) + ')';
+    }
+    window.addEventListener('scroll', progress, { passive: true });
+    progress();
+  })();
+</script>
+</body>
+</html>
