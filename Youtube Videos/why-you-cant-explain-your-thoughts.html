@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../scripts/auth-guard.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Why You Know It But Can't Say It</title>
+<style>
+
+:root {
+color-scheme: light;
+--page: #f9f9f7;
+--surface: #fcfcfb;
+--ink: #0b0b0b;
+--ink-soft: #52514e;
+--muted: #898781;
+--hairline: #e1e0d9;
+--border: rgba(11,11,11,0.10);
+--accent: #2a78d6;
+--accent-ink: #184f95;
+--accent-soft: #eaf2fc;
+--gold: #eda100;
+--gold-soft: #fbf1dc;
+--good: #0ca30c;
+--good-soft: #e6f6e6;
+--warn: #fab219;
+--bad: #ec835a;
+--bad-soft: #fdeee8;
+
+--s-blue: #2a78d6;
+--s-orange: #eb6834;
+--s-aqua: #1baf7a;
+--s-yellow: #eda100;
+--s-magenta: #e87ba4;
+
+--shadow: 0 1px 2px rgba(11,11,11,0.04), 0 8px 24px rgba(11,11,11,0.06);
+--serif: ui-serif, Charter, "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+--sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+html[data-theme="dark"] {
+color-scheme: dark;
+--page: #0d0d0d;
+--surface: #1a1a19;
+--ink: #ffffff;
+--ink-soft: #c3c2b7;
+--muted: #898781;
+--hairline: #2c2c2a;
+--border: rgba(255,255,255,0.10);
+--accent: #3987e5;
+--accent-ink: #bcd6f7;
+--accent-soft: rgba(57,135,229,0.14);
+--gold: #c98500;
+--gold-soft: rgba(201,133,0,0.16);
+--good: #0ca30c;
+--good-soft: rgba(12,163,12,0.14);
+--warn: #fab219;
+--bad: #ec835a;
+--bad-soft: rgba(236,131,90,0.14);
+
+--s-blue: #3987e5;
+--s-orange: #d95926;
+--s-aqua: #199e70;
+--s-yellow: #c98500;
+--s-magenta: #d55181;
+
+--shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+}
+
+@media (prefers-color-scheme: dark) {
+html:not([data-theme="light"]) {
+color-scheme: dark;
+--page: #0d0d0d;
+--surface: #1a1a19;
+--ink: #ffffff;
+--ink-soft: #c3c2b7;
+--muted: #898781;
+--hairline: #2c2c2a;
+--border: rgba(255,255,255,0.10);
+--accent: #3987e5;
+--accent-ink: #bcd6f7;
+--accent-soft: rgba(57,135,229,0.14);
+--gold: #c98500;
+--gold-soft: rgba(201,133,0,0.16);
+--good-soft: rgba(12,163,12,0.14);
+--bad-soft: rgba(236,131,90,0.14);
+--s-blue: #3987e5;
+--s-orange: #d95926;
+--s-aqua: #199e70;
+--s-yellow: #c98500;
+--s-magenta: #d55181;
+--shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 30px rgba(0,0,0,0.35);
+}
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+
+body {
+margin: 0;
+background: var(--page);
+color: var(--ink);
+font-family: var(--sans);
+line-height: 1.65;
+-webkit-font-smoothing: antialiased;
+text-rendering: optimizeLegibility;
+transition: background 0.25s ease, color 0.25s ease;
+padding-left: env(safe-area-inset-left);
+padding-right: env(safe-area-inset-right);
+}
+
+::selection { background: var(--gold-soft); color: var(--ink); }
+
+/* ---------- chrome ---------- */
+
+#progress-bar {
+position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+background: linear-gradient(90deg, var(--accent), var(--gold));
+z-index: 1000; transition: width 0.1s ease-out;
+}
+
+.theme-toggle, .float-top {
+position: fixed; z-index: 999;
+width: 44px; height: 44px; border-radius: 50%;
+border: 1px solid var(--border);
+background: var(--surface); color: var(--ink);
+display: flex; align-items: center; justify-content: center;
+cursor: pointer; box-shadow: var(--shadow);
+font-size: 1.05rem;
+transition: transform 0.15s ease, background 0.25s ease;
+}
+.theme-toggle { top: calc(16px + env(safe-area-inset-top)); right: calc(16px + env(safe-area-inset-right)); }
+.float-top {
+bottom: calc(22px + env(safe-area-inset-bottom)); right: calc(16px + env(safe-area-inset-right));
+background: var(--ink); color: var(--page); border: none;
+opacity: 0; transform: translateY(10px); pointer-events: none;
+}
+.float-top.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.theme-toggle:active, .float-top:active { transform: scale(0.92); }
+
+/* ---------- layout ---------- */
+
+.wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+
+header.hero {
+padding: calc(88px + env(safe-area-inset-top)) 0 56px;
+position: relative;
+overflow: hidden;
+}
+.kicker {
+font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
+color: var(--accent); font-weight: 700; margin: 0 0 18px;
+display: flex; align-items: center; gap: 10px;
+}
+.kicker::before { content: ""; width: 22px; height: 2px; background: var(--accent); display: inline-block; border-radius: 2px; }
+
+h1.title {
+font-family: var(--serif);
+font-weight: 600;
+font-size: clamp(2.1rem, 7vw, 3.6rem);
+line-height: 1.08;
+letter-spacing: -0.01em;
+margin: 0 0 20px;
+}
+h1.title em { font-style: italic; color: var(--accent); }
+
+.dek {
+font-size: clamp(1.05rem, 2.6vw, 1.3rem);
+color: var(--ink-soft);
+max-width: 60ch;
+margin: 0 0 28px;
+font-weight: 400;
+}
+
+.byline {
+display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+font-size: 0.88rem; color: var(--muted);
+padding-top: 22px; border-top: 1px solid var(--hairline);
+}
+.byline .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); }
+.avatar {
+width: 38px; height: 38px; border-radius: 50%;
+background: linear-gradient(135deg, var(--accent), var(--gold));
+display: flex; align-items: center; justify-content: center;
+color: #fff; font-family: var(--serif); font-weight: 700; font-size: 1rem;
+}
+
+.hero-quote {
+font-family: var(--serif); font-style: italic;
+font-size: clamp(1.15rem, 3vw, 1.5rem); line-height: 1.5;
+color: var(--ink);
+margin: 40px 0 0; padding: 26px 0 0 24px;
+border-left: 3px solid var(--gold);
+}
+
+/* ---------- table of contents ---------- */
+
+nav.toc {
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 18px; padding: 26px 26px 22px; margin: 8px 0 64px;
+box-shadow: var(--shadow);
+}
+nav.toc h2 {
+font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+color: var(--muted); margin: 0 0 14px; font-weight: 700;
+}
+nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; }
+nav.toc li { counter-increment: toc; margin-bottom: 4px; }
+nav.toc a {
+display: flex; align-items: baseline; gap: 12px;
+color: var(--ink-soft); text-decoration: none;
+font-size: 0.96rem; padding: 7px 4px; border-radius: 8px;
+transition: color 0.15s ease, background 0.15s ease;
+}
+nav.toc a::before {
+content: counter(toc, decimal-leading-zero);
+font-family: var(--serif); font-size: 0.82rem; color: var(--muted); flex-shrink: 0;
+}
+nav.toc a:hover, nav.toc a.active { color: var(--accent); background: var(--accent-soft); }
+nav.toc a.active::before { color: var(--accent); }
+
+/* ---------- sections ---------- */
+
+section.chapter { padding: 44px 0 8px; scroll-margin-top: 24px; }
+section.chapter + section.chapter { border-top: 1px solid var(--hairline); }
+
+.chapter-num {
+font-family: var(--serif); font-style: italic; color: var(--gold);
+font-size: 1rem; margin: 0 0 10px; font-weight: 600;
+}
+
+h2.h {
+font-family: var(--serif); font-weight: 600;
+font-size: clamp(1.5rem, 4.4vw, 2.1rem);
+line-height: 1.18; letter-spacing: -0.01em;
+margin: 0 0 20px;
+}
+h3.h3 {
+font-family: var(--serif); font-weight: 600;
+font-size: clamp(1.15rem, 3vw, 1.4rem);
+margin: 30px 0 12px;
+}
+
+p.body-text { font-size: 1.06rem; color: var(--ink); margin: 0 0 18px; }
+p.body-text.soft { color: var(--ink-soft); }
+.lede { font-size: 1.18rem; }
+
+mark.hl {
+background: var(--gold-soft); color: var(--ink);
+padding: 0.05em 0.15em; border-radius: 4px; font-weight: 600;
+}
+
+blockquote.pull {
+font-family: var(--serif); font-style: italic;
+font-size: clamp(1.2rem, 3.4vw, 1.6rem); line-height: 1.45;
+color: var(--ink); margin: 34px 0; padding: 0 0 0 24px;
+border-left: 3px solid var(--accent);
+}
+
+.callout {
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 16px; padding: 22px 24px; margin: 28px 0;
+box-shadow: var(--shadow);
+}
+.callout h4 {
+margin: 0 0 8px; font-size: 0.98rem; font-weight: 700;
+display: flex; align-items: center; gap: 8px;
+}
+.callout p { margin: 0; color: var(--ink-soft); font-size: 0.98rem; }
+
+/* tip box (new words explained) */
+.tip {
+display: flex; gap: 12px; align-items: flex-start;
+background: var(--gold-soft); border: 1px solid var(--hairline);
+border-left: 4px solid var(--gold);
+border-radius: 12px; padding: 14px 16px; margin: 20px 0;
+font-size: 0.95rem; color: var(--ink-soft);
+}
+.tip .ico { font-size: 1.2rem; line-height: 1.3; flex-shrink: 0; }
+.tip b { color: var(--ink); }
+
+/* ---------- reveal ---------- */
+
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s cubic-bezier(.2,.7,.3,1), transform 0.7s cubic-bezier(.2,.7,.3,1); }
+.reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+/* ---------- diagrams ---------- */
+
+.diagram-card {
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 20px; padding: 28px 20px 20px; box-shadow: var(--shadow);
+text-align: center; margin: 28px 0;
+}
+.diagram-label {
+font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase;
+color: var(--muted); font-weight: 700; margin-bottom: 14px;
+}
+.diagram-caption { font-size: 0.92rem; color: var(--ink-soft); margin-top: 14px; }
+
+/* web -> tree -> string */
+.wts { display: grid; grid-template-columns: 1fr; gap: 14px; }
+@media (min-width: 620px) { .wts { grid-template-columns: repeat(3, 1fr); } }
+.wts-step {
+background: var(--page); border: 1px solid var(--hairline); border-radius: 14px;
+padding: 14px 10px 12px; opacity: 0.25; transform: translateY(10px);
+transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.is-visible .wts-step { opacity: 1; transform: translateY(0); }
+.is-visible .wts-step:nth-child(1) { transition-delay: 0.1s; }
+.is-visible .wts-step:nth-child(2) { transition-delay: 0.9s; }
+.is-visible .wts-step:nth-child(3) { transition-delay: 1.7s; }
+.wts-step svg { width: 100%; max-width: 200px; height: auto; }
+.wts-step b { display: block; font-size: 0.95rem; margin-top: 4px; }
+.wts-step span { font-size: 0.8rem; color: var(--muted); }
+.draw { stroke-dasharray: 120; stroke-dashoffset: 120; transition: stroke-dashoffset 1.2s ease; }
+.is-visible .draw { stroke-dashoffset: 0; }
+.node { fill: var(--accent); }
+.node.g { fill: var(--gold); }
+.link { stroke: var(--ink-soft); stroke-width: 1.5; fill: none; opacity: 0.7; }
+
+/* before/after speech bubbles */
+.compare { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 22px 0; }
+@media (min-width: 560px) { .compare { grid-template-columns: 1fr 1fr; } }
+.say { border-radius: 14px; padding: 14px 16px; font-size: 0.94rem; border: 1px solid var(--hairline); }
+.say small { display: block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+.say.bad { background: var(--bad-soft); }
+.say.bad small { color: var(--bad); }
+.say.good { background: var(--good-soft); }
+.say.good small { color: var(--good); }
+
+/* the five traps */
+.trap {
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 18px; padding: 24px 22px; margin: 22px 0;
+box-shadow: var(--shadow);
+}
+.trap-head { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+.trap-num {
+width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+background: var(--accent-soft); color: var(--accent-ink);
+display: flex; align-items: center; justify-content: center;
+font-family: var(--serif); font-weight: 700; font-size: 1.05rem;
+}
+.trap-head h3 { margin: 0; font-family: var(--serif); font-size: 1.2rem; line-height: 1.25; }
+.trap p { margin: 0 0 12px; color: var(--ink-soft); font-size: 1rem; }
+.fix {
+display: flex; gap: 10px; background: var(--good-soft); border-radius: 12px;
+padding: 12px 14px; font-size: 0.96rem; color: var(--ink); margin-top: 6px;
+}
+.fix b { color: var(--good); flex-shrink: 0; }
+
+/* pause meter */
+.pause-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+.pause-word { background: var(--accent-soft); color: var(--accent-ink); padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+.pause-gap { width: 56px; height: 8px; border-radius: 4px; background: var(--gold); animation: breathe 2.4s ease-in-out infinite; }
+@keyframes breathe { 0%,100% { transform: scaleX(0.4); opacity: 0.5; } 50% { transform: scaleX(1); opacity: 1; } }
+
+/* ladder / steps */
+.ladder { display: flex; flex-direction: column; gap: 10px; margin: 26px 0; }
+.rung {
+display: flex; align-items: center; gap: 16px;
+background: var(--surface); border: 1px solid var(--hairline);
+border-radius: 14px; padding: 14px 18px;
+opacity: 0.35; transform: translateX(-10px);
+transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.ladder.is-visible .rung { opacity: 1; transform: translateX(0); }
+.ladder.is-visible .rung:nth-child(1) { transition-delay: 0.1s; }
+.ladder.is-visible .rung:nth-child(2) { transition-delay: 0.25s; }
+.ladder.is-visible .rung:nth-child(3) { transition-delay: 0.4s; }
+.ladder.is-visible .rung:nth-child(4) { transition-delay: 0.55s; }
+.rung-step {
+width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+background: var(--accent-soft); color: var(--accent-ink);
+display: flex; align-items: center; justify-content: center;
+font-family: var(--serif); font-weight: 700; font-size: 0.9rem;
+}
+.rung-body b { display: block; font-size: 0.98rem; }
+.rung-body span { font-size: 0.88rem; color: var(--muted); }
+
+.tile-row { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 22px 0; }
+@media (min-width: 560px) { .tile-row { grid-template-columns: repeat(3, 1fr); } }
+.tile {
+display: flex; align-items: flex-start; gap: 12px;
+background: var(--surface); border: 1px solid var(--hairline); border-radius: 14px;
+padding: 14px 16px;
+}
+.tile-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+.tile b { display: block; font-size: 0.94rem; }
+.tile span { font-size: 0.82rem; color: var(--muted); }
+
+.case-card {
+background: linear-gradient(160deg, var(--surface), var(--accent-soft));
+border: 1px solid var(--hairline); border-radius: 20px; padding: 28px 24px;
+margin: 30px 0; box-shadow: var(--shadow);
+}
+.case-tag {
+display: inline-flex; align-items: center; gap: 6px;
+font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+color: var(--accent); background: var(--surface); padding: 5px 10px; border-radius: 20px;
+border: 1px solid var(--border); margin-bottom: 14px;
+}
+
+.closer { text-align: center; padding: 70px 0 90px; }
+.closer h2 {
+font-family: var(--serif); font-weight: 600; font-style: italic;
+font-size: clamp(1.8rem, 6vw, 2.6rem); line-height: 1.2; margin: 0 0 18px;
+}
+.closer p { color: var(--ink-soft); font-size: 1.05rem; max-width: 46ch; margin: 0 auto 14px; }
+.signoff { margin-top: 34px; font-family: var(--serif); font-style: italic; color: var(--muted); }
+
+footer.site-footer {
+border-top: 1px solid var(--hairline); padding: 28px 0 calc(40px + env(safe-area-inset-bottom));
+text-align: center; font-size: 0.82rem; color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+.reveal, .rung, .wts-step, .draw { transition: none !important; }
+.pause-gap { animation: none !important; }
+html { scroll-behavior: auto; }
+}
+
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">◐</button>
+<button class="float-top" id="floatTop" aria-label="Back to top">↑</button>
+
+<div class="wrap">
+
+<header class="hero">
+<p class="kicker">Psychology of Communication · Quick Read</p>
+<h1 class="title">Why You Know It, But <em>Can't Say It</em></h1>
+<p class="dek">You have a great idea in your head. Then you open your mouth and it comes out messy. Here's why that happens, and five simple fixes. Spoiler: you don't need a bigger vocabulary.</p>
+<div class="byline">
+<div class="avatar">PS</div>
+<span>Psychology Notes</span>
+<span class="dot"></span>
+<span>~6 min read</span>
+<span class="dot"></span>
+<span>7 chapters</span>
+</div>
+<blockquote class="hero-quote">
+"I know I'm smarter than what I just said."
+</blockquote>
+</header>
+
+<nav class="toc reveal">
+<h2>In this piece</h2>
+<ol>
+<li><a href="#ch1">The problem we all share</a></li>
+<li><a href="#ch2">Big words don't make you smart</a></li>
+<li><a href="#ch3">From web to tree to string</a></li>
+<li><a href="#ch4">The five traps (and fixes)</a></li>
+<li><a href="#ch5">One daily practice</a></li>
+<li><a href="#ch6">Four habits to start today</a></li>
+<li><a href="#ch7">Which one are you?</a></li>
+</ol>
+</nav>
+
+<!-- ===================== CHAPTER 1 ===================== -->
+<section class="chapter reveal" id="ch1">
+<p class="chapter-num">Chapter One</p>
+<h2 class="h">The problem we all share</h2>
+<p class="body-text lede">You're in a meeting. Someone asks your opinion. You know exactly what you think. But the words come out in the wrong order, you jump between topics, you forget your main point, and you walk away thinking, <mark class="hl">"That's not what I meant."</mark></p>
+<p class="body-text soft">Most people's fix is to read more books and learn fancier words. But even after that, explaining your own thoughts still feels hard. Why?</p>
+<p class="body-text soft">Maybe vocabulary was never the problem. Maybe the real difficulty is <em>how your brain organizes a thought before it becomes speech</em>. Once you see that, getting better at speaking has less to do with sounding clever, and more to do with understanding your own mind.</p>
+</section>
+
+<!-- ===================== CHAPTER 2 ===================== -->
+<section class="chapter reveal" id="ch2">
+<p class="chapter-num">Chapter Two</p>
+<h2 class="h">Big words don't make you smart</h2>
+<p class="body-text lede">In 2006, psychologist Daniel Oppenheimer tested a common belief: do fancy words make you look smarter? The answer was <mark class="hl">no, usually the opposite.</mark></p>
+<p class="body-text soft">Readers judged writing full of needlessly complex words <em>less</em> favorably than writing that said the same thing simply. His paper was even given a joke title that was itself needlessly complicated, to prove the point.</p>
+
+<div class="tip">
+<div class="ico">💡</div>
+<div><b>Processing fluency</b> is how easily your brain can take in information. Easy to read means it feels familiar and clear. Hard to read means the listener has to work, and often trusts you less.</div>
+</div>
+
+<div class="compare reveal">
+<div class="say bad"><small>Sounds fancy</small>"We should leverage and utilize the new framework to optimize our operational efficiency going forward."</div>
+<div class="say good"><small>Says more</small>"We should use the new system because it saves time."</div>
+</div>
+
+<p class="body-text soft">Both give the same advice. The simple one gives a clear recommendation <em>and</em> a reason. Technical terms are fine when an idea truly needs them. The trouble starts when your words serve your image instead of the listener's understanding.</p>
+
+<blockquote class="pull">Your goal is not to make people notice your vocabulary. It's to help them understand your thinking.</blockquote>
+</section>
+
+<!-- ===================== CHAPTER 3 ===================== -->
+<section class="chapter reveal" id="ch3">
+<p class="chapter-num">Chapter Three</p>
+<h2 class="h">From web to tree to string</h2>
+<p class="body-text lede">If words aren't the issue, why is it hard to explain even simple things? Because speaking is a <mark class="hl">three-step job</mark>, and you can only say one word at a time.</p>
+<p class="body-text soft">Psycholinguist Willem Levelt described speech production roughly like this: first you work out <em>what</em> to say, then you prepare the words and grammar, then you speak. Knowing the idea and knowing how to say it are two different challenges.</p>
+
+<div class="tip">
+<div class="ico">💡</div>
+<div><b>Macro planning</b> means deciding the big picture before you speak: what matters, how the pieces connect, and what order to say them in.</div>
+</div>
+
+<p class="body-text soft">Cognitive scientist Steven Pinker (in his book <em>The Sense of Style</em>) points out the challenge. A handy way to picture it, as a teaching metaphor and not a literal brain scan:</p>
+
+<div class="diagram-card reveal">
+<div class="diagram-label">How a thought becomes speech</div>
+<div class="wts">
+<div class="wts-step">
+<svg viewBox="0 0 200 140" fill="none">
+<path class="link draw" d="M30 30 L100 70 L170 30 M30 110 L100 70 L170 110 M30 30 L30 110 M170 30 L170 110 M30 30 L170 110 M170 30 L30 110"/>
+<circle class="node" cx="30" cy="30" r="9"/><circle class="node g" cx="100" cy="70" r="9"/><circle class="node" cx="170" cy="30" r="9"/>
+<circle class="node" cx="30" cy="110" r="9"/><circle class="node" cx="170" cy="110" r="9"/>
+</svg>
+<b>1. Web</b><span>Your thoughts: everything connected to everything</span>
+</div>
+<div class="wts-step">
+<svg viewBox="0 0 200 140" fill="none">
+<path class="link draw" d="M100 28 L50 70 M100 28 L150 70 M50 70 L28 112 M50 70 L72 112 M150 70 L128 112 M150 70 L172 112"/>
+<circle class="node g" cx="100" cy="28" r="10"/>
+<circle class="node" cx="50" cy="70" r="8"/><circle class="node" cx="150" cy="70" r="8"/>
+<circle class="node" cx="28" cy="112" r="6"/><circle class="node" cx="72" cy="112" r="6"/><circle class="node" cx="128" cy="112" r="6"/><circle class="node" cx="172" cy="112" r="6"/>
+</svg>
+<b>2. Tree</b><span>Structure: main point, support, examples</span>
+</div>
+<div class="wts-step">
+<svg viewBox="0 0 200 140" fill="none">
+<path class="link draw" d="M20 70 L180 70"/>
+<circle class="node g" cx="25" cy="70" r="9"/><circle class="node" cx="70" cy="70" r="8"/><circle class="node" cx="112" cy="70" r="8"/><circle class="node" cx="150" cy="70" r="8"/><circle class="node" cx="180" cy="70" r="6"/>
+</svg>
+<b>3. String</b><span>Speech: one word after another</span>
+</div>
+</div>
+<p class="diagram-caption">Nobody can hear your web. They only hear the string, in the order you choose.</p>
+</div>
+
+<div class="callout reveal">
+<h4>🧭 A quick example</h4>
+<p>Your manager asks, "Why is the project delayed?" You know: the client changed the requirements and the team needed extra time. But you start with Monday, then Tuesday's email, then a chat with a colleague. Thirty seconds later there's still no answer. You understood the project fine. You just hadn't organized the information around the question.</p>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 4 ===================== -->
+<section class="chapter reveal" id="ch4">
+<p class="chapter-num">Chapter Four</p>
+<h2 class="h">The five traps (and fixes)</h2>
+<p class="body-text lede">Most explaining problems fall into five common traps. See which ones feel familiar.</p>
+
+<div class="trap reveal">
+<div class="trap-head"><div class="trap-num">1</div><h3>Reaching for the bigger word</h3></div>
+<p>You want to say "We need to fix the problem." But you start wondering: "Should I say <em>implement a corrective strategy</em>?" Now part of your attention is on how you sound, not on what you mean.</p>
+<div class="tip">
+<div class="ico">💡</div>
+<div><b>Impression management</b> is how we try to shape what others think of us, like dressing up for an interview. It's normal. It only hurts when it distracts you from the actual message.</div>
+</div>
+<div class="fix"><b>Fix</b><span>Ask: "What am I actually trying to say?" Then say that. "Reduce the cost" beats "optimize our financial expenditure" if you just mean spend less money.</span></div>
+</div>
+
+<div class="trap reveal">
+<div class="trap-head"><div class="trap-num">2</div><h3>Starting at the beginning, not the point</h3></div>
+<p>A friend asks why you left your old job. The real answer is "little room to grow." But you start with when you joined, your duties, your manager changing... and finally reach it. We tend to retell things in the order we <em>remember</em> them, not the order that's easiest to <em>understand</em>.</p>
+<div class="compare">
+<div class="say bad"><small>Backstory first</small>Long story about your responsibilities, then a new manager, then... finally the reason.</div>
+<div class="say good"><small>Answer first</small>"Almost. The main work is done, we're just testing one feature."</div>
+</div>
+<div class="fix"><b>Fix</b><span>Use the <b>answer-first approach</b>: say the one sentence that answers the question, then add the reasons and background if needed.</span></div>
+</div>
+
+<div class="trap reveal">
+<div class="trap-head"><div class="trap-num">3</div><h3>Explaining too many connected ideas at once</h3></div>
+<p>You state your concern, remember an example, which reminds you of last year, and suddenly you're explaining a different problem. Every detail feels relevant to you. The listener is lost.</p>
+<div class="tip">
+<div class="ico">💡</div>
+<div><b>Cognitive load</b> is how hard your brain has to work on a task. <b>Working memory</b> is your short-term mental notepad, and it's small. Too many unconnected ideas overflow it. (Scientists still debate its exact size.)</div>
+</div>
+<div class="fix"><b>Fix</b><span>Pick the two points that matter most and announce them: "I have two concerns. One, it costs more than expected. Two, we haven't tested it." Add extra detail later if asked. Don't make your thinking shallow, <em>organize</em> its depth.</span></div>
+</div>
+
+<div class="trap reveal">
+<div class="trap-head"><div class="trap-num">4</div><h3>Panicking when you pause</h3></div>
+<p>You get stuck on a word. Silence. You feel their eyes. So you fill it with "um, like, you know" and rush into the next sentence before you've planned it.</p>
+<div class="pause-row"><span class="pause-word">I think the plan…</span><span class="pause-gap"></span><span class="pause-word">is worth testing</span></div>
+<p style="text-align:center; font-size:0.85rem; color:var(--muted);">That gap is your brain planning. It's normal.</p>
+<p>Researchers link pauses to planning: finding words, building a sentence, working out a hard idea. Psychologists Herbert Clark and Jean Fox Tree found that "um" and "uh" can actually serve a purpose in conversation. (Exactly what each one does is still studied.) The problem isn't the pause. It's <em>anxiety</em> about the pause.</p>
+<div class="fix"><b>Fix</b><span>In a tough interview question, say: "Good question. Let me think about the clearest way to explain it." Then take a moment. You don't have to erase every filler word. Just focus on your meaning.</span></div>
+</div>
+
+<div class="trap reveal">
+<div class="trap-head"><div class="trap-num">5</div><h3>Explaining a thought you haven't fully worked out</h3></div>
+<p>This one is the big reveal. You feel you understand something. But when you explain it step by step, you get stuck. You can <em>recognize</em> a good explanation, but can't <em>produce</em> one.</p>
+<div class="tip">
+<div class="ico">💡</div>
+<div><b>Illusion of explanatory depth</b> means we feel we understand how things work, until we're asked to explain the details. Then we find gaps. (Not every struggle means this. Sometimes it's nerves or word-finding. But sometimes it is.)</div>
+</div>
+<p><b>Test yourself:</b> you know a fridge keeps food cold. But can you explain how it moves heat from inside to the room? Trying to explain shows what you still need to learn.</p>
+<div class="fix"><b>Fix</b><span>Don't re-read and assume familiarity equals understanding. Close the book and explain it in your own words. When you get stuck, don't hunt for a fancier word. Ask: "Do I understand this well enough to explain it?"</span></div>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 5 ===================== -->
+<section class="chapter reveal" id="ch5">
+<p class="chapter-num">Chapter Five</p>
+<h2 class="h">One daily practice</h2>
+<p class="body-text lede">Once a day, pick something you think you understand: an article, a decision, a work process, a new idea. <mark class="hl">Explain it out loud</mark> as if talking to someone who knows nothing about it.</p>
+
+<div class="ladder reveal">
+<div class="rung"><div class="rung-step">1</div><div class="rung-body"><b>Pick one thing</b><span>Something you believe you understand.</span></div></div>
+<div class="rung"><div class="rung-step">2</div><div class="rung-body"><b>Explain it aloud, start to finish</b><span>No script. No trying to sound polished.</span></div></div>
+<div class="rung"><div class="rung-step">3</div><div class="rung-body"><b>Notice where you get stuck</b><span>Did you skip a step? Bury the main point? Find a gap in your knowledge?</span></div></div>
+<div class="rung"><div class="rung-step">4</div><div class="rung-body"><b>Fix that part and try again</b><span>You're training both understanding and communication.</span></div></div>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 6 ===================== -->
+<section class="chapter reveal" id="ch6">
+<p class="chapter-num">Chapter Six</p>
+<h2 class="h">Four habits to start today</h2>
+
+<h3 class="h3">1. State your main point first</h3>
+<p class="body-text soft">Before a meeting or hard conversation, ask: <em>"If they remember only one thing I say, what should it be?"</em> Put it in one sentence. Then choose two or three details that truly support it.</p>
+
+<h3 class="h3">2. Give your explanation a visible structure</h3>
+<p class="body-text soft">Use phrases like <em>"There are two reasons I think this will work,"</em> or <em>"The main problem is this, and here's why."</em> They don't just sound organized, they help you organize the message and give listeners a path to follow.</p>
+
+<h3 class="h3">3. Practice with no one to impress</h3>
+<p class="body-text soft">Explain a familiar topic aloud. Record yourself if it helps. Don't judge your accent or confidence. Ask three questions:</p>
+<div class="tile-row reveal">
+<div class="tile"><div class="tile-dot" style="background:var(--s-blue);"></div><div><b>Clear?</b><span>Did I make my main point clear?</span></div></div>
+<div class="tile"><div class="tile-dot" style="background:var(--s-aqua);"></div><div><b>Relevant?</b><span>Did each sentence help that point?</span></div></div>
+<div class="tile"><div class="tile-dot" style="background:var(--s-orange);"></div><div><b>Lean?</b><span>Did I add details I didn't need?</span></div></div>
+</div>
+<p class="body-text soft">Pick one thing to improve and try again. The goal isn't a perfect performance. It's a better <em>process</em>.</p>
+
+<h3 class="h3">4. Stop treating every pause as a problem</h3>
+<p class="body-text soft">You don't have to answer instantly. You don't have to fill every silence. You don't need a sophisticated word when a simple one is more accurate. Give yourself time to decide what you want to say.</p>
+
+<div class="callout reveal">
+<h4>🔗 How the five traps connect</h4>
+<p>Fancy words come from managing impressions. Backstory comes from not choosing your answer. Rambling comes from not organizing your ideas. Rushing comes from discomfort with pauses. Struggling to explain comes from a half-formed thought. Different problems, different fixes. But all point to one thing: clear speaking needs planning, attention, understanding, and organizing information for another person.</p>
+</div>
+</section>
+
+<!-- ===================== CHAPTER 7 ===================== -->
+<section class="chapter reveal closer" id="ch7">
+<p class="chapter-num" style="text-align:center;">Chapter Seven</p>
+<h2>Which one are you?</h2>
+<p>Your mind can stay curious, complex, and full of connections. You don't have to simplify everything you think. You only have to decide which part of that thinking belongs in the conversation <em>right now</em>.</p>
+<p>So which trap do you recognize most? Bigger words? Too much backstory? Explaining everything at once? Panic on pauses? Or a thought that isn't fully formed yet? Name it, then fix that one.</p>
+<p class="signoff">Clear speaking isn't about finding the right words. It's about knowing what you mean.</p>
+</section>
+
+</div>
+
+<footer class="site-footer">
+<div class="wrap">Notes on the psychology of clear communication · read on any device</div>
+</footer>
+
+<script>
+(function () {
+// theme toggle
+var root = document.documentElement;
+var btn = document.getElementById('themeToggle');
+function currentTheme() {
+if (root.getAttribute('data-theme')) return root.getAttribute('data-theme');
+return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+btn.addEventListener('click', function () {
+var next = currentTheme() === 'dark' ? 'light' : 'dark';
+root.setAttribute('data-theme', next);
+btn.textContent = next === 'dark' ? '☀' : '◐';
+});
+btn.textContent = currentTheme() === 'dark' ? '☀' : '◐';
+
+// scroll progress
+var bar = document.getElementById('progress-bar');
+var floatTop = document.getElementById('floatTop');
+function onScroll() {
+var h = document.documentElement;
+var scrolled = h.scrollTop || document.body.scrollTop;
+var height = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
+var pct = height > 0 ? (scrolled / height) * 100 : 0;
+bar.style.width = pct + '%';
+if (scrolled > 500) floatTop.classList.add('show'); else floatTop.classList.remove('show');
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+floatTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+// reveal on scroll
+var revealEls = document.querySelectorAll('.reveal, .ladder');
+if ('IntersectionObserver' in window) {
+var io = new IntersectionObserver(function (entries) {
+entries.forEach(function (entry) {
+if (entry.isIntersecting) {
+entry.target.classList.add('is-visible');
+io.unobserve(entry.target);
+}
+});
+}, { threshold: 0.15 });
+revealEls.forEach(function (el) { io.observe(el); });
+} else {
+revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+}
+
+// TOC active link
+var tocLinks = {};
+document.querySelectorAll('nav.toc a').forEach(function (a) {
+tocLinks[a.getAttribute('href').slice(1)] = a;
+});
+var chapters = document.querySelectorAll('section.chapter');
+if ('IntersectionObserver' in window) {
+var tocObserver = new IntersectionObserver(function (entries) {
+entries.forEach(function (entry) {
+var link = tocLinks[entry.target.id];
+if (!link) return;
+if (entry.isIntersecting) {
+Object.values(tocLinks).forEach(function (l) { l.classList.remove('active'); });
+link.classList.add('active');
+}
+});
+}, { rootMargin: '-40% 0px -50% 0px' });
+chapters.forEach(function (c) { if (c.id) tocObserver.observe(c); });
+}
+})();
+</script>
+
+<!-- ================= Reading font picker (self-contained, no external file) ================= -->
+<script>
+(function() {
+  var STORAGE_KEY = 'notes_font_pref';
+
+  var FONT_OPTIONS = [
+    { id: 'default', label: 'Normal (page default)', category: null },
+
+    { id: 'atkinson', label: 'Atkinson Hyperlegible', category: 'Best for long-form reading',
+      google: 'Atkinson+Hyperlegible:wght@400;700', family: "'Atkinson Hyperlegible', sans-serif" },
+    { id: 'lora', label: 'Lora', category: 'Best for long-form reading',
+      google: 'Lora:wght@400;600;700', family: "'Lora', serif" },
+    { id: 'source-serif', label: 'Source Serif 4', category: 'Best for long-form reading',
+      google: 'Source+Serif+4:wght@400;600;700', family: "'Source Serif 4', serif" },
+    { id: 'merriweather', label: 'Merriweather', category: 'Best for long-form reading',
+      google: 'Merriweather:wght@400;700', family: "'Merriweather', serif" },
+
+    { id: 'comic-neue', label: 'Comic Neue', category: 'Fun & playful',
+      google: 'Comic+Neue:wght@400;700', family: "'Comic Neue', 'Comic Sans MS', cursive" },
+    { id: 'nunito', label: 'Nunito', category: 'Fun & playful',
+      google: 'Nunito:wght@400;700;800', family: "'Nunito', sans-serif" },
+    { id: 'quicksand', label: 'Quicksand', category: 'Fun & playful',
+      google: 'Quicksand:wght@400;600;700', family: "'Quicksand', sans-serif" },
+    { id: 'baloo2', label: 'Baloo 2', category: 'Fun & playful',
+      google: 'Baloo+2:wght@400;600;700', family: "'Baloo 2', cursive" },
+    { id: 'fredoka', label: 'Fredoka', category: 'Fun & playful',
+      google: 'Fredoka:wght@400;600;700', family: "'Fredoka', sans-serif" },
+
+    { id: 'lexend', label: 'Lexend', category: 'Dyslexia-friendly',
+      google: 'Lexend:wght@400;600;700', family: "'Lexend', sans-serif" },
+    { id: 'opendyslexic', label: 'OpenDyslexic', category: 'Dyslexia-friendly',
+      cdnfonts: 'opendyslexic', family: "'Open Dyslexic', sans-serif" }
+  ];
+
+  var CATEGORY_ORDER = ['Best for long-form reading', 'Fun & playful', 'Dyslexia-friendly'];
+  var loadedFontIds = {};
+
+  function getOption(id) {
+    for (var i = 0; i < FONT_OPTIONS.length; i++) {
+      if (FONT_OPTIONS[i].id === id) return FONT_OPTIONS[i];
+    }
+    return FONT_OPTIONS[0];
+  }
+
+  function loadFontAssets(option) {
+    if (!option || option.id === 'default' || loadedFontIds[option.id]) return;
+    loadedFontIds[option.id] = true;
+
+    if (option.google) {
+      if (!document.getElementById('gf-preconnect-1')) {
+        var pc1 = document.createElement('link');
+        pc1.id = 'gf-preconnect-1';
+        pc1.rel = 'preconnect';
+        pc1.href = 'https://fonts.googleapis.com';
+        var pc2 = document.createElement('link');
+        pc2.id = 'gf-preconnect-2';
+        pc2.rel = 'preconnect';
+        pc2.href = 'https://fonts.gstatic.com';
+        pc2.crossOrigin = 'anonymous';
+        document.head.appendChild(pc1);
+        document.head.appendChild(pc2);
+      }
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://fonts.googleapis.com/css2?family=' + option.google + '&display=swap';
+      document.head.appendChild(link);
+    } else if (option.cdnfonts) {
+      var link2 = document.createElement('link');
+      link2.rel = 'stylesheet';
+      link2.href = 'https://fonts.cdnfonts.com/css/' + option.cdnfonts;
+      document.head.appendChild(link2);
+    }
+  }
+
+  function injectOverrideStyle() {
+    if (document.getElementById('notes-font-override')) return document.getElementById('notes-font-override');
+    var style = document.createElement('style');
+    style.id = 'notes-font-override';
+    document.head.appendChild(style);
+    return style;
+  }
+
+  function applyFont(id) {
+    var option = getOption(id);
+    loadFontAssets(option);
+    var style = injectOverrideStyle();
+
+    document.documentElement.setAttribute('data-notes-font', option.id);
+
+    if (option.id === 'default') {
+      style.textContent = '';
+    } else {
+      style.textContent =
+        'html[data-notes-font="' + option.id + '"] body,\n' +
+        'html[data-notes-font="' + option.id + '"] *:not(.material-icons):not([class*="icon-"]) {\n' +
+        '  font-family: ' + option.family + ' !important;\n' +
+        '}';
+    }
+  }
+
+  function savePreference(id) {
+    try { localStorage.setItem(STORAGE_KEY, id); } catch (e) {}
+  }
+
+  function loadPreference() {
+    try { return localStorage.getItem(STORAGE_KEY) || 'default'; } catch (e) { return 'default'; }
+  }
+
+  function buildOptionRow(option) {
+    var row = document.createElement('button');
+    row.type = 'button';
+    row.textContent = option.label;
+    row.dataset.fontId = option.id;
+    row.style.cssText = [
+      'display:block', 'width:100%', 'text-align:left', 'background:transparent',
+      'border:none', 'color:#e8e8f0', 'padding:7px 8px', 'border-radius:8px',
+      'cursor:pointer', 'font-size:13px', 'margin-bottom:2px', 'transition:background .15s'
+    ].join(';');
+    row.addEventListener('mouseenter', function() { row.style.background = 'rgba(255,255,255,0.08)'; });
+    row.addEventListener('mouseleave', function() {
+      row.style.background = row.dataset.active === 'true' ? 'rgba(108,99,255,0.25)' : 'transparent';
+    });
+    row.addEventListener('click', function() {
+      applyFont(option.id);
+      savePreference(option.id);
+      updateActiveRow(option.id);
+    });
+    return row;
+  }
+
+  function updateActiveRow(activeId) {
+    var rows = document.querySelectorAll('#font-picker-panel button[data-font-id]');
+    rows.forEach(function(row) {
+      var isActive = row.dataset.fontId === activeId;
+      row.dataset.active = isActive ? 'true' : 'false';
+      row.style.background = isActive ? 'rgba(108,99,255,0.25)' : 'transparent';
+      row.style.fontWeight = isActive ? '700' : '400';
+    });
+  }
+
+  function buildPanel() {
+    var panel = document.createElement('div');
+    panel.id = 'font-picker-panel';
+    panel.style.cssText = [
+      'position:fixed', 'bottom:64px', 'left:20px', 'z-index:999998',
+      'background:#111118', 'color:#e8e8f0', 'border:1px solid rgba(255,255,255,0.15)',
+      'border-radius:14px', 'padding:14px', 'width:230px', 'max-height:60vh',
+      'overflow-y:auto', 'font-family:sans-serif', 'font-size:13px',
+      'box-shadow:0 8px 28px rgba(0,0,0,0.45)', 'display:none'
+    ].join(';');
+
+    var title = document.createElement('div');
+    title.textContent = 'Reading font';
+    title.style.cssText = 'font-weight:700;margin-bottom:10px;font-size:12px;letter-spacing:.03em;color:#a8a1ff;text-transform:uppercase;';
+    panel.appendChild(title);
+
+    panel.appendChild(buildOptionRow(getOption('default')));
+
+    CATEGORY_ORDER.forEach(function(cat) {
+      var heading = document.createElement('div');
+      heading.textContent = cat;
+      heading.style.cssText = 'margin:12px 0 6px;font-size:11px;font-weight:700;color:#8888a8;text-transform:uppercase;letter-spacing:.03em;';
+      panel.appendChild(heading);
+
+      FONT_OPTIONS.filter(function(o) { return o.category === cat; }).forEach(function(o) {
+        panel.appendChild(buildOptionRow(o));
+      });
+    });
+
+    return panel;
+  }
+
+  function buildToggleButton(panel) {
+    var btn = document.createElement('button');
+    btn.id = 'font-toggle-btn';
+    btn.type = 'button';
+    btn.title = 'Change reading font';
+    btn.textContent = 'Aa 🔤';
+    btn.setAttribute('aria-label', 'Change reading font');
+    btn.style.cssText = [
+      'position:fixed', 'bottom:20px', 'left:20px', 'z-index:999998',
+      'background:#111118', 'color:#e8e8f0', 'border:1px solid rgba(255,255,255,0.15)',
+      'border-radius:100px', 'padding:10px 16px', 'font-family:sans-serif', 'font-size:13px',
+      'font-weight:600', 'cursor:pointer', 'box-shadow:0 4px 16px rgba(0,0,0,0.35)',
+      'opacity:0.85', 'transition:opacity .2s'
+    ].join(';');
+    btn.addEventListener('mouseenter', function() { btn.style.opacity = '1'; });
+    btn.addEventListener('mouseleave', function() { btn.style.opacity = '0.85'; });
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    });
+    document.addEventListener('click', function(e) {
+      if (panel.style.display !== 'none' && !panel.contains(e.target) && e.target !== btn) {
+        panel.style.display = 'none';
+      }
+    });
+    return btn;
+  }
+
+  function initFontPicker() {
+    injectOverrideStyle();
+    var panel = buildPanel();
+    var btn = buildToggleButton(panel);
+    document.body.appendChild(panel);
+    document.body.appendChild(btn);
+
+    var saved = loadPreference();
+    applyFont(saved);
+    updateActiveRow(saved);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFontPicker);
+  } else {
+    initFontPicker();
+  }
+})();
+</script>
+
+</body>
+</html>
