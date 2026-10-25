@@ -1,0 +1,1633 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0D2236">
+<title>You Are the Architect</title>
+<meta name="description" content="Head First Software Architecture told as a story. You are Alex, the new Principal Architect. Five styles, two laws, and one mentor with a grid notebook.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5F0E6; --surface: #FBF8F1; --ink: #1B2733; --ink-2: #33414F; --muted: #566270;
+    --rule: #E2DACB; --accent: #B04813; --accent-soft: #F6E6D3;
+    --navy: #0D2236; --recap-bg: #0D2236;
+    --blue: #245D93; --blue-soft: #EAF1F9; --blue-line: rgba(36,93,147,.22);
+    --green: #2B7A4B; --green-soft: #E8F4ED;
+    --amber: #9A6B00; --amber-soft: #FCF3DA; --amber-line: rgba(154,107,0,.28);
+    --red: #B0372E; --red-soft: #FBEBE8; --red-line: rgba(176,55,46,.25);
+    --code-bg: #0F1D2C; --code-fg: #E7EEF6; --shadow: 0 14px 34px -22px rgba(13,34,54,.45);
+    --f-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+    --f-body: "Newsreader", "Iowan Old Style", Georgia, serif;
+    --f-ui: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --hero-accent: #F2A36C; --hero-accent-2: #E8C25A; --hero-accent-hover: #F7B988;
+    --glow-1: rgba(242,163,108,.22); --glow-2: rgba(36,93,147,.35);
+    --text: var(--ink); --hero-text: #FFFFFF; --hero-text-2: rgba(255,255,255,.82); --hero-text-3: rgba(255,255,255,.72); --recap-text: #E6EDF4;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #002B36; --surface: #073642; --ink: #C9D5D2; --ink-2: #A8B6B5; --muted: #93A1A1;
+      --rule: #12505F; --accent: #35B2A8; --accent-soft: #0B4651;
+      --navy: #00212B; --recap-bg: #073642;
+      --blue: #5AA9E6; --blue-soft: #08394D; --blue-line: rgba(38,139,210,.45);
+      --green: #9DB02C; --green-soft: #0B3B35;
+      --amber: #D9A520; --amber-soft: #1D3A2D; --amber-line: rgba(181,137,0,.5);
+      --red: #F06B66; --red-soft: #2E2D36; --red-line: rgba(220,50,47,.5);
+      --code-bg: #00212B; --code-fg: #A5B4B4; --shadow: 0 14px 34px -22px rgba(0,0,0,.7);
+      --hero-accent: #36B7AA; --hero-accent-2: #9DB02C; --hero-accent-hover: #5CCBBF;
+      --glow-1: rgba(42,161,152,.28); --glow-2: rgba(38,139,210,.28);
+      --text: #A9B7B5; --hero-text: #D3DEDB; --hero-text-2: #A9BAB7; --hero-text-3: #93A8A5; --recap-text: #BFCBC8;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #002B36; --surface: #073642; --ink: #C9D5D2; --ink-2: #A8B6B5; --muted: #93A1A1;
+    --rule: #12505F; --accent: #35B2A8; --accent-soft: #0B4651;
+    --navy: #00212B; --recap-bg: #073642;
+    --blue: #5AA9E6; --blue-soft: #08394D; --blue-line: rgba(38,139,210,.45);
+    --green: #9DB02C; --green-soft: #0B3B35;
+    --amber: #D9A520; --amber-soft: #1D3A2D; --amber-line: rgba(181,137,0,.5);
+    --red: #F06B66; --red-soft: #2E2D36; --red-line: rgba(220,50,47,.5);
+    --code-bg: #00212B; --code-fg: #A5B4B4; --shadow: 0 14px 34px -22px rgba(0,0,0,.7);
+    --hero-accent: #36B7AA; --hero-accent-2: #9DB02C; --hero-accent-hover: #5CCBBF;
+    --glow-1: rgba(42,161,152,.28); --glow-2: rgba(38,139,210,.28);
+    --text: #A9B7B5; --hero-text: #D3DEDB; --hero-text-2: #A9BAB7; --hero-text-3: #93A8A5; --recap-text: #BFCBC8;
+      color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; font-size: calc(100% * var(--scale, 1)); }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--f-body); font-size: 1.25rem; line-height: 1.8;
+    text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+  strong { font-weight: 600; }
+  ::selection { background: var(--accent); color: #fff; }
+  .skip { position: absolute; left: -9999px; }
+  .skip:focus { left: 16px; top: 12px; z-index: 60; background: var(--ink); color: var(--bg); padding: 8px 12px; border-radius: 6px; font-family: var(--f-ui); }
+
+  /* Top bar */
+  .bar { position: sticky; top: 0; z-index: 30; background: var(--navy); color: var(--hero-text); border-bottom: 1px solid rgba(255,255,255,.08); }
+  .bar-in { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 20px; height: 58px; }
+  .brand { font-family: var(--f-display); font-weight: 600; font-size: 1.08rem; letter-spacing: -.01em; color: var(--hero-text); text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .brand i { font-style: italic; color: var(--hero-accent); font-weight: 500; }
+  .bar-links { display: flex; align-items: center; gap: 18px; }
+  .bar-links a { font: 500 .8rem var(--f-ui); color: var(--hero-text-2); text-decoration: none; }
+  .bar-links a:hover { color: var(--hero-text); }
+  #theme {
+    font: 500 .76rem var(--f-ui); color: var(--hero-text); background: rgba(255,255,255,.08); white-space: nowrap;
+    border: 1px solid rgba(255,255,255,.22); border-radius: 999px; padding: 7px 14px; cursor: pointer;
+  }
+  #theme:hover { background: rgba(255,255,255,.16); }
+  .progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; pointer-events: none; }
+  .progress i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, var(--hero-accent), var(--hero-accent-2)); transform-origin: 0 50%; transform: scaleX(0); }
+
+  /* Hero */
+  .hero {
+    color: var(--hero-text); overflow: hidden;
+    background:
+      radial-gradient(900px 420px at 88% -10%, var(--glow-1), transparent 60%),
+      radial-gradient(700px 400px at -5% 110%, var(--glow-2), transparent 60%),
+      linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px) 0 0 / 44px 44px,
+      linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px) 0 0 / 44px 44px,
+      var(--navy);
+  }
+  .hero-in { max-width: 1180px; margin: 0 auto; padding: 76px 20px 84px; display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, .88fr); gap: 48px; align-items: center; }
+  .eyebrow { display: flex; align-items: center; gap: 12px; font: 600 .74rem var(--f-ui); letter-spacing: .18em; text-transform: uppercase; color: var(--hero-accent); margin: 0 0 20px; }
+  .eyebrow::before { content: ""; width: 34px; height: 1px; background: var(--hero-accent); }
+  .hero h1 { font-family: var(--f-display); font-weight: 600; font-size: clamp(2.7rem, 6.2vw, 5rem); line-height: 1.02; letter-spacing: -.028em; margin: 0 0 24px; text-wrap: balance; }
+  .hero h1 em { font-style: italic; font-weight: 500; color: var(--hero-accent); }
+  .hero-sub { font-size: 1.32rem; line-height: 1.55; color: var(--hero-text-2); max-width: 34rem; margin: 0 0 30px; text-wrap: pretty; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 30px; }
+  .btn { display: inline-block; font: 600 .92rem var(--f-ui); text-decoration: none; padding: 13px 24px; border-radius: 999px; transition: transform .15s, background .15s; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn-primary { background: var(--hero-accent); color: #07202A; }
+  .btn-primary:hover { background: var(--hero-accent-hover); }
+  .btn-ghost { color: var(--hero-text); border: 1px solid rgba(255,255,255,.35); }
+  .btn-ghost:hover { background: rgba(255,255,255,.1); }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 0 0 22px; }
+  .meta li { font: 500 .78rem var(--f-ui); color: var(--hero-text-2); background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.16); border-radius: 999px; padding: 6px 14px; margin: 0; }
+  .meta b { color: var(--hero-accent); font-weight: 600; }
+  .credit { font: 400 .8rem/1.55 var(--f-ui); color: var(--hero-text-3); max-width: 34rem; margin: 0; }
+  .hero-art { width: 100%; max-width: 520px; justify-self: end; height: auto; filter: drop-shadow(0 30px 40px rgba(0,0,0,.35)); }
+  .bp-bg { fill: var(--navy); }
+  .bp-title { font: 600 17px var(--f-ui); fill: var(--hero-text); }
+  .bp-sub { font: 400 12.5px var(--f-ui); fill: rgba(255,255,255,.72); }
+  .bp-mono { font: 500 11px var(--f-mono); fill: rgba(255,255,255,.55); letter-spacing: .08em; }
+
+  /* The journey: chapters grouped into parts */
+  .journey { max-width: 1180px; margin: 0 auto; padding: 84px 20px 20px; }
+  .section-kicker { font: 600 .74rem var(--f-ui); letter-spacing: .18em; text-transform: uppercase; color: var(--accent); margin: 0 0 12px; }
+  .journey h2 { font-family: var(--f-display); font-weight: 600; font-size: clamp(2.1rem, 4.6vw, 3.2rem); line-height: 1.05; letter-spacing: -.02em; margin: 0 0 20px; }
+  .welcome-p { max-width: 46rem; font-size: 1.22rem; color: var(--ink-2); margin: 0 0 1rem; }
+  .part { margin-top: 56px; }
+  .part-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 14px; border-bottom: 1px solid var(--rule); padding-bottom: 14px; margin-bottom: 20px; }
+  .part-kicker { font: 600 .72rem var(--f-ui); letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
+  .part-title { font-family: var(--f-display); font-weight: 600; font-size: 1.6rem; letter-spacing: -.01em; margin: 0; }
+  .part-desc { flex-basis: 100%; font: 400 .95rem/1.55 var(--f-ui); color: var(--muted); margin: 4px 0 0; max-width: 44rem; }
+  .cards { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .cards li { margin: 0; }
+  .card {
+    display: flex; flex-direction: column; height: 100%; text-decoration: none; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 18px; padding: 20px 22px 18px;
+    transition: border-color .18s, transform .18s, box-shadow .18s; position: relative; overflow: hidden;
+  }
+  .card::after { content: ""; position: absolute; left: 0; top: 0; height: 3px; width: 100%; background: linear-gradient(90deg, var(--accent), var(--hero-accent-2)); transform: scaleX(0); transform-origin: 0 50%; transition: transform .25s; }
+  .card:hover { border-color: transparent; transform: translateY(-4px); box-shadow: var(--shadow); }
+  .card:hover::after { transform: scaleX(1); }
+  .card-no { font-family: var(--f-display); font-weight: 600; font-size: 2.6rem; line-height: 1; color: var(--accent); opacity: .9; letter-spacing: -.03em; }
+  .card-title { font-family: var(--f-display); font-weight: 600; font-size: 1.22rem; line-height: 1.2; letter-spacing: -.01em; margin: 10px 0 8px; }
+  .card-lede { font: 400 .88rem/1.55 var(--f-ui); color: var(--muted); margin: 0 0 14px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .card-foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; font: 500 .74rem var(--f-ui); color: var(--muted); }
+  .card-foot b { color: var(--accent); font-weight: 600; transition: transform .18s; }
+  .card:hover .card-foot b { transform: translateX(4px); }
+  .skipped { font: 400 .9rem/1.55 var(--f-ui); color: var(--muted); margin: 32px 0 0; padding: 14px 18px; border: 1px dashed var(--rule); border-radius: 12px; max-width: 46rem; }
+
+  /* Two-column reading layout */
+  .layout { max-width: 1180px; margin: 0 auto; padding: 0 20px 72px; display: grid; grid-template-columns: 264px minmax(0, 1fr); gap: 64px; align-items: start; }
+  .rail { position: sticky; top: 84px; max-height: calc(100vh - 104px); overflow-y: auto; padding-right: 8px; scrollbar-width: thin; font-family: var(--f-ui); }
+  .rail-title { font: 600 .7rem var(--f-ui); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); padding: 0 0 12px; margin: 0; }
+  .rail-ch { border-bottom: 1px solid var(--rule); }
+  .rail-ch > summary { display: flex; gap: 10px; align-items: baseline; padding: 11px 0; cursor: pointer; list-style: none; font-weight: 600; font-size: .86rem; line-height: 1.35; }
+  .rail-ch > summary::-webkit-details-marker { display: none; }
+  .rail-ch > summary::after { content: "+"; margin-left: auto; font-family: var(--f-mono); color: var(--muted); }
+  .rail-ch[open] > summary::after { content: "\2212"; }
+  .rail-ch > summary .num { font: 500 .68rem var(--f-mono); color: var(--accent); min-width: 44px; white-space: nowrap; }
+  .rail-ch ul { list-style: none; margin: 0 0 12px; padding: 0 0 0 54px; font-size: .82rem; }
+  .rail-ch li { margin: 0; }
+  .rail-ch li a { display: block; color: var(--muted); text-decoration: none; line-height: 1.35; padding: 5px 0 5px 12px; border-left: 2px solid var(--rule); }
+  .rail-ch li a:hover { color: var(--ink); }
+  .rail-ch li a.is-active { color: var(--ink); font-weight: 600; border-left-color: var(--accent); }
+
+  .content { min-width: 0; max-width: 40rem; }
+
+  /* Chapters */
+  .chapter { position: relative; margin-top: 110px; scroll-margin-top: 84px; counter-reset: sec; }
+  .chapter:first-of-type { margin-top: 24px; }
+  .chapter-head { position: relative; margin-bottom: 26px; padding-top: 18px; }
+  .chapter-head::before {
+    content: attr(data-num); position: absolute; right: -6px; top: -34px; z-index: 0; pointer-events: none;
+    font-family: var(--f-display); font-weight: 700; font-size: clamp(7rem, 22vw, 13.5rem); line-height: .8;
+    color: var(--accent); opacity: .09; letter-spacing: -.05em;
+  }
+  .chapter-head > * { position: relative; z-index: 1; }
+  .chapter-num { display: flex; align-items: center; flex-wrap: wrap; gap: 0; font: 600 .74rem var(--f-ui); letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin: 0 0 10px; }
+  .chapter-num .part-tag { color: var(--muted); font-weight: 500; }
+  .chapter-num .part-tag::before { content: "\00B7"; margin: 0 .8em; }
+  .read-time { font: 500 .78rem var(--f-ui); color: var(--muted); margin: 0 0 20px; }
+  .chapter h2 { font-family: var(--f-display); font-weight: 600; font-size: clamp(2.2rem, 5.2vw, 3.4rem); line-height: 1.04; letter-spacing: -.025em; margin: 0 0 22px; text-wrap: balance; scroll-margin-top: 84px; }
+  .lede { font-size: 1.34rem; line-height: 1.55; color: var(--ink-2); margin: 0; text-wrap: pretty; padding-top: 4px; }
+  .lede::before { content: ""; display: block; width: 56px; height: 3px; background: var(--accent); margin-bottom: 18px; border-radius: 3px; }
+
+  .chapter .inchap { background: var(--surface); border: 1px solid var(--rule); border-radius: 18px; padding: 20px 26px 16px; margin: 0 0 40px; }
+  .inchap-label { font: 600 .7rem var(--f-ui); letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin: 0; }
+  .chapter .inchap ol { counter-reset: ic; list-style: none; padding: 0; margin: 10px 0 0; columns: 2; column-gap: 32px; }
+  .chapter .inchap li { counter-increment: ic; break-inside: avoid; margin: 0; padding: 6px 0 6px 32px; position: relative; font: 500 .9rem/1.35 var(--f-ui); }
+  .chapter .inchap li::before { content: counter(ic, decimal-leading-zero); position: absolute; left: 0; top: 7px; font: 500 .7rem var(--f-mono); color: var(--accent); }
+  .chapter .inchap a { color: var(--ink-2); text-decoration: none; }
+  .chapter .inchap a:hover { color: var(--accent); }
+
+  .chapter h3 { counter-increment: sec; font-family: var(--f-display); font-weight: 600; font-size: clamp(1.55rem, 3.4vw, 2rem); line-height: 1.14; letter-spacing: -.018em; margin: 3.4rem 0 1rem; scroll-margin-top: 84px; text-wrap: balance; }
+  .chapter h3::before { content: counter(sec, decimal-leading-zero); display: block; font: 500 .72rem var(--f-mono); letter-spacing: .14em; color: var(--accent); margin-bottom: 8px; }
+  .chapter h4 { font-family: var(--f-display); font-weight: 600; font-size: 1.22rem; line-height: 1.3; margin: 2rem 0 .5rem; letter-spacing: -.01em; scroll-margin-top: 84px; }
+  p, ul, ol { margin: 0 0 1.4rem; }
+  li { margin: .45rem 0; }
+  .chapter ul, .chapter ol { padding-left: 1.45rem; }
+  li::marker { color: var(--accent); }
+  .chapter strong { color: var(--ink); }
+
+  code { font-family: var(--f-mono); font-size: .82em; background: var(--accent-soft); color: var(--ink); padding: .12em .42em; border-radius: 6px; }
+  pre {
+    background: var(--code-bg); color: var(--code-fg); padding: 20px 24px; border-radius: 16px; overflow-x: auto;
+    font-size: .84rem; line-height: 1.7; margin: 1.8rem 0 2rem; border: 1px solid rgba(255,255,255,.07); box-shadow: var(--shadow);
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; border-radius: 0; }
+
+  table {
+    width: 100%; border-collapse: separate; border-spacing: 0; font: 400 .92rem/1.5 var(--f-ui);
+    display: block; overflow-x: auto; margin: 1.8rem 0 2rem; border: 1px solid var(--rule); border-radius: 14px; background: var(--surface);
+  }
+  th { font: 600 .68rem var(--f-ui); letter-spacing: .1em; text-transform: uppercase; text-align: left; padding: 12px 16px; background: var(--accent-soft); color: var(--ink); border-bottom: 1px solid var(--rule); white-space: nowrap; }
+  td { padding: 11px 16px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  tbody tr:nth-child(even) td { background: rgba(127,127,127,.045); }
+
+  /* Callouts */
+  .analogy, .example, .tip, .warning { position: relative; margin: 2.1rem 0; padding: 22px 26px; border-radius: 18px; }
+  .analogy::before, .example::before, .tip::before, .warning::before {
+    display: block; font: 600 .68rem var(--f-ui); letter-spacing: .16em; text-transform: uppercase; margin-bottom: 10px;
+  }
+  .analogy > :last-child, .example > :last-child, .tip > :last-child, .warning > :last-child { margin-bottom: 0; }
+  .analogy p, .example p, .tip p, .warning p { margin-bottom: .9rem; }
+
+  .analogy { background: var(--blue-soft); border: 1px solid var(--blue-line); }
+  .analogy::before { content: "\25C6  Think of it this way"; color: var(--blue); }
+  .analogy::after { content: "\201C"; position: absolute; right: 22px; top: 6px; font: 600 5rem/1 var(--f-display); color: var(--blue); opacity: .15; pointer-events: none; }
+
+  .example { background: var(--surface); border: 1px solid var(--rule); border-top: 4px solid var(--green); box-shadow: var(--shadow); }
+  .example::before { content: "\25C6  Example"; color: var(--green); }
+  .example h4 { margin: 0 0 10px; font-size: 1.35rem; }
+
+  .tip { background: var(--amber-soft); border: 1px solid var(--amber-line); }
+  .tip::before { content: "\25C6  Remember this"; color: var(--amber); }
+
+  .warning { background: var(--red-soft); border: 1px solid var(--red-line); }
+  .warning::before { content: "\25C6  Watch out"; color: var(--red); }
+
+  /* Recap */
+  .takeaways { background: var(--recap-bg); color: var(--recap-text); border-radius: 22px; padding: 30px 32px 24px; margin: 3.4rem 0 1.6rem; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,.06); box-shadow: var(--shadow); }
+  .takeaways::before { content: "Quick recap"; display: block; font: 600 .72rem var(--f-ui); letter-spacing: .18em; text-transform: uppercase; color: var(--hero-accent); margin-bottom: 16px; }
+  .takeaways h3 { display: none; }
+  .takeaways ul { list-style: none; padding: 0; margin: 0; }
+  .takeaways li { position: relative; padding-left: 32px; margin: 0 0 14px; font-size: 1.08rem; line-height: 1.55; }
+  .takeaways li::before { content: ""; position: absolute; left: 3px; top: .5em; width: 13px; height: 7px; border-left: 2px solid var(--hero-accent); border-bottom: 2px solid var(--hero-accent); transform: rotate(-45deg); }
+  .takeaways strong { color: var(--hero-text); }
+  .takeaways code { background: rgba(255,255,255,.12); color: var(--hero-text); }
+
+  .next { display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 20px 26px; border: 1px solid var(--rule); border-radius: 18px; background: var(--surface); color: var(--ink); text-decoration: none; transition: transform .18s, box-shadow .18s, border-color .18s; }
+  .next:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: var(--accent); }
+  .next small { display: block; font: 600 .68rem var(--f-ui); letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+  .next strong { font-family: var(--f-display); font-weight: 600; font-size: 1.25rem; line-height: 1.2; letter-spacing: -.01em; }
+  .next::after { content: "\2192"; font-size: 1.6rem; color: var(--accent); }
+
+  .closing { margin-top: 110px; padding: 38px 0 0; border-top: 1px solid var(--rule); }
+  .closing p { font-size: 1.28rem; line-height: 1.55; color: var(--ink-2); }
+  .back-top { font: 600 .84rem var(--f-ui); color: var(--accent); text-decoration: none; }
+
+  footer.foot { background: var(--navy); color: var(--hero-text-3); }
+  footer.foot .foot-in { max-width: 1180px; margin: 0 auto; padding: 36px 20px 48px; font: 400 .84rem/1.65 var(--f-ui); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px 40px; }
+  footer.foot p { margin: 0; max-width: 46rem; }
+  footer.foot strong { color: var(--hero-text); font-family: var(--f-display); font-weight: 600; font-size: 1.05rem; display: block; margin-bottom: 6px; }
+  footer.foot a { color: var(--hero-accent); }
+
+  @media (max-width: 999px) {
+    .layout { grid-template-columns: 1fr; gap: 0; }
+    .rail { position: static; max-height: none; overflow: visible; margin-bottom: 40px; background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 16px 18px 4px; }
+    .hero-in { grid-template-columns: 1fr; padding: 56px 20px 64px; }
+    .hero-art { justify-self: center; max-width: 440px; }
+  }
+  @media (min-width: 1000px) {
+    .rail-title { display: none; }
+  }
+  @media (max-width: 640px) {
+    body { font-size: 1.15rem; }
+    .bar-links a { display: none; }
+    .brand { font-size: 1.02rem; }
+    .brand i { display: none; }
+    .chapter { margin-top: 84px; }
+    .chapter .inchap ol { columns: 1; }
+    .chapter-num .part-tag { flex-basis: 100%; margin-top: 4px; }
+    .chapter-num .part-tag::before { content: none; }
+    .takeaways { padding: 24px 22px 14px; }
+    .analogy, .example, .tip, .warning { padding: 18px 20px; }
+    .cards { grid-template-columns: 1fr; }
+    .journey { padding-top: 60px; }
+  }
+
+
+  /* Words to know */
+  .words { background: var(--accent-soft); border-left: 4px solid var(--accent); border-radius: 14px; padding: 18px 24px; margin: 0 0 2.2rem; }
+  .words::before { content: "Words to know"; display: block; font: 600 .68rem var(--f-ui); letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+  .words ul { list-style: none; margin: 0; padding: 0; }
+  .words li { margin: 0 0 .55rem; font-size: .98rem; line-height: 1.6; }
+  .words li:last-child { margin-bottom: 0; }
+  .words strong { color: var(--ink); }
+
+  /* Reading comfort */
+  .chapter h2, .chapter h3, .chapter h4, .journey h2, .part-title, .card-title, .next strong, .example h4, .welcome-p strong { color: var(--ink); }
+  .welcome-p, .closing p { color: var(--text); }
+  .size-ctl { display: flex; gap: 6px; }
+  .size-ctl button { font: 600 .76rem var(--f-ui); color: var(--hero-text); background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.22); border-radius: 999px; padding: 6px 11px; cursor: pointer; }
+  .size-ctl button:hover { background: rgba(255,255,255,.16); }
+  @media (max-width: 640px) { .bar-in { gap: 8px; } .brand { font-size: .95rem; } }
+  @media print {
+    .bar, .rail, .skip, #theme, .progress, .hero-art, .cta, .next { display: none !important; }
+    .layout { display: block; }
+    body { background: #fff; color: #000; }
+    .hero { background: #fff; color: #000; }
+    .chapter { break-before: page; }
+  }
+
+  /* ================= novel edition ================= */
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .solo { max-width: 54rem; margin: 0 auto; padding: 0 20px; }
+  .solo.wide { max-width: 1060px; }
+  .solo.intro { padding-top: 72px; }
+  .intro-h { font-family: var(--f-display); font-weight: 600; font-size: clamp(1.9rem, 4.2vw, 2.7rem); line-height: 1.1; letter-spacing: -.02em; margin: 0 0 18px; color: var(--ink); text-wrap: balance; }
+  .howto { list-style: none; padding: 0; margin: 1.6rem 0; display: grid; gap: 10px; }
+  .howto li { margin: 0; padding: 14px 18px; background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; font: 400 .98rem/1.55 var(--f-ui); color: var(--ink-2); }
+  .howto b { color: var(--accent); font-weight: 600; }
+  .fine { font: 400 .88rem/1.6 var(--f-ui); color: var(--muted); border-left: 3px solid var(--rule); padding-left: 16px; margin: 1.6rem 0 0; }
+  .journey { padding-top: 60px; }
+  .journey .part { margin-top: 44px; }
+  .story-body { padding-bottom: 72px; }
+
+  /* cast panel in the hero */
+  .cast-panel { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.16); border-radius: 22px; padding: 22px 24px 8px; justify-self: end; width: 100%; max-width: 470px; box-shadow: 0 30px 40px -28px rgba(0,0,0,.6); }
+  .cast-h { font: 600 .7rem var(--f-ui); letter-spacing: .18em; text-transform: uppercase; color: var(--hero-accent); margin: 0 0 14px; }
+  .cast-panel ul { list-style: none; padding: 0; margin: 0; }
+  .cast-panel li { display: flex; gap: 14px; align-items: flex-start; margin: 0 0 16px; }
+  .cast-panel b { display: block; font: 600 .98rem var(--f-ui); color: var(--hero-text); }
+  .cast-panel b i { font-style: normal; font-weight: 500; color: var(--hero-text-3); }
+  .cast-panel small { display: block; font: 400 .82rem/1.5 var(--f-ui); color: var(--hero-text-2); margin-top: 2px; }
+  .av { flex: none; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font: 700 1rem var(--f-display); color: #06222B; }
+  .a-you { background: var(--hero-accent); }
+  .a-meera { background: #5AA9E6; }
+  .a-rohan { background: #F08A85; }
+  .a-vikram { background: #E0B23A; }
+  .a-priya { background: #A8BC3C; }
+
+  /* jump menu */
+  .jump select { font: 500 .76rem var(--f-ui); color: var(--hero-text); background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.22); border-radius: 999px; padding: 7px 12px; max-width: 190px; cursor: pointer; }
+  .jump select option { color: #111; background: #fff; }
+  #resume[hidden] { display: none; }
+
+  /* day banners */
+  .day-head { margin: 110px 0 0; padding: 30px 28px; border-radius: 22px; background: var(--recap-bg); color: var(--recap-text); position: relative; overflow: hidden; scroll-margin-top: 84px; }
+  .day-head:first-child { margin-top: 56px; }
+  .day-head span { font: 600 .72rem var(--f-ui); letter-spacing: .18em; text-transform: uppercase; color: var(--hero-accent); }
+  .day-head h2 { font-family: var(--f-display); font-weight: 600; font-size: clamp(1.9rem, 4.6vw, 2.6rem); line-height: 1.1; letter-spacing: -.02em; margin: 6px 0 10px; color: var(--hero-text); }
+  .day-head p { font: 400 .98rem/1.6 var(--f-ui); color: var(--recap-text); margin: 0; max-width: 34rem; }
+  .day-head + .chapter { margin-top: 64px; }
+
+  .story .chapter { margin-top: 96px; counter-reset: none; }
+  .story .chapter h3::before { display: none; }
+  .story .chapter h3 { margin-top: 3rem; font-size: clamp(1.4rem, 3vw, 1.75rem); }
+  .covers { font: 500 .84rem/1.5 var(--f-ui); color: var(--accent); margin: 0 0 6px; }
+  .story .read-time { margin-bottom: 18px; }
+  .story .chapter-head::before { right: -12px; }
+
+  /* scene line */
+  .scene { font: 600 .72rem/1.5 var(--f-ui); letter-spacing: .13em; text-transform: uppercase; color: var(--muted); margin: 0 0 1.6rem; padding: 10px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+
+  /* dialogue: the speaker's name sits above the line */
+  .d { position: relative; margin: 0 0 1.2rem; padding: 2px 0 2px 16px; border-left: 3px solid var(--c, var(--rule)); }
+  .d b { display: block; font: 700 .66rem var(--f-ui); letter-spacing: .14em; text-transform: uppercase; color: var(--c, var(--muted)); margin: 0 0 3px; }
+  .d em.act { color: var(--muted); font-size: .94em; }
+  .d em.act::before { content: "("; }
+  .d em.act::after { content: ")"; }
+  .d.you { --c: var(--accent); }
+  .d.meera { --c: var(--blue); }
+  .d.rohan { --c: var(--red); }
+  .d.vikram { --c: #7D5600; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .d.vikram { --c: var(--amber); } }
+  :root[data-theme="dark"] .d.vikram { --c: var(--amber); }
+  .d.priya { --c: var(--green); }
+  .d.other { --c: var(--muted); }
+  .d.you { background: linear-gradient(90deg, var(--accent-soft), transparent 70%); border-radius: 0 10px 10px 0; padding: 6px 0 6px 16px; }
+
+  /* whiteboards */
+  pre.board { position: relative; padding-top: 38px; font-size: .8rem; line-height: 1.55; }
+  pre.board::before { content: "On the whiteboard"; position: absolute; left: 24px; top: 12px; font: 600 .62rem var(--f-ui); letter-spacing: .16em; text-transform: uppercase; color: var(--hero-accent); }
+  pre.board.file::before { content: attr(data-label); letter-spacing: .04em; text-transform: none; font-family: var(--f-mono); font-size: .7rem; max-width: calc(100% - 48px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Your move */
+  details.move { margin: 2rem 0; border: 1px solid var(--rule); border-left: 4px solid var(--accent); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+  details.move summary { list-style: none; cursor: pointer; padding: 16px 52px 16px 22px; font: 500 1rem/1.5 var(--f-ui); color: var(--ink); position: relative; }
+  details.move summary::-webkit-details-marker { display: none; }
+  details.move summary span { display: block; font: 600 .66rem var(--f-ui); letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+  details.move summary::after { content: "+"; position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font: 500 1.4rem var(--f-mono); color: var(--accent); }
+  details.move[open] summary::after { content: "\2212"; }
+  details.move p { margin: 0; padding: 0 22px 18px; font: 400 .98rem/1.65 var(--f-ui); color: var(--ink-2); }
+
+  /* cliffhanger */
+  .hook { font-family: var(--f-display); font-style: italic; font-size: 1.22rem; line-height: 1.55; color: var(--accent); text-align: center; margin: 3rem 0 2rem; padding: 0 12px; text-wrap: balance; }
+  .hook::before { content: "\2766"; display: block; font-style: normal; font-size: 1.3rem; margin-bottom: 8px; opacity: .8; }
+
+  /* notebook recap */
+  .story .takeaways::before { content: "Alex's notebook \00B7\00A0 what the book says"; }
+  .story .takeaways { margin-top: 2.2rem; }
+
+  /* scorecards */
+  .score, .master { background: var(--surface); border: 1px solid var(--rule); border-radius: 18px; padding: 18px 22px 14px; margin: 2rem 0; box-shadow: var(--shadow); }
+  .score-h { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 14px; font: 600 .74rem var(--f-ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0 0 12px; }
+  .score-h b { color: var(--ink); letter-spacing: .06em; }
+  .score ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; }
+  .score li { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 0; padding: 7px 0; border-bottom: 1px solid var(--rule); font: 500 .9rem var(--f-ui); color: var(--ink-2); }
+  .score li i { font-style: normal; letter-spacing: .08em; white-space: nowrap; font-size: .95rem; }
+  .st-on, .on { color: var(--accent); }
+  .off { color: var(--muted); opacity: .4; }
+  .score-n { font: 400 .78rem/1.5 var(--f-ui); color: var(--muted); margin: 10px 0 0; }
+
+  .master table { display: table; width: 100%; font-size: .82rem; margin: 0 0 12px; border: 0; background: none; overflow: visible; }
+  .master { overflow-x: auto; }
+  .master th { white-space: normal; padding: 8px 6px; font-size: .6rem; text-align: center; }
+  .master tbody th { text-align: left; font: 600 .84rem var(--f-ui); letter-spacing: 0; text-transform: none; background: none; white-space: nowrap; padding-left: 10px; }
+  .master thead th:first-child { text-align: left; padding-left: 10px; }
+  .master td { text-align: center; padding: 8px 4px; font-weight: 700; }
+  .master td.cost { font-size: .72rem; white-space: nowrap; color: var(--ink-2); }
+  .master td.s1 { background: rgba(240,107,102,.20); }
+  .master td.s2 { background: rgba(240,150,102,.16); }
+  .master td.s3 { background: rgba(217,165,32,.16); }
+  .master td.s4 { background: rgba(157,176,44,.20); }
+  .master td.s5 { background: rgba(43,122,75,.24); }
+  .style-card { background: var(--bg); border: 1px solid var(--rule); border-radius: 14px; padding: 14px 18px 4px; margin: 0 0 10px; }
+  .style-card h4 { margin: 0 0 6px; font-size: 1.1rem; }
+  .style-card p { margin: 0 0 .6rem; font-size: .95rem; line-height: 1.6; }
+
+  .next { margin-top: 3.2rem; text-decoration: none; }
+  .closing-note { font-family: var(--f-display); font-size: 1.3rem; line-height: 1.5; color: var(--ink); margin: 3rem 0 1rem; text-wrap: pretty; }
+
+  @media (max-width: 999px) {
+    .cast-panel { justify-self: stretch; max-width: none; }
+  }
+  @media (max-width: 640px) {
+    .score ul { grid-template-columns: 1fr; }
+    .jump select { max-width: 120px; }
+    .day-head { padding: 24px 22px; }
+    .solo { padding: 0 16px; }
+    .story .chapter-head::before { display: none; }
+    pre.board { font-size: .74rem; }
+  }
+  @media print { .jump, .day-head { break-before: page; } }
+
+  .plan-day { margin: 0 0 22px; }
+  .plan-h { font: 500 .9rem var(--f-ui); color: var(--muted); margin: 0 0 6px; }
+  .plan-h b { color: var(--accent); letter-spacing: .12em; text-transform: uppercase; font-size: .72rem; margin-right: 8px; }
+  .plan { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+  .plan li { margin: 0; border-bottom: 1px solid var(--rule); }
+  .plan a { display: flex; gap: 14px; align-items: baseline; padding: 10px 4px; text-decoration: none; color: var(--ink); font: 500 1rem var(--f-ui); }
+  .plan a:hover .pt { color: var(--accent); }
+  .plan .pn { font: 500 .72rem var(--f-mono); color: var(--accent); min-width: 22px; }
+  .plan .pm { margin-left: auto; font-size: .78rem; color: var(--muted); white-space: nowrap; }
+
+</style>
+</head>
+<body id="top" class="story">
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="bar">
+  <div class="bar-in">
+    <a class="brand" href="#top">You are<i> the architect</i></a>
+    <div class="bar-links">
+      <label class="jump"><span class="sr">Jump to chapter</span><select id="jump" aria-label="Jump to chapter"><option value="">Jump to&hellip;</option><option value="ch1">1. The Glass Room</option><option value="ch2">2. The Map</option><option value="ch3">3. The Layer Cake</option><option value="ch4">4. Lines in the Concrete</option><option value="ch5">5. The Plug Socket</option><option value="ch6">6. Heartbeats and Grains of Sand</option><option value="ch7">7. Sale Night</option><option value="ch8">8. The Interrogation</option><option value="ch9">9. The Floor Plan</option><option value="ch10">10. Two Laws and a Book of Memory</option><option value="ch11">11. The Notebook</option></select></label>
+      <div class="size-ctl" role="group" aria-label="Text size"><button id="smaller" type="button" aria-label="Smaller text">A&minus;</button><button id="larger" type="button" aria-label="Larger text">A+</button></div>
+      <button id="theme" type="button" aria-label="Switch color theme">Dark</button>
+    </div>
+  </div>
+  <div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
+</div>
+
+<header class="hero">
+  <div class="hero-in">
+    <div class="hero-copy">
+      <p class="eyebrow">A story about software architecture</p>
+      <h1>You are <em>the architect.</em></h1>
+      <p class="hero-sub">It is your first day as Principal Architect. Seven clients, five styles, two laws, and one mentor with a grid notebook are waiting for you.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#ch1">Start Chapter 1</a>
+        <a class="btn btn-ghost" id="resume" href="#top" hidden>Resume reading</a>
+      </div>
+      <ul class="meta">
+        <li><b>11</b> chapters</li>
+        <li><b>~1 h 23 min</b> in total</li>
+        <li><b>2</b> reading days</li>
+      </ul>
+      <p class="credit">Based on <em>Head First Software Architecture</em> by Raju Gandhi, Mark Richards and Neal Ford, retold in my own words as a story.</p>
+    </div>
+    
+<aside class="cast-panel" aria-label="The cast">
+  <p class="cast-h">The cast</p>
+  <ul>
+    <li><span class="av a-you">A</span><div><b>Alex <i>(you)</i></b><small>New Principal Architect. Sharp, curious, a little nervous.</small></div></li>
+    <li><span class="av a-meera">M</span><div><b>Meera</b><small>Distinguished Architect and your mentor. Black coffee, grid notebook, and she never gives an answer when a question will do.</small></div></li>
+    <li><span class="av a-rohan">R</span><div><b>Rohan</b><small>Senior developer. Brilliant, loud, and in love with whatever tool is trending today.</small></div></li>
+    <li><span class="av a-vikram">V</span><div><b>Vikram</b><small>VP of Product. Lives in slide decks, promises impossible deadlines, speaks in buzzwords.</small></div></li>
+    <li><span class="av a-priya">P</span><div><b>Priya</b><small>Lead Ops and database engineer. Has seen every midnight crash. Trusts nobody.</small></div></li>
+  </ul>
+</aside>
+  </div>
+</header>
+
+<main id="main">
+  <div class="solo intro">
+    <p class="section-kicker">How to read this</p>
+    <h2 class="intro-h">Read it like a story. Learn it like a course.</h2>
+    <p class="welcome-p">You are <strong>Alex</strong>. Whenever the story says &ldquo;you&rdquo;, that is you. When someone speaks, you will see their name above the line, so you never get lost in a long chat.</p>
+    <ul class="howto">
+      <li><b>Whiteboard boxes</b> hold the diagrams and lists that Alex draws. These are the important parts.</li>
+      <li><b>&ldquo;Your move, Alex&rdquo;</b> boxes ask you a question. Think for ten seconds, then open the answer.</li>
+      <li><b>Scorecards</b> are the book's star ratings for each style. Five stars is very strong, one star is weak.</li>
+      <li><b>Alex's notebook</b> ends every chapter with a short recap. If you have only five minutes, read just these.</li>
+    </ul>
+    <p class="fine">The companies and the people in the story are made up for fun. Real names such as Zomato, Uber, Amazon, Cashify and BookMyShow are only there to give you the feel. I do not know how those companies are really built inside, so none of the story is a claim about them. The ideas, rules, numbers and star ratings come from the book. The exercises are left out.</p>
+  </div>
+
+  <section class="journey" id="chapters" aria-label="Chapters">
+    <div class="solo">
+      <p class="section-kicker">The plan</p>
+      <h2 class="intro-h">Two days. Eleven chapters.</h2>
+      <div class="plan-day"><p class="plan-h"><b>Day 1</b> See the whole forest</p><ol class="plan"><li><a href="#ch1"><span class="pn">01</span><span class="pt">The Glass Room</span><span class="pm">6 min</span></a></li><li><a href="#ch2"><span class="pn">02</span><span class="pt">The Map</span><span class="pm">7 min</span></a></li><li><a href="#ch3"><span class="pn">03</span><span class="pt">The Layer Cake</span><span class="pm">6 min</span></a></li><li><a href="#ch4"><span class="pn">04</span><span class="pt">Lines in the Concrete</span><span class="pm">6 min</span></a></li><li><a href="#ch5"><span class="pn">05</span><span class="pt">The Plug Socket</span><span class="pm">7 min</span></a></li><li><a href="#ch6"><span class="pn">06</span><span class="pt">Heartbeats and Grains of Sand</span><span class="pm">9 min</span></a></li><li><a href="#ch7"><span class="pn">07</span><span class="pt">Sale Night</span><span class="pm">8 min</span></a></li></ol></div><div class="plan-day"><p class="plan-h"><b>Day 2</b> Learn the tools</p><ol class="plan"><li><a href="#ch8"><span class="pn">08</span><span class="pt">The Interrogation</span><span class="pm">8 min</span></a></li><li><a href="#ch9"><span class="pn">09</span><span class="pt">The Floor Plan</span><span class="pm">9 min</span></a></li><li><a href="#ch10"><span class="pn">10</span><span class="pt">Two Laws and a Book of Memory</span><span class="pm">9 min</span></a></li><li><a href="#ch11"><span class="pn">11</span><span class="pt">The Notebook</span><span class="pm">7 min</span></a></li></ol></div>
+    </div>
+  </section>
+
+  <div class="solo story-body">
+    <div class="day-head" id="day1"><span>Day 1</span><h2>See the whole forest</h2><p>The big picture first. What architecture is, a map of styles, and the five styles one by one, from simple to complex.</p></div><section class="chapter" id="ch1" data-title="The Glass Room"><header class="chapter-head" data-num="01"><p class="chapter-num">Chapter 1<span class="part-tag">Day 1 · See the whole forest</span></p><h2>The Glass Room</h2><p class="covers">Book chapter 1 · What software architecture is</p><p class="read-time">About 6 min read</p><p class="lede">Alex&#x27;s first morning. A client, a very confident developer, and a whiteboard.</p></header><p class="scene">Bengaluru · Monday · 9:10 AM · Rain on the glass</p>
+<p>You had been Principal Architect for exactly one hour and ten minutes.</p>
+<p>Your badge was still warm from the printer. Your coffee was too hot to drink. And now you were standing in the Glass Room, the fourth-floor war room at Lighthouse Labs. The walls were glass. The whiteboards were huge. The rain outside was louder than the air conditioner.</p>
+<p>Vikram, the VP of Product, uncapped a red marker and slapped the whiteboard with it.</p>
+<p class="d vikram"><b>Vikram</b>“Good morning, Alex! Welcome to the team! Big news. Our first client is <em>ZipEats</em>, a hyperlocal food-ordering app. Think Zomato, but built for one neighbourhood at a time. They want a beta in thirty days. Rohan, tell Alex the plan.”</p>
+<p>Rohan, the Senior Developer, leaned forward. He was a brilliant coder with a very loud keyboard and a very big heart for new tools.</p>
+<p class="d rohan"><b>Rohan</b><em class="act">eyes shining</em> “Fifty microservices. Written in Go and Rust. Deployed on Kubernetes. They talk over gRPC. And a graph database, because it was trending on Hacker News this morning.”</p>
+<p class="d vikram"><b>Vikram</b><em class="act">nodding like he understood every word</em> “Love it. Very scalable.”</p>
+<p>Everyone turned to look at you.</p>
+<p>In the corner, Meera took a slow sip of black coffee. She was the Distinguished Architect who had hired you. She carried a battered grid notebook and she never gave an answer when a question would do. Today she gave you nothing at all. Not a word, not a hint.</p>
+<p>This was your room now.</p>
+<p>You stood up, walked to the whiteboard, and picked up a blue marker.</p>
+<p class="d you"><b>You</b>“Rohan, a question. If I ask what kind of house you are building, and you say ‘Victorian style’, have you given me the blueprint?”</p>
+<p class="d rohan"><b>Rohan</b>“Well... I told you the style.”</p>
+<p class="d you"><b>You</b>“You gave me one quarter of the picture.”</p>
+<h3>The four pieces of every architecture</h3>
+<p>You drew four boxes on the glass. Then you tapped them one by one.</p>
+<pre class="board"><code>   THE FOUR DIMENSIONS OF ARCHITECTURE
+
+  +----------------------+   +----------------------+
+  | 1. CHARACTERISTICS   |   | 2. DECISIONS         |
+  | What must the system |   | The big rules, e.g.  |
+  | be great at?         |   | &quot;UI never talks to   |
+  |                      |   |  the database&quot;       |
+  +----------------------+   +----------------------+
+  +----------------------+   +----------------------+
+  | 3. LOGICAL           |   | 4. STYLE             |
+  |    COMPONENTS        |   | The overall shape:   |
+  | The &quot;rooms&quot;: Menu,   |   | layered, microkernel,|
+  | Orders, Payments     |   | microservices...     |
+  +----------------------+   +----------------------+</code></pre>
+<p class="d you"><b>You</b>“Every software architecture has four dimensions. A room has length, width, and height. A system has these four. <strong>Characteristics</strong> are the qualities the system must have, like speed, safety, or the ability to handle crowds. <strong>Decisions</strong> are the big rules the team must follow. <strong>Logical components</strong> are the building blocks of the business, like Order Placement or Payment. And <strong>style</strong> is the overall shape of the system.”</p>
+<p class="d you"><b>You</b>“Rohan said ‘microservices’. That is only one box. It is the style. We still don’t know what ZipEats must be great at. We don’t know the rooms. We don’t know the rules.”</p>
+<p class="d rohan"><b>Rohan</b><em class="act">defensive</em> “Fine. Then I am making a <em>design</em> decision. Microservices and a graph database.”</p>
+<p>Meera lowered her cup.</p>
+<p class="d meera"><b>Meera</b>“Is that design? Or is that architecture?”</p>
+<p>Rohan frowned.</p>
+<p class="d rohan"><b>Rohan</b>“Aren’t they the same thing?”</p>
+<h3>The house test</h3>
+<p>You walked to the window. Rain was running down the glass in long lines.</p>
+<p class="d you"><b>You</b>“Think of a house. The colour of the walls, the place of the sofa, the rug in the hall. That is design. It is cheap to change. You can repaint on a Sunday. Now think of the poured concrete, the load-bearing walls, and the roof. That is architecture. If you start building a one-storey ranch house and, halfway, decide you want a three-storey Victorian mansion, you break the budget and you miss your move-in date.”</p>
+<p class="d you"><b>You</b>“Martin Fowler said it best: software architecture is ‘the stuff that’s hard to change.’”</p>
+<p>In software it is the same. Design is how a screen looks, which colours you pick, or how you arrange the classes inside one feature. Architecture is how the web pages talk to the services, how the services talk to the databases, and how everything is shipped to servers.</p>
+<p class="d meera"><b>Meera</b>“Most real choices sit somewhere <em>between</em> the two, Alex. So how does a developer know when to decide alone, and when to call the architect?”</p>
+<p>You wrote three questions on the board.</p>
+<pre class="board"><code>  IS THIS DECISION &quot;ARCHITECTURE&quot;?
+
+  1. Strategic or tactical?
+     A chat between two devs = tactical.
+     Weeks of planning with many people = strategic.
+
+  2. How hard is it to change?
+     Move a button      -&gt; 10 minutes.
+     Monolith -&gt; micro  -&gt; a year.
+
+  3. How big are the trade-offs?
+     Rug colour    -&gt; tiny.
+     City to live in -&gt; huge.</code></pre>
+<p class="d you"><b>You</b>“The more strategic, the harder to change, and the bigger the trade-offs, the more architectural it is. Let me show you with a real case. Rohan, you want to put an asynchronous queue between Order Placement and Inventory. The customer places an order, the order service drops a message in the queue, and it does not wait for the stock check. Ordering feels instant. Is this architecture?”</p>
+<p class="d rohan"><b>Rohan</b>“It’s just a queue! Ten lines of code. That’s design.”</p>
+<p class="d you"><b>You</b>“Run the three questions. Strategic or tactical? Tactical. Two developers could do it in an afternoon. Effort to change? Low. Now trade-offs. Ordering feels fast, but the stock count updates <em>late</em>. Two people can buy the last pizza base at the same time. That means angry customers and back-orders. Big trade-off.”</p>
+<p class="d you"><b>You</b>“So this decision sits in the middle, leaning a little towards architecture. A developer can build it, but an architect must be in the room. You need all three questions. Any one alone would lie to you.”</p>
+<p>Rohan looked at the board for a long moment.</p>
+<p class="d rohan"><b>Rohan</b><em class="act">quietly</em> “Okay. That’s... actually useful.”</p>
+<details class="move"><summary><span>Your move, Alex</span>Is “use a different font on the checkout button” an architectural decision?</summary><p>No. It is tactical, it takes minutes to undo, and the trade-offs are tiny. It is pure design. Compare it with “split Payments into its own separate service”. That needs weeks of planning, it is hard to undo, and the trade-offs are big. That one is architecture.</p></details>
+<h3>The puzzle</h3>
+<p class="d you"><b>You</b>“One more thing. These four boxes are pieces of a puzzle. They must fit together. If I choose ‘very high scalability’ as a characteristic, it must show up in the style I pick, in the components I draw, and in the decisions I write. Change one piece, and you must check the other three. And you cannot skip a piece.”</p>
+<p class="d vikram"><b>Vikram</b><em class="act">tapping his watch</em> “Fascinating lecture. Truly. But I have a thirty-day deadline, and I want to know one thing. Why are we <em>not</em> doing Rohan’s fifty microservices?”</p>
+<p>You smiled. You had been waiting for this question.</p>
+<p class="d you"><b>You</b>“Because we don’t have a map yet, Vikram. And you should never pick a road without a map.”</p>
+<p>Meera closed her notebook, just a little, the way a person does when she is trying not to smile.</p>
+<p class="hook">Before you choose a style, you must be able to place it on the map. And the map has just two questions.</p>
+<div class="takeaways"><ul><li><strong>Architecture</strong> is the structure of a system, the part that is hard and costly to change. <strong>Design</strong> is the detail and the looks, which is easy to change.</li><li>Architecture has <strong>four dimensions</strong>: characteristics, decisions, logical components, and style. Saying “we use microservices” only gives you one of the four.</li><li>The four pieces fit like a puzzle. Change one, and check the other three.</li><li>To find out if a choice is architectural, ask three questions: Is it <strong>strategic</strong>? Is it <strong>hard to change</strong>? Are the <strong>trade-offs big</strong>? You need all three answers.</li><li>Characteristics come first. You cannot choose a database or a style until you know what the system must be great at.</li></ul></div><a class="next" href="#ch2"><span><small>Next chapter</small><strong>2. The Map</strong></span></a></section><section class="chapter" id="ch2" data-title="The Map"><header class="chapter-head" data-num="02"><p class="chapter-num">Chapter 2<span class="part-tag">Day 1 · See the whole forest</span></p><h2>The Map</h2><p class="covers">Book chapter 5 · Architectural styles, a simple map</p><p class="read-time">About 7 min read</p><p class="lede">Two questions that place every architectural style on one map.</p></header><p class="scene">The Glass Room · 9:55 AM · The rain has not stopped</p>
+<p>You drew a big cross on the whiteboard. A simple two-by-two grid, four empty boxes.</p>
+<p class="d you"><b>You</b>“There are hundreds of architectural styles, and new ones appear every year. Nobody can remember all of them. You don’t need to. You only need two questions, and with them you can place <em>any</em> style on a map.”</p>
+<pre class="board"><code>                 HOW IS IT SHIPPED? (Deployment)
+                 Monolith          Distributed
+              +---------------+-----------------+
+   Technical  |               |                 |
+ HOW IS THE   |      ?        |        ?        |
+ CODE SLICED? +---------------+-----------------+
+ (Partitioning)               |                 |
+   Domain     |      ?        |        ?        |
+              +---------------+-----------------+</code></pre>
+<h3>Question 1: How do you slice the code?</h3>
+<p class="d you"><b>You</b>“There are only two ways to slice a system. The first is <strong>technical partitioning</strong>. You cut the system by <em>technical job</em>. All the screen code lives together. All the business rules live together. All the database code lives together. Think of a giant wedding kitchen. One crew only chops vegetables. One crew only cooks. One crew only plates the food.”</p>
+<p class="d rohan"><b>Rohan</b>“That’s separation of concerns. I like it.”</p>
+<p class="d you"><b>You</b>“You should. Now the second way is <strong>domain partitioning</strong>. You cut the system by the <em>business problem</em>. Everything about Customers lives together. Everything about Payments lives together. Think of a food court. The dosa stall has its own griddle and its own cashier. The biryani stall has its own pot and its own cashier. Every stall is complete.”</p>
+<p>You showed them how it looks in the code folders.</p>
+<pre class="board"><code>  Technical slicing        Domain slicing
+  app.presentation.customer   app.customer.presentation
+  app.services.customer       app.customer.services
+  app.persistence.customer    app.customer.persistence</code></pre>
+<p class="d you"><b>You</b>“The customer code appears in both. The only difference is what comes first in the name: the technical job, or the business area.”</p>
+<p class="d meera"><b>Meera</b>“And which one is better?”</p>
+<p class="d you"><b>You</b>“Technical slicing works well when your team is split by skill: front-end people, back-end people, and database people. Domain slicing matches the real business problem more closely. Neither is always better. Your team and your problem decide.”</p>
+<h3>Question 2: How many things do you ship?</h3>
+<p class="d you"><b>You</b>“The second question is about deployment. Deployment means putting your software on servers so people can use it. Do you ship <em>one</em> package, or <em>many</em> packages that run separately?”</p>
+<p class="d you"><b>You</b>“A <strong>monolith</strong> is shipped as one unit. One JAR file. One .exe. One running process. A <strong>distributed system</strong> is split into many units, and they talk to each other over a network.”</p>
+<p>Rohan was already shaking his head.</p>
+<p class="d rohan"><b>Rohan</b>“Monolith is a dirty word. Nobody serious builds monoliths anymore.”</p>
+<p class="d meera"><b>Meera</b><em class="act">calmly</em> “Rohan, say that again after you hear what a monolith is good at.”</p>
+<p>You wrote two lists on the board. Left side first.</p>
+<pre class="board"><code>  MONOLITH - the good
+  + Simple: one codebase, easy to understand
+  + Cheap: less infrastructure to pay for
+  + Fast to start: perfect when you must launch soon
+  + Easy to debug: one stack trace tells the story
+  + Reliable early: almost no network calls to fail</code></pre>
+<p class="d you"><b>You</b>“A <em>stack trace</em> is just the list of steps the program took before it failed. In a monolith, you read one list, from start to end. Remember this for later.”</p>
+<p>Priya, the Lead Ops and Database engineer, had been silent until now. She sat at the back with her arms folded. She had the tired eyes of a person who had seen every midnight server crash of the last ten years.</p>
+<p class="d priya"><b>Priya</b>“Now tell them the bad part.”</p>
+<p class="d you"><b>You</b>“The trouble begins when the app grows.”</p>
+<pre class="board"><code>  MONOLITH - the bad (as it grows)
+  - Scaling is all-or-nothing. If the reports page eats
+    memory, you must copy the WHOLE app.
+  - One bad bug can crash everything.
+  - Every tiny change = deploy the whole thing again.
+  - One codebase = one technology stack for all.</code></pre>
+<p class="d you"><b>You</b>“Now the distributed side. Each part is deployed on its own. So you can scale only the busy parts. A crash can stay inside one service. Each unit is small, so testing is easier. And you can deploy a single change without touching the rest.”</p>
+<p class="d rohan"><b>Rohan</b>“See? That’s what I said!”</p>
+<p class="d priya"><b>Priya</b><em class="act">flatly</em> “You forgot the bill.”</p>
+<h3>The price of the network</h3>
+<p>Priya stood up. She walked to the board and wrote a title in big letters: THE FALLACIES OF DISTRIBUTED COMPUTING.</p>
+<p class="d priya"><b>Priya</b>“In the 1990s, some engineers at Sun Microsystems, including L. Peter Deutsch, made a list of false ideas that developers believe about networks. Developers always think the network is reliable, fast, and free. It is none of those. Read that list before you build anything distributed.”</p>
+<p>She turned to Rohan.</p>
+<p class="d priya"><b>Priya</b>“Here is what the network costs you. <strong>Performance</strong>: many small services calling each other over a network are slower than one program calling itself. <strong>Cost</strong>: more servers, more network setup, bigger cloud bills. <strong>Simplicity</strong>: it is the opposite of simple. And <strong>debugging</strong>: when an order fails across twelve services, the error could be in any of them. You will need log aggregation, which means collecting logs from every service in one place. That is extra cost too.”</p>
+<p class="d priya"><b>Priya</b>“I once spent a whole night finding one failed request. At 3 AM, I promised myself I would never again say ‘just split it into services.’”</p>
+<p>Rohan, for the first time that day, said nothing.</p>
+<div class="tip"><p>Many teams choose a distributed design because it sounds modern. Later they discover they bought a lot of network trouble that they never needed.</p></div>
+<h3>Four boxes, no winners</h3>
+<p>You filled the grid.</p>
+<pre class="board"><code>                  Monolith              Distributed
+              +-------------------+-----------------------+
+   Technical  | Layered           | Microkernel, when its |
+              | Microkernel (the  | plugins run as their  |
+              | usual way)        | own services          |
+              +-------------------+-----------------------+
+   Domain     | Modular monolith  | Microservices         |
+              +-------------------+-----------------------+</code></pre>
+<p class="d you"><b>You</b>“Event-driven architecture is distributed too. It is a different kind of animal, and we will meet it last.”</p>
+<p class="d you"><b>You</b>“These are the styles we will walk through, one by one. Layered. Modular monolith. Microkernel. Microservices. Event-driven. And notice, no box says ‘best’. Every box has strengths, and every box has a bill.”</p>
+<p class="d meera"><b>Meera</b>“A style is a bundle of trade-offs, Alex. That is all it is. The monolith and the distributed system could talk all day. The monolith says, ‘I am simpler, cheaper, and faster to start.’ The distributed system says, ‘True, but I can keep growing when you cannot.’ Both are right.”</p>
+<p>Vikram had been counting on his fingers.</p>
+<p class="d vikram"><b>Vikram</b>“Okay, okay. But <em>our</em> project. Thirty days. One UI person, two back-end developers, and Priya on the database. And a very small budget.”</p>
+<p>You looked at the team. You looked at the calendar. Then you looked at Rohan, kindly.</p>
+<p class="d you"><b>You</b>“With this team, Rohan’s fifty services would mean fifty deployments, fifty pipelines, and a network in the middle of every call. We would still be setting up our servers when the funding runs out. We need structure, but we also need speed.”</p>
+<p class="d vikram"><b>Vikram</b>“So what do we build?”</p>
+<p>You capped the blue marker.</p>
+<p class="d you"><b>You</b>“We start with the simplest style that still gives real structure. Layered. Technically sliced. Shipped as one monolith.”</p>
+<p>Rohan opened his mouth. Then he closed it. Then he opened his laptop, very slowly, and typed something.</p>
+<p class="d rohan"><b>Rohan</b>“I’m... writing ‘Fallacies of Distributed Computing’ in my to-read list.”</p>
+<p>Meera smiled into her coffee.</p>
+<p class="hook">Thirty days later, ZipEats went live on a layered monolith. For six months everything was perfect. And then came month eight.</p>
+<div class="takeaways"><ul><li>Place any style on a map with <strong>two questions</strong>: How is the code sliced (partitioning)? How is it shipped (deployment)?</li><li><strong>Technical partitioning</strong> slices by technical job (presentation, business rules, data). <strong>Domain partitioning</strong> slices by business area (customers, payments, orders).</li><li>A <strong>monolith</strong> ships as one unit. It is simple, cheap, fast to start, and easy to debug. But scaling is all-or-nothing and every change means a full redeploy.</li><li>A <strong>distributed system</strong> ships as many units over a network. It scales the busy parts and keeps crashes local. But it is slower, costlier, harder to debug, and far from simple.</li><li>The network is the hidden danger. Remember the Fallacies of Distributed Computing.</li><li>No style is the best. Every style is a set of trade-offs. Match the style to your needs, not to the hype.</li></ul></div><a class="next" href="#ch3"><span><small>Next chapter</small><strong>3. The Layer Cake</strong></span></a></section><section class="chapter" id="ch3" data-title="The Layer Cake"><header class="chapter-head" data-num="03"><p class="chapter-num">Chapter 3<span class="part-tag">Day 1 · See the whole forest</span></p><h2>The Layer Cake</h2><p class="covers">Book chapter 6 · Layered architecture</p><p class="read-time">About 6 min read</p><p class="lede">The simplest style that still gives you structure, and the day it started to hurt.</p></header><p class="scene">Lighthouse Labs · Day 3 of the project · Chai o’clock</p>
+<p>The next morning, you sketched ZipEats on the glass wall. Three boxes, stacked like a tiffin carrier, with a database underneath.</p>
+<pre class="board"><code>   [ Customer phone / browser ]
+              |
+              v
+  +-------------------------------+
+  | PRESENTATION LAYER            |  screens, forms
+  +-------------------------------+
+              |
+              v
+  +-------------------------------+
+  | WORKFLOW (BUSINESS) LAYER     |  order rules, coupon maths
+  +-------------------------------+
+              |
+              v
+  +-------------------------------+
+  | PERSISTENCE LAYER             |  SQL, reading/saving data
+  +-------------------------------+
+              |
+              v
+        ( ONE DATABASE )</code></pre>
+<p class="d rohan"><b>Rohan</b>“Wait. This is just MVC. Model, View, Controller.”</p>
+<p class="d you"><b>You</b>“MVC is a design pattern. It is about roles <em>inside</em> your code. Layered architecture goes one step further. It also decides where the browser, the app server, and the database live. In fact, layers are so old that the book thinks they probably inspired MVC, not the other way round. Your Presentation layer plays the View. The Workflow layer holds the business rules. And Persistence talks to the database.”</p>
+<h3>The relay race</h3>
+<p class="d you"><b>You</b>“Think of a relay race where every runner must touch the baton. A hungry customer taps ‘Place Order’. The baton drops from Presentation to Workflow. The Workflow layer checks the rules and passes it down to Persistence. Persistence saves it into the database. Then the answer runs back up the <em>same</em> road to the customer’s screen.”</p>
+<p class="d rohan"><b>Rohan</b>“Can we add more layers? Like one for restaurant partner APIs? Or loyalty points?”</p>
+<p class="d you"><b>You</b>“Yes. Teams often add a <em>services</em> layer for partners or an <em>integration</em> layer for outside systems. But remember the golden rule: <strong>every request passes through every layer</strong>. So only add a layer if almost every request needs it. A layer that matters for only a few requests slows down everything else.”</p>
+<p>Priya looked up from her laptop.</p>
+<p class="d priya"><b>Priya</b>“And how do we ship it?”</p>
+<p class="d you"><b>You</b>“We have three options.”</p>
+<pre class="board"><code>  THREE WAYS TO SHIP A LAYERED MONOLITH
+
+  Two-tier       All layers in ONE unit, talking to a
+                 database. Like old accounting software.
+                 + simple, fast     - weak scaling
+
+  Three-tier     Web front end (JavaScript) | App server
+                 (workflow + persistence)   | Database
+                 + clean split, better scale
+                 - more parts, slower to start
+
+  Embedded       Everything + database inside ONE device.
+                 A mobile game, a vending machine.
+                 + self-contained   - hard to extend</code></pre>
+<p>You chose three-tier: a JavaScript front end, a Java app server, and Priya’s MySQL database.</p>
+<h3>Six good months</h3>
+<p>And for six months, it was magic.</p>
+<p>The UI specialist lived happily in Presentation. Rohan’s two backend developers lived in Workflow. Priya tuned Persistence. Every database helper she wrote was reused by the whole app. In month three, Vikram asked for a brand-new mobile screen. You built a new Presentation layer and did not touch the other two. It took a week.</p>
+<p class="d meera"><b>Meera</b><em class="act">reading her notebook</em> “That is layered architecture at its best. A new kind of screen touches only one layer.”</p>
+<p>You were proud. You even bought a framed print of the layered cake and hung it on your desk.</p>
+<h3>Month eight</h3>
+<p>Then, on a Monday morning, Vikram stood outside your desk. He was holding a crumpled printout.</p>
+<p class="d vikram"><b>Vikram</b>“Why does it take <em>three weeks</em> to add Custom Pizza Toppings and ZipEats Plus discounts?! It is one feature!”</p>
+<p>You opened the code. Your stomach sank.</p>
+<p>Yes, it was one feature for Vikram. But the code was sliced by technology, not by business. The pizza menu, the discount rules, the delivery address, the loyalty rewards: each business idea had been cut into pieces and spread across every layer.</p>
+<p class="d you"><b>You</b><em class="act">to Meera, over lunch</em> “To add toppings, we change the screens in Presentation, the pricing rules in Workflow, the entities in the model, the SQL in Persistence, and the tables in the database. Five places. So the UI person, the backend people, and Priya must all sit in meetings for days before anyone writes a line of code.”</p>
+<p class="d meera"><b>Meera</b>“That is the big trade-off of layers. Technical changes are easy. If you swap your UI framework, only one layer is touched. But <em>business</em> changes are painful, because a business idea is not technical. It cuts across all layers, like a tiered wedding cake. You can change the icing without touching the sponge. But if you want a new flavour, you must redo every tier.”</p>
+<div class="tip"><p>Layers make technical changes easy and domain changes hard. If your business keeps changing its products and rules, expect layers to fight you.</p></div>
+<p>It got worse. That night, Meera pointed at a commit on your laptop.</p>
+<p class="d meera"><b>Meera</b>“Look at what Rohan did to meet the deadline.”</p>
+<p>Rohan had skipped the Workflow layer completely. A button in the UI called a SQL method in Persistence <em>directly</em>. Three other developers had copied him. Soon everything was connected to everything.</p>
+<p>Your neat layered cake was turning into a <strong>big ball of mud</strong>: a system where so many parts depend on each other that the picture looks like a tangle of electric wires on a street pole.</p>
+<p class="d rohan"><b>Rohan</b><em class="act">very small voice</em> “It was only one shortcut...”</p>
+<p class="d priya"><b>Priya</b><em class="act">not unkindly</em> “It is always one shortcut.”</p>
+<h3>The scorecard</h3>
+<p>Meera took out her grid notebook and drew a quick scorecard. The book rates every style on nine traits, from one star (poorly supported) to five stars (very well supported).</p>
+<div class="score"><p class="score-h">Scorecard: Layered <b>Overall cost $</b></p><ul><li><span>Maintainability</span><i role="img" aria-label="1 out of 5 stars"><span class="on">★</span><span class="off">★★★★</span></i></li><li><span>Testability</span><i role="img" aria-label="2 out of 5 stars"><span class="on">★★</span><span class="off">★★★</span></i></li><li><span>Deployability</span><i role="img" aria-label="1 out of 5 stars"><span class="on">★</span><span class="off">★★★★</span></i></li><li><span>Simplicity</span><i role="img" aria-label="5 out of 5 stars"><span class="on">★★★★★</span><span class="off"></span></i></li><li><span>Evolvability</span><i role="img" aria-label="1 out of 5 stars"><span class="on">★</span><span class="off">★★★★</span></i></li><li><span>Performance</span><i role="img" aria-label="3 out of 5 stars"><span class="on">★★★</span><span class="off">★★</span></i></li><li><span>Scalability</span><i role="img" aria-label="1 out of 5 stars"><span class="on">★</span><span class="off">★★★★</span></i></li><li><span>Elasticity</span><i role="img" aria-label="1 out of 5 stars"><span class="on">★</span><span class="off">★★★★</span></i></li><li><span>Fault tolerance</span><i role="img" aria-label="1 out of 5 stars"><span class="on">★</span><span class="off">★★★★</span></i></li></ul><p class="score-n">One star = poorly supported. Five stars = very well supported.</p></div>
+<p class="d meera"><b>Meera</b>“You got a bargain, Alex. The cost is one dollar sign, the lowest. Simplicity is five stars. Performance is three, because a well-built monolith makes no network calls. Testability is only two. After that, almost everything is one star: maintainability, deployability, evolvability, scalability, elasticity, and fault tolerance. Layered is very easy to start, and very hard to grow.”</p>
+<p>You sighed.</p>
+<p class="d you"><b>You</b>“Rohan is begging me to split it into microservices <em>right now</em>.”</p>
+<p class="d meera"><b>Meera</b><em class="act">raising one eyebrow</em> “With Priya as your only Ops engineer? You will kill the company. Fix the real problem. The pain is that the business is smeared across the layers. You don’t need a network to fix that.”</p>
+<p>You stared at the cake print on your desk for a long minute. Then, slowly, you took a marker and turned it ninety degrees.</p>
+<p class="d you"><b>You</b>“We don’t change the shipping. We change the <em>slicing</em>.”</p>
+<details class="move"><summary><span>Your move, Alex</span>Your business logic is spread across every layer, and every feature touches five places. What is the smallest change that could help, without the network bill of microservices?</summary><p>Keep one deployment (still a monolith), but slice the code by business area instead of by technical job. That is exactly the next idea: the modular monolith.</p></details>
+<p class="hook">You told the team to meet in the all-hands area at 4 PM. “Bring your laptops,” you said. “We are going to draw lines in the concrete.”</p>
+<div class="takeaways"><ul><li><strong>Layered architecture</strong> is technically partitioned and usually a monolith. The classic layers are <strong>presentation, workflow (business rules), and persistence</strong>.</li><li>A request goes down through every layer and comes back up. So only add a layer when almost every request needs it. Common extra layers are <em>services</em> and <em>integration</em>.</li><li>It can be shipped as <strong>two-tier</strong>, <strong>three-tier</strong>, or <strong>embedded/mobile</strong>. Each has trade-offs.</li><li><strong>Strengths:</strong> very simple, quick to build, cheap, good fit for teams split by skill, easy technical reuse and technical changes, and good performance (no network).</li><li><strong>Weakness:</strong> the business domain is spread across all layers, so business changes are painful. It can rot into a <strong>big ball of mud</strong>, and it scales and deploys poorly.</li><li><strong>Scorecard:</strong> Simplicity 5, Performance 3, Testability 2, all others 1. Cost: $.</li></ul></div><a class="next" href="#ch4"><span><small>Next chapter</small><strong>4. Lines in the Concrete</strong></span></a></section><section class="chapter" id="ch4" data-title="Lines in the Concrete"><header class="chapter-head" data-num="04"><p class="chapter-num">Chapter 4<span class="part-tag">Day 1 · See the whole forest</span></p><h2>Lines in the Concrete</h2><p class="covers">Book chapter 7 · Modular monolith</p><p class="read-time">About 6 min read</p><p class="lede">The same single deployment, sliced in a smarter way.</p></header><p class="scene">The all-hands area · 4:00 PM · Forty developers and one very large whiteboard</p>
+<p>By now ZipEats had forty developers. They sat on bean bags, on desks, and on the floor. Somebody had brought samosas.</p>
+<p class="d you"><b>You</b>“Here is the plan. We keep our single deployment. No network calls between parts, no distributed headaches. But we stop slicing the code by technology. From this sprint, ZipEats becomes a <strong>modular monolith</strong>.”</p>
+<p>You erased the horizontal layers and drew tall vertical columns, all inside one big box.</p>
+<pre class="board"><code> +-------------------- ONE DEPLOYMENT --------------------+
+ |                                                        |
+ |  +-------------+  +-------------+  +-------------+     |
+ |  | ORDER       |  | MENU        |  | PAYMENT     |     |
+ |  | module      |  | module      |  | module      |     |
+ |  |  screens    |  |  screens    |  |  screens    |     |
+ |  |  rules      |  |  rules      |  |  rules      |     |
+ |  |  data code  |  |  data code  |  |  data code  |     |
+ |  +------+------+  +------+------+  +------+------+     |
+ +---------|----------------|----------------|------------+
+           v                v                v
+     orders_schema     menu_schema     payments_schema
+        (all inside ONE database server)</code></pre>
+<p class="d rohan"><b>Rohan</b>“Hold on. Each column <em>still</em> has screens, rules, and data code inside?”</p>
+<p class="d you"><b>You</b>“Yes. Inside a module, those layers are a private detail. Think of a vada pav. One bite goes through the bun, the vada, and the chutney together. Each module is one vertical bite of the business: Orders, Menu, Payment, Inventory. We will also change our teams. Instead of a UI team, a backend team, and a database team, we make <strong>cross-functional teams</strong>. The Order team will have UI, backend, and data skills in one pod. They own the whole Order slice, from screen to table.”</p>
+<p class="d you"><b>You</b>“Next time Vikram asks for pizza toppings, the Menu and Order teams handle it together. Payments and Inventory won’t even notice.”</p>
+<p>A developer in the third row raised her hand.</p>
+<p class="d other"><b>Developer</b>“What if my module needs something from another module?”</p>
+<p class="d you"><b>You</b>“Good question. That is the hard part, and I will show you why in two weeks.”</p>
+<h3>The Friday build failure</h3>
+<p>Two weeks later, you were doing code review when you saw a disaster in the making.</p>
+<p>The Order module needed to know whether a restaurant still had mozzarella. Everything lived in one codebase, so a developer’s editor had helpfully auto-imported a class from the Inventory module, <code>StockTableDAO</code>, straight into the Order module. It worked on the first try. The developer was very proud.</p>
+<p class="d you"><b>You</b><em class="act">to Rohan</em> “If modules reach inside each other’s private classes, we don’t have a modular monolith. We have a big ball of mud with nicer folder names.”</p>
+<p>You and Priya spent the next 48 hours building three fences.</p>
+<pre class="board"><code>  THREE FENCES AROUND EVERY MODULE
+
+  1. PUBLIC API ONLY
+     InventoryApi.isInStock(itemId)  &lt;- allowed
+     everything else inside Inventory &lt;- private
+
+  2. COMPILER / BUILD WALLS
+     Java: JPMS (Java Platform Module System)
+     .NET: namespaces + the &quot;internal&quot; keyword
+     Each module = its own Gradle subproject, so
+     private classes cannot even be imported.
+
+  3. AUTOMATED WATCHDOGS
+     ArchUnit (Java), ArchUnitNET (.NET),
+     ts-arch (TypeScript). Break a rule and
+     the build FAILS.</code></pre>
+<div class="tip"><p>A monolithic <em>deployment</em> does not need a monolithic <em>codebase</em>. You can build many modules and join them at build time.</p></div>
+<p class="d rohan"><b>Rohan</b><em class="act">watching the first red build</em> “Whoa. It literally yelled at me.”</p>
+<p class="d priya"><b>Priya</b>“Good. That is what a watchdog is for. Now come and see how they cheat in my database.”</p>
+<h3>The sneaky SQL join</h3>
+<p>Priya opened a query on her screen.</p>
+<pre class="board"><code>  SELECT o.id, r.name, r.price
+  FROM   orders o
+  JOIN   recipes r ON o.recipe_id = r.id;   -- !!! cross-module join</code></pre>
+<p class="d priya"><b>Priya</b>“The Order module is joining its table straight to the Menu module’s table. If the Menu team renames one column tomorrow, orders will crash, and nobody will know why.”</p>
+<p>You nodded. Code was now modular. Data had to follow.</p>
+<p class="d you"><b>You</b>“New law. Every module gets its <strong>own schema</strong>. A schema is a named group of tables. No module may read another module’s tables. No cross-module joins. The order table may store a plain <code>recipe_id</code> number. But if Order needs the recipe’s name or price, it must call the Menu module’s public API.”</p>
+<p class="d rohan"><b>Rohan</b>“That sounds slower.”</p>
+<p class="d you"><b>You</b>“A little. That is a trade-off. In return, each team can change its own tables without waking up the other teams at 2 AM.”</p>
+<details class="move"><summary><span>Your move, Alex</span>A module stores <code>recipe_id</code> in its own table. Is that a problem?</summary><p>No. Storing another module’s ID is fine. The problem is <em>joining into</em> that module’s tables. Each join quietly ties the two modules together again.</p></details>
+<h3>One step at a time</h3>
+<p class="d you"><b>You</b>“Also, you don’t have to do everything on day one. Modularise the code first. Once the team is used to thinking in vertical slices, then modularise the database. Many teams begin with a layered monolith and refactor into a modular one as the app grows. That is a normal path. We started layered. Now we are growing up.”</p>
+<p>Meera had been watching from the back of the room. She now opened her notebook and drew a scorecard.</p>
+<div class="score"><p class="score-h">Scorecard: Modular monolith <b>Overall cost $$</b></p><ul><li><span>Maintainability</span><i role="img" aria-label="3 out of 5 stars"><span class="on">★★★</span><span class="off">★★</span></i></li><li><span>Testability</span><i role="img" aria-label="3 out of 5 stars"><span class="on">★★★</span><span class="off">★★</span></i></li><li><span>Deployability</span><i role="img" aria-label="3 out of 5 stars"><span class="on">★★★</span><span class="off">★★</span></i></li><li><span>Simplicity</span><i role="img" aria-label="4 out of 5 stars"><span class="on">★★★★</span><span class="off">★</span></i></li><li><span>Evolvability</span><i role="img" aria-label="3 out of 5 stars"><span class="on">★★★</span><span class="off">★★</span></i></li><li><span>Performance</span><i role="img" aria-label="3 out of 5 stars"><span class="on">★★★</span><span class="off">★★</span></i></li><li><span>Scalability</span><i role="img" aria-label="1 out of 5 stars"><span class="on">★</span><span class="off">★★★★</span></i></li><li><span>Elasticity</span><i role="img" aria-label="1 out of 5 stars"><span class="on">★</span><span class="off">★★★★</span></i></li><li><span>Fault tolerance</span><i role="img" aria-label="1 out of 5 stars"><span class="on">★</span><span class="off">★★★★</span></i></li></ul><p class="score-n">One star = poorly supported. Five stars = very well supported.</p></div>
+<p class="d meera"><b>Meera</b>“Look at what happened. Cost went up a bit, to two dollar signs, because you need planning, governance tools, and discipline. Simplicity dropped from five stars to four. But maintainability, testability, and deployability jumped to three stars each, because a change now stays inside one module. Performance is still three, because there are still no network calls.”</p>
+<p class="d you"><b>You</b>“And scalability, elasticity, fault tolerance?”</p>
+<p class="d meera"><b>Meera</b>“Still one star each. It is still <em>one</em> process. If one module crashes badly, all of them go down. And remember, the whole app gets one set of characteristics, even if one module, like Payments, needs something different.”</p>
+<p>Rohan scratched his head.</p>
+<p class="d rohan"><b>Rohan</b>“So... it’s like the apartment building idea? Each flat has its own door, plumbing, and wiring?”</p>
+<p class="d meera"><b>Meera</b><em class="act">surprised</em> “Yes. Neighbours can knock on each other’s doors at the main entrance, and that entrance is the public API. But nobody can break through a wall. Repair one flat and you don’t rewire the building.”</p>
+<p>For three months ZipEats hummed along. Pizza toppings took four days, not three weeks. Vikram brought you a mango lassi. You didn’t ask why.</p>
+<p class="hook">Then one morning an email arrived from Mumbai. A fintech CTO wanted a meeting. “My engineers,” he wrote, “keep breaking my money machine every Tuesday.”</p>
+<div class="takeaways"><ul><li>A <strong>modular monolith</strong> is still <em>one deployment</em>, but the code is sliced by <strong>business domain</strong> into modules. Each module is a <strong>vertical slice</strong>.</li><li>Inside a module you may still have layers, but they are a <strong>private detail</strong>.</li><li>Slicing by domain lets you build <strong>cross-functional teams</strong> that own a feature from screen to database.</li><li>The danger: everything is in one codebase, so modules leak into each other. Protect boundaries with <strong>public APIs</strong>, <strong>language/build tools</strong> (JPMS, namespaces, Gradle subprojects), and <strong>governance tests</strong> (ArchUnit, ArchUnitNET, ts-arch).</li><li>Make the <strong>database modular</strong> too: one schema per module, <strong>no cross-module joins</strong>, store IDs instead of foreign keys.</li><li>You can start with code first and modularise the database later. Starting layered and growing into modular is normal.</li><li><strong>Scorecard:</strong> Simplicity 4; Maintainability, Testability, Deployability, Evolvability, Performance 3; Scalability, Elasticity, Fault tolerance 1. Cost: $$.</li><li><strong>Weaknesses:</strong> hard to reuse logic between modules, one set of characteristics for the whole app, easy to blur boundaries, and still limited in elasticity and fault tolerance.</li></ul></div><a class="next" href="#ch5"><span><small>Next chapter</small><strong>5. The Plug Socket</strong></span></a></section><section class="chapter" id="ch5" data-title="The Plug Socket"><header class="chapter-head" data-num="05"><p class="chapter-num">Chapter 5<span class="part-tag">Day 1 · See the whole forest</span></p><h2>The Plug Socket</h2><p class="covers">Book chapter 8 · Microkernel architecture</p><p class="read-time">About 7 min read</p><p class="lede">A tiny core, snap-on plugins, and a CTO whose engineers keep breaking his money machine.</p></header><p class="scene">Mumbai · Bandra Kurla Complex · The 19th floor · A view of the sea, and a very worried CTO</p>
+<p>The CTO of <em>ReNew</em> did not waste time on small talk. ReNew was a fast-moving startup, a bit like Cashify. It bought old phones, tablets, and music players. Then it recycled them or sold them again.</p>
+<p class="d other"><b>ReNew's CTO</b>“Here is the business. We make money when we resell devices at the right price. And a new phone is worth much more than an old one. So every time a new phone model launches, we must add its price rules <em>fast</em>. Three new devices a month. Sometimes three a week.”</p>
+<p>He pointed at a wall of screens.</p>
+<p class="d other"><b>ReNew's CTO</b>“But last Tuesday, one developer added the rules for a new tablet. He had a small bug. It crashed the whole valuation engine. For two hours, we could not value <em>any</em> device. We lost lakhs of rupees.”</p>
+<p>Rohan, who had come along as your deputy, leaned over and whispered.</p>
+<p class="d rohan"><b>Rohan</b>“Modular monolith?”</p>
+<p class="d you"><b>You</b><em class="act">whispering back</em> “A modular monolith still deploys as one unit. Every new phone rule means redeploying everything. Look at the pattern, Rohan. The main flow never changes. Only the device rules change, often, and each rule stands alone.”</p>
+<p>You turned to the CTO.</p>
+<p class="d you"><b>You</b>“You need a <strong>microkernel</strong> architecture. Some people call it the plugin architecture.”</p>
+<h3>A small core and snap-on plugins</h3>
+<p>You drew a small, thick circle in the middle of the glass and snap-on boxes around it.</p>
+<pre class="board"><code>   +-------------+   +-------------+
+   | iPhone      |   | Galaxy Fold |
+   | plugin      |   | plugin      |
+   +------+------+   +------+------+
+          |                 |
+      (both obey the DeviceInterface contract)
+          |                 |
+          v                 v
+   +-------------------------------+
+   |   SMALL, STABLE CORE          |
+   |   receive request, find the   |
+   |   right plugin, return price  |
+   +-------------------------------+
+          ^                 ^
+          |                 |
+   +------+------+   +------+------+
+   | Pixel       |   | iPad        |
+   | plugin      |   | plugin      |
+   +-------------+   +-------------+</code></pre>
+<p class="d you"><b>You</b>“The name comes from the kernel of an operating system. A kernel is small and offers only the basics. Everything else plugs in. A microkernel has just <strong>two parts</strong>. The <strong>core</strong> holds the small, stable logic: take a request, work out which device it is, hand the job to the right plugin, and return the result. The <strong>plugins</strong> hold all the busy, changing, custom rules, one for each device.”</p>
+<p class="d you"><b>You</b>“To support a new phone, we write one new plugin. We never touch the core.”</p>
+<p class="d other"><b>ReNew's CTO</b><em class="act">slowly</em> “So a bug in the new tablet plugin would not break the iPhone plugin.”</p>
+<p class="d you"><b>You</b>“Exactly. Each plugin is isolated. And the rules for the new tablet are kept in one small place.”</p>
+<h3>But plugins alone don’t make a microkernel</h3>
+<p>Rohan raised a finger.</p>
+<p class="d rohan"><b>Rohan</b>“Chrome has extensions. VS Code has extensions. Jenkins has plugins. Does that mean they are all microkernels?”</p>
+<p>You smiled. You liked this question.</p>
+<p class="d you"><b>You</b>“Not necessarily. Lots of software supports plugins. What matters is the core. The book suggests you judge how ‘microkernel-like’ a system is, with two questions.”</p>
+<pre class="board"><code>  HOW MICROKERNEL-LIKE IS IT?
+
+  1. How useful is the core ALONE, with zero plugins?
+     (In a true microkernel: barely useful.)
+
+  2. How often does the core CHANGE?
+     (Should be almost never.)</code></pre>
+<p class="d you"><b>You</b>“If you edit your core every week, you probably put the wrong things in it. Or you picked the wrong style.”</p>
+<div class="tip"><p>Microkernel and microservices are different things. The similar names are only a coincidence.</p></div>
+<h3>The contract</h3>
+<p class="d you"><b>You</b>“How does the core talk to a plugin without knowing its insides? Through a <strong>contract</strong>, also called an interface. We will call ours <code>DeviceInterface</code>. It lists the methods that every plugin must provide, such as <code>estimateValue()</code>. Each plugin implements it. The core calls any plugin the same way.”</p>
+<h3>Inside the core, or outside?</h3>
+<p>The CTO scratched his chin.</p>
+<p class="d other"><b>ReNew's CTO</b>“And how do we attach the plugins?”</p>
+<p>You wrote two options on the board.</p>
+<pre class="board"><code>  ENCAPSULATED PLUGINS        DISTRIBUTED PLUGINS
+  (inside the same program)   (each is its own service)
+
+  A JAR / DLL / gem loaded    Called over the network:
+  into the core&#x27;s memory.     REST (wait for answer) or
+                              messaging (don&#x27;t wait).
+
+  + very fast, no network     + new plugin = NO restart
+  - new plugin = RESTART      + scale each plugin alone
+    the core                  + plugins in any language
+  - same language for all     - network calls are slower</code></pre>
+<p class="d you"><b>You</b>“Imagine a new tablet arrives at 2 PM on a Tuesday. With encapsulated plugins, we build it, then restart the whole assessment service to load it. That means a short outage in the middle of the working day. With distributed plugins, we deploy just the tablet plugin and the core keeps running. The other devices never notice.”</p>
+<p class="d other"><b>ReNew's CTO</b>“We cannot have outages. We lose money every minute.”</p>
+<p class="d you"><b>You</b>“Then we choose distributed plugins. And since our valuation is already fast enough, we call them synchronously over REST. Asynchronous messaging would only add complexity.”</p>
+<h3>The forbidden handshake</h3>
+<p>Before you left Mumbai, you walked past a developer’s desk. He was typing something very quickly.</p>
+<p class="d other"><b>Developer</b>“I’m making the iPhone plugin call the Samsung plugin directly. They both use the same screen-test formula, so I’m saving time.”</p>
+<p class="d you"><b>You</b><em class="act">very calmly</em> “Please stop.”</p>
+<p class="d you"><b>You</b>“Plugins should talk to the <strong>core</strong>, never to each other. If two plugins really must cooperate, the core sits in the middle. Why? Because the moment plugin X depends on plugin Y, you cannot update Y without risking X. The old Eclipse editor does this, and it pays with a lot of complexity, because of ‘transitive dependencies’: A needs B, and B needs C. And every plugin you depend on must also be alive at runtime. That hurts availability.”</p>
+<p class="d rohan"><b>Rohan</b><em class="act">hanging his head</em> “And sharing a library between plugins?”</p>
+<p class="d you"><b>You</b>“Same problem. It ties them together and creates deployment trouble. Be careful.”</p>
+<h3>A bonus trick</h3>
+<p>The ReNew product manager, a quiet woman with a laptop sticker that said <em>Ship It</em>, asked one last question.</p>
+<p class="d other"><b>Product manager</b>“Can we try new price rules on a few customers, before everyone?”</p>
+<p class="d you"><b>You</b>“Yes! That is called A/B testing, and plugins are perfect for it. Keep the old rules in PluginA. Put the experimental rules in PluginB. Then let the core send five percent of traffic to PluginB. Neither plugin even knows the other exists.”</p>
+<p>She typed <em>PluginB!</em> on her laptop and underlined it twice.</p>
+<h3>The scorecard</h3>
+<p>On the train back to Bengaluru, Meera drew a scorecard.</p>
+<div class="score"><p class="score-h">Scorecard: Microkernel <b>Overall cost $</b></p><ul><li><span>Maintainability</span><i role="img" aria-label="3 out of 5 stars"><span class="on">★★★</span><span class="off">★★</span></i></li><li><span>Testability</span><i role="img" aria-label="3 out of 5 stars"><span class="on">★★★</span><span class="off">★★</span></i></li><li><span>Deployability</span><i role="img" aria-label="3 out of 5 stars"><span class="on">★★★</span><span class="off">★★</span></i></li><li><span>Simplicity</span><i role="img" aria-label="4 out of 5 stars"><span class="on">★★★★</span><span class="off">★</span></i></li><li><span>Evolvability</span><i role="img" aria-label="3 out of 5 stars"><span class="on">★★★</span><span class="off">★★</span></i></li><li><span>Performance</span><i role="img" aria-label="3 out of 5 stars"><span class="on">★★★</span><span class="off">★★</span></i></li><li><span>Scalability</span><i role="img" aria-label="1 out of 5 stars"><span class="on">★</span><span class="off">★★★★</span></i></li><li><span>Elasticity</span><i role="img" aria-label="1 out of 5 stars"><span class="on">★</span><span class="off">★★★★</span></i></li><li><span>Fault tolerance</span><i role="img" aria-label="1 out of 5 stars"><span class="on">★</span><span class="off">★★★★</span></i></li></ul><p class="score-n">One star = poorly supported. Five stars = very well supported.</p></div>
+<p class="d meera"><b>Meera</b>“Look at the cost: one dollar sign. It has a simple structure, so the cost is low. Simplicity is four stars. Maintainability, testability, deployability, evolvability, and performance are three each. Testing is easy, because you can test the core and each plugin separately. Performance is better with encapsulated plugins. Scalability is better with distributed plugins. But a monolithic microkernel has the usual monolith limits: scalability, elasticity, and fault tolerance are still one star.”</p>
+<p class="d you"><b>You</b>“So it is great for <em>customisation</em>, one plugin at a time.”</p>
+<p class="d meera"><b>Meera</b>“And terrible if your core changes all the time, or your plugins gossip with each other. Think of a power strip with a strong base. The base is the core. It should rarely change. The sockets are plugins. You can swap appliances whenever you like. If you must rewire the base every week, you have a design problem, not a plugin problem.”</p>
+<p>You looked out of the train window at the sea of rooftops.</p>
+<p class="d you"><b>You</b>“Where else do you find this?”</p>
+<p class="d meera"><b>Meera</b>“IDEs. Browsers. Build tools. Insurance software. Anywhere you have a stable centre and separate, isolated customisations.”</p>
+<p class="hook">Six weeks later, a call came from Gurugram. The caller did not say hello. “We have a hospital system,” he said. “If it fails, a patient could die.”</p>
+<div class="takeaways"><ul><li>A <strong>microkernel</strong> has two parts: a small, stable <strong>core</strong> and any number of <strong>plugins</strong>. It is made for customisation, one plugin at a time.</li><li>Plugins talk to the <strong>core</strong> through a <strong>contract (interface)</strong>. Plugins should <strong>not</strong> talk to each other. If they must, the core is the middleman.</li><li>Judge “microkern-ality” with two questions: How useful is the core alone? How volatile (often-changing) is the core?</li><li><strong>Encapsulated plugins</strong> (JAR/DLL/gem) are fast but need a <strong>restart</strong> and one language. <strong>Distributed plugins</strong> are separate services: no restart, better scaling, any language, but slower network calls.</li><li>Great uses: A/B testing (PluginA vs PluginB), IDEs, browsers, build tools, device trade-in, insurance rules.</li><li><strong>Scorecard:</strong> Simplicity 4; Maintainability, Testability, Deployability, Evolvability, Performance 3; Scalability, Elasticity, Fault tolerance 1. Cost: $.</li><li><strong>Weaknesses:</strong> a core that changes too often, sharing libraries between plugins, chatty plugins, and network cost with distributed plugins.</li></ul></div><a class="next" href="#ch6"><span><small>Next chapter</small><strong>6. Heartbeats and Grains of Sand</strong></span></a></section><section class="chapter" id="ch6" data-title="Heartbeats and Grains of Sand"><header class="chapter-head" data-num="06"><p class="chapter-num">Chapter 6<span class="part-tag">Day 1 · See the whole forest</span></p><h2>Heartbeats and Grains of Sand</h2><p class="covers">Book chapter 10 · Microservices</p><p class="read-time">About 9 min read</p><p class="lede">A hospital where a bug can cost a life, and a very expensive way to be safe.</p></header><p class="scene">Gurugram · A glass tower · Control room of <em>LifeLine</em>, a patient-monitoring company</p>
+<p>The control room looked like a movie set. Twenty screens, all showing tiny green lines that jumped up and down. A nurse named Juan was walking between beds with a tablet.</p>
+<p>The head engineer pointed at the screens.</p>
+<p class="d other"><b>Head engineer</b>“This is MonitorMe, our new hospital system. It reads heart rate, blood pressure, temperature, oxygen, blood sugar, and whether the patient is asleep. It reads from eight different machines. It keeps five minutes of history for every vital sign. One full copy runs inside each hospital, and one hospital can have up to 500 patients. If a number crosses a safe limit, a nurse must hear an alert <em>immediately</em>.”</p>
+<p>Rohan was almost bouncing.</p>
+<p class="d rohan"><b>Rohan</b>“This is it, Alex. This is the one. Microservices! Uber does it. Amazon does it. Every big company does it!”</p>
+<p class="d you"><b>You</b>“Before we agree, Rohan, I want to know <em>why</em>. First: what matters most here?”</p>
+<p>You asked the head engineer five questions and wrote the answers on the glass.</p>
+<pre class="board"><code>  WHAT MONITORME MUST BE GREAT AT
+  1. Testability       - medical software must be tested fully
+  2. Responsiveness    - a nurse hears about a problem FAST
+  3. Fault tolerance   - one broken part must not stop the rest
+  4. Data integrity    - health data must be correct
+  5. Concurrency       - many vital signs watched at once
+
+  NOT top priority here: deployability and scalability.
+  The requirements ask for few changes, and the system
+  serves one hospital at a time.</code></pre>
+<p>You nodded slowly. Fault tolerance and testability are exactly where microservices earn their five stars. But you still wanted to see the price tag before you said yes.</p>
+<h3>What “micro” really means</h3>
+<p class="d rohan"><b>Rohan</b>“Finally! Let me design it. I’ll make every service tiny, under a hundred lines of code!”</p>
+<p class="d you"><b>You</b>“No, Rohan. ‘Micro’ has nothing to do with lines of code. It is about <em>purpose</em>. A microservice has <strong>a single purpose</strong>, is <strong>deployed on its own</strong>, and does <strong>one thing well</strong>.”</p>
+<pre class="board"><code>  SINGLE PURPOSE? (pass = can be a microservice)
+  [yes] Monitor heart rate
+  [yes] Pay for an order with a credit card
+  [yes] Work out the shipping cost for an order
+  [no ] Monitor ALL vital signs
+  [no ] Generate sales forecasts and financial reports
+  [no ] Submit and process a loan application</code></pre>
+<div class="tip"><p>Here is a quick test from me, not from the book. If you need many “and” words to describe what a service does, it is probably not single-purpose.</p></div>
+<h3>Every service owns its data</h3>
+<p>You drew a thick red box around the Heart Rate service <em>and</em> its database, and another around the Sleep Status service and its database.</p>
+<pre class="board"><code>  +--- fence A ----------+      +--- fence B ----------+
+  | Monitor Heart Rate   |      | Sleep Status         |
+  | service              | API  | service              |
+  |        |             | ===&gt; |        |             |
+  |        v             | call |        v             |
+  |  (heart rate data)   |      |  (sleep data)        |
+  +----------------------+      +----------------------+</code></pre>
+<p class="d you"><b>You</b>“Each fence is called a <strong>physical bounded context</strong>. The service and its data live inside it. Nobody else may touch the data. If Heart Rate needs to know whether the patient is asleep, it <em>asks</em> the Sleep service over an API.”</p>
+<p class="d priya"><b>Priya</b><em class="act">appearing with a laptop</em> “Why so strict?”</p>
+<p class="d you"><b>You</b>“Because if fifty services read the same table and you change one column, forty-nine of them may break on the same day. With a fence, the Sleep team can change its tables any time, and Heart Rate never knows.”</p>
+<h3>The grains of sand disaster</h3>
+<p>Three days later, Rohan proudly showed you his design for blood pressure. Four services: <em>Capture</em>, <em>Record</em>, <em>Analyze</em>, and <em>Alert</em>.</p>
+<p class="d you"><b>You</b>“Rohan... to process a single blood pressure reading, this design makes four network hops across four services.”</p>
+<p class="d rohan"><b>Rohan</b>“But smaller is better, right?”</p>
+<p class="d you"><b>You</b>“This mistake has a name: the <strong>Grains of Sand antipattern</strong>. The services are so tiny, like grains of sand, that they must talk to each other all the time to finish one job. That causes tight coupling, slow replies, and reliability problems. Going too big is also wrong. Giant services cost more to maintain, test, and scale. The question is: how do we find the right size?”</p>
+<p>You drew a balance scale. Two forces pull in opposite directions.</p>
+<pre class="board"><code>   SPLIT IT (disintegrators)         MERGE IT (integrators)
+   ---------------------------       ---------------------------
+   * Cohesion: unrelated jobs        * Database transactions:
+     inside the service                a single all-or-nothing
+   * Fault tolerance: contain          update across the work
+     a crash                         * Data dependencies: the
+   * Access control: protect           data is tangled together
+     sensitive data                  * Workflow / chatter:
+   * Volatility: some code             the services must call
+     changes weekly, some yearly       each other all the time
+   * Scalability: 1 reading/sec
+     vs 1 reading/5 minutes</code></pre>
+<p class="d you"><b>You</b>“Look at heart rate, blood pressure, and temperature. Heart rate arrives every second. Temperature arrives once every five minutes. If they share one service, that service must handle both traffic levels. Also, if temperature crashes, we must not lose heart rate. So we split them into three services. <em>Disintegrators win.</em>”</p>
+<p class="d you"><b>You</b>“But inside blood pressure, capture, record, and analyze all use the same data, and chaining four services for one reading would be slow and fragile. So we keep them together. <em>Integrators win.</em>”</p>
+<p class="d rohan"><b>Rohan</b><em class="act">writing in his notebook</em> “Start with bigger services, and split when I understand the domain.”</p>
+<p class="d you"><b>You</b>“That is the memory aid. Splitting one service you understand is far easier than gluing four tiny ones back together.”</p>
+<details class="move"><summary><span>Your move, Alex</span>Patient medical history is very sensitive, and only a few staff may see it. Which force suggests putting it in its own service?</summary><p><strong>Access control</strong> (a disintegrator). In a big service, it is hard to protect one sensitive part. In its own service, you can strictly limit who can reach it.</p></details>
+<h3>Sharing the alert code</h3>
+<p>Every vital-sign service needed the same code: page the doctor and write an audit log when numbers crossed a threshold.</p>
+<p class="d rohan"><b>Rohan</b>“Copy-paste it into each service?”</p>
+<p class="d you"><b>You</b>“That is called replication. If someone fixes a bug in one copy, the others go stale. We have two real choices.”</p>
+<pre class="board"><code>  SHARED SERVICE            SHARED LIBRARY
+  one remote service        a JAR/DLL compiled INTO
+  everyone calls            each service
+
+  + any language            + no network call: fast
+  + update once,            + still works if others
+    everyone gets it          are down
+  - a bad deploy breaks     - a library per language
+    EVERY caller at once    - must redeploy services
+  - network delay             to upgrade
+  - if it is down, no
+    nurse is alerted</code></pre>
+<p class="d you"><b>You</b>“Think of a godown and a kirana shop. A shared service is one giant godown for the whole city: always up to date, but if it closes, everyone waits. A shared library is a small stock kept inside every shop: fast and independent, but when the list changes, you must refill every shop.”</p>
+<p class="d you"><b>You</b>“For alerting, speed and availability are life-and-death. If a nurse is not alerted because a shared service was down, that is unacceptable. We choose the <strong>shared library</strong>.”</p>
+<h3>Nurse Juan’s dashboard</h3>
+<p>Juan tapped <em>Patient Summary</em> on his tablet. It needed heart rate, blood pressure, and temperature, from three services, in one screen.</p>
+<p class="d you"><b>You</b>“Someone must coordinate. That is a <strong>workflow</strong>: one business request that needs several services. There are two ways.”</p>
+<p>You drew them side by side.</p>
+<pre class="board"><code>  ORCHESTRATION (a manager)      CHOREOGRAPHY (a relay race)
+
+        [Orchestrator]           [Service A] -&gt; [Service B]
+        /     |      \                              |
+     [A]     [B]     [C]                             v
+                                                 [Service C]
+
+  + workflow lives in one place  + no bottleneck: fast
+  + easy to restart at the       + loosely coupled
+    failed step                  + each scales on its own
+  + errors handled in one place  - errors scattered
+  - slower, more calls           - hard to restart halfway
+  - tightly coupled              - hard to track state
+  - bottleneck / single point
+    of failure (run copies!)</code></pre>
+<p class="d you"><b>You</b>“Orchestration is like a wedding planner who tells the caterer, the decorator, and the band when to start. Choreography is a relay race. Each runner knows who gets the baton next.”</p>
+<p class="d priya"><b>Priya</b>“And which for Juan’s dashboard?”</p>
+<p class="d you"><b>You</b>“I would pick orchestration. It is a bigger workflow, and we want clear control and easy recovery. But for a simple one, like a technician’s trouble ticket (file it, fix it, close it), choreography is enough. There are few error cases, and it needs less talk between services.”</p>
+<div class="warning"><p>In choreography, do not let one service quietly become the boss of all the others. Then you have built the Front Controller pattern. That is orchestration in disguise, and it defeats the purpose of choreography.</p></div>
+<h3>The scorecard and the bill</h3>
+<p>By the end of the project, LifeLine’s system was flying.</p>
+<div class="score"><p class="score-h">Scorecard: Microservices <b>Overall cost $$$$$</b></p><ul><li><span>Maintainability</span><i role="img" aria-label="5 out of 5 stars"><span class="on">★★★★★</span><span class="off"></span></i></li><li><span>Testability</span><i role="img" aria-label="5 out of 5 stars"><span class="on">★★★★★</span><span class="off"></span></i></li><li><span>Deployability</span><i role="img" aria-label="5 out of 5 stars"><span class="on">★★★★★</span><span class="off"></span></i></li><li><span>Simplicity</span><i role="img" aria-label="1 out of 5 stars"><span class="on">★</span><span class="off">★★★★</span></i></li><li><span>Evolvability</span><i role="img" aria-label="5 out of 5 stars"><span class="on">★★★★★</span><span class="off"></span></i></li><li><span>Performance</span><i role="img" aria-label="2 out of 5 stars"><span class="on">★★</span><span class="off">★★★</span></i></li><li><span>Scalability</span><i role="img" aria-label="5 out of 5 stars"><span class="on">★★★★★</span><span class="off"></span></i></li><li><span>Elasticity</span><i role="img" aria-label="4 out of 5 stars"><span class="on">★★★★</span><span class="off">★</span></i></li><li><span>Fault tolerance</span><i role="img" aria-label="5 out of 5 stars"><span class="on">★★★★★</span><span class="off"></span></i></li></ul><p class="score-n">One star = poorly supported. Five stars = very well supported.</p></div>
+<p class="d rohan"><b>Rohan</b><em class="act">staring at the bill</em> “Why only two stars for performance, one for simplicity, and <em>five</em> dollar signs?”</p>
+<p class="d priya"><b>Priya</b><em class="act">grimly</em> “Because every hop pays three latencies. <strong>Network latency</strong>: the time to reach the service. <strong>Security latency</strong>: re-checking who the user is at every door. <strong>Data latency</strong>: each service calls its own database. A chatty design gets slow very fast. Add the cost of splitting data, building pipelines, and re-organising teams, and the bill climbs.”</p>
+<p class="d you"><b>You</b>“Which brings me to Conway’s Law.”</p>
+<pre class="board"><code>  CONWAY&#x27;S LAW
+  A system tends to copy the communication
+  structure of the company that builds it.
+
+  Separate UI team + backend team + DBA team
+  + microservices   =   big ball of DISTRIBUTED mud</code></pre>
+<p class="d you"><b>You</b>“Microservices works best with cross-functional teams that own their services from the screen to the database. If your data cannot be split, or your teams are split by technology, think twice.”</p>
+<p class="d meera"><b>Meera</b>“And remember the book’s verdicts. An online auction? Good fit: high scalability, concurrency, independent functions. A field-technician trouble-ticket system? Good fit. A small bakery that takes online orders? <em>Not</em> a fit. The size cannot justify the cost. A huge overnight wire-transfer system? Not a fit either.”</p>
+<p>Rohan looked at his notebook, then at the hospital screens.</p>
+<p class="d rohan"><b>Rohan</b>“So microservices isn’t ‘the best’. It’s the best <em>for this</em>.”</p>
+<p class="d meera"><b>Meera</b><em class="act">to you, softly</em> “Your protégé is learning.”</p>
+<p class="hook">Two months later, at 11:45 PM, a phone call arrived from an e-commerce giant in the middle of its biggest sale of the year. “Checkout is dying,” the voice said. “People are leaving.”</p>
+<div class="takeaways"><ul><li>A <strong>microservice</strong> has a <strong>single purpose</strong>, is <strong>deployed on its own</strong>, and does <strong>one thing well</strong>. “Micro” is about purpose, not lines of code.</li><li>Each service <strong>owns its data</strong> inside a <strong>physical bounded context</strong>. Other services must ask via an API, never touch its tables.</li><li><strong>Granularity</strong> is the scope of a service. Too fine = <strong>Grains of Sand antipattern</strong>. Too coarse = big and costly. <strong>Disintegrators</strong> (cohesion, fault tolerance, access control, volatility, scalability) say split. <strong>Integrators</strong> (transactions, data dependencies, chatty workflows) say merge. Start coarse; split when you understand the domain.</li><li>Share common code with a <strong>shared service</strong> (any language, easy update, but network delay and risk) or a <strong>shared library</strong> (fast, available, but versioning pain). Replication (copy-paste) only suits code that never changes.</li><li><strong>Workflow:</strong> use <strong>orchestration</strong> (manager) for clear control and easy recovery; use <strong>choreography</strong> (relay) for speed and independence. Avoid the hidden boss.</li><li><strong>Scorecard:</strong> Maintainability, Testability, Deployability, Evolvability, Scalability, Fault tolerance 5; Elasticity 4; Performance 2; Simplicity 1. Cost: $$$$$.</li><li><strong>Weaknesses:</strong> complexity, three latencies, complex workflows, monolithic databases, and teams split by technology (Conway’s Law).</li></ul></div><a class="next" href="#ch7"><span><small>Next chapter</small><strong>7. Sale Night</strong></span></a></section><section class="chapter" id="ch7" data-title="Sale Night"><header class="chapter-head" data-num="07"><p class="chapter-num">Chapter 7<span class="part-tag">Day 1 · See the whole forest</span></p><h2>Sale Night</h2><p class="covers">Book chapter 11 · Event-driven architecture</p><p class="read-time">About 8 min read</p><p class="lede">Checkout is dying at midnight, in the middle of the biggest sale of the year.</p></header><p class="scene">A 24-hour darshini on MG Road · 11:45 PM · Two plates of masala dosa</p>
+<p>The call had come from <em>Der Nile India</em>, a giant online store, a bit like Amazon. It was the middle of its biggest festival sale of the year. Orders were flying in. Customers were leaving before they could pay.</p>
+<p>You and Meera sat at a steel counter in a small diner, watching a live trace on your iPad.</p>
+<p class="d you"><b>You</b>“Look at the chain. A customer taps <em>Buy Now</em>. Order Placement takes 600 milliseconds to check and save the order. Then it calls Payment <em>and waits</em> while Payment takes 1,200 milliseconds to charge the card. Only then does the customer see a reply.”</p>
+<pre class="board"><code>  SYNCHRONOUS (everyone waits in a line)
+
+  Customer -&gt; Order Placement -&gt; Payment -&gt; reply
+              [ 600 ms ]       [ 1200 ms ]
+                       total wait = 1800 ms</code></pre>
+<p class="d you"><b>You</b>“And that is only two steps. Add inventory and email, also synchronously, and the customer stares at a spinner for several seconds. Worse, if Payment hiccups for ten seconds, Order Placement throws errors at every shopper in that time.”</p>
+<p>Meera did not answer. She pointed her fork at the open kitchen behind the counter.</p>
+<p class="d meera"><b>Meera</b>“Watch the cooks.”</p>
+<p>You watched. A cashier shouted the order once: <em>one dosa, one filter coffee, one mango lassi</em>. Three workers started at the same time. Nobody waited for anybody.</p>
+<p class="d meera"><b>Meera</b>“Did one cook make the dosa, wait for it, then brew the coffee, then blend the lassi? No. Three jobs, three people, at the <em>same moment</em>. The order finished in half the time. And the diner serves twice as many people each hour.”</p>
+<p class="d meera"><b>Meera</b>“Stop making your services phone each other and wait. Switch checkout to <strong>event-driven architecture</strong>, or EDA.”</p>
+<h3>Events, and how they differ from messages</h3>
+<p>At 1 AM, back in the Glass Room, you drew two pictures.</p>
+<pre class="board"><code>  EVENT  - &quot;what just happened&quot;   (past tense, public TOPIC)
+
+  [Order Placement] -- OrderPlaced --&gt; ( TOPIC )
+                                       /   |   \
+                                      v    v    v
+                                [Payment][Inventory][Email]
+
+  MESSAGE - &quot;please do this&quot;     (a command, private QUEUE)
+
+  [Order Service] -- ApplyPaymentForOrder --&gt; [QUEUE] --&gt; [Payment]</code></pre>
+<p class="d you"><b>You</b>“An <strong>event</strong> is something important that has <em>already happened</em>. ‘Order Placed.’ ‘Credit Card Charged.’ It carries a <strong>payload</strong> of data, or sometimes only a key, like an order ID. It goes out to a <strong>topic</strong>, and the sender does not know or care who is listening. A <strong>message</strong> is a command or a request for something that still <em>needs</em> to happen: ‘Apply the payment for this order.’ It goes into a <strong>queue</strong> to exactly one receiver.”</p>
+<p class="d you"><b>You</b>“A quick test: if the sentence is in the <strong>past tense</strong>, it is probably an event. If it is an instruction, it is probably a message.”</p>
+<h3>The new checkout</h3>
+<p>You walked the team through the new checkout, step by step.</p>
+<pre class="board"><code>  1. Customer taps BUY        &lt;- initiating event
+  2. Order Placement saves the order (600 ms),
+     publishes &quot;OrderPlaced&quot;  - - -&gt;  (dotted = async,
+     and replies &quot;Confirmed!&quot;          fire-and-forget)
+  3. Payment, Inventory, Email all hear it and
+     work AT THE SAME TIME.
+  4. Each publishes a FOLLOW-UP (&quot;derived&quot;) event:
+       Payment   -&gt; PaymentApplied
+       Fulfilment-&gt; OrderFulfilled
+       Shipping  -&gt; OrderShipped
+       Inventory -&gt; InventoryAdjusted -&gt; Warehouse
+                    -&gt; StockReplenished
+       Email     -&gt; CustomerNotified</code></pre>
+<p class="d you"><b>You</b>“The customer now waits about 600 milliseconds instead of 1,800. And if Payment goes down for two minutes, Order Placement doesn’t even blink. Customers still see ‘order placed.’ This style is <strong>asynchronous</strong>: the sender fires the event and moves on, like sending a WhatsApp message and continuing your day. Synchronous is like a phone call: you wait until the person picks up.”</p>
+<p>Rohan raised his hand, frowning.</p>
+<p class="d rohan"><b>Rohan</b>“Wait. Nobody is listening to ‘CustomerNotified’. Why waste computing power to publish an event that nobody reads?”</p>
+<p class="d you"><b>You</b>“Because of <strong>extensibility</strong>. Next quarter, when Vikram says, ‘Build a Notification Analytics service so we know which hour of the day gets the most emails,’ how many lines do we change in the Email service?”</p>
+<p class="d rohan"><b>Rohan</b>“...Zero?”</p>
+<p class="d you"><b>You</b>“Zero. The new service just listens to the existing topic. Every important action deserves an event. The cost is tiny. The reward is a system that grows by <em>listening</em>, not by editing old code.”</p>
+<h3>The hidden trap</h3>
+<p>Priya had been sitting with her arms crossed for ten minutes.</p>
+<p class="d priya"><b>Priya</b>“Alex. First Law of Software Architecture. Everything is a trade-off. What did you just give up?”</p>
+<p>You nodded. She was right.</p>
+<p class="d you"><b>You</b>“Error handling just got a lot harder. In the old way, if a customer’s card was declined, Payment told Order Placement at once, and the customer saw ‘Card declined, try another card’ on the checkout screen. Now the customer has seen ‘Order confirmed!’ and closed the app. When the payment fails 1.2 seconds later, Payment must publish a <code>PaymentFailed</code> event. Inventory must release the stock. And the Email service must write to the customer to update the card.”</p>
+<p class="d priya"><b>Priya</b>“More moving parts.”</p>
+<p class="d you"><b>You</b>“Many more. That is the price of speed.”</p>
+<div class="warning"><p>Async makes things faster and looser, but harder to test and harder to recover when something fails halfway. Always plan the failure path, not just the happy path.</p></div>
+<h3>Where does the data live?</h3>
+<p class="d priya"><b>Priya</b><em class="act">leaning forward</em> “Now it’s my turn. In microservices, you forced one database per service. What about EDA?”</p>
+<p class="d you"><b>You</b>“EDA gives us <strong>three database topologies</strong>.”</p>
+<pre class="board"><code>                  ONE SHARED   PER DOMAIN    PER SERVICE
+                  DATABASE
+  Service coupling  good         bad           bad
+  Performance       good         good          bad
+  Simplicity        good         good (less)   bad
+  Ease of change    bad          bad (a bit    good
+                                  better)
+  Fault tolerance   bad          bad (a bit    good (best)
+                                  better)
+  Scalability       bad          bad (a bit    good
+                                  better)</code></pre>
+<p class="d you"><b>You</b>“One shared database is simple and fast, because a service can query any data it needs. But change one table and you can break services you don’t even know about. And if it fails, everything fails. Database-per-service is almost the exact opposite: easy to change, strong against failure, scales well, but slow, complex, and costly, because a service that needs data it does not own must make a synchronous call to the owner. A <strong>domain-partitioned</strong> database sits in the middle. All services in one business domain, like Order Placement, Payment, and Inventory, share a database. Outside services must call.”</p>
+<p class="d priya"><b>Priya</b>“So it’s coupling either way.”</p>
+<p class="d you"><b>You</b>“Yes. Shared databases tie services to the <em>data</em>. Separate databases tie services to <em>each other</em>. Know which coupling you are accepting.”</p>
+<h3>EDA vs microservices</h3>
+<p>Rohan was frowning at the whiteboard.</p>
+<p class="d rohan"><b>Rohan</b>“Honestly, EDA and microservices look the same to me. Both are distributed. What is the real difference?”</p>
+<p>You counted down from six on your fingers.</p>
+<pre class="board"><code>  6. Performance       EDA: 5 stars     Micro: 2 stars
+  5. Bounded contexts  must for micro;  optional in EDA
+  4. Data              micro: one DB per service;
+                       EDA: pick any of the 3 topologies
+  3. Service size      micro: small, single purpose;
+                       EDA &quot;event processors&quot;: any size
+  2. Events vs         EDA reacts to things that HAPPENED;
+     requests          micro handles requests/commands
+  1. How they talk     EDA: async events by default.
+     (the BIG one)     Micro: sync calls (REST) by default.</code></pre>
+<p class="d you"><b>You</b>“And you can mix them. If you combine single-purpose services, strict bounded contexts, <em>and</em> asynchronous events, you get <strong>event-driven microservices</strong>. Note that database-per-service alone does not make you event-driven microservices. You need both of those microservices ideas in the design.”</p>
+<h3>The scorecard</h3>
+<p>You finally got to the bottom of your dosa. Meera slid her notebook across the counter.</p>
+<div class="score"><p class="score-h">Scorecard: Event-driven <b>Overall cost $$$</b></p><ul><li><span>Maintainability</span><i role="img" aria-label="4 out of 5 stars"><span class="on">★★★★</span><span class="off">★</span></i></li><li><span>Testability</span><i role="img" aria-label="2 out of 5 stars"><span class="on">★★</span><span class="off">★★★</span></i></li><li><span>Deployability</span><i role="img" aria-label="3 out of 5 stars"><span class="on">★★★</span><span class="off">★★</span></i></li><li><span>Simplicity</span><i role="img" aria-label="1 out of 5 stars"><span class="on">★</span><span class="off">★★★★</span></i></li><li><span>Evolvability</span><i role="img" aria-label="5 out of 5 stars"><span class="on">★★★★★</span><span class="off"></span></i></li><li><span>Performance</span><i role="img" aria-label="5 out of 5 stars"><span class="on">★★★★★</span><span class="off"></span></i></li><li><span>Scalability</span><i role="img" aria-label="5 out of 5 stars"><span class="on">★★★★★</span><span class="off"></span></i></li><li><span>Elasticity</span><i role="img" aria-label="4 out of 5 stars"><span class="on">★★★★</span><span class="off">★</span></i></li><li><span>Fault tolerance</span><i role="img" aria-label="5 out of 5 stars"><span class="on">★★★★★</span><span class="off"></span></i></li></ul><p class="score-n">One star = poorly supported. Five stars = very well supported.</p></div>
+<p class="d meera"><b>Meera</b>“Cost is three dollar signs. This style shines on the operational traits: performance, scalability, evolvability, and fault tolerance, all five stars. Maintainability and elasticity are four. But simplicity is one star, and testability is two, because async and parallel flows are hard to test. It is easy to <em>find</em> where to change the code. It is hard to test and deploy safely.”</p>
+<p class="d you"><b>You</b>“Like a fast sports car, quick and fun to extend, but harder to keep running smoothly and to test fully.”</p>
+<p class="d meera"><b>Meera</b>“That analogy is yours, not the book’s.”</p>
+<p class="d you"><b>You</b>“I know. It is a good one.”</p>
+<h3>Looking back</h3>
+<p>You paid the bill. Outside, the rain had stopped. The street smelled of wet earth and fried onions.</p>
+<p class="d you"><b>You</b>“Meera... this year I chose a style for four different clients. I think I got most of them right. But how did I really decide? I had a gut feeling. I looked at the team, the budget, the problem. I don’t have a way to <em>prove</em> it.”</p>
+<p>Meera smiled for the first time that day.</p>
+<p class="d meera"><b>Meera</b>“Good. That is the question I was waiting for. This year you saw the whole forest: five styles, five scorecards. Now we go inside the trees. You will learn how to find what a system must be great at, how to find its rooms, how to weigh trade-offs, and how to write down <em>why</em> you chose what you chose. A new project starts on Monday. We will do that one properly.”</p>
+<p class="hook">On Monday morning, Meera put a blank notebook on your desk. “Page one,” she said. “Never skip the questions.”</p>
+<div class="takeaways"><ul><li><strong>Event-driven architecture (EDA)</strong> does many jobs at the same time. An <strong>event</strong> says what already happened (past tense) and goes to a <strong>topic</strong> (anyone can listen). A <strong>message</strong> is a command that goes to a <strong>queue</strong> (one receiver).</li><li><strong>Initiating events</strong> start a process (e.g. customer clicks Buy). Services then publish <strong>derived events</strong>. Publish even events nobody reads: it makes the system <strong>extensible</strong>.</li><li><strong>Asynchronous</strong> (fire-and-forget, dotted lines) makes EDA fast and loosely coupled. The price: <strong>error handling and testing get much harder</strong>.</li><li><strong>Database topologies:</strong> one shared DB (simple, fast, brittle), domain-partitioned (the middle road), database-per-service (flexible and resilient, but slow and costly).</li><li><strong>EDA vs microservices:</strong> the biggest difference is how they talk (async events vs sync requests). Mix them to get <strong>event-driven microservices</strong>.</li><li><strong>Scorecard:</strong> Performance, Scalability, Evolvability, Fault tolerance 5; Maintainability, Elasticity 4; Deployability 3; Testability 2; Simplicity 1. Cost: $$$.</li><li><strong>Weaknesses:</strong> complexity, hard testing, a poor fit when you need lots of synchronous calls, and databases that couple services in one way or another.</li></ul></div><a class="next" href="#ch8"><span><small>Next chapter</small><strong>8. The Interrogation</strong></span></a></section><div class="day-head" id="day2"><span>Day 2</span><h2>Learn the tools</h2><p>Now go inside the trees. How to find what a system must be great at, how to find its rooms, how to weigh trade-offs, and how to remember why.</p></div><section class="chapter" id="ch8" data-title="The Interrogation"><header class="chapter-head" data-num="08"><p class="chapter-num">Chapter 8<span class="part-tag">Day 2 · Learn the tools</span></p><h2>The Interrogation</h2><p class="covers">Book chapter 2 · Architectural characteristics</p><p class="read-time">About 8 min read</p><p class="lede">Big words from the board. Your job is to find out what they really mean.</p></header><p class="scene">Lighthouse Labs · Monday · 9:00 AM · Vikram is holding a two-page document and a huge smile</p>
+<p class="d vikram"><b>Vikram</b>“New project from the board, Alex! It is called <em>Lafter</em>. A social network for tech conferences, with comedy! People post jokes and puns, and followers react with ‘HaHa’ or ‘Giggle’. Thousands of users. Traffic goes crazy during live shows. We have a tiny support team. We work in twelve countries. And the CEO says it must be one hundred percent reliable, blazing fast, and built on Blockchain AI Cloud. Can you start coding today?”</p>
+<p>Rohan was already reaching for his keyboard.</p>
+<p class="d rohan"><b>Rohan</b>“We can be Agile! Start with the features today and fix scalability later.”</p>
+<p>Meera stepped between Rohan and his desk. She did it so gently that it looked like a dance.</p>
+<p class="d meera"><b>Meera</b>“You can iterate on <em>features</em>. You cannot easily iterate on <em>characteristics</em>, Rohan. Trying to make a system scalable after it is built is like digging a basement under a house when the foundation, walls, and roof are already up. It is possible. It is also painful and expensive.”</p>
+<p>You offered Vikram a chair and picked up a black marker.</p>
+<h3>Features vs. characteristics</h3>
+<p class="d you"><b>You</b>“Vikram, your two pages list the <strong>domain requirements</strong>: what the app does. Post a joke of 281 characters. Click HaHa. Speakers get a special icon. My job is to find the <strong>architectural characteristics</strong>: the non-business qualities the system needs to succeed.”</p>
+<p class="d vikram"><b>Vikram</b>“You mean ‘non-functional requirements’?”</p>
+<p class="d you"><b>You</b>“I try not to say that. It makes scalability and security sound useless. ‘Quality attributes’ sounds like a checklist you tick at the end. A quality is an <strong>architectural characteristic</strong> only if it meets three rules.”</p>
+<pre class="board"><code>  IS IT AN ARCHITECTURAL CHARACTERISTIC?
+
+  1. It is NOT about the business domain.
+  2. It influences the STRUCTURE of the system.
+  3. It is CRITICAL or IMPORTANT to success.</code></pre>
+<p class="d you"><b>You</b>“Take security. Basic password hashing is just good coding. But security becomes architectural when it forces us to isolate a service or encrypt every network hop. Or take Lafter’s <em>promotions</em>. If promotion rules change every week, we may need to split a Promotions service out of the monolith, so we can deploy it alone. Now a business need has changed the structure. That is architecture.”</p>
+<h3>Hidden requirements</h3>
+<p>You went through Vikram’s two-page memo line by line, like an inspector.</p>
+<p class="d you"><b>You</b>“First, some characteristics are <strong>explicit</strong>, written in the document. Others are <strong>implicit</strong>, which means nobody wrote them, but the context makes them obvious. Nobody ever writes ‘do not build an insecure app.’ You know it anyway.”</p>
+<p class="d you"><b>You</b>“Where do characteristics come from? Three places. The <strong>problem domain</strong>, which is what is in the document. <strong>Environmental awareness</strong>, which is what you know about the company. A fast startup, for example, needs agility. A company planning many mergers prefers open standards. And <strong>holistic domain knowledge</strong>, which means knowing the industry. Lafter works in twelve countries. That means <strong>localisation</strong> and <strong>legal and privacy rules</strong>, even if Vikram forgot to write them.”</p>
+<p class="d vikram"><b>Vikram</b><em class="act">checking his document</em> “I did forget them.”</p>
+<p class="d you"><b>You</b>“And the <em>weight</em> of a quality depends on the domain. If a free office lunch-ordering app goes down, people buy their own sandwiches. If a bank’s payment system goes down, regulators shut us down. Same quality, different weight.”</p>
+<h3>“Thousands of users” is three words in one</h3>
+<p>You underlined <em>thousands of users during live conferences</em>.</p>
+<p class="d you"><b>You</b>“When Vikram says ‘thousands of users’, that is actually three different characteristics.”</p>
+<pre class="board"><code>  &quot;THOUSANDS OF USERS&quot; =
+
+  SCALABILITY  How well we handle steady GROWTH
+               1,000 users in month 1 -&gt; 100,000 in month 12
+
+  CONCURRENCY  How many users are active at the SAME second
+
+  ELASTICITY   How FAST users arrive and leave</code></pre>
+<p class="d you"><b>You</b>“Imagine a university sign-up promotion for 1,000 students over ten hours. A beginner designs for 100 students per hour. Real students are not like that. Three hundred rush in during the first hour. Then nothing happens for eight hours. Then 600 procrastinators flood in during the last ten minutes. Live conferences are bursty in the same way. Lafter needs not just scalability, but <strong>elasticity</strong>.”</p>
+<h3>Reliable? Fast? Measure it!</h3>
+<p class="d you"><b>You</b>“Now look at ‘100% reliable’ and ‘blazing fast’. These are <strong>composite characteristics</strong>. They are umbrella words made of smaller qualities. When you say ‘reliable’, do you mean <strong>availability</strong> (the system is up, for example 99.9% of the time), <strong>recoverability</strong> (how fast we come back after a crash), or <strong>data integrity</strong> (the data stays correct)? Agility is also a composite: testability, deployability, and modularity together. And for ‘fast’, we should write a number, like <em>first contentful paint under 1.2 seconds on a mobile browser</em>.”</p>
+<p class="d you"><b>You</b>“The rule is simple. If you cannot measure it, you cannot design for it or test it.”</p>
+<h3>The F-16 lesson</h3>
+<p>You crossed out <em>Blockchain AI Cloud</em> with a firm line.</p>
+<p class="d you"><b>You</b>“Vikram, you brought me a <em>solution</em>, not a <em>requirement</em>.”</p>
+<p class="d vikram"><b>Vikram</b><em class="act">hurt</em> “But it’s very modern!”</p>
+<p class="d you"><b>You</b>“In the 1960s, the US Air Force asked for a fighter jet that could fly at Mach 2.5. The technology of that time couldn’t do it. So the designers kept asking ‘Why?’ like curious children. <em>Why Mach 2.5?</em> ‘Because jets are expensive, and pilots must be able to escape a dogfight alive.’ Once they knew the real need, they built the F-16. Its top speed was only Mach 2.1. But it was the most agile jet of its time. They solved the <em>problem</em>, not the <em>demand</em>.”</p>
+<p class="d you"><b>You</b>“Tell me <em>why</em> you want a tool, Vikram, and I will help you choose the tool.”</p>
+<details class="move"><summary><span>Your move, Alex</span>A client says, “We need to buy the XYZ analytics package.” What is your first question?</summary><p>“Why?” Ask what problem the package should solve. That is the real requirement. XYZ is only one possible solution.</p></details>
+<h3>The zoo map</h3>
+<p>Meera slid a printed page onto the table. It looked like a zoo map.</p>
+<p class="d meera"><b>Meera</b>“Characteristics are like animals in a zoo. There is no standard list. Every company uses different names. So we group them into families.”</p>
+<pre class="board"><code>  THE ZOO MAP (the book&#x27;s families)
+
+  PROCESS      Modularity, Testability, Deployability,
+               Agility, Extensibility, Decouple-ability
+  STRUCTURAL   Maintainability, Portability, Extensibility,
+               Localisation, Security
+  OPERATIONAL  Availability, Recoverability, Robustness,
+               Performance, Reliability/safety,
+               Scalability
+  CROSS-CUTTING  (the platypus: fits nowhere, touches all)
+               Security, Authentication/authorisation,
+               Legal, Privacy, Accessibility, Usability</code></pre>
+<p class="d you"><b>You</b>“Which of these do you want, Vikram?”</p>
+<p class="d vikram"><b>Vikram</b>“All of them!”</p>
+<p>You laughed out loud. Then you shook your head.</p>
+<p class="d you"><b>You</b>“Impossible. Characteristics are <em>synergistic</em>. They pull on each other. Heavy encryption makes the app a bit slower. Extreme scalability hurts simplicity. If we chase all eighteen candidates on our worksheet, we fall into <strong>overengineering</strong>, a design too complex for its benefit. Or into Rohan’s favourite trap, <strong>resume-driven development</strong>: choosing tools because they look good on your CV.”</p>
+<p class="d rohan"><b>Rohan</b><em class="act">offended</em> “It looks good on <em>everyone’s</em> CV.”</p>
+<h3>Seven sticky notes</h3>
+<p>You pulled out a stack of yellow sticky notes and gave Vikram seven.</p>
+<p class="d you"><b>You</b>“In 1956, a psychologist named George Miller found that people can hold about seven chunks of information at a time. That is why early phone numbers had seven digits. You get seven notes. Choose the characteristics Lafter needs most. Then circle your <strong>top three</strong>.”</p>
+<p>Vikram stared at the notes for a long time. Then he started writing, and for the first time in two months, he looked like a man making a real decision. When he was done, the table looked like this.</p>
+<pre class="board"><code>  VIKRAM&#x27;S SEVEN (top 3 circled)
+  (O) Elasticity    (O) Availability   (O) Performance
+      Scalability       Data integrity     Localisation
+      Security</code></pre>
+<p class="d meera"><b>Meera</b>“Remember what <em>not</em> choosing means. If Security is not in the top three, it does not mean ‘build an insecure app.’ It means that when two qualities collide, the top three win.”</p>
+<p class="d you"><b>You</b><em class="act">writing in Meera’s notebook</em> “And now I can pick a style. Not by gut feeling, but because Lafter needs elasticity and performance. That points us toward something like event-driven. But not before we draw the rooms.”</p>
+<p class="hook">“Rooms?” asked Vikram. “What rooms?” You smiled. “Logical components. Every system has them. Most teams find them the wrong way.”</p>
+<div class="takeaways"><ul><li><strong>Domain requirements</strong> say <em>what</em> the app does. <strong>Architectural characteristics</strong> say <em>how well</em> it must do it. They are not “non-functional”; they are just not business features.</li><li>A quality is architectural if it is <strong>non-domain</strong>, <strong>affects the structure</strong>, and is <strong>critical to success</strong>. Security is architectural when it forces structural effort.</li><li><strong>Explicit</strong> characteristics are written down. <strong>Implicit</strong> ones are not. They come from three sources: the <strong>problem domain</strong>, <strong>environmental awareness</strong>, and <strong>holistic domain knowledge</strong>.</li><li>Turn business words into numbers: “thousands of users” = <strong>scalability</strong> (growth), <strong>concurrency</strong> (same-second users), <strong>elasticity</strong> (speed of arrival). “Reliable” and “fast” are <strong>composite</strong>; break them into measurable parts.</li><li>Solutions are not requirements. Keep asking “why?” until you find the real need (the <strong>F-16</strong> lesson).</li><li>Characteristics are <strong>synergistic</strong>. Avoid overengineering and resume-driven development.</li><li>Pick <strong>seven at most</strong> (George Miller, 1956), then mark the <strong>top three</strong>. Not choosing a characteristic doesn’t mean ignoring it; it means the top three win in a collision.</li><li>Characteristics are <strong>hard to add later</strong>, so find them before you build, and before you choose a style.</li></ul></div><a class="next" href="#ch9"><span><small>Next chapter</small><strong>9. The Floor Plan</strong></span></a></section><section class="chapter" id="ch9" data-title="The Floor Plan"><header class="chapter-head" data-num="09"><p class="chapter-num">Chapter 9<span class="part-tag">Day 2 · Learn the tools</span></p><h2>The Floor Plan</h2><p class="covers">Book chapter 4 · Logical components</p><p class="read-time">About 9 min read</p><p class="lede">Before the pipes, the floor plan. Find the rooms, then count the wires.</p></header><p class="scene">A cricket stadium in Hyderabad · Evening · A new client, <em>TicketTown</em>, a ticketing company like BookMyShow</p>
+<p>TicketTown had a crazy idea: a <strong>live auction</strong> for IPL memorabilia. Signed bats, match balls, and VIP box seats. Fans in the stadium would bid in the room. Thousands more would watch a live video stream on their phones and bid online. When the auctioneer’s hammer fell, the winning online bidder’s card would be charged automatically.</p>
+<p>Rohan opened his laptop before the client had finished speaking.</p>
+<p class="d rohan"><b>Rohan</b>“Okay! Kafka topics, an API gateway, a service mesh...”</p>
+<p>You gently closed his laptop lid.</p>
+<p class="d you"><b>You</b>“Rohan, which boxes are we going to draw?”</p>
+<p class="d rohan"><b>Rohan</b>“...The Kafka box?”</p>
+<p class="d you"><b>You</b>“We don’t know what is inside any box yet. Yesterday you saw the <em>physical</em> architecture: styles, databases, protocols, gateways. Today we draw the <em>logical</em> architecture first.”</p>
+<pre class="board"><code>  LOGICAL ARCHITECTURE        PHYSICAL ARCHITECTURE
+  = the FLOOR PLAN            = the PIPES AND WIRING
+  Which rooms? What does      Style, services, databases,
+  each room do?               protocols, API gateways.
+
+  A component here is just &quot;a folder in the code
+  with a clear job&quot;, like app/order/tracking.</code></pre>
+<p class="d you"><b>You</b>“You must know the floor plan before you decide where the pipes go. And we find it with a four-step loop.”</p>
+<pre class="board"><code>  THE 4-STEP LOOP  (repeat for the life of the system!)
+
+  1. Find the initial core components
+  2. Give every requirement to a component
+  3. Check each component&#x27;s role (is it one clear job?)
+  4. Check against the characteristics we need</code></pre>
+<p class="d you"><b>You</b>“Most teams do these steps once, before version 1, and never again. That is why good systems slowly become messy. Each time we add a feature, we run the loop again.”</p>
+<h3>Step 1: Find the first components</h3>
+<p class="d you"><b>You</b>“Our first components will be rough guesses, like empty jars. We will fill them later. There are two good ways to find them.”</p>
+<pre class="board"><code>  METHOD A: WORKFLOW         METHOD B: ACTOR / ACTION
+  Follow one user&#x27;s journey  List the actors, then
+                             what each one does
+  A bidder:
+  registers                  Actors in a bakery app:
+  -&gt; watches the video       Customer  - browse, order
+  -&gt; places a bid            Coordinator - plan the work
+  -&gt; sees the bid counted    Baker - report finished items
+  -&gt; pays when they win      System - email the customer
+
+  = Registration,            = Ordering, Scheduling,
+    Video Streamer,            Production, Notification
+    Bid Capture, Payment</code></pre>
+<p class="d you"><b>You</b>“Note that Video Streamer is a real component, even if we <em>buy</em> video streaming from another company. It is still part of our logical plan. And we can combine both methods: use actors to find the actions, then use a workflow to put them in order. This is a lighter cousin of <em>event storming</em>, a workshop method from domain-driven design.”</p>
+<p>Rohan grabbed a marker and wrote three names with great pride.</p>
+<pre class="board"><code>  Rohan&#x27;s components:
+    - Bid Manager
+    - Auction Supervisor
+    - Payment Handler</code></pre>
+<p>You drew a big red X.</p>
+<h3>The entity trap</h3>
+<p class="d you"><b>You</b>“Rohan, you just stepped into the <strong>entity trap</strong>.”</p>
+<p class="d rohan"><b>Rohan</b>“The what?”</p>
+<p class="d you"><b>You</b>“You took the main data nouns, <em>bid</em> and <em>payment</em>, and attached <em>Manager</em>, <em>Supervisor</em>, or <em>Handler</em> to the end. These names are too vague. You cannot tell what the component does. And soon it becomes a dumping ground where developers throw every piece of code that touches a bid. It grows huge. It becomes hard to maintain, hard to scale, and hard to make fault tolerant. Whenever you see <em>manager</em>, <em>supervisor</em>, or <em>handler</em> in a component name, stop and check.”</p>
+<p class="d rohan"><b>Rohan</b>“Is it always wrong?”</p>
+<p class="d you"><b>You</b>“It is a guide, not a law. A ‘Reference Data Manager’ for fixed lists like country codes is fine. Its job is specific. ‘Order Manager’ or ‘Response Handler’ are not. Give components sharp names that describe a job.”</p>
+<h3>Steps 2 and 3: Homes and clean jobs</h3>
+<p class="d you"><b>You</b>“Step two is easy to say. Take every requirement or user story, and give it a home. Each component is a folder, so the code for a requirement goes in that folder. Every requirement needs a home. If it fits nowhere, we may need a new component.”</p>
+<p class="d you"><b>You</b>“Step three is where the real checking happens. Look at the folder Rohan made called <em>Live Auction Session</em>.”</p>
+<p>Rohan had put video streaming, bid intake, and charging credit cards in it.</p>
+<p class="d you"><b>You</b>“Have you ever written a class called <code>Utility</code> with a hundred unrelated helper functions? That is a junk drawer. It has bad <strong>cohesion</strong>. Cohesion means how closely the jobs inside one component belong together. Video and bidding are about the live event. Charging a card is about <em>money</em>. It belongs in its own <strong>Automatic Payment</strong> component.”</p>
+<p>You dragged the payment job out of the box. The box became smaller, and clearer.</p>
+<div class="tip"><p>A vague name plus random contents means the component is doing too much. Move the odd job somewhere else.</p></div>
+<h3>Step 4: The characteristics test</h3>
+<p>You turned to the client.</p>
+<p class="d you"><b>You</b>“Which qualities matter most for TicketTown?”</p>
+<pre class="board"><code>  TICKETTOWN&#x27;S TOP 3
+  1. Scalability  - thousands of bidders per second
+  2. Availability - must be UP during live auctions
+  3. Performance  - a bid must reach the auctioneer fast</code></pre>
+<p class="d you"><b>You</b>“Now look at the <em>Bid Capture</em> component. It has four jobs: accept bids, find the highest online bid, write <em>every</em> bid to a database for the audit record, and flash the highest bid to the auctioneer’s screen.”</p>
+<p>Priya’s eyes went wide.</p>
+<p class="d priya"><b>Priya</b>“Alex. If five thousand fans bid in the same second, and Bid Capture waits for a database write on <em>every bid</em>, the connection pool will choke. Scalability dies. The auctioneer’s screen will lag. Performance dies. And if the database hiccups for two seconds, nobody can bid. Availability dies.”</p>
+<p class="d you"><b>You</b>“Exactly. Three of our top characteristics, dead from one job. So we move job number three into a new component called <strong>Bid Tracker</strong>. Bid Capture stays fast and in memory, and sends bids to Bid Tracker <em>without waiting</em> for the database write.”</p>
+<p>You asked three questions about every component: What happens if something it needs fails? How fast must each step run? How much load must it handle? The answers show where to split.</p>
+<details class="move"><summary><span>Your move, Alex</span>Why is it often right to <em>split</em> a component in step four, but sometimes right to <em>join</em> two?</summary><p>You split a component to protect a characteristic, like scalability, elasticity, or availability. You join two components when their functions are so tightly tied that splitting them would only create chatter and trouble.</p></details>
+<h3>Counting the wires</h3>
+<p class="d you"><b>You</b>“Now we draw the dependency arrows. If everything depends on everything, we are back to the big ball of mud.”</p>
+<p>You drew a small picture on the glass.</p>
+<pre class="board"><code>  [Auction Registration] --+
+                           |--&gt; [Bidder Profile]
+  [Automatic Payment] -----+      CA = 2 (two depend on it)
+                                  CE = 0
+
+  [Bid Capture] --------&gt; [Bid Streamer]
+        |---------------&gt; [Bid Tracker]
+        CA = 0   CE = 2 (it depends on two)</code></pre>
+<p class="d you"><b>You</b>“There are two kinds of coupling. <strong>Afferent coupling</strong>, CA, counts how many components depend on <em>you</em>, the incoming arrows. Think of parents: the kids and even the family dog all depend on them. Bidder Profile has CA = 2. High CA means <em>be careful when changing it.</em> <strong>Efferent coupling</strong>, CE, counts how many components <em>you</em> depend on, the outgoing arrows. Think of a child who depends on parents, teachers, and friends. Bid Capture has CE = 2. And <strong>total coupling</strong>, CT, is simply CA + CE.”</p>
+<p>You gave them a story.</p>
+<p class="d you"><b>You</b>“Now take an e-commerce app. Order Placement has a total coupling of 5. It checks the warehouse, marks low-stock items, and emails suppliers. It knows too much.”</p>
+<h3>The Law of Demeter</h3>
+<p class="d you"><b>You</b>“The tool for this is the <strong>Law of Demeter</strong>, also called the <strong>Principle of Least Knowledge</strong>. Demeter was the Greek goddess of farming. She gave grain to humans but did not need to know what they baked. A component should know as little as possible about what happens elsewhere. So we move the low-stock logic <em>into</em> Inventory Management. Order Placement now only asks one question: ‘Is it in stock?’”</p>
+<p class="d rohan"><b>Rohan</b>“So the coupling disappears!”</p>
+<p>Meera tilted her head.</p>
+<p class="d meera"><b>Meera</b>“Look closer at the numbers, Rohan.”</p>
+<p>You redrew the arrows. Order Placement’s coupling went down. But Inventory Management now knew more, so its coupling went <em>up</em>.</p>
+<p class="d you"><b>You</b>“The <em>total</em> coupling in the system did not change. We didn’t delete the knowledge. We moved it. What we gained is balance. No single component is in charge of everything. Think of a restaurant where the waiter also cooks, washes dishes, and runs the cash counter. Split the jobs. All the jobs are still needed, but nobody has to know the whole kitchen.”</p>
+<p class="d meera"><b>Meera</b>“And remember the First Law. Even loose coupling has a price.”</p>
+<p>You drew two small pictures. In the tight design, you could read one component and understand the whole order workflow. In the loose design, the workflow knowledge was spread across four components, and Order Placement now depended on four others. A change in any one of them might break it.</p>
+<p class="d you"><b>You</b>“Tight coupling is easy to <em>read</em> but hard to <em>change</em>. Loose coupling is easier to change, but the big picture is harder to find. Two components are coupled if a change in one might cause a change in the other. Use this test to find coupling you missed.”</p>
+<p>Rohan sat back.</p>
+<p class="d rohan"><b>Rohan</b>“So it’s trade-offs all the way down.”</p>
+<p class="d meera"><b>Meera</b><em class="act">very quietly</em> “Now you are thinking like an architect.”</p>
+<p class="hook">That afternoon, a heated argument broke out in the sneakers pod. Rohan wanted topics. Priya wanted queues. Both of them marched up to your desk.</p>
+<div class="takeaways"><ul><li>The <strong>logical architecture</strong> is the floor plan: components and what they do. The <strong>physical architecture</strong> is the pipes: style, services, protocols, databases. Draw the logical one first.</li><li>Use a <strong>4-step loop</strong>, and keep repeating it: (1) find core components, (2) assign requirements, (3) check roles, (4) check characteristics.</li><li>Find components with the <strong>workflow approach</strong> (follow the user’s journey) and the <strong>actor/action approach</strong> (list who does what).</li><li>Avoid the <strong>entity trap</strong>: names like “Bid Manager” or “Order Handler” become vague junk drawers. Give sharp, functional names.</li><li><strong>Cohesion</strong> = how closely the jobs in a component belong together. Move odd jobs out.</li><li>Split a component to protect a <strong>characteristic</strong> (scalability, availability, performance). Join components whose functions are tightly tied.</li><li><strong>CA</strong> (afferent, fan-in) counts what depends on you. <strong>CE</strong> (efferent, fan-out) counts what you depend on. <strong>CT = CA + CE</strong>.</li><li><strong>Law of Demeter:</strong> know less, couple less. Moving knowledge <strong>balances</strong> coupling but does not remove it. And loose coupling spreads workflow knowledge around, so it has a cost too.</li></ul></div><a class="next" href="#ch10"><span><small>Next chapter</small><strong>10. Two Laws and a Book of Memory</strong></span></a></section><section class="chapter" id="ch10" data-title="Two Laws and a Book of Memory"><header class="chapter-head" data-num="10"><p class="chapter-num">Chapter 10<span class="part-tag">Day 2 · Learn the tools</span></p><h2>Two Laws and a Book of Memory</h2><p class="covers">Book chapter 3 · Trade-offs and decision records</p><p class="read-time">About 9 min read</p><p class="lede">Two laws, one fight between queues and topics, and a file that remembers why.</p></header><p class="scene">The sneakers pod · Tuesday · 3:30 PM · Boxes of shoes everywhere</p>
+<p><em>Two Many Sneakers</em> was a mobile app where collectors, called sneakerheads, bought, sold, and traded rare shoes. It had millions of listings. Its first design was simple: one <strong>trading service</strong>, one database.</p>
+<p>Now two things had changed. Customers wanted instant alerts the moment a pair they were hunting went on sale. And management wanted better fraud detection, to catch bots and fake sellers. So the trading service had to tell two new services about every trade: a <strong>Notification service</strong> and an <strong>Analytics service</strong>. And there was a rumour that the Finance team, who handle compliance, would want the same updates next quarter.</p>
+<p>Rohan wanted <strong>topics</strong>. Priya wanted <strong>queues</strong>. They marched to your desk together.</p>
+<p>Both of them, at the same time: “Who is right?”</p>
+<p>You pointed at the brass plaque Meera had put on your desk on your first day.</p>
+<pre class="board"><code>  THE FIRST LAW OF SOFTWARE ARCHITECTURE
+  Everything in software architecture is a trade-off.
+
+  THE SECOND LAW
+  Why is more important than how.</code></pre>
+<h3>The First Law</h3>
+<p class="d you"><b>You</b>“A trade-off means you gain something and give up something else. Like a train ticket. A confirmed AC seat costs more money. A sleeper ticket costs comfort. Either way, you pay. A design with great scalability may be harder to deploy. A design with great security is often slower. If you ever look at a decision and see <em>no</em> trade-off, you have not looked hard enough.”</p>
+<p class="d you"><b>You</b>“Rich Hickey once said that programmers know the benefits of everything and the trade-offs of nothing. Architects must know both. The book names two traps. In the first trap, you always use the tool that worked last time. In the second, you get excited by every new tool. The book calls this <em>shiny object syndrome</em>. New tools are fine. Just ask two questions. Do the good sides help us build a successful app? And can we live with the bad sides?”</p>
+<p class="d you"><b>You</b>“Also, we never have all the facts. Some problems are <em>unknown unknowns</em>, things nobody could list in advance. So make a good choice with what you have, work in small steps, and be ready to change your mind.”</p>
+<h3>Queues vs. topics</h3>
+<p>You turned to the whiteboard and drew two pictures.</p>
+<pre class="board"><code>  QUEUES (point-to-point)        TOPIC (publish / subscribe)
+
+  Trading --&gt; [Queue 1] --&gt; Notify     Trading --&gt; ( TOPIC )
+         \--&gt; [Queue 2] --&gt; Analytics                /     \
+                                                  Notify  Analytics
+  Like WhatsApp to three people,        (+ anyone who subscribes)
+  one by one.                          Like a railway platform
+                                       announcement: all hear it.</code></pre>
+<pre class="board"><code>  QUEUES                           TOPICS
+  + Security: you know every       + Extensibility: Finance just
+    listener                         SUBSCRIBES. Zero code change
+  + Custom message per queue         in the trading service.
+  + Monitor and scale each queue   + Low coupling
+    on its own
+                                   - Everyone gets the SAME message
+  - Tight coupling: Finance        - All-or-nothing scaling
+    next month = EDIT, TEST and    - Anyone can subscribe: weaker
+    REDEPLOY the trading service     security</code></pre>
+<p class="d rohan"><b>Rohan</b>“Topics are cleaner. Done.”</p>
+<p class="d priya"><b>Priya</b>“Queues are safer. Done.”</p>
+<p class="d you"><b>You</b>“No. The right answer is: <em>it depends on the business.</em> Imagine two requirements. If the top priority is security, queues win. The publisher controls exactly who receives what. If we will add more services later, topics win. New listeners cost nothing. One design cannot give both fully. So I need to ask what the business cares about <em>most</em>.”</p>
+<p>You called Vikram. He appeared with a laptop, three phones, and an energy drink.</p>
+<p class="d vikram"><b>Vikram</b>“Sneakers is growing like crazy! New downstream services every quarter!”</p>
+<p class="d you"><b>You</b>“So <strong>extensibility</strong> is in the top three. Military-grade internal secrecy is not. For this project, <strong>topics win</strong>.”</p>
+<p>Priya shrugged.</p>
+<p class="d priya"><b>Priya</b>“Fine. But I want a note in the file saying I wanted queues.”</p>
+<p class="d you"><b>You</b><em class="act">smiling</em> “That is exactly what the next step is for.”</p>
+<div class="tip"><p>Trade-off analysis does not find a perfect answer. It finds the answer that fits your situation best. Teams sometimes use formal methods such as <strong>ATAM</strong> (Architecture Tradeoff Analysis Method) and <strong>CBAM</strong> (Cost Benefit Analysis Method). Both are tools, not magic.</p></div>
+<h3>What counts as an architectural decision?</h3>
+<p class="d rohan"><b>Rohan</b>“Wait. Is <em>every</em> choice an architectural decision? Like choosing a logging library?”</p>
+<p class="d you"><b>You</b>“Michael Nygard, who wrote <em>Release It!</em>, gives a useful test. A decision is architecturally significant if it affects the structure, the non-functional qualities, the dependencies, the interfaces, or the build techniques. Some decisions are about structure, like ‘monolith or microservices’. Some are about a characteristic, like ‘encrypt every connection’. Some pick a tool or process that helps us reach a characteristic. Decisions are <strong>guideposts</strong>, not strict rules. They tell teams which limits to respect, but leave them room to work out the details.”</p>
+<h3>The Second Law</h3>
+<p>Rohan stood up.</p>
+<p class="d rohan"><b>Rohan</b>“Great. Topics. I’ll go write the Kafka code!”</p>
+<p class="d you"><b>You</b>“Sit down, Rohan.”</p>
+<p class="d rohan"><b>Rohan</b><em class="act">sitting</em> “Why?”</p>
+<p class="d you"><b>You</b>“A year from now, someone will look at the system and see that we used a topic. They can see <em>what</em> we did. They can even see <em>how</em>. But nobody, including you, will remember <em>why</em>. Did we reject queues? Who wanted what? Who approved? Without the <em>why</em>, a future team may waste weeks re-debating the same question, or miss the one reason that made the choice right. We will record it in an <strong>architectural decision record</strong>, an <strong>ADR</strong>.”</p>
+<p>You opened a Markdown file in Git and projected it on the wall.</p>
+<pre class="board file" data-label="042-use-topics-between-trading-and-downstream-services.md"><code># 042: Use topics between trading and downstream services
+
+## Status
+Accepted
+
+## Context
+The trading service must notify the Notification and
+Analytics services in real time. Finance will probably
+need the same feed soon.
+Alternatives considered:
+- Queues: custom payloads, strong security, tight coupling.
+- Topics: easy to extend, same payload for everyone.
+
+## Decision
+We will use publish-subscribe topics between the trading
+service and downstream services, because rapid
+extensibility is our top priority. The VP of Product and
+the Finance department confirmed this.
+
+## Consequences
+(+) New consumers subscribe with no change to trading.
+(-) Every consumer gets the same payload.
+(-) The topic infrastructure must be clustered for
+    high availability.
+
+## Governance
+Automated ArchUnit tests check that the trading service
+has no direct queue or API dependency on downstream
+services. Pull requests are reviewed by hand as well.
+
+## Notes
+Author: Alex. Approved: Oct 25. Approvers: Meera, Priya.</code></pre>
+<p class="d you"><b>You</b>“Seven sections. <strong>Title</strong>: short, like a newspaper headline, mostly nouns, and starting with a three-digit number. 001, 002, and so on. <strong>Status</strong>: where the decision stands. <strong>Context</strong>: all the forces that shaped the choice. <strong>Decision</strong>: a firm voice, ‘We will use...’, and <em>always the reason</em>. <strong>Consequences</strong>: both the good and the bad. <strong>Governance</strong>: how we will check that people really follow it. And <strong>Notes</strong>: the author, dates, and approvers.”</p>
+<p class="d priya"><b>Priya</b>“Governance and Notes are not in the classic template.”</p>
+<p class="d you"><b>You</b>“No. The book’s authors added them. A decision without enforcement is just a wish. And metadata inside the file is easier to find than digging through Git logs.”</p>
+<h3>The life of an ADR</h3>
+<p>You wrote four words on the board.</p>
+<pre class="board"><code>  STATUS OF AN ADR
+
+  RFC           A draft that needs feedback.
+                Always give a &quot;respond by&quot; date.
+       |
+       v
+  PROPOSED      Comments are in. Waiting for approval.
+       |
+       v
+  ACCEPTED      The decision is made. Start building.
+       |
+       v
+  SUPERSEDED    A newer ADR has replaced this one.</code></pre>
+<p>Two weeks later, Rohan came to your desk, looking pleased with himself.</p>
+<p class="d rohan"><b>Rohan</b>“Remember ADR 007, where the Survey team chose a relational database? Their survey data is much more varied now, so they moved to a document store. I opened 007 and changed it to say ‘Document Store’. All done!”</p>
+<p class="d you"><b>You</b><em class="act">standing up</em> “Undo that commit. <em>Now.</em>”</p>
+<p class="d rohan"><b>Rohan</b>“What? It’s the same file. Why does it matter?”</p>
+<p class="d you"><b>You</b>“Because we are on ADR 013. If you edit 007, anyone who reads the history will think the project <em>started</em> with a document store. You never rewrite an Accepted ADR. Write a brand-new <strong>ADR 014</strong>, Accepted, with its own trade-off analysis. Then change ADR 007’s status to <em>Superseded by ADR 014</em>, and link them in both directions.”</p>
+<p class="d rohan"><b>Rohan</b>“A chain.”</p>
+<p class="d you"><b>You</b>“That chain is the institutional memory of the company. Anyone who finds the old record sees at once that it is out of date, and follows the link to the new one. The only expected change to an Accepted ADR is its status moving to Superseded. Adding a missing fact is fine. Changing the decision itself is not.”</p>
+<details class="move"><summary><span>Your move, Alex</span>ADR 007 chose a relational database. The team now needs a document store. What should you do with ADR 007?</summary><p>Don’t rewrite it. Write ADR 014 for the new decision, set ADR 007’s status to “Superseded by ADR 014”, and link the two records both ways.</p></details>
+<h3>Where do ADRs live?</h3>
+<p class="d you"><b>You</b>“Store them where people can add, edit, and <em>search</em> them easily, and where changes are tracked. The simplest choice is plain Markdown files in version control, in their own repository, not mixed with source code. The file name is the number, then the lower-case title with hyphens. Lower case avoids trouble across operating systems, and sorting by name shows the decisions in order. A wiki also works, if it tracks edit history. Many good ADR efforts die because nobody can find the document when they need it. Start without special tools. Learn what your team needs. Then look for a tool.”</p>
+<p class="d you"><b>You</b>“And keep the process <em>light</em>. If it feels heavy, people stop writing ADRs. A short ADR that exists is better than a perfect one that never gets written.”</p>
+<p class="d priya"><b>Priya</b>“How far does an ADR reach?”</p>
+<p class="d you"><b>You</b>“It can be small, just one team. Or very wide. The book mentions the famous API mandate at Amazon: every service must talk to others only through APIs. That touched the whole company. ADRs about security or legal compliance often cross many teams. Those need a lot of teamwork, and often approval from a central architecture review board.”</p>
+<p>The sneaker story ended well. Customers loved the real-time alerts. The analytics helped the security team catch scammers early. And a year later, when the Finance department did ask for the feed, they subscribed to the topic. Nobody touched the trading service.</p>
+<p class="hook">Six months later, you opened ADR 042 again to check something. Everything you needed was right there, even Priya’s note. You smiled. Then Meera walked in, wearing her travel jacket, with a small leather notebook in her hand.</p>
+<div class="takeaways"><ul><li><strong>First Law:</strong> <em>everything in software architecture is a trade-off.</em> If you see no trade-off, look again. Watch out for two traps: always using the same tool, and shiny object syndrome.</li><li><strong>Queues:</strong> point-to-point; good for security, custom messages, and independent scaling; bad for coupling and extensibility. <strong>Topics:</strong> broadcast; easy to extend and loosely coupled; same message for all, all-or-nothing scaling, weaker security.</li><li>Trade-off analysis finds the answer that fits <strong>your business</strong>. Use your <strong>top three</strong> characteristics as the judge. ATAM and CBAM are formal helpers.</li><li><strong>Architectural decisions</strong> are guideposts. They are significant if they affect structure, qualities, dependencies, interfaces, or build techniques.</li><li><strong>Second Law:</strong> <em>why is more important than how.</em> Record the reason with an <strong>ADR</strong>.</li><li>ADR sections: <strong>Title, Status, Context, Decision, Consequences, Governance, Notes</strong>. Titles start with a three-digit number.</li><li>Statuses: <strong>RFC → Proposed → Accepted → Superseded</strong>. <strong>Never rewrite an Accepted ADR</strong>; write a new one and link both ways.</li><li>Keep ADRs in plain text under version control or a wiki with history. Keep the process light.</li></ul></div><a class="next" href="#ch11"><span><small>Next chapter</small><strong>11. The Notebook</strong></span></a></section><section class="chapter" id="ch11" data-title="The Notebook"><header class="chapter-head" data-num="11"><p class="chapter-num">Chapter 11<span class="part-tag">Day 2 · Learn the tools</span></p><h2>The Notebook</h2><p class="covers">Appendix A · Six bonus lessons, and the finale</p><p class="read-time">About 7 min read</p><p class="lede">Six unwritten rules, one big board, and the best answer an architect can give.</p></header><p class="scene">The rooftop terrace · Friday evening · The monsoon clouds have finally cleared</p>
+<p>Down below, the traffic on Outer Ring Road flowed like rivers of glowing packets. Some of it moved fast and without waiting. Some of it stopped at every signal. You smiled. You had started to see architecture in everything.</p>
+<p>Meera handed you a hot filter coffee and a small leather notebook.</p>
+<p class="d meera"><b>Meera</b>“You survived your first big year, Alex. ZipEats. ReNew. LifeLine. Der Nile. TicketTown. Lafter. Two Many Sneakers. You saw the whole board.”</p>
+<p class="d you"><b>You</b>“I feel like the hard part is only starting. Half of this job isn’t even technology.”</p>
+<p class="d meera"><b>Meera</b><em class="act">smiling</em> “Now you sound like an architect. Open the first page. Before I leave for Singapore next month, I wrote down the six unwritten rules. The ones a textbook chapter has no room for.”</p>
+<p>You opened the notebook. Her handwriting was small, neat, and very square, exactly like her grid paper.</p>
+<h3>Rule 1. Keep writing code, but stay off the critical path</h3>
+<p><em>Never stop coding, or you will forget the pain your decisions cause developers. But never own a feature on the <strong>critical path</strong>, the chain of work that decides the release date. If executive meetings eat three days of your week, you will block the whole team.</em></p>
+<pre class="board"><code>  HOW TO STAY HANDS-ON SAFELY
+  * Write proof-of-concept (PoC) code to test trade-offs.
+    Write it like production code. PoCs love to get shipped!
+  * Pay down technical debt a little at a time.
+  * Join production outages and find the ROOT cause.
+  * Do lots of code reviews. They keep the code aligned
+    with your ADRs.</code></pre>
+<h3>Rule 2. Know what the job demands</h3>
+<p><em>Whatever your title says, eight things sit on your shoulders:</em></p>
+<pre class="board"><code>  1. Make architecture decisions, set design principles.
+  2. Keep analysing so the architecture doesn&#x27;t rot
+     (architectural vitality).
+  3. Keep up with industry trends.
+  4. Make sure decisions are followed
+     (architectural governance).
+  5. Know a little about MANY technologies.
+  6. Know the business domain well.
+  7. Handle office politics (explain why a design is
+     worth its cost).
+  8. Lead people. Gerald Weinberg wrote: &quot;No matter what
+     they tell you, it&#x27;s always a people problem.&quot;</code></pre>
+<p class="d meera"><b>Meera</b><em class="act">leaning on the railing</em> “Here is one example. A product owner wants the cheapest database. You know it will fail in the holiday rush. Do not just say ‘no’. Bring a short test that shows what breaks. Show what it would cost in lost sales. Now the talk is about money, not opinions.”</p>
+<h3>Rule 3. People skills keep designs alive</h3>
+<p><em>These sound easy. They take years of practice and mistakes.</em></p>
+<pre class="board"><code>  * SHOW, DON&#x27;T ARGUE. A Google search cannot settle an
+    argument about YOUR system. Build a quick PoC in a
+    setup close to production and show the numbers.
+  * PICK YOUR BATTLES. Fight hard for what the
+    architecture cannot live without. Let the rest go.
+  * SPEAK BUSINESS VALUE. Stakeholders don&#x27;t care about
+    &quot;fault tolerance&quot;. They care about time to market,
+    compliance, and mergers.
+  * INVOLVE DEVELOPERS EARLY. If they don&#x27;t know WHY,
+    they won&#x27;t agree. If they weren&#x27;t involved, they
+    won&#x27;t follow. Use ADR RFCs and risk-storming.
+  * DIVIDE AND CONQUER (Sun Tzu). &quot;400 ms and 99.999%
+    for everything!&quot; Split the system. Checkout needs
+    five-nines. Editing a user bio does not.
+  * THE FOUR Cs: be Clear, Concise, Communicate,
+    Collaborate. And keep a calendar block free, early
+    morning or late afternoon, for your team&#x27;s questions.</code></pre>
+<p class="d meera"><b>Meera</b>“Don’t say, ‘We need a message queue for fault tolerance.’ Say, ‘If payments are down for an hour, this queue keeps taking orders, so we lose no sales.’ The idea is the same. But now the business is on your side.”</p>
+<h3>Rule 4. Draw diagrams people can actually read</h3>
+<p><em>An ADR explains the <strong>why</strong>. A diagram shows the <strong>what</strong>. Avoid the “hairball effect”, where tangled lines hide the picture.</em></p>
+<pre class="board"><code>  SEVEN RULES FOR READABLE DIAGRAMS
+  1. Always add a TITLE (which view of the system?)
+  2. Always add a KEY / legend. (Only the database
+     cylinder is a shape everyone agrees on.)
+  3. Use one-way arrows. No double-headed arrows.
+  4. Use full labels, not acronyms.
+  5. Solid line  ====&gt;   = synchronous (caller waits)
+  6. Dotted line - - -&gt;  = asynchronous (fire and forget)
+  7. Keep shapes and colours consistent.</code></pre>
+<h3>Rule 5. Trade depth for breadth</h3>
+<p><em>Picture a pyramid. At the top is the stuff you <strong>know</strong>. In the middle is the stuff you <strong>know that you don’t know</strong>: solutions you know exist, with their rough trade-offs. At the bottom is the stuff you <strong>don’t know that you don’t know</strong>.</em></p>
+<p class="d meera"><b>Meera</b>“Developers grow by making the top tip taller. Architects grow by making the middle band wider. Your deep skill in one language will fade a little. That hurts. But knowing five ways to solve a problem, with their trade-offs, is far more valuable to an architect than knowing one way deeply. If you are a .NET expert, volunteer for a Java project. Pick up the JavaScript-heavy UI. Take a hard data problem.”</p>
+<h3>Rule 6. Sharpen the blade with katas</h3>
+<p><em>Bruce Lee said he did not fear the man who practised ten thousand different kicks once. He feared the man who practised one kick ten thousand times. An <strong>architectural kata</strong> is a practice exercise where you design a real system, so you can repeat the process.</em></p>
+<pre class="board"><code>  HOW A KATA RUNS
+  * Teams of 3-5 people. Odd numbers, so a vote settles ties.
+    Mix people who don&#x27;t work together every day.
+  * A moderator plays the CUSTOMER and answers questions.
+  * Run the whole loop: find the characteristics -&gt;
+    find the logical components -&gt; choose a style -&gt;
+    write ADRs and sketch the diagram.
+  * Present. Defend your trade-offs against tough
+    (but fair) questions. Give balanced feedback.
+  * Time: from 45 minutes to several weeks.</code></pre>
+<p>You closed the notebook. The city lights were beginning to blink.</p>
+<h3>One big board</h3>
+<p class="d you"><b>You</b>“Meera, can I draw something before you go?”</p>
+<p class="d meera"><b>Meera</b><em class="act">stepping back</em> “Go.”</p>
+<p>There was no whiteboard on the roof. So you used your phone and your fingers. In ten minutes you built the page that you wished you had on day one.</p>
+<div class="master"><p class="score-h">The whole book on one board</p><table><thead><tr><th>Trait</th><th>Layered</th><th>Modular monolith</th><th>Microkernel</th><th>Microservices</th><th>Event-driven</th></tr></thead><tbody><tr><th scope="row">Maintainability</th><td class="s1">1</td><td class="s3">3</td><td class="s3">3</td><td class="s5">5</td><td class="s4">4</td></tr><tr><th scope="row">Testability</th><td class="s2">2</td><td class="s3">3</td><td class="s3">3</td><td class="s5">5</td><td class="s2">2</td></tr><tr><th scope="row">Deployability</th><td class="s1">1</td><td class="s3">3</td><td class="s3">3</td><td class="s5">5</td><td class="s3">3</td></tr><tr><th scope="row">Simplicity</th><td class="s5">5</td><td class="s4">4</td><td class="s4">4</td><td class="s1">1</td><td class="s1">1</td></tr><tr><th scope="row">Evolvability</th><td class="s1">1</td><td class="s3">3</td><td class="s3">3</td><td class="s5">5</td><td class="s5">5</td></tr><tr><th scope="row">Performance</th><td class="s3">3</td><td class="s3">3</td><td class="s3">3</td><td class="s2">2</td><td class="s5">5</td></tr><tr><th scope="row">Scalability</th><td class="s1">1</td><td class="s1">1</td><td class="s1">1</td><td class="s5">5</td><td class="s5">5</td></tr><tr><th scope="row">Elasticity</th><td class="s1">1</td><td class="s1">1</td><td class="s1">1</td><td class="s4">4</td><td class="s4">4</td></tr><tr><th scope="row">Fault tolerance</th><td class="s1">1</td><td class="s1">1</td><td class="s1">1</td><td class="s5">5</td><td class="s5">5</td></tr><tr><th scope="row">Overall cost</th><td class="cost">$</td><td class="cost">$$</td><td class="cost">$</td><td class="cost">$$$$$</td><td class="cost">$$$</td></tr></tbody></table><p class="score-n">Numbers are the book's star ratings (1 = poorly supported, 5 = very well supported). Cost: $ is cheap, $$$$$ is very expensive.</p><div class="style-card"><h4>Layered</h4><p><strong>Pick it when:</strong> Your time and budget are tight, the system is small, and most changes are technical (a new screen, a new database).</p><p><strong>Think twice when:</strong> The business changes its products and rules often, or you must scale a lot.</p></div><div class="style-card"><h4>Modular monolith</h4><p><strong>Pick it when:</strong> You want one simple deployment, but business changes keep hurting, and you can form cross-functional teams.</p><p><strong>Think twice when:</strong> Parts of the system need different qualities, or you need strong elasticity and fault tolerance.</p></div><div class="style-card"><h4>Microkernel</h4><p><strong>Pick it when:</strong> You have a small stable core and many separate, changing customisations (devices, tax rules, extensions).</p><p><strong>Think twice when:</strong> The core changes all the time, or your plugins must talk to each other a lot.</p></div><div class="style-card"><h4>Microservices</h4><p><strong>Pick it when:</strong> You need to scale parts separately, survive crashes, and move fast, with cross-functional teams and data you can split.</p><p><strong>Think twice when:</strong> Simplicity and cost matter most, the system is small, or the data cannot be split.</p></div><div class="style-card"><h4>Event-driven</h4><p><strong>Pick it when:</strong> You need speed, scale, and easy extension, and the work can happen at the same time in the background.</p><p><strong>Think twice when:</strong> You need many synchronous calls, or you must test everything very simply.</p></div></div>
+<p class="d you"><b>You</b>“Notice how the whole story fits on this one page. Layered is the cheapest and easiest, but weak at growing. The modular monolith keeps the cost down and fixes domain changes. The microkernel is the specialist for plugins. Microservices is the champion at scaling and surviving crashes, and it sends a very large bill. Event-driven is the fastest and the most extensible, but the hardest to test.”</p>
+<p class="d meera"><b>Meera</b>“And which is the best?”</p>
+<p class="d you"><b>You</b><em class="act">grinning</em> “None. They are trade-offs.”</p>
+<p class="d meera"><b>Meera</b>“Good. Remember it.”</p>
+<h3>Monday, 9:00 AM</h3>
+<p>Four days later, you were back in the Glass Room. It was raining again. The marker pens were fresh. A new founder had arrived, nervous, with a laptop under her arm.</p>
+<p class="d other"><b>Founder</b>“I have an idea for an app. I need an architecture. What do you recommend?”</p>
+<p>Everyone looked at you. Rohan smiled. Priya looked up from her coffee. Vikram checked his watch. Meera sat in the corner, with her grid notebook closed, saying nothing, as usual.</p>
+<p>You thought about the whole year. The four dimensions. The two-by-two grid. The five styles. The seven sticky notes. The four steps. The two laws. The seven ADR sections. The six rules in the notebook.</p>
+<p>You uncapped a blue marker.</p>
+<p class="d you"><b>You</b>“Before I answer, I would like to ask you a few questions. What must your system be <em>great</em> at? Who will use it, and how many at the same second? What will you lose if it fails? And <em>why</em>?”</p>
+<p>The founder blinked. Then she smiled.</p>
+<p class="d other"><b>Founder</b>“Nobody has ever asked me that before.”</p>
+<p>Meera, in the corner, quietly opened her notebook, and wrote one small line in the margin.</p>
+<p>You turned back to the whiteboard and began to draw the first of four boxes.</p>
+<p class="d you"><b>You</b>“It depends. Tell me what your system must be great at. And let’s look at the trade-offs together.”</p>
+<div class="takeaways"><ul><li><strong>Keep coding</strong> with proof-of-concepts, technical debt, outages, and code reviews, but <strong>stay off the critical path</strong>.</li><li>The role: decide, keep analysing, track trends, enforce <strong>governance</strong>, build breadth, know the business, handle politics, and <strong>lead people</strong>.</li><li><strong>Show, don’t argue.</strong> Pick your battles. Speak <strong>business value</strong>. Involve developers early. Split big demands. Use the <strong>four Cs</strong>.</li><li><strong>Diagrams:</strong> title, key, one-way arrows, full labels, solid = sync, dotted = async, consistent shapes.</li><li><strong>Breadth beats depth</strong> for architects. Widen the “know that you don’t know” band.</li><li>Practise with <strong>architectural katas</strong>. Present and defend your trade-offs.</li><li><strong>The whole book in one sentence:</strong> architecture means choosing which trade-offs you can accept, and writing down <em>why</em> you chose them.</li></ul></div><p class="closing-note">That is the whole book, told as a story. If you remember only one thing: architecture means choosing which trade-offs you can accept, and writing down <em>why</em> you chose them.</p><p><a class="back-top" href="#top">Back to top ↑</a></p></section>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="foot-in">
+    <p><strong>You Are the Architect</strong>A story version of <em>Head First Software Architecture</em> by Raju Gandhi, Mark Richards &amp; Neal Ford (O'Reilly, 2024), written in my own words. The characters, companies and scenes are made up.</p>
+    <p><a href="#top">Back to top</a> &middot; <a href="Head_First_Software_Architecture_Blog.html">Read the full guide</a> &middot; <a href="Software_Architecture_in_10_Minutes.html">10-minute summary</a></p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var btn = document.getElementById('theme');
+  function currentTheme() {
+    var e = root.getAttribute('data-theme');
+    if (e) return e;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  function label() {
+    var dark = currentTheme() === 'dark';
+    btn.textContent = dark ? 'Light' : 'Dark';
+    btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+  }
+  btn.addEventListener('click', function () {
+    var next = currentTheme() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('hfsa-theme', next); } catch (e) {}
+    label();
+  });
+  try { var saved = localStorage.getItem('hfsa-theme'); if (saved) root.setAttribute('data-theme', saved); } catch (e) {}
+  label();
+
+  var scale = 1;
+  try { var sv = parseFloat(localStorage.getItem('hfsa-scale')); if (sv >= .85 && sv <= 1.4) scale = sv; } catch (e) {}
+  function applyScale() { root.style.setProperty('--scale', scale); try { localStorage.setItem('hfsa-scale', scale); } catch (e) {} }
+  document.getElementById('smaller').addEventListener('click', function () { scale = Math.max(.85, Math.round((scale - .1) * 100) / 100); applyScale(); });
+  document.getElementById('larger').addEventListener('click', function () { scale = Math.min(1.4, Math.round((scale + .1) * 100) / 100); applyScale(); });
+  root.style.setProperty('--scale', scale);
+
+  var bar = document.getElementById('progressBar');
+  var chapters = Array.prototype.slice.call(document.querySelectorAll('.chapter'));
+  var POS = 'hfsa-novel-pos';
+  var timer = null;
+  function progress() {
+    var h = document.documentElement, max = h.scrollHeight - h.clientHeight;
+    bar.style.transform = 'scaleX(' + (max > 0 ? Math.min(1, Math.max(0, h.scrollTop / max)) : 0) + ')';
+  }
+  function currentChapter() {
+    var y = window.scrollY + 120, cur = null;
+    for (var i = 0; i < chapters.length; i++) { if (chapters[i].offsetTop <= y) cur = chapters[i]; }
+    return cur;
+  }
+  function savePos() {
+    var c = currentChapter();
+    if (!c) return;
+    try { localStorage.setItem(POS, JSON.stringify({ id: c.id, title: c.getAttribute('data-title'), y: Math.round(window.scrollY) })); } catch (e) {}
+  }
+  window.addEventListener('scroll', function () {
+    progress();
+    clearTimeout(timer);
+    timer = setTimeout(savePos, 400);
+  }, { passive: true });
+  progress();
+
+  var jump = document.getElementById('jump');
+  jump.addEventListener('change', function () {
+    var el = document.getElementById(jump.value);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    jump.value = '';
+  });
+
+  var resume = document.getElementById('resume');
+  try {
+    var p = JSON.parse(localStorage.getItem(POS) || 'null');
+    if (p && p.y > 600 && p.id) {
+      resume.hidden = false;
+      resume.textContent = 'Resume: ' + p.title;
+      resume.addEventListener('click', function (e) {
+        e.preventDefault();
+        window.scrollTo({ top: p.y, behavior: 'smooth' });
+      });
+    }
+  } catch (e) {}
+})();
+
+</script>
+</body>
+</html>
