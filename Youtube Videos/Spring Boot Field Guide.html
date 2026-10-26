@@ -1,0 +1,545 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Spring Boot Field Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky contents rail on the left, one reading column on the right; a learning-path strip opens the page. */
+:root {
+  --bg: #F4F7F8;
+  --surface: #FFFFFF;
+  --fg: #13202A;
+  --muted: #53636F;
+  --line: #DAE2E7;
+  --accent: #0A7556;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #E2F2EB;
+  --code-bg: #0E1A23;
+  --code-fg: #D9E5EC;
+  --code-ann: #6FE0B5;
+  --code-com: #7E93A1;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B141B; --surface: #121E27; --fg: #E4ECF1; --muted: #94A5B1; --line: #243541;
+    --accent: #3FD6A2; --accent-ink: #06241A; --accent-soft: #12342A;
+    --code-bg: #081118;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B141B; --surface: #121E27; --fg: #E4ECF1; --muted: #94A5B1; --line: #243541;
+  --accent: #3FD6A2; --accent-ink: #06241A; --accent-soft: #12342A;
+  --code-bg: #081118;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.65;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 56px;
+  margin: 0;
+}
+.wrap { max-width: 1120px; margin: 0 auto; }
+a { color: var(--accent); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+/* Header */
+.top { padding-block: 40px 28px; border-bottom: 1px solid var(--line); }
+.eyebrow { font: 600 13px/1 var(--font-body); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0 0 14px; }
+h1 { font: 700 clamp(34px, 6vw, 58px)/1.05 var(--font-display); letter-spacing: -0.02em; margin: 0 0 16px; max-width: 18ch; text-wrap: balance; }
+.lede { font-size: 20px; color: var(--muted); max-width: 62ch; margin: 0 0 20px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 0; list-style: none; }
+.meta li { font: 500 13px/1 var(--font-mono); padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--muted); }
+
+/* Learning path (order matters, so it is numbered) */
+.path { list-style: none; margin: 28px 0 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; counter-reset: step; }
+.path a { display: flex; flex-direction: column; gap: 6px; height: 100%; padding: 12px 12px 14px; text-decoration: none; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; font: 600 14px/1.25 var(--font-display); transition: border-color .15s, transform .15s; }
+.path a::before { counter-increment: step; content: counter(step); font: 500 12px/1 var(--font-mono); color: var(--accent); }
+.path a:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+/* Body grid */
+.layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 56px; padding-top: 36px; }
+.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); align-self: start; }
+.toc h2 { font: 600 12px/1 var(--font-body); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border-left: 1px solid var(--line); }
+.toc a { display: block; padding: 6px 0 6px 14px; margin-left: -1px; border-left: 2px solid transparent; color: var(--muted); text-decoration: none; font-size: 15px; line-height: 1.3; }
+.toc a:hover { color: var(--fg); }
+.toc a.on { color: var(--accent); border-left-color: var(--accent); font-weight: 600; }
+
+main { min-width: 0; max-width: 740px; }
+section { padding-bottom: 44px; margin-bottom: 44px; border-bottom: 1px solid var(--line); scroll-margin-top: 20px; }
+section:last-of-type { border-bottom: 0; margin-bottom: 0; }
+h2.s { font: 700 clamp(26px, 3.6vw, 34px)/1.12 var(--font-display); letter-spacing: -0.015em; margin: 0 0 14px; text-wrap: balance; }
+h3 { font: 700 19px/1.25 var(--font-display); margin: 28px 0 8px; }
+p { margin: 0 0 14px; }
+ul.plain, ol.plain { margin: 0 0 14px; padding-left: 22px; }
+ul.plain li, ol.plain li { margin-bottom: 6px; }
+code { font: 500 .88em var(--font-mono); background: var(--accent-soft); color: var(--fg); padding: 2px 6px; border-radius: 4px; }
+
+pre { background: var(--code-bg); color: var(--code-fg); border-radius: 8px; padding: 16px 18px; margin: 0 0 16px; overflow-x: auto; font: 400 14px/1.6 var(--font-mono); max-width: 100%; }
+pre code { background: none; color: inherit; padding: 0; font: inherit; }
+pre .a { color: var(--code-ann); }
+pre .c { color: var(--code-com); }
+.fname { display: inline-block; font: 500 12px/1 var(--font-mono); color: var(--muted); margin: 0 0 6px; }
+
+/* Terms box */
+.terms { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px 6px; margin: 20px 0 0; }
+.terms > .lbl { font: 600 12px/1 var(--font-body); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0 0 12px; display: block; }
+.terms dl { margin: 0; }
+.terms dt { font-weight: 700; margin: 0; }
+.terms dd { margin: 0 0 12px; color: var(--muted); font-size: 16px; line-height: 1.55; }
+
+/* Tip */
+.tip { background: var(--accent-soft); border-radius: 8px; padding: 14px 18px; margin: 18px 0; }
+.tip strong { color: var(--accent); }
+
+/* Tables */
+.tw { overflow-x: auto; margin: 0 0 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); max-width: 100%; }
+table { border-collapse: collapse; width: 100%; font-size: 15.5px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 600 12px/1.2 var(--font-body); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); background: var(--bg); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+.verb { font: 600 12px/1 var(--font-mono); padding: 4px 7px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); }
+
+/* Layer stack */
+.stack { display: grid; gap: 0; margin: 0 0 18px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.stack div { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 16px; padding: 12px 16px; border-bottom: 1px solid var(--line); align-items: baseline; }
+.stack div:last-child { border-bottom: 0; }
+.stack b { font: 700 16px/1.3 var(--font-display); color: var(--accent); }
+.stack span { color: var(--muted); font-size: 16px; }
+
+/* Big picture diagram */
+.bp { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px 22px; padding: 16px; margin: 0 0 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.bp-group { grid-column: 2 / 5; grid-row: 1; text-align: center; font: 600 12px/1.3 var(--font-body); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 8px 10px; }
+.bp-node { position: relative; display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.bp-node b { font: 700 16px/1.2 var(--font-display); }
+.bp-node span { font-size: 14px; line-height: 1.4; color: var(--muted); }
+.bp-node a { font: 500 12px/1 var(--font-mono); margin-top: auto; padding-top: 6px; }
+.bp-node { grid-row: 2; }
+.bp-node:not(:nth-of-type(6))::after { content: "\2192"; position: absolute; right: -19px; top: 50%; transform: translateY(-50%); color: var(--accent); font-weight: 700; }
+.bp-base { grid-row: 3; grid-column: 1 / -1; text-align: center; font-size: 14px; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 10px; }
+.bp-base a { font: 500 12px/1 var(--font-mono); margin-left: 6px; }
+@media (max-width: 760px) {
+  .bp { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+  .bp-group, .bp-node, .bp-base { grid-row: auto; }
+  .bp-group { grid-column: 1; }
+  .bp-node:not(:nth-of-type(6))::after { content: "\2193"; right: auto; left: 50%; top: auto; bottom: -21px; transform: translateX(-50%); }
+}
+
+footer { margin-top: 12px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 15px; }
+
+@media (max-width: 960px) {
+  .layout { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .toc { position: static; margin-bottom: 28px; }
+  .toc ol { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; border-left: 0; border-bottom: 1px solid var(--line); gap: 4px; }
+  .toc a { white-space: nowrap; border-left: 0; border-bottom: 2px solid transparent; margin: 0 0 -1px; padding: 8px 10px; }
+  .toc a.on { border-bottom-color: var(--accent); }
+  .path { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  body { font-size: 16.5px; }
+  .path { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stack div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .path a { transition: none; }
+}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <p class="eyebrow">Beginner guide · Java</p>
+  <h1>Spring Boot Field Guide</h1>
+  <p class="lede">A short summary of a 6-hour video course. You build a REST API for books and authors, store the data in PostgreSQL, and ship it to AWS inside a Docker container. Each new term is explained where it first appears.</p>
+  <ul class="meta">
+    <li>About 15 min read</li>
+    <li>Java 17</li>
+    <li>Spring Boot 3.1</li>
+    <li>Maven</li>
+  </ul>
+  <ol class="path" aria-label="Learning path">
+    <li><a href="#setup">Set up &amp; Hello World</a></li>
+    <li><a href="#maven">Maven</a></li>
+    <li><a href="#core">Spring core ideas</a></li>
+    <li><a href="#config">Configuration</a></li>
+    <li><a href="#data">Databases &amp; JPA</a></li>
+    <li><a href="#rest">The REST API</a></li>
+    <li><a href="#deploy">Deploy to AWS</a></li>
+  </ol>
+</header>
+
+<div class="layout">
+<nav class="toc" aria-label="Contents">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#big-picture">Big picture</a></li>
+    <li><a href="#setup">Set up</a></li>
+    <li><a href="#hello">Hello World</a></li>
+    <li><a href="#maven">Maven</a></li>
+    <li><a href="#core">Spring &amp; layers</a></li>
+    <li><a href="#beans">Beans &amp; injection</a></li>
+    <li><a href="#config">Configuration</a></li>
+    <li><a href="#data">Databases</a></li>
+    <li><a href="#jpa">Spring Data JPA</a></li>
+    <li><a href="#json">JSON &amp; Jackson</a></li>
+    <li><a href="#rest">REST API</a></li>
+    <li><a href="#deploy">Deploy</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="big-picture">
+  <h2 class="s">The big picture</h2>
+  <p>Before any code, zoom out. At the end of this guide you will have a small web service that other programs can call. A request comes in from a client, passes through a few layers inside your app, reaches a database, and the answer travels back the same way.</p>
+  <div class="bp" role="group" aria-label="Request flow from client to database">
+    <div class="bp-group">Your Spring Boot app, built by Maven</div>
+    <div class="bp-node"><b>Client</b><span>A browser or Postman sends a request</span></div>
+    <div class="bp-node"><b>Controller</b><span>Receives the request and returns JSON</span><a href="#rest">Section 10</a></div>
+    <div class="bp-node"><b>Service</b><span>Holds the business logic</span><a href="#core">Section 4</a></div>
+    <div class="bp-node"><b>Repository</b><span>Saves and loads data</span><a href="#jpa">Section 8</a></div>
+    <div class="bp-node"><b>Database</b><span>PostgreSQL stores everything</span><a href="#data">Section 7</a></div>
+    <div class="bp-base">Packaged in a Docker container and hosted on AWS <a href="#deploy">Section 11</a></div>
+  </div>
+  <p>Spring Boot wires those layers together for you. It creates the objects (<a href="#beans">Section 5</a>), applies sensible default settings (<a href="#config">Section 6</a>) and converts data to JSON (<a href="#json">Section 9</a>). Maven builds and runs the project (<a href="#maven">Section 3</a>).</p>
+  <p><strong>We will learn every one of these pieces, one at a time.</strong> We start with a single Hello World endpoint, then add Maven, the Spring basics, a database and the full API, and finish by putting it on the internet. Each step adds one box to the picture above.</p>
+</section>
+
+<section id="setup">
+  <h2 class="s">1. Set up your project</h2>
+  <p>You need Java 17 or later and an IDE. The course uses IntelliJ IDEA Community, which is free. Then open <a href="https://start.spring.io" rel="noopener">start.spring.io</a>, a website that generates an empty Spring Boot project for you to download.</p>
+  <div class="tw"><table>
+    <tr><th>Field</th><th>Choose</th><th>Why</th></tr>
+    <tr><td>Project</td><td>Maven</td><td>The tool that builds your project and fetches libraries.</td></tr>
+    <tr><td>Language</td><td>Java</td><td>Kotlin and Groovy also work, but the course sticks to Java.</td></tr>
+    <tr><td>Spring Boot</td><td>3.1.x</td><td>Pick the latest regular release. Avoid <code>SNAPSHOT</code>, which is an unfinished development build.</td></tr>
+    <tr><td>Group / Artifact</td><td><code>com.example</code> / <code>quickstart</code></td><td>A name and a unique ID for your project.</td></tr>
+    <tr><td>Packaging</td><td>Jar</td><td>One file you can run with a single command.</td></tr>
+    <tr><td>Dependencies</td><td>Spring Web</td><td>Everything needed to build a web API.</td></tr>
+  </table></div>
+  <div class="terms"><span class="lbl">Key terms</span><dl>
+    <dt>Framework</dt><dd>A large body of ready-made code that sits on top of a language and solves common problems, such as talking to a database or exposing a web API.</dd>
+    <dt>Spring Boot</dt><dd>A framework that sets up a Spring application for you using sensible defaults, so you write less configuration.</dd>
+    <dt>IDE</dt><dd>Integrated Development Environment. An editor built for writing, running and testing code.</dd>
+    <dt>Dependency</dt><dd>A library your project needs. You list it, and Maven downloads it.</dd>
+    <dt>JAR / WAR</dt><dd>Two ways to package a Java app. A JAR runs on its own with <code>java -jar</code>. A WAR is meant to be dropped into an external web server.</dd>
+  </dl></div>
+</section>
+
+<section id="hello">
+  <h2 class="s">2. Your first endpoint</h2>
+  <p>Create one class in <code>src/main/java</code>. Run the application from your IDE, then open <code>http://localhost:8080/hello</code> in a browser. You will see the text.</p>
+<pre><code><span class="a">@RestController</span>
+public class HelloWorldController {
+
+    <span class="a">@GetMapping</span>(path = "/hello")
+    public String helloWorld() {
+        return "Hello World";
+    }
+}</code></pre>
+  <p>The generated project also contains a main class, a config file, a test and a build file:</p>
+  <ul class="plain">
+    <li><code>QuickStartApplication</code> is the entry point. Its <code>main</code> method starts Spring.</li>
+    <li><code>application.properties</code> holds your settings. It starts empty.</li>
+    <li><code>QuickStartApplicationTests</code> contains one test that checks the app starts.</li>
+    <li><code>pom.xml</code> lists your dependencies and build settings for Maven.</li>
+  </ul>
+  <div class="terms"><span class="lbl">Key terms</span><dl>
+    <dt>Annotation</dt><dd>A label that starts with <code>@</code>. It tells Spring how to treat the class or method underneath.</dd>
+    <dt>REST API</dt><dd>A way for programs to talk over the web using URLs and HTTP methods such as GET and POST.</dd>
+    <dt>Endpoint</dt><dd>One URL your API responds to, such as <code>/hello</code>.</dd>
+    <dt>Controller</dt><dd>A class that receives web requests and returns responses.</dd>
+    <dt>Port 8080 / Tomcat</dt><dd>Tomcat is the web server bundled inside your app. It listens on port 8080 by default.</dd>
+  </dl></div>
+</section>
+
+<section id="maven">
+  <h2 class="s">3. Maven in five minutes</h2>
+  <p>Maven downloads your dependencies, including the dependencies of those dependencies. It also compiles, tests and packages your code. Spring Boot projects include <code>mvnw</code>, a small script that runs Maven for you, so you do not need to install it.</p>
+  <p>Maven runs <strong>goals</strong> in a fixed order. The ones you will use most come from the default lifecycle. Running a later goal runs all the earlier ones first.</p>
+  <div class="tw"><table>
+    <tr><th>Command</th><th>What it does</th></tr>
+    <tr><td><code>./mvnw clean</code></td><td>Deletes the <code>target</code> folder with all build output.</td></tr>
+    <tr><td><code>./mvnw compile</code></td><td>Turns your Java code into bytecode, which the JVM can run.</td></tr>
+    <tr><td><code>./mvnw test</code></td><td>Compiles, then runs your unit tests.</td></tr>
+    <tr><td><code>./mvnw package</code></td><td>Compiles, tests, then builds the JAR in <code>target</code>.</td></tr>
+    <tr><td><code>./mvnw verify</code></td><td>Does all of the above, then runs integration tests and checks.</td></tr>
+  </table></div>
+  <h3>Where files live</h3>
+  <p>Maven expects a fixed folder layout. Spring Boot relies on it.</p>
+  <div class="tw"><table>
+    <tr><th>Folder</th><th>Contents</th></tr>
+    <tr><td><code>src/main/java</code></td><td>Your application code.</td></tr>
+    <tr><td><code>src/main/resources</code></td><td>Config files such as <code>application.properties</code>.</td></tr>
+    <tr><td><code>src/test/java</code></td><td>Tests, in the same packages as the code they test.</td></tr>
+    <tr><td><code>src/test/resources</code></td><td>Config used only in tests. It overrides the main config.</td></tr>
+    <tr><td><code>target</code></td><td>Build output, including your JAR.</td></tr>
+  </table></div>
+  <p>Three ways to run the app locally: press play in the IDE, run the JAR with <code>java -jar target/quickstart-0.0.1-SNAPSHOT.jar</code>, or run <code>./mvnw spring-boot:run</code>. Stop it with <code>Ctrl+C</code>.</p>
+  <div class="tip"><strong>Habit worth copying.</strong> Run <code>./mvnw clean verify</code> before you push code. It proves the whole project still builds and passes its tests.</div>
+  <div class="terms"><span class="lbl">Key terms</span><dl>
+    <dt>Build tool</dt><dd>Software that compiles, tests and packages your project in repeatable steps.</dd>
+    <dt>Transitive dependency</dt><dd>A library needed by a library you asked for. Maven fetches these automatically.</dd>
+    <dt>Lifecycle, phase, goal</dt><dd>A goal is one task. A phase groups goals. A lifecycle is the ordered list of phases.</dd>
+  </dl></div>
+</section>
+
+<section id="core">
+  <h2 class="s">4. Spring, Spring Boot and layers</h2>
+  <p><strong>Spring Framework</strong> does the heavy lifting: database access, web APIs and more. It is very configurable, which means you configure a lot on every new project. <strong>Spring Boot</strong> sits on top and fills in sensible defaults. You keep Spring's flexibility and skip the repetitive setup.</p>
+  <p>Most Spring apps are split into three layers. Each one has one job, and calls only go downward.</p>
+  <div class="stack">
+    <div><b>Presentation</b><span>Controllers. Turn requests into calls and send results back to the user.</span></div>
+    <div><b>Service</b><span>Business logic. Uses the persistence layer to meet the app's requirements.</span></div>
+    <div><b>Persistence</b><span>Talks to the database through repositories or DAOs.</span></div>
+  </div>
+  <p>The payoff is flexibility. Swap a REST API for GraphQL and only the presentation layer changes. Swap the database and only the persistence layer changes.</p>
+</section>
+
+<section id="beans">
+  <h2 class="s">5. Beans and dependency injection</h2>
+  <p>Say a class needs three helper classes. If it creates them with <code>new</code>, swapping one means editing that class. With <strong>dependency injection</strong>, the class only declares what it needs, usually as constructor parameters. Spring creates the objects and hands them over.</p>
+  <p>In the course, a <code>ColorPrinter</code> needs red, blue and green printers. Replacing the English printers with Spanish ones takes one change, and <code>ColorPrinter</code> stays untouched.</p>
+  <h3>Two ways to declare a bean</h3>
+<pre><span class="c">// 1. In a configuration class</span>
+<span class="a">@Configuration</span>
+public class PrinterConfig {
+    <span class="a">@Bean</span>
+    public RedPrinter redPrinter() { return new EnglishRedPrinter(); }
+}
+
+<span class="c">// 2. Directly on the class</span>
+<span class="a">@Component</span>        <span class="c">// <span class="a">@Service</span> does the same thing, with a clearer name</span>
+public class SpanishGreenPrinter implements GreenPrinter { ... }</pre>
+  <p>When the app starts, Spring runs a <strong>component scan</strong>. It walks through your packages, collects every bean into the <strong>application context</strong>, and injects them wherever they are asked for. If a needed bean is missing, startup fails with a clear message.</p>
+  <p>The scan begins at the package of your main class and covers everything below it. A class placed outside that package is never found.</p>
+  <h3>What <code>@SpringBootApplication</code> really is</h3>
+  <p>It bundles three annotations: <code>@Configuration</code> (this class can declare beans), <code>@ComponentScan</code> (find beans from here down) and <code>@EnableAutoConfiguration</code> (set up defaults, covered next).</p>
+  <div class="terms"><span class="lbl">Key terms</span><dl>
+    <dt>Interface</dt><dd>A list of methods a class promises to provide. Code that depends on an interface does not care which class sits behind it.</dd>
+    <dt>Bean</dt><dd>An object created and managed by Spring.</dd>
+    <dt>Dependency injection</dt><dd>Spring supplies the objects a class needs instead of the class creating them. Also called autowiring.</dd>
+    <dt>Inversion of control</dt><dd>The general idea behind it: something outside your class takes over control of creating dependencies.</dd>
+    <dt>Application context</dt><dd>Spring's pool of beans, ready to be handed out.</dd>
+  </dl></div>
+</section>
+
+<section id="config">
+  <h2 class="s">6. Starters, auto-configuration and settings</h2>
+  <p>A <strong>starter</strong> is a bundle of dependencies for one job. <code>spring-boot-starter-web</code> brings Spring MVC, JSON support and Tomcat. <strong>Auto-configuration</strong> then looks at what is on your classpath and creates the matching beans. A rule like <code>@ConditionalOnClass</code> means "only set this up if that library is present". You never need to read these classes to use Spring Boot, but knowing they exist makes it feel less like magic.</p>
+  <h3>Changing a default</h3>
+  <p>Put a key and value in <code>src/main/resources/application.properties</code>. Every key is listed in Spring's "common application properties" page.</p>
+<pre><span class="c"># application.properties</span>
+server.port=8181</pre>
+<pre><span class="c"># application.yaml, same setting in YAML format</span>
+server:
+  port: 8181</pre>
+  <p>Settings can also come from environment variables, which is how you configure apps in Docker. Take the key, make it uppercase, and replace dots and hyphens with underscores: <code>server.port</code> becomes <code>SERVER_PORT</code>.</p>
+<pre>SERVER_PORT=8383 ./mvnw spring-boot:run</pre>
+  <h3>Your own settings</h3>
+  <p>Custom values can be loaded the same way with <code>@ConfigurationProperties</code>. The prefix is the start of the key.</p>
+<pre><span class="a">@Configuration</span>
+<span class="a">@ConfigurationProperties</span>(prefix = "pizza")
+public class PizzaConfig {
+    private String sauce;
+    private String topping;
+    private String crust;
+    <span class="c">// getters and setters (the course uses Lombok's @Data)</span>
+}</pre>
+  <p>Now <code>pizza.sauce=barbecue</code> in the properties file, or <code>PIZZA_SAUCE=tomato</code> in the environment, fills the field.</p>
+  <div class="tip"><strong>Test settings.</strong> Files in <code>src/test/resources</code> override the main ones during tests. Use this to point tests at an in-memory database.</div>
+  <div class="terms"><span class="lbl">Key terms</span><dl>
+    <dt>Classpath</dt><dd>The set of libraries and files available to your running app.</dd>
+    <dt>Environment variable</dt><dd>A named setting provided by the operating system or the container, outside your code.</dd>
+    <dt>Lombok</dt><dd>A library that generates getters, setters and constructors from annotations such as <code>@Data</code>.</dd>
+  </dl></div>
+</section>
+
+<section id="data">
+  <h2 class="s">7. Talking to a database</h2>
+  <p>Database tools stack up in layers. Each layer builds on the one below it.</p>
+  <div class="stack">
+    <div><b>Database driver</b><span>Lets Java talk to a specific database such as PostgreSQL or MySQL.</span></div>
+    <div><b>JDBC</b><span>Java's low-level API. You write SQL and map the results to objects yourself.</span></div>
+    <div><b>Spring JDBC</b><span>Adds <code>JdbcTemplate</code>, which removes much of the boilerplate.</span></div>
+    <div><b>JPA / Hibernate</b><span>High level. You work with Java objects and it generates the SQL.</span></div>
+    <div><b>Spring Data JPA</b><span>Adds ready-made repositories on top of JPA.</span></div>
+  </div>
+  <h3>Connecting</h3>
+  <p>For quick experiments, add the <strong>H2</strong> in-memory database. Spring Boot finds it and connects with no settings. For a real database, run PostgreSQL with Docker Compose (<code>docker-compose up</code>) and give Spring the connection details:</p>
+<pre>spring.datasource.url=jdbc:postgresql://localhost:5432/postgres
+spring.datasource.username=postgres
+spring.datasource.password=change-me
+spring.datasource.driver-class-name=org.postgresql.Driver</pre>
+  <p>Two files in <code>src/main/resources</code> can set up the database at startup: <code>schema.sql</code> creates tables and <code>data.sql</code> fills them. Turn them on with <code>spring.sql.init.mode=always</code>. Do not leave that on in production.</p>
+  <h3>The hard way first: a DAO</h3>
+  <p>The course first builds create, read, update and delete classes by hand with <code>JdbcTemplate</code>. This makes clear how much work JPA later removes.</p>
+<pre>jdbcTemplate.update(
+    "INSERT INTO authors (id, name, age) VALUES (?, ?, ?)",
+    author.getId(), author.getName(), author.getAge());</pre>
+  <p>The <code>?</code> placeholders matter. Passing values separately, instead of gluing them into the SQL string, protects you from SQL injection.</p>
+  <div class="terms"><span class="lbl">Key terms</span><dl>
+    <dt>JDBC</dt><dd>Java Database Connectivity. The standard way to send SQL from Java.</dd>
+    <dt>JPA and Hibernate</dt><dd>JPA is a specification for working with databases through objects. Hibernate is the implementation Spring uses.</dd>
+    <dt>ORM</dt><dd>Object-relational mapper. A tool that converts between database rows and Java objects. Hibernate is one.</dd>
+    <dt>DAO</dt><dd>Data Access Object. A class that holds all database code for one kind of data, so the service layer never sees SQL.</dd>
+    <dt>CRUD</dt><dd>Create, Read, Update, Delete. The four basic data operations.</dd>
+    <dt>SQL injection</dt><dd>An attack where user input is treated as SQL code.</dd>
+    <dt>In-memory database</dt><dd>A database that lives in RAM and disappears when the app stops. Great for tests.</dd>
+  </dl></div>
+</section>
+
+<section id="jpa">
+  <h2 class="s">8. Spring Data JPA: the easy way</h2>
+  <p>Swap <code>spring-boot-starter-jdbc</code> for <code>spring-boot-starter-data-jpa</code>. Delete the DAOs and <code>schema.sql</code>. Then turn your plain classes into <strong>entities</strong>, which are Java classes mapped to database tables.</p>
+<pre><span class="a">@Entity</span>
+<span class="a">@Table</span>(name = "authors")
+public class AuthorEntity {
+    <span class="a">@Id</span>
+    <span class="a">@GeneratedValue</span>(strategy = GenerationType.SEQUENCE, generator = "author_id_seq")
+    private Long id;
+    private String name;
+    private Integer age;
+}</pre>
+  <p>A book points to its author with a many-to-one relationship, so one author can have many books:</p>
+<pre><span class="a">@Entity</span>
+<span class="a">@Table</span>(name = "books")
+public class BookEntity {
+    <span class="a">@Id</span>
+    private String isbn;
+    private String title;
+
+    <span class="a">@ManyToOne</span>(cascade = CascadeType.ALL)
+    <span class="a">@JoinColumn</span>(name = "author_id")
+    private AuthorEntity author;
+}</pre>
+  <p><code>CascadeType.ALL</code> means saving a book also saves its author.</p>
+  <p>Instead of schema.sql, let Hibernate build the tables from your entities:</p>
+<pre>spring.jpa.hibernate.ddl-auto=update</pre>
+  <h3>Repositories need no code</h3>
+<pre><span class="a">@Repository</span>
+public interface AuthorRepository extends CrudRepository&lt;AuthorEntity, Long&gt; {
+    Iterable&lt;AuthorEntity&gt; findByAgeLessThan(int age);
+
+    <span class="a">@Query</span>("SELECT a FROM AuthorEntity a WHERE a.age &gt; ?1")
+    Iterable&lt;AuthorEntity&gt; findAuthorsWithAgeGreaterThan(int age);
+}</pre>
+  <p>Extending <code>CrudRepository</code> gives you <code>save</code>, <code>findById</code>, <code>findAll</code>, <code>deleteById</code> and more, with no implementation. <code>save</code> handles both create and update. Spring Data can also build a query from a method name like <code>findByAgeLessThan</code>. When the name is not enough, write the query yourself with <code>@Query</code>.</p>
+  <div class="tip"><strong>Careful in production.</strong> <code>ddl-auto=update</code> is handy while learning. Real projects usually manage schema changes with a migration tool.</div>
+  <div class="terms"><span class="lbl">Key terms</span><dl>
+    <dt>Entity</dt><dd>A Java class that represents a table row.</dd>
+    <dt>Repository</dt><dd>An interface that gives you ready-made database operations for one entity.</dd>
+    <dt>Sequence</dt><dd>A database counter that hands out 1, 2, 3… for new IDs.</dd>
+    <dt>HQL / JPQL</dt><dd>A query language like SQL, but written against your Java classes and fields instead of tables and columns.</dd>
+  </dl></div>
+</section>
+
+<section id="json">
+  <h2 class="s">9. JSON and Jackson</h2>
+  <p>APIs exchange data as JSON, a text format of keys and values. Spring Web uses <strong>Jackson</strong> to convert between JSON and Java objects automatically. Turning an object into JSON is <em>marshalling</em>. Turning JSON into an object is <em>unmarshalling</em>.</p>
+<pre>ObjectMapper mapper = new ObjectMapper();
+String json = mapper.writeValueAsString(book);        <span class="c">// object to JSON</span>
+Book copy  = mapper.readValue(json, Book.class);       <span class="c">// JSON to object</span></pre>
+  <p>Two annotations come up constantly. <code>@JsonProperty("year")</code> renames a field in the JSON. <code>@JsonIgnoreProperties(ignoreUnknown = true)</code> stops Jackson from failing when the JSON has fields your class does not know. Classes used with Jackson also need a no-argument constructor.</p>
+</section>
+
+<section id="rest">
+  <h2 class="s">10. Building the REST API</h2>
+  <p>The API has two resources, <code>books</code> and <code>authors</code>. URLs use plural nouns. Books use the ISBN as their ID, which you supply, so create is a <code>PUT</code>. Authors get a generated ID, so create is a <code>POST</code>.</p>
+  <div class="tw"><table>
+    <tr><th>Action</th><th>Books</th><th>Authors</th><th>Success</th></tr>
+    <tr><td>Create</td><td><span class="verb">PUT</span> <code>/books/{isbn}</code></td><td><span class="verb">POST</span> <code>/authors</code></td><td>201 Created</td></tr>
+    <tr><td>Read one</td><td><span class="verb">GET</span> <code>/books/{isbn}</code></td><td><span class="verb">GET</span> <code>/authors/{id}</code></td><td>200, or 404 if missing</td></tr>
+    <tr><td>Read many</td><td><span class="verb">GET</span> <code>/books</code></td><td><span class="verb">GET</span> <code>/authors</code></td><td>200, even if empty</td></tr>
+    <tr><td>Full update</td><td><span class="verb">PUT</span> <code>/books/{isbn}</code></td><td><span class="verb">PUT</span> <code>/authors/{id}</code></td><td>200</td></tr>
+    <tr><td>Partial update</td><td><span class="verb">PATCH</span> <code>/books/{isbn}</code></td><td><span class="verb">PATCH</span> <code>/authors/{id}</code></td><td>200</td></tr>
+    <tr><td>Delete</td><td><span class="verb">DELETE</span> <code>/books/{isbn}</code></td><td><span class="verb">DELETE</span> <code>/authors/{id}</code></td><td>204 No Content</td></tr>
+  </table></div>
+  <p>A full update replaces the whole object. A partial update changes only the fields you send.</p>
+  <h3>How a request flows</h3>
+  <p>The controller never touches entities. It receives a <strong>DTO</strong>, converts it to an entity with a mapper, and passes it to the service. The service calls the repository. The result travels back the same way. <strong>ModelMapper</strong> is a library that does the DTO-to-entity copying for you.</p>
+<pre><span class="a">@PostMapping</span>("/authors")
+public ResponseEntity&lt;AuthorDto&gt; createAuthor(<span class="a">@RequestBody</span> AuthorDto dto) {
+    AuthorEntity saved = authorService.save(authorMapper.mapFrom(dto));
+    return new ResponseEntity&lt;&gt;(authorMapper.mapTo(saved), HttpStatus.CREATED);
+}</pre>
+  <h3>Nested objects and big lists</h3>
+  <p>To save a book and its author in one request, set ModelMapper's matching strategy to loose so nested objects convert too. For long lists, use pagination: extend <code>PagingAndSortingRepository</code>, accept a <code>Pageable</code> in the controller, and return a <code>Page</code>. Callers then control the result with <code>?page=0&amp;size=20</code>.</p>
+  <h3>Testing it</h3>
+  <p>The course writes unit tests with Mockito, then integration tests with <code>@SpringBootTest</code> against an H2 database in PostgreSQL mode. Controller tests use <strong>MockMvc</strong>, which sends fake requests and checks status codes and JSON fields. Add <code>@DirtiesContext</code> so each test starts with a clean database. Without it, data from one test leaks into the next.</p>
+  <div class="terms"><span class="lbl">Key terms</span><dl>
+    <dt>HTTP method</dt><dd>The verb of a request. GET reads, POST and PUT create or replace, PATCH changes part, DELETE removes.</dd>
+    <dt>Status code</dt><dd>A number in the response that says what happened. 200 OK, 201 Created, 204 No Content, 404 Not Found.</dd>
+    <dt>DTO</dt><dd>Data Transfer Object. A plain class for data crossing the API boundary, so the outside world never depends on your database classes.</dd>
+    <dt>Unit vs integration test</dt><dd>A unit test checks one class in isolation. An integration test starts the real app and checks parts working together.</dd>
+    <dt>Pagination</dt><dd>Returning a large list in small pages instead of all at once.</dd>
+  </dl></div>
+</section>
+
+<section id="deploy">
+  <h2 class="s">11. Deploy to AWS</h2>
+  <p>The last step packages the app in a <strong>Docker container</strong>, a sealed box holding your app and everything it needs to run, and hosts it on AWS Lightsail.</p>
+<pre><span class="fname">Dockerfile</span>
+FROM openjdk:17
+COPY target/*.jar app.jar
+ENTRYPOINT ["java", "-jar", "app.jar"]</pre>
+  <ol class="plain">
+    <li>Build the JAR with <code>./mvnw clean package</code>.</li>
+    <li>Build the image with <code>docker build -t books .</code></li>
+    <li>In Lightsail, create a container service and push the image with the AWS CLI.</li>
+    <li>Create a PostgreSQL database in Lightsail and note its endpoint, username and password.</li>
+    <li>Create a deployment: open port 8080 and set <code>SPRING_DATASOURCE_URL</code>, <code>SPRING_DATASOURCE_USERNAME</code> and <code>SPRING_DATASOURCE_PASSWORD</code> as environment variables.</li>
+    <li>Set the health check path to <code>/books</code>, because it always answers 200.</li>
+  </ol>
+  <div class="tip"><strong>If the deployment fails.</strong> The first attempt failed its health check because the smallest instance started too slowly. A larger instance and longer timeouts fixed it. In a real project, keep passwords in a secrets store instead of plain environment variables.</div>
+  <p>Once it is live, call the public HTTPS address with the same requests you used locally. That is the full journey: a project from Spring Initializr, running in the cloud.</p>
+  <div class="terms"><span class="lbl">Key terms</span><dl>
+    <dt>Docker image</dt><dd>The packaged, read-only blueprint. Running it creates a container.</dd>
+    <dt>Health check</dt><dd>A request the host sends repeatedly to confirm your app is alive.</dd>
+  </dl></div>
+</section>
+
+<footer>
+  This page summarises a free 6-hour Spring Boot REST API course on YouTube. Watch the video for the full coding walkthrough and every test.
+</footer>
+
+</main>
+</div>
+</div>
+
+<script>
+(function () {
+  try {
+    var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+    var map = {};
+    links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+    var secs = Array.prototype.slice.call(document.querySelectorAll('main section'));
+    function update() {
+      var current = secs[0] && secs[0].id;
+      secs.forEach(function (s) {
+        if (s.getBoundingClientRect().top <= 140) current = s.id;
+      });
+      links.forEach(function (a) { a.classList.remove('on'); });
+      if (map[current]) map[current].classList.add('on');
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  } catch (e) {}
+})();
+</script>
+
+</body></html>
