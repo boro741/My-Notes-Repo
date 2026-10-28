@@ -1,0 +1,1184 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quarkus Comic Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#fff8e7; --card:#ffffff; --ink:#1b1b2f; --muted:#555a6e;
+  --yellow:#ffd93d; --red:#ff4d4d; --blue:#3a86ff; --green:#2ec27e; --purple:#8e5cf7;
+  --code-bg:#1b1b2f; --code-fg:#f7f1dc; --dots:rgba(27,27,47,.09); --shadow:#1b1b2f;
+}
+:root[data-theme="dark"]{
+  --paper:#14142a; --card:#1f1f3d; --ink:#f4efe0; --muted:#b4b8cf;
+  --yellow:#ffd93d; --red:#ff6b6b; --blue:#5b9bff; --green:#3ddc97; --purple:#a98bff;
+  --code-bg:#0c0c1c; --code-fg:#f7f1dc; --dots:rgba(255,255,255,.06); --shadow:#000;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+body{
+  margin:0; font-family:'Comic Neue','Comic Sans MS',cursive; font-weight:700; font-size:18px; line-height:1.65;
+  color:var(--ink); background:var(--paper);
+  background-image:radial-gradient(var(--dots) 1.4px, transparent 1.6px); background-size:16px 16px;
+}
+h1,h2,h3,.bang{font-family:'Bangers','Comic Neue',cursive; font-weight:400; letter-spacing:.04em; line-height:1.1}
+a{color:var(--blue)}
+code{font-family:'JetBrains Mono',monospace; font-size:.85em; background:var(--yellow); color:#1b1b2f; padding:1px 7px; border-radius:6px; border:2px solid #1b1b2f; font-weight:700; white-space:nowrap}
+pre code{background:none;border:0;padding:0;color:inherit;white-space:pre;font-size:14px}
+
+/* progress */
+#progress{position:fixed;top:0;left:0;height:8px;width:0;background:linear-gradient(90deg,var(--red),var(--yellow),var(--blue));z-index:100;border-bottom:3px solid #1b1b2f}
+
+/* layout */
+.shell{display:grid;grid-template-columns:270px 1fr;min-height:100vh}
+nav.side{
+  position:sticky;top:0;height:100vh;overflow:auto;padding:26px 18px;
+  background:var(--yellow);border-right:5px solid #1b1b2f;color:#1b1b2f
+}
+nav.side .logo{font-family:'Bangers';font-size:34px;line-height:1;margin-bottom:4px;text-shadow:3px 3px 0 #fff}
+nav.side small{display:block;margin-bottom:18px;font-size:14px}
+nav.side a{
+  display:flex;gap:10px;align-items:center;padding:8px 12px;margin:6px 0;border:3px solid #1b1b2f;border-radius:12px;
+  background:#fff;color:#1b1b2f;text-decoration:none;font-size:15px;box-shadow:3px 3px 0 #1b1b2f;transition:transform .15s
+}
+nav.side a:hover{transform:translate(-2px,-2px)}
+nav.side a.active{background:var(--red);color:#fff}
+nav.side a .n{font-family:'Bangers';font-size:20px;min-width:22px}
+nav.side a.done::after{content:"✔";margin-left:auto;color:var(--green);font-size:18px}
+nav.side a.active.done::after{color:#fff}
+.tools{display:flex;gap:8px;margin-top:16px}
+.btn{font-family:'Bangers';letter-spacing:.05em;font-size:18px;padding:6px 14px;border:3px solid #1b1b2f;border-radius:12px;background:var(--red);color:#fff;cursor:pointer;box-shadow:3px 3px 0 #1b1b2f}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #1b1b2f}
+.btn.blue{background:var(--blue)} .btn.green{background:var(--green);color:#1b1b2f} .btn.small{font-size:15px;padding:3px 10px}
+#menu{display:none}
+
+main{padding:0 clamp(16px,4vw,56px) 80px;max-width:1040px;width:100%}
+
+/* hero */
+.hero{margin:36px 0 10px;padding:34px clamp(18px,4vw,44px);border:5px solid #1b1b2f;border-radius:22px;background:var(--blue);color:#fff;box-shadow:10px 10px 0 var(--shadow);position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(rgba(255,255,255,.25) 2px,transparent 2.4px);background-size:14px 14px;opacity:.6;pointer-events:none}
+.hero h1{font-size:clamp(40px,7vw,78px);margin:0;text-shadow:5px 5px 0 #1b1b2f;position:relative}
+.hero p{position:relative;font-size:20px;max-width:620px}
+.hero .pow{position:absolute;right:20px;top:20px;font-family:'Bangers';font-size:64px;color:var(--yellow);-webkit-text-stroke:3px #1b1b2f;transform:rotate(12deg);animation:pulse 2s infinite}
+@keyframes pulse{50%{transform:rotate(12deg) scale(1.12)}}
+
+/* sections */
+section.part{margin-top:60px}
+.part-head{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.part-num{font-family:'Bangers';font-size:56px;background:var(--red);color:#fff;border:4px solid #1b1b2f;border-radius:50%;width:84px;height:84px;display:grid;place-items:center;box-shadow:5px 5px 0 var(--shadow);flex:none}
+.part h2{font-size:clamp(32px,5vw,48px);margin:0;text-shadow:3px 3px 0 var(--yellow)}
+:root[data-theme="dark"] .part h2{text-shadow:3px 3px 0 #000}
+.part h3{font-size:28px;margin:34px 0 8px;color:var(--red)}
+.card{background:var(--card);border:4px solid #1b1b2f;border-radius:18px;padding:20px 24px;margin:18px 0;box-shadow:6px 6px 0 var(--shadow)}
+.tldr{background:var(--yellow);color:#1b1b2f;position:relative}
+.tldr::before{content:"EK LINE ME!";position:absolute;top:-18px;left:18px;font-family:'Bangers';font-size:22px;background:var(--red);color:#fff;padding:2px 14px;border:3px solid #1b1b2f;border-radius:10px;transform:rotate(-3deg)}
+.bubble{position:relative;background:#fff;color:#1b1b2f;border:4px solid #1b1b2f;border-radius:24px;padding:14px 20px;margin:20px 0 26px 6px;max-width:680px}
+.bubble::after{content:"";position:absolute;left:36px;bottom:-22px;border:12px solid transparent;border-top:18px solid #1b1b2f}
+.bubble::before{content:"";position:absolute;left:40px;bottom:-14px;border:8px solid transparent;border-top:13px solid #fff;z-index:1}
+.note{border-left:10px solid var(--green)} .warn{border-left:10px solid var(--red)} .tip{border-left:10px solid var(--purple)}
+.label{font-family:'Bangers';font-size:22px;letter-spacing:.05em}
+.note .label{color:var(--green)} .warn .label{color:var(--red)} .tip .label{color:var(--purple)}
+.jargon{border:4px dashed var(--blue)}
+.jargon .label{color:var(--blue)}
+dl.terms{margin:8px 0 0}
+dl.terms dt{font-family:'Bangers';font-size:22px;color:var(--red);margin-top:10px}
+dl.terms dd{margin:0}
+ul.checks{list-style:none;padding:0}
+ul.checks li{padding:6px 0 6px 38px;position:relative}
+ul.checks li::before{content:"☐";position:absolute;left:4px;top:2px;font-size:26px;color:var(--blue)}
+ol.steps{counter-reset:s;list-style:none;padding:0}
+ol.steps li{counter-increment:s;padding:8px 0 8px 54px;position:relative}
+ol.steps li::before{content:counter(s);position:absolute;left:0;top:4px;width:38px;height:38px;border-radius:50%;background:var(--blue);color:#fff;border:3px solid #1b1b2f;display:grid;place-items:center;font-family:'Bangers';font-size:22px}
+
+/* code */
+.code{position:relative;margin:14px 0}
+.code .cap{display:inline-block;font-family:'Bangers';letter-spacing:.05em;background:var(--blue);color:#fff;border:3px solid #1b1b2f;border-bottom:0;border-radius:10px 10px 0 0;padding:2px 14px;font-size:17px}
+pre{margin:0;background:var(--code-bg);color:var(--code-fg);border:4px solid #1b1b2f;border-radius:0 14px 14px 14px;padding:16px 18px;overflow:auto;box-shadow:5px 5px 0 var(--shadow);line-height:1.5}
+.copy{position:absolute;right:10px;top:34px;font-family:'Bangers';font-size:15px;padding:2px 10px;border:2px solid #1b1b2f;border-radius:8px;background:var(--yellow);cursor:pointer;color:#1b1b2f}
+.k{color:#ff9e64}.s{color:#9ece6a}.c{color:#7a88b8}.a{color:#7dcfff}
+
+/* tables */
+table{border-collapse:separate;border-spacing:0;width:100%;border:4px solid #1b1b2f;border-radius:14px;overflow:hidden;background:var(--card);font-size:16px;box-shadow:5px 5px 0 var(--shadow)}
+th{background:var(--red);color:#fff;font-family:'Bangers';letter-spacing:.05em;font-size:20px;font-weight:400;text-align:left}
+th,td{padding:9px 12px;border-bottom:2px solid #1b1b2f}
+tr:last-child td{border-bottom:0}
+.scroll{overflow-x:auto}
+
+/* demos */
+.demo{background:var(--card);border:4px solid #1b1b2f;border-radius:18px;padding:18px 22px;margin:22px 0;box-shadow:6px 6px 0 var(--shadow);position:relative}
+.demo .tag{position:absolute;top:-16px;right:18px;background:var(--purple);color:#fff;font-family:'Bangers';font-size:20px;padding:1px 14px;border:3px solid #1b1b2f;border-radius:10px;transform:rotate(2deg)}
+.bar-row{display:grid;grid-template-columns:150px 1fr 90px;gap:10px;align-items:center;margin:10px 0;font-size:15px}
+.track{height:30px;background:rgba(127,127,127,.18);border:3px solid #1b1b2f;border-radius:10px;overflow:hidden}
+.fill{height:100%;width:0;border-radius:6px 0 0 6px;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.bar-row b{font-family:'Bangers';font-size:20px;letter-spacing:.04em}
+.c-red{background:var(--red)}.c-yellow{background:var(--yellow)}.c-green{background:var(--green)}.c-blue{background:var(--blue)}
+
+/* flow */
+.flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;margin:16px 0}
+.node{padding:10px 14px;border:4px solid #1b1b2f;border-radius:14px;background:var(--card);text-align:center;font-size:15px;min-width:118px;transition:.3s;opacity:.45}
+.node b{display:block;font-family:'Bangers';font-size:20px;letter-spacing:.04em}
+.node.on{opacity:1;background:var(--yellow);color:#1b1b2f;transform:scale(1.08) rotate(-1.5deg);box-shadow:5px 5px 0 var(--shadow)}
+.arrow{font-family:'Bangers';font-size:30px;color:var(--red);opacity:.4;transition:.3s}
+.arrow.on{opacity:1;animation:nudge .6s infinite alternate}
+@keyframes nudge{to{transform:translateX(6px)}}
+.say{min-height:60px;text-align:center;font-size:17px;margin:6px 0 12px}
+
+/* inject */
+.inj{display:flex;justify-content:space-around;align-items:center;gap:10px;flex-wrap:wrap;min-height:120px}
+.box{border:4px solid #1b1b2f;border-radius:14px;padding:12px 16px;background:var(--card);text-align:center}
+.plug{border:4px dashed var(--red);background:transparent;color:var(--red);transition:.7s}
+.plug.filled{border-style:solid;background:var(--green);color:#1b1b2f}
+.flyer{transition:transform .9s cubic-bezier(.3,1.4,.5,1);background:var(--purple);color:#fff}
+.flyer.go{transform:translateX(-170px)}
+@media(max-width:700px){.flyer.go{transform:translateY(-110px)}}
+
+/* terminal */
+.term{background:#0c0c1c;color:#d7ffd7;border:4px solid #1b1b2f;border-radius:14px;padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:400;min-height:110px;box-shadow:5px 5px 0 var(--shadow)}
+.term .cur::after{content:"▋";animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.flash{animation:flash .9s}
+@keyframes flash{0%{background:var(--yellow);color:#1b1b2f}100%{}}
+
+/* profile switch */
+.seg{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.seg button.on{background:var(--yellow);color:#1b1b2f}
+.seg button{background:var(--card);color:var(--ink)}
+
+/* pipeline */
+.pipe{display:flex;gap:0;align-items:stretch;flex-wrap:wrap;justify-content:center}
+.stage{flex:1;min-width:130px;border:4px solid #1b1b2f;padding:10px;text-align:center;background:var(--card);opacity:.35;transition:.4s;font-size:14px;margin:-2px}
+.stage.on{opacity:1;background:var(--green);color:#1b1b2f;transform:translateY(-6px)}
+.stage b{font-family:'Bangers';font-size:20px;display:block;letter-spacing:.04em}
+
+/* quiz */
+.quiz{border:4px solid #1b1b2f;border-radius:18px;background:var(--card);padding:18px 22px;margin:28px 0;box-shadow:6px 6px 0 var(--shadow)}
+.quiz h4{font-family:'Bangers';font-size:28px;margin:0 0 10px;color:var(--purple);letter-spacing:.05em}
+.q{margin:14px 0}
+.q p{margin:0 0 6px}
+.q button{display:block;width:100%;text-align:left;margin:6px 0;padding:8px 12px;border:3px solid #1b1b2f;border-radius:12px;background:var(--card);color:var(--ink);font:inherit;cursor:pointer}
+.q button:hover{background:var(--yellow);color:#1b1b2f}
+.q button.right{background:var(--green)!important;color:#1b1b2f}
+.q button.wrong{background:var(--red)!important;color:#fff}
+.q .fb{font-size:16px;min-height:22px}
+
+.done-box{display:flex;align-items:center;gap:12px;margin-top:22px;font-family:'Bangers';font-size:24px}
+.done-box input{width:28px;height:28px;accent-color:var(--green)}
+
+footer{margin-top:70px;text-align:center;font-size:15px;color:var(--muted)}
+
+@media(max-width:900px){
+  .shell{grid-template-columns:1fr}
+  nav.side{position:fixed;z-index:90;width:280px;left:-300px;transition:left .3s}
+  nav.side.open{left:0}
+  #menu{display:block;position:fixed;right:14px;bottom:14px;z-index:95;font-size:22px}
+  .bar-row{grid-template-columns:1fr 70px}.bar-row span{grid-column:1/-1}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<button class="btn blue" id="menu" aria-label="Menu">☰ Menu</button>
+
+<div class="shell">
+<nav class="side" id="side">
+  <div class="logo">QUARKUS<br>COMIC GUIDE</div>
+  <small>Start using Quarkus — Hinglish edition</small>
+  <a href="#p0"><span class="n">0</span> Welcome</a>
+  <a href="#p1"><span class="n">1</span> Quarkus kya hai?</a>
+  <a href="#p2"><span class="n">2</span> Setup &amp; Dev Mode</a>
+  <a href="#p3"><span class="n">3</span> REST Endpoint &amp; Bean</a>
+  <a href="#p4"><span class="n">4</span> Testing</a>
+  <a href="#p5"><span class="n">5</span> Config &amp; Profiles</a>
+  <a href="#p6"><span class="n">6</span> JAR &amp; Native</a>
+  <a href="#p7"><span class="n">7</span> Docker</a>
+  <a href="#p8"><span class="n">8</span> Recap &amp; Cheat Sheet</a>
+  <a href="#gloss"><span class="n">★</span> Glossary</a>
+  <div class="tools">
+    <button class="btn small" id="theme">🌙 Dark</button>
+    <button class="btn small blue" id="reset">Reset</button>
+  </div>
+</nav>
+
+<main>
+<header class="hero">
+  <div class="pow">POW!</div>
+  <h1>Start using Quarkus</h1>
+  <p>Supersonic Subatomic Java toolkit ko ek comic ki tarah samjho. Simple Hinglish, chhote steps, aur animations. Course ke saare 8 parts yahan hain, bina tension ke.</p>
+  <p><b>Kaise use karein:</b> upar se neeche padho. Har part ke end me chhota quiz hai. "Done" tick karo, progress save ho jayegi.</p>
+</header>
+
+<div class="card warn">
+  <span class="label">Dhyaan se!</span>
+  Ye course thoda purana hai (Java 11, GraalVM 20.2 ke time ka). Quarkus ke naye versions me kuch property aur extension ke naam badal gaye hain. Concepts same hain, par commands chalate time apne version ki <a href="https://quarkus.io/guides/" target="_blank" rel="noopener">official guide</a> ek baar check kar lena.
+</div>
+
+<!-- ================= PART 0 ================= -->
+<section class="part" id="p0" data-title="Welcome">
+  <div class="part-head"><div class="part-num">0</div><h2>Welcome &amp; Kya Banayenge</h2></div>
+
+  <div class="card tldr">Ye course ek chhoti si <b>Book REST app</b> banata hai. Shuru se end tak: code likhna, test karna, configure karna, package karna aur Docker me chalana.</div>
+
+  <h3>Kaun sikha raha hai?</h3>
+  <p>Instructor hain <b>Antonio Goncalves</b>. Wo bahut saalon se Java developer hain, Quarkus ke bilkul pehle users me se hain, aur Quarkus pe 2 books bhi likh chuke hain. Unhe Java Champion ka award bhi mila hai.</p>
+
+  <h3>Ye course kiske liye hai?</h3>
+  <div class="card note">
+    <span class="label">Tumhare liye hai agar...</span>
+    <ul>
+      <li>Tumhe <b>Java</b> aati hai (language aur platform). Instructor Java explain nahi karte.</li>
+      <li>Tum <b>backend</b> developer ho, ya Spring / Java EE se aa rahe ho.</li>
+      <li>Tumne Quarkus pehle use nahi kiya. Ye <b>beginner level</b> hai.</li>
+    </ul>
+  </div>
+  <div class="card warn">
+    <span class="label">Pehle se aana chahiye</span>
+    Java, thoda Maven, thoda JUnit, aur Docker kya hota hai ye idea. Instructor in sab ko explain nahi karte. Aage maine har jargon simple me samjha diya hai, to tum fikar mat karo.
+  </div>
+
+  <h3>Hum kya banayenge?</h3>
+  <p>Ek <b>Book endpoint</b> jo books ki list JSON me deta hai. Ye journey hai:</p>
+  <div class="demo">
+    <span class="tag">Course ka Roadmap</span>
+    <div class="flow" id="roadmap">
+      <div class="node"><b>Bootstrap</b>app banao</div><span class="arrow">➜</span>
+      <div class="node"><b>Code</b>REST + beans</div><span class="arrow">➜</span>
+      <div class="node"><b>Test</b>JUnit</div><span class="arrow">➜</span>
+      <div class="node"><b>Configure</b>profiles</div><span class="arrow">➜</span>
+      <div class="node"><b>Package</b>JAR + native</div><span class="arrow">➜</span>
+      <div class="node"><b>Docker</b>container me run</div>
+    </div>
+    <div style="text-align:center"><button class="btn small" data-run="roadmap">▶ Chalao</button></div>
+  </div>
+
+  <div class="card note">
+    <span class="label">Agar atak gaye</span>
+    Instructor ka GitHub repo: <code>github.com/agoncal</code> me <b>course Quarkus starting</b> repository. Poora final code wahan hai. Problem aaye to wahan "issue" bhi bana sakte ho.
+  </div>
+  <p>Demo Mac pe hai, par code Windows aur Linux pe bhi chalega.</p>
+
+  <div class="quiz" data-quiz>
+    <h4>⚡ Quick Quiz</h4>
+    <div class="q" data-a="1"><p>Is course me app ka kaunsa end-goal hai?</p>
+      <button>Sirf ek Java class likhna</button>
+      <button>Bootstrap se Docker container tak poora cycle</button>
+      <button>Sirf database banana</button>
+      <div class="fb"></div></div>
+  </div>
+  <label class="done-box"><input type="checkbox" data-done="p0"> Part 0 done!</label>
+</section>
+
+<!-- ================= PART 1 ================= -->
+<section class="part" id="p1" data-title="Quarkus kya hai">
+  <div class="part-head"><div class="part-num">1</div><h2>Quarkus Kya Hai?</h2></div>
+
+  <div class="card tldr">Quarkus ek <b>Java toolkit</b> hai jo cloud ke liye banaya gaya hai. Ye <b>jaldi start hota hai</b> aur <b>kam memory khata hai</b>. Isiliye "Supersonic Subatomic".</div>
+
+  <div class="bubble">Pehle ek chhota idea: <b>toolkit</b> matlab tools ka dabba. Quarkus me kuch cheezein framework jaisi hain, kuch server jaisi. Isliye sab usse "Java toolkit" bolte hain.</div>
+
+  <h3>Supersonic = Speed 🚀</h3>
+  <ul>
+    <li><b>Developer ke liye fast:</b> code badlo, Quarkus apne aap reload ho jata hai. Turant test karo.</li>
+    <li><b>App ke liye fast:</b> app start hone ke baad pehla response bahut jaldi deta hai.</li>
+  </ul>
+  <h3>Subatomic = Chhota size ⚛️</h3>
+  <p>Atom bahut chhota hota hai, subatomic usse bhi chhota. Quarkus app ka size aur memory dono kam hote hain.</p>
+
+  <h3>Numbers dekho (race!)</h3>
+  <p>Simple REST app ko start karke pehle response tak ka time:</p>
+  <div class="demo" id="race">
+    <span class="tag">Startup Race</span>
+    <div class="bar-row"><span>Traditional Java framework</span><div class="track"><div class="fill c-red" data-w="100" data-t="4"></div></div><b>~4 sec</b></div>
+    <div class="bar-row"><span>Quarkus + HotSpot (JVM)</span><div class="track"><div class="fill c-yellow" data-w="25" data-t="1"></div></div><b>&lt; 1 sec</b></div>
+    <div class="bar-row"><span>Quarkus + GraalVM (native)</span><div class="track"><div class="fill c-green" data-w="1" data-t="0.05"></div></div><b>0.01 sec</b></div>
+    <button class="btn small" data-replay="race">🔁 Dobara race</button>
+    <p style="font-size:15px;margin-bottom:0">Bars ki speed asli time ke hisaab se hai. Native wala to blink karte hi khatam!</p>
+  </div>
+  <p>REST + database wali bigger app me: traditional ~<b>10 sec</b>, Quarkus JVM ~<b>4 guna fast</b>, native sirf <b>0.05 sec</b>.</p>
+
+  <h3>Memory ka hisaab</h3>
+  <div class="demo" id="mem">
+    <span class="tag">Memory Footprint</span>
+    <p style="margin-top:0">Pure process ki RAM (sirf JVM ki nahi):</p>
+    <div class="bar-row"><span>Traditional</span><div class="track"><div class="fill c-red" data-w="64" data-t="1"></div></div><b>140 MB</b></div>
+    <div class="bar-row"><span>Quarkus + JVM</span><div class="track"><div class="fill c-yellow" data-w="32" data-t="1"></div></div><b>~70 MB</b></div>
+    <div class="bar-row"><span>Quarkus + native</span><div class="track"><div class="fill c-green" data-w="9" data-t="1"></div></div><b>&lt; 20 MB</b></div>
+    <p>REST + DB wali app: <b>220 MB</b> ➜ aadha (Quarkus JVM) ➜ <b>40 MB se kam</b> (native).</p>
+    <button class="btn small" data-replay="mem">🔁 Replay</button>
+  </div>
+
+  <h3>Official line ko todke samjhte hain</h3>
+  <div class="card jargon">
+    <span class="label">Jargon Buster</span>
+    <p style="margin:4px 0">"Quarkus is a Kubernetes Native Java stack tailored for OpenJDK HotSpot and GraalVM, crafted from the best of breed Java libraries and standards."</p>
+    <dl class="terms">
+      <dt>Kubernetes Native</dt><dd>Kubernetes ek tool hai jo bahut saare containers ko manage karta hai. "Native" matlab Quarkus ko isi duniya ko soch ke banaya gaya hai. Is course me Kubernetes use nahi hoga, par Docker me jo hum karenge wahi Kubernetes me bhi aasaan hai.</dd>
+      <dt>HotSpot</dt><dd>Normal JVM ka naam. Quarkus <b>pehle HotSpot</b> ke liye optimize hai.</dd>
+      <dt>GraalVM</dt><dd>Ek special tool jo Java code ko seedha machine ke samajhne wale <b>binary</b> me badal deta hai. Ye "ek step aage" hai.</dd>
+      <dt>Best of breed libraries</dt><dd>Quarkus naye sire se sab kuch nahi banata. Purani, mashhoor Java libraries use karta hai. Agar tum unhe jante ho, Quarkus aasaan lagega.</dd>
+      <dt>Standards</dt><dd>Java ke official rules jaise MicroProfile, JPA.</dd>
+    </dl>
+  </div>
+
+  <h3>Aur kuch jaanne layak baatein</h3>
+  <ul>
+    <li>2018 ke end me bana. <b>Open source</b> hai. <b>Red Hat</b> company iske peeche hai.</li>
+    <li>Sirf microservices ke liye nahi. <b>Har tarah ki app</b> ke liye theek hai.</li>
+    <li><b>Core bahut chhota hai. Baaki sab extension hai.</b> Matlab sirf wahi lo jo chahiye.</li>
+  </ul>
+  <div class="card jargon">
+    <span class="label">Extension kya hota hai?</span>
+    <p style="margin:4px 0">Mobile ke apps jaise. Phone me sirf wahi app daalo jo kaam aaye. Quarkus me Hibernate, Kafka, RESTEasy, Vert.x, Prometheus, Kubernetes, sab extension hain. Team ke bhi hain, community ke bhi, aur tum apna bhi bana sakte ho.</p>
+  </div>
+
+  <h3>Quarkus ka asli kaam: Java ko cloud tak lana</h3>
+  <div class="demo">
+    <span class="tag">Kal vs Aaj</span>
+    <div class="scroll"><table>
+      <tr><th></th><th>Pehle (Kal)</th><th>Ab (Aaj, cloud)</th></tr>
+      <tr><td>Machine</td><td>Bade servers</td><td>Chhoti machines, kai cores</td></tr>
+      <tr><td>App</td><td>Ek bada monolith</td><td>Sainkdon microservices</td></tr>
+      <tr><td>Chalna</td><td>Saal bhar 24/7, startup time ka tension nahi</td><td>Jaldi start, jaldi stop, idhar-udhar move</td></tr>
+      <tr><td>Memory</td><td>JVM ko bahut saari RAM do</td><td>RAM mehengi hai, kam use karo</td></tr>
+    </table></div>
+  </div>
+  <p>Problem ye thi ki JVM <b>bhaari</b> hai. Ek server pe Node.js ya Go ke muqable Java ke kam apps aate the. Quarkus ka goal hai wohi <b>density</b> (ek server pe zyada apps) Java me wapas lana.</p>
+  <div class="card tip">
+    <span class="label">Yaad rakho</span>
+    Ye sirf cloud ke liye nahi. Jo cloud me achha hai, wo tumhare laptop aur apne data center me bhi achha hai.
+  </div>
+
+  <div class="quiz" data-quiz>
+    <h4>⚡ Quick Quiz</h4>
+    <div class="q" data-a="2"><p>"Subatomic" ka matlab?</p>
+      <button>Bahut tez</button><button>Bahut mehenga</button><button>Size aur memory kam</button><div class="fb"></div></div>
+    <div class="q" data-a="0"><p>Quarkus ka core kaisa hai?</p>
+      <button>Chhota, baaki sab extension</button><button>Bahut bada, sab kuch andar</button><button>Sirf Docker</button><div class="fb"></div></div>
+    <div class="q" data-a="1"><p>Native (GraalVM) me startup roughly kitna?</p>
+      <button>4 sec</button><button>0.01 sec</button><button>10 min</button><div class="fb"></div></div>
+  </div>
+  <label class="done-box"><input type="checkbox" data-done="p1"> Part 1 done!</label>
+</section>
+
+<!-- ================= PART 2 ================= -->
+<section class="part" id="p2" data-title="Setup">
+  <div class="part-head"><div class="part-num">2</div><h2>Setup, Bootstrap &amp; Dev Mode</h2></div>
+
+  <div class="card tldr">Pehle tools check karo. Phir ek command se Quarkus app banao. Phir <code>mvn quarkus:dev</code> chalao aur code badalte hi live reload dekho.</div>
+
+  <h3>Step 1: Tools ka checklist</h3>
+  <div class="scroll"><table>
+    <tr><th>Tool</th><th>Kyun chahiye</th><th>Check command</th></tr>
+    <tr><td>Java (JDK 11)</td><td>Java code chalane ke liye. Java 8 bhi chalta hai par 11 behtar hai.</td><td><code>java -version</code></td></tr>
+    <tr><td>GraalVM 20.2</td><td>Native binary banane ke liye</td><td><code>native-image --version</code></td></tr>
+    <tr><td>Maven 3.6</td><td>Build tool. Poore course me ye use hoga.</td><td><code>mvn -version</code></td></tr>
+    <tr><td>Docker</td><td>Aakhri part me container banane ke liye</td><td><code>docker image ls</code></td></tr>
+    <tr><td>IDE</td><td>Code likhne ke liye. VS Code, Eclipse, Eclipse Che, IntelliJ me Quarkus support hai.</td><td>Instructor IntelliJ IDEA use karte hain</td></tr>
+  </table></div>
+  <div class="card note"><span class="label">Tips</span>
+    <ul>
+      <li><code>JAVA_HOME</code> aur <code>GRAALVM_HOME</code> set rakho.</li>
+      <li>Agar <code>docker image ls</code> me "daemon not running" aaye, to Docker app pehle start karo.</li>
+      <li>Build tool Gradle bhi chalega. Dono ke features same hain. Course Maven pe hai.</li>
+    </ul>
+  </div>
+
+  <h3>Step 2: App banao (Bootstrap)</h3>
+  <p>App banane ke 4 tareeke hain:</p>
+  <ul>
+    <li><b>Maven plugin</b> (hum yehi use karenge, script me daal sakte ho)</li>
+    <li><b>code.quarkus.io</b> (website pe form bharo, zip download)</li>
+    <li><b>IDE plugin</b></li>
+    <li><b>JHipster</b> (badi app ke liye, database, entities sab ke saath)</li>
+  </ul>
+  <div class="code"><span class="cap">Terminal</span><button class="copy">Copy</button>
+<pre><code>mvn io.quarkus:quarkus-maven-plugin:&lt;version&gt;:create \
+  -DprojectGroupId=org.agoncal.quarkus.starting \
+  -DprojectArtifactId=rest-book \
+  -DclassName="org.agoncal.quarkus.starting.BookResource" \
+  -Dpath="/api/books" \
+  -Dextensions="resteasy, resteasy-jsonb"</code></pre></div>
+  <p>Ye command lambi hai, to instructor ke GitHub repo se <code>bootstrap.sh</code> download karke chala sakte ho. <code>&lt;version&gt;</code> me wahi Quarkus version daalo jo us script me hai.</p>
+
+  <div class="card jargon"><span class="label">Jargon Buster</span>
+    <dl class="terms">
+      <dt>Maven</dt><dd>Java projects ko build karne wala tool. <code>pom.xml</code> uski settings file hai.</dd>
+      <dt>Extension (resteasy, resteasy-jsonb)</dt><dd><b>resteasy</b> se REST API banti hai. <b>jsonb</b> Java object ko JSON text me badalta hai.</dd>
+      <dt>Maven Wrapper (mvnw)</dt><dd>Agar tumhare paas Maven install nahi hai, to <code>./mvnw</code> use karo. Wo khud Maven laa leta hai.</dd>
+    </dl>
+  </div>
+
+  <h3>Generated project me kya mila?</h3>
+  <div class="scroll"><table>
+    <tr><th>File</th><th>Kya hai</th></tr>
+    <tr><td><code>pom.xml</code></td><td>Dependencies aur plugin. Isme <b>BOM</b> hai (neeche samjhaya).</td></tr>
+    <tr><td><code>BookResource.java</code></td><td>REST endpoint class</td></tr>
+    <tr><td><code>BookResourceTest.java</code></td><td>JVM test</td></tr>
+    <tr><td><code>NativeBookResourceIT.java</code></td><td>Native test (aage use hoga)</td></tr>
+    <tr><td><code>application.properties</code></td><td>Saari configuration yahin. Abhi khali hai.</td></tr>
+    <tr><td><code>Dockerfile.jvm</code>, <code>Dockerfile.native</code></td><td>Docker image banane ki recipe (aakhri part me)</td></tr>
+    <tr><td><code>mvnw</code></td><td>Maven wrapper</td></tr>
+  </table></div>
+  <div class="card jargon"><span class="label">BOM kya hai?</span>
+    <p style="margin:4px 0"><b>BOM = Bill of Materials</b>. Ek list jisme sab Quarkus extensions ke sahi versions likhe hain. Isse har dependency ka version tumhe khud nahi likhna padta. Bas BOM daalo, aur extensions add karo.</p>
+  </div>
+  <p>Generated <code>pom.xml</code> me ye dependencies aati hain: <code>quarkus-resteasy</code> (REST, JAX-RS), <code>quarkus-resteasy-jsonb</code> (JSON), <code>quarkus-arc</code> (injection, aage dekhenge), aur test scope me <code>quarkus-junit5</code> aur <code>rest-assured</code>.</p>
+
+  <h3>Generated code</h3>
+  <div class="code"><span class="cap">BookResource.java (generated)</span><button class="copy">Copy</button>
+<pre><code><span class="k">@Path</span>(<span class="s">"/api/books"</span>)
+<span class="k">public class</span> BookResource {
+
+    <span class="k">@GET</span>
+    <span class="k">@Produces</span>(MediaType.TEXT_PLAIN)
+    <span class="k">public</span> String hello() {
+        <span class="k">return</span> <span class="s">"Hello RESTEasy"</span>;
+    }
+}</code></pre></div>
+  <p><code>@Path</code> bolta hai "ye class is URL pe milegi". <code>@GET</code> matlab ye method HTTP GET pe chalega. <code>@Produces</code> batata hai kya type ka jawab denge (abhi plain text). Default port <b>8080</b> hai, to URL hua <code>localhost:8080/api/books</code>.</p>
+
+  <h3>Developer Joy 😍 (Dev Mode)</h3>
+  <p>Quarkus docs me ye shabd bahut aata hai. Iska matlab: developer ka kaam maze ka ho. Kaise?</p>
+  <ul>
+    <li><b>Hot reload:</b> file save karo, Quarkus khud reload. Stop-start nahi.</li>
+    <li><b>Ek hi config file:</b> <code>application.properties</code>.</li>
+    <li><b>IDE integration:</b> start, stop, debug, breakpoints.</li>
+  </ul>
+  <div class="code"><span class="cap">Dev mode shuru karo</span><button class="copy">Copy</button>
+<pre><code>mvn quarkus:dev          <span class="c"># ya ./mvnw quarkus:dev</span>
+curl localhost:8080/api/books
+mvn test                 <span class="c"># dusre terminal me, ek saath chal sakta hai</span></code></pre></div>
+  <div class="card note"><span class="label">Port ka funda</span>
+    Dev mode <b>8080</b> pe chalta hai. <code>mvn test</code> <b>8081</b> pe. Isliye dono ek saath chalane me koi clash nahi hota.
+  </div>
+
+  <div class="demo">
+    <span class="tag">Hot Reload Demo</span>
+    <p style="margin-top:0">Neeche "code" badlo aur dekho curl ka jawab turant badalta hai. Quarkus restart nahi hota.</p>
+    <div class="seg">
+      <button class="btn small" data-hot="Hello RESTEasy">Code: Hello RESTEasy</button>
+      <button class="btn small blue" data-hot="Hello World">Code: Hello World</button>
+      <button class="btn small green" data-hot="Hello Universe">Code: Hello Universe</button>
+    </div>
+    <div class="term" id="hotterm"><div>$ mvn quarkus:dev</div><div>Listening on: http://localhost:8080</div><div class="cur"></div></div>
+  </div>
+
+  <div class="card tip"><span class="label">Debugging</span> IDE me breakpoint lagao, Quarkus ko debug mode me start karo, aur curl karo. Code breakpoint pe ruk jata hai aur tum step-over kar sakte ho. Bilkul normal Java jaisa.</div>
+
+  <div class="quiz" data-quiz>
+    <h4>⚡ Quick Quiz</h4>
+    <div class="q" data-a="1"><p>Dev mode ka command?</p>
+      <button>mvn package</button><button>mvn quarkus:dev</button><button>java -jar</button><div class="fb"></div></div>
+    <div class="q" data-a="2"><p>Dev server aur tests ek saath kyun chal paate hain?</p>
+      <button>Dono same port pe hote hain</button><button>Tests chalte hi nahi</button><button>Dev 8080 pe, tests 8081 pe</button><div class="fb"></div></div>
+    <div class="q" data-a="0"><p>BOM ka kaam?</p>
+      <button>Sab extensions ke sahi versions ek jagah dena</button><button>App ko Docker me daalna</button><button>JSON banana</button><div class="fb"></div></div>
+  </div>
+  <label class="done-box"><input type="checkbox" data-done="p2"> Part 2 done!</label>
+</section>
+
+<!-- ================= PART 3 ================= -->
+<section class="part" id="p3" data-title="REST + Bean">
+  <div class="part-head"><div class="part-num">3</div><h2>REST Endpoint &amp; Bean Injection</h2></div>
+
+  <div class="card tldr">Ek <b>Book</b> class banao, endpoint se JSON me books wapas bhejo. Phir code ko saaf karne ke liye <b>BookRepository</b> alag karo aur <code>@Inject</code> se jodo.</div>
+
+  <h3>JAX-RS kya hai?</h3>
+  <div class="card jargon"><span class="label">Jargon Buster</span>
+    <dl class="terms">
+      <dt>REST endpoint</dt><dd>Ek URL jise koi bhi call kare to wo data wapas deta hai. Jaise <code>/api/books</code>.</dd>
+      <dt>JAX-RS</dt><dd>Java ke REST banane ke <b>rules</b> (specification). Bas rule-book hai.</dd>
+      <dt>RESTEasy</dt><dd>Un rules ko <b>implement</b> karne wali library. Quarkus me wohi use hoti hai.</dd>
+      <dt>JSON-B</dt><dd>Java object ko JSON text me badalne wala jaadugar. Tumhe kuch nahi karna, extension add karo bas.</dd>
+    </dl>
+  </div>
+  <div class="scroll"><table>
+    <tr><th>Annotation</th><th>Matlab</th></tr>
+    <tr><td><code>@GET</code>, <code>@POST</code>, <code>@PUT</code>, <code>@DELETE</code></td><td>Kaunse HTTP verb pe ye method chalega</td></tr>
+    <tr><td><code>@Path</code></td><td>URL ka raasta. Class pe main path, method pe sub path.</td></tr>
+    <tr><td><code>@PathParam</code></td><td>URL ke beech ka variable, jaise <code>/api/books/123</code> me 123</td></tr>
+    <tr><td><code>@Produces</code></td><td>Jawab kis format me denge (JSON, text)</td></tr>
+    <tr><td><code>@Consumes</code></td><td>Kis format ka input lenge (POST ke time kaam aata hai)</td></tr>
+  </table></div>
+
+  <h3>Step 1: Book class</h3>
+  <div class="code"><span class="cap">Book.java</span><button class="copy">Copy</button>
+<pre><code><span class="k">public class</span> Book {
+    <span class="k">public</span> Integer id;
+    <span class="k">public</span> String title;
+    <span class="k">public</span> String author;
+    <span class="k">public</span> Integer yearOfPublication;
+    <span class="k">public</span> String genre;
+
+    <span class="k">public</span> Book(Integer id, String title, String author,
+                Integer yearOfPublication, String genre) {
+        <span class="k">this</span>.id = id; <span class="k">this</span>.title = title; <span class="k">this</span>.author = author;
+        <span class="k">this</span>.yearOfPublication = yearOfPublication; <span class="k">this</span>.genre = genre;
+    }
+}</code></pre></div>
+  <p>Dekho, koi annotation nahi hai. JSON me badalna <b>apne aap</b> hota hai kyunki JSON-B extension add hai.</p>
+
+  <h3>Step 2: Resource me 3 methods</h3>
+  <div class="code"><span class="cap">BookResource.java (pehla version)</span><button class="copy">Copy</button>
+<pre><code><span class="k">@Path</span>(<span class="s">"/api/books"</span>)
+<span class="k">@Produces</span>(MediaType.APPLICATION_JSON)
+<span class="k">public class</span> BookResource {
+
+    <span class="k">@GET</span>
+    <span class="k">public</span> List&lt;Book&gt; getAllBooks() {
+        <span class="k">return</span> List.of(
+            <span class="k">new</span> Book(1, <span class="s">"Understanding Quarkus"</span>, <span class="s">"Antonio"</span>, 2020, <span class="s">"IT"</span>),
+            <span class="k">new</span> Book(2, <span class="s">"Practicing Quarkus"</span>,    <span class="s">"Antonio"</span>, 2020, <span class="s">"IT"</span>),
+            <span class="k">new</span> Book(3, <span class="s">"Effective Java"</span>,        <span class="s">"Josh Bloch"</span>, 2001, <span class="s">"IT"</span>),
+            <span class="k">new</span> Book(4, <span class="s">"Thinking in Java"</span>,      <span class="s">"Bruce Eckel"</span>, 1998, <span class="s">"IT"</span>));
+    }
+
+    <span class="k">@GET</span> <span class="k">@Path</span>(<span class="s">"/count"</span>)
+    <span class="k">@Produces</span>(MediaType.TEXT_PLAIN)
+    <span class="k">public</span> Integer countAllBooks() { <span class="k">return</span> getAllBooks().size(); }
+
+    <span class="k">@GET</span> <span class="k">@Path</span>(<span class="s">"/{id}"</span>)
+    <span class="k">public</span> Optional&lt;Book&gt; getBook(<span class="k">@PathParam</span>(<span class="s">"id"</span>) Integer id) {
+        <span class="k">return</span> getAllBooks().stream()
+                .filter(b -&gt; b.id.equals(id)).findFirst();
+    }
+}</code></pre></div>
+  <div class="code"><span class="cap">Try karo</span><button class="copy">Copy</button>
+<pre><code>curl localhost:8080/api/books | jq      <span class="c"># 4 books ki list</span>
+curl localhost:8080/api/books/count     <span class="c"># 4</span>
+curl localhost:8080/api/books/1         <span class="c"># ek book</span></code></pre></div>
+  <p>Dev mode chal raha hai to Quarkus ko restart nahi karna. Code badlo, curl karo, ho gaya.</p>
+
+  <h3>Request ka safar (step by step)</h3>
+  <div class="demo" id="flow1">
+    <span class="tag">Request Flow</span>
+    <div class="flow">
+      <div class="node" data-n="0"><b>Browser / curl</b>GET /api/books/1</div><span class="arrow">➜</span>
+      <div class="node" data-n="1"><b>BookResource</b>HTTP ka kaam</div><span class="arrow">➜</span>
+      <div class="node" data-n="2"><b>BookRepository</b>books ka kaam</div><span class="arrow">➜</span>
+      <div class="node" data-n="3"><b>JSON-B</b>object ➜ JSON</div>
+    </div>
+    <div class="say" id="flow1say">Start dabao!</div>
+    <div style="text-align:center"><button class="btn small" id="flow1btn">▶ Next step</button></div>
+  </div>
+
+  <h3>Step 3: Code saaf karo (Injection)</h3>
+  <p>Abhi <code>BookResource</code> bahut kuch kar raha hai: HTTP bhi, books ka data bhi. Isko do hisso me todte hain. Ise bolte hain <b>separation of concerns</b> (har class ka ek hi kaam).</p>
+  <div class="card jargon"><span class="label">Jargon Buster</span>
+    <dl class="terms">
+      <dt>Bean</dt><dd>Ek normal Java object jise Quarkus (CDI) manage karta hai. Banana, dena, hatana, sab wohi dekhta hai.</dd>
+      <dt>Dependency Injection (DI)</dt><dd>Jis class ko kisi dusre object ki zaroorat hai, wo <code>new</code> nahi karti. Quarkus bana ke de deta hai. Chai ki tapri jaisa: tum cup aur patti nahi laate, chai wala sab ready rakhta hai, tum bas chai piyo.</dd>
+      <dt>CDI</dt><dd>Contexts and Dependency Injection. Java ka standard jo DI aur bean ka lifetime sambhalta hai. Quarkus me iska implementation <b>ArC</b> hai (<code>quarkus-arc</code> extension).</dd>
+      <dt>@Inject</dt><dd>Bolta hai "mujhe ye bean chahiye, de do".</dd>
+      <dt>@ApplicationScoped</dt><dd>Poori app me is bean ka <b>sirf ek</b> object banega.</dd>
+      <dt>@RequestScoped</dt><dd>Har HTTP request pe <b>naya</b> object banega.</dd>
+    </dl>
+  </div>
+  <div class="note card"><span class="label">Repository ke liye ApplicationScoped kyun?</span>
+    Is class ke andar koi data store nahi hota. Sirf methods hain. Isliye ek hi object kaafi hai. Session ya request scope ki zaroorat nahi.
+  </div>
+  <div class="code"><span class="cap">BookRepository.java (naya)</span><button class="copy">Copy</button>
+<pre><code><span class="k">@ApplicationScoped</span>
+<span class="k">public class</span> BookRepository {
+
+    <span class="k">public</span> List&lt;Book&gt; getAllBooks() { <span class="c">/* wahi 4 books jo pehle the */</span> }
+
+    <span class="k">public</span> Optional&lt;Book&gt; getBook(Integer id) {
+        <span class="k">return</span> getAllBooks().stream().filter(b -&gt; b.id.equals(id)).findFirst();
+    }
+}</code></pre></div>
+  <div class="code"><span class="cap">BookResource.java (refactored)</span><button class="copy">Copy</button>
+<pre><code><span class="k">@Path</span>(<span class="s">"/api/books"</span>)
+<span class="k">@Produces</span>(MediaType.APPLICATION_JSON)
+<span class="k">public class</span> BookResource {
+
+    <span class="k">@Inject</span> BookRepository repository;
+    <span class="k">@Inject</span> Logger logger;               <span class="c">// org.jboss.logging.Logger</span>
+
+    <span class="k">@GET</span>
+    <span class="k">public</span> List&lt;Book&gt; getAllBooks() {
+        logger.info(<span class="s">"Returns all books"</span>);
+        <span class="k">return</span> repository.getAllBooks();
+    }
+
+    <span class="k">@GET</span> <span class="k">@Path</span>(<span class="s">"/count"</span>) <span class="k">@Produces</span>(MediaType.TEXT_PLAIN)
+    <span class="k">public</span> Integer countAllBooks() {
+        logger.info(<span class="s">"Returns the number of books"</span>);
+        <span class="k">return</span> repository.getAllBooks().size();
+    }
+
+    <span class="k">@GET</span> <span class="k">@Path</span>(<span class="s">"/{id}"</span>)
+    <span class="k">public</span> Optional&lt;Book&gt; getBook(<span class="k">@PathParam</span>(<span class="s">"id"</span>) Integer id) {
+        logger.info(<span class="s">"Returns a single book with id "</span> + id);
+        <span class="k">return</span> repository.getBook(id);
+    }
+}</code></pre></div>
+  <div class="demo">
+    <span class="tag">Injection Demo</span>
+    <p style="margin-top:0">Resource ke andar ek khaali slot hai. <code>@Inject</code> pe click karo aur dekho Quarkus repository ko plug kar deta hai.</p>
+    <div class="inj">
+      <div class="box">BookResource<br><div class="box plug" id="slot" style="margin-top:8px">repository = ???</div></div>
+      <div class="box flyer" id="flyer">BookRepository<br><small>(Quarkus ne banaya)</small></div>
+    </div>
+    <div style="text-align:center;margin-top:12px"><button class="btn small" id="injbtn">@Inject</button> <button class="btn small blue" id="injreset">Reset</button></div>
+  </div>
+  <div class="card tip"><span class="label">Maza kahan hai</span> Logger bhi <code>@Inject</code> se mil jata hai. Refactor karte waqt Quarkus chalta rehta hai. Nayi class banao, code move karo, curl karo, kaam ho gaya.</div>
+
+  <div class="quiz" data-quiz>
+    <h4>⚡ Quick Quiz</h4>
+    <div class="q" data-a="1"><p>BookRepository ke upar kaunsa scope sahi hai?</p>
+      <button>@RequestScoped</button><button>@ApplicationScoped</button><button>@Path</button><div class="fb"></div></div>
+    <div class="q" data-a="0"><p><code>/api/books/123</code> me 123 kisse milta hai?</p>
+      <button>@PathParam</button><button>@Produces</button><button>@Consumes</button><div class="fb"></div></div>
+    <div class="q" data-a="2"><p>Book object JSON kaise bana?</p>
+      <button>Humne khud likha</button><button>Docker ne kiya</button><button>JSON-B extension ne apne aap kiya</button><div class="fb"></div></div>
+  </div>
+  <label class="done-box"><input type="checkbox" data-done="p3"> Part 3 done!</label>
+</section>
+
+<!-- ================= PART 4 ================= -->
+<section class="part" id="p4" data-title="Testing">
+  <div class="part-head"><div class="part-num">4</div><h2>Testing the Endpoint</h2></div>
+
+  <div class="card tldr">Test class pe <code>@QuarkusTest</code> lagao. <b>RestAssured</b> se endpoint ko "given / when / then" me test karo. <code>mvn test</code> chalao.</div>
+
+  <div class="bubble">Hum sirf <b>endpoint</b> test karenge. Andar ka Book ya Repository alag nahi. Ise bolte hain <b>black box testing</b>: andar kya hai pata nahi, sirf bahar ka behaviour dekhna hai.</div>
+
+  <div class="card jargon"><span class="label">Jargon Buster</span>
+    <dl class="terms">
+      <dt>Unit test</dt><dd>Ek class akeli test karo. Baaki cheezein mock (nakli) karo.</dd>
+      <dt>Integration test</dt><dd>Kai classes saath me test karo, container ko chalta rakh ke. Quarkus ke tests aise hi hain. Isliye injection ko mock nahi karna padta.</dd>
+      <dt>@QuarkusTest</dt><dd>Ek JUnit runner. Test se pehle Quarkus start (port 8081) karta hai, tests chalata hai, phir band kar deta hai.</dd>
+      <dt>RestAssured</dt><dd>REST API test karne ki library. Padhne me English jaisi lagti hai.</dd>
+    </dl>
+  </div>
+  <div class="note card"><span class="label">Notes</span>
+    <ul><li>Quarkus <b>JUnit 5</b> support karta hai. JUnit 4 nahi. TestNG ka support nahi hai.</li>
+    <li>JUnit aur RestAssured bhi extensions hain, aur <code>test</code> scope me hain.</li></ul>
+  </div>
+
+  <h3>Test code</h3>
+  <div class="code"><span class="cap">BookResourceTest.java</span><button class="copy">Copy</button>
+<pre><code><span class="k">@QuarkusTest</span>
+<span class="k">public class</span> BookResourceTest {
+
+    <span class="k">@Test</span>
+    <span class="k">void</span> shouldGetAllBooks() {
+        given().header(<span class="s">"Accept"</span>, MediaType.APPLICATION_JSON)
+        .when().get(<span class="s">"/api/books"</span>)
+        .then().statusCode(200)
+               .body(<span class="s">"size()"</span>, is(4));
+    }
+
+    <span class="k">@Test</span>
+    <span class="k">void</span> shouldCountAllBooks() {
+        given().header(<span class="s">"Accept"</span>, MediaType.TEXT_PLAIN)
+        .when().get(<span class="s">"/api/books/count"</span>)
+        .then().statusCode(200)
+               .body(is(<span class="s">"4"</span>));            <span class="c">// text hai, number nahi</span>
+    }
+
+    <span class="k">@Test</span>
+    <span class="k">void</span> shouldGetABook() {
+        given().header(<span class="s">"Accept"</span>, MediaType.APPLICATION_JSON)
+               .pathParam(<span class="s">"id"</span>, 1)
+        .when().get(<span class="s">"/api/books/{id}"</span>)
+        .then().statusCode(200)
+               .body(<span class="s">"title"</span>, is(<span class="s">"Understanding Quarkus"</span>))
+               .body(<span class="s">"author"</span>, is(<span class="s">"Antonio"</span>))
+               .body(<span class="s">"yearOfPublication"</span>, is(2020))
+               .body(<span class="s">"genre"</span>, is(<span class="s">"IT"</span>));
+    }
+}</code></pre></div>
+  <div class="card note"><span class="label">Given / When / Then</span>
+    <b>Given</b>: pehle se kya set hai (header, parameter). <b>When</b>: kya karte hain (GET). <b>Then</b>: kya hona chahiye (status 200, body).
+  </div>
+  <div class="card warn"><span class="label">Instructor ki galtiyan (aap bhi karoge!)</span>
+    <ul>
+      <li>Count test pehle fail hua kyunki wo <b>string "4"</b> hai, number 4 nahi.</li>
+      <li>Single book test me <code>pathParam("id", 1)</code> dena bhool gaye. Phir pass hua.</li>
+    </ul>
+  </div>
+  <div class="code"><span class="cap">Chalao</span><button class="copy">Copy</button>
+<pre><code>mvn test</code></pre></div>
+  <p>Logs me dekhna: Quarkus start hota hai, har test chalta hai, Quarkus band hota hai. IDE me bhi green button se test chal jata hai.</p>
+
+  <div class="quiz" data-quiz>
+    <h4>⚡ Quick Quiz</h4>
+    <div class="q" data-a="1"><p>@QuarkusTest ke time Quarkus chal raha hota hai, isliye ye test kaisa hai?</p>
+      <button>Pure unit test</button><button>Integration test</button><button>UI test</button><div class="fb"></div></div>
+    <div class="q" data-a="0"><p>Count endpoint ka body assertion kya tha?</p>
+      <button>is("4") - text</button><button>size() 4</button><button>is(4) - JSON number</button><div class="fb"></div></div>
+  </div>
+  <label class="done-box"><input type="checkbox" data-done="p4"> Part 4 done!</label>
+</section>
+
+<!-- ================= PART 5 ================= -->
+<section class="part" id="p5" data-title="Config & Profiles">
+  <div class="part-head"><div class="part-num">5</div><h2>Configuration &amp; Profiles</h2></div>
+
+  <div class="card tldr">Settings code me hardcode mat karo. <code>application.properties</code> me daalo, <code>@ConfigProperty</code> se lo, aur <b>profiles</b> (<code>%dev</code>, <code>%test</code>, <code>%prod</code>) se alag environment ke alag values do.</div>
+
+  <h3>Apni app ki config</h3>
+  <div class="card jargon"><span class="label">Jargon Buster</span>
+    <dl class="terms">
+      <dt>MicroProfile Config</dt><dd>Config ke liye Java standard. Key-value pairs alag-alag jagah se utha sakta hai: properties file, command line, environment variable, database.</dd>
+      <dt>@ConfigProperty</dt><dd><code>@Inject</code> jaisa hi, par bean ki jagah ek <b>value</b> deta hai, key ke hisaab se.</dd>
+    </dl>
+  </div>
+  <div class="code"><span class="cap">BookRepository.java</span><button class="copy">Copy</button>
+<pre><code><span class="k">@ConfigProperty</span>(name = <span class="s">"books.genre"</span>, defaultValue = <span class="s">"sci-fi"</span>)
+String genre;
+<span class="c">// ab har Book me "IT" ki jagah genre variable use karo</span></code></pre></div>
+  <div class="code"><span class="cap">application.properties</span><button class="copy">Copy</button>
+<pre><code>books.genre=IT</code></pre></div>
+  <div class="card note"><span class="label">Dekho kya hua</span>
+    <ul>
+      <li>Default value ke bina aur key kahin na ho, to Quarkus <b>start hi nahi hota</b>.</li>
+      <li>Default sci-fi tha. Properties me IT daala to IT mila. Test bhi pass.</li>
+      <li>Value me space ho (jaise <code>information technology</code>) to bhi chalta hai.</li>
+    </ul>
+  </div>
+
+  <h3>Command line se override</h3>
+  <div class="code"><span class="cap">-D se value badlo</span><button class="copy">Copy</button>
+<pre><code>mvn quarkus:dev -Dbooks.genre=drama
+mvn test -Dbooks.genre=IT
+mvn quarkus:dev -Dbooks.genre="sci fi"      <span class="c"># space ho to quotes</span></code></pre></div>
+  <p><b>Rule:</b> command line (<code>-D</code>) ki value <code>application.properties</code> se zyada taaqatwar hoti hai.</p>
+
+  <h3>Quarkus ki apni config</h3>
+  <p>Quarkus ki har setting <code>quarkus.</code> se shuru hoti hai. Apni properties ka naam <code>quarkus.</code> se mat shuru karo. Poori list <code>quarkus.io/guides/all-config</code> pe hai (search box bhi hai).</p>
+  <div class="code"><span class="cap">application.properties</span><button class="copy">Copy</button>
+<pre><code>quarkus.log.category.<span class="s">"io.quarkus"</span>.level=WARN
+quarkus.log.category.<span class="s">"org.agoncal"</span>.level=DEBUG
+quarkus.banner.enabled=false      <span class="c"># start pe wala Quarkus banner hata do</span></code></pre></div>
+  <div class="card tip"><span class="label">Dev UI</span>
+    Dev mode me <code>localhost:8080</code> kholo, wahan <b>Dev UI</b> ka link milega. Isme <b>Configuration editor</b> hai jahan saari keys dikhti hain. Value badlo (jaise <code>books.genre</code> ko drama) aur turant curl me asar dikhega.
+  </div>
+
+  <h3>Profiles: ek file, kai mode</h3>
+  <div class="bubble">Profile ko <b>mode switch</b> samjho. Ghar, office, client demo. Settings wahi, par har jagah ke liye alag values.</div>
+  <div class="scroll"><table>
+    <tr><th>Profile</th><th>Kab chalta hai?</th></tr>
+    <tr><td><code>%dev</code></td><td>jab <code>mvn quarkus:dev</code></td></tr>
+    <tr><td><code>%test</code></td><td>jab <code>mvn test</code></td></tr>
+    <tr><td><code>%prod</code></td><td>jab JAR ya native binary chalate ho (default)</td></tr>
+    <tr><td>custom (jaise <code>%staging</code>)</td><td>jab <code>-Dquarkus.profile=staging</code></td></tr>
+  </table></div>
+  <div class="code"><span class="cap">application.properties (final)</span><button class="copy">Copy</button>
+<pre><code>books.genre=information technology        <span class="c"># default / %prod</span>
+%dev.books.genre=drama
+%test.books.genre=IT
+%staging.books.genre=custom
+
+%dev.quarkus.log.console.level=INFO
+quarkus.banner.enabled=false</code></pre></div>
+  <div class="demo">
+    <span class="tag">Profile Switch</span>
+    <div class="seg" id="profseg">
+      <button class="btn small on" data-prof="dev">mvn quarkus:dev</button>
+      <button class="btn small" data-prof="test">mvn test</button>
+      <button class="btn small" data-prof="prod">java -jar (prod)</button>
+      <button class="btn small" data-prof="staging">-Dquarkus.profile=staging</button>
+    </div>
+    <div class="term" id="profterm"></div>
+  </div>
+  <div class="card warn"><span class="label">Ek gotcha</span>
+    Jab <code>%prod</code> ya default me <code>information technology</code> daala, to test fail ho gaya kyunki test <code>IT</code> chahta tha. Fix: <code>%test.books.genre=IT</code> daalo.
+  </div>
+
+  <div class="quiz" data-quiz>
+    <h4>⚡ Quick Quiz</h4>
+    <div class="q" data-a="2"><p>Kaunsi value jeetegi: properties file ya -D?</p>
+      <button>Properties file</button><button>Dono barabar</button><button>-D (command line)</button><div class="fb"></div></div>
+    <div class="q" data-a="0"><p><code>mvn test</code> kaunsa profile chalata hai?</p>
+      <button>%test</button><button>%dev</button><button>%prod</button><div class="fb"></div></div>
+    <div class="q" data-a="1"><p>Custom profile kaise chalate hain?</p>
+      <button>mvn custom</button><button>-Dquarkus.profile=naam</button><button>Docker se</button><div class="fb"></div></div>
+  </div>
+  <label class="done-box"><input type="checkbox" data-done="p5"> Part 5 done!</label>
+</section>
+
+<!-- ================= PART 6 ================= -->
+<section class="part" id="p6" data-title="JAR & Native">
+  <div class="part-head"><div class="part-num">6</div><h2>Executable JAR &amp; Native Executable</h2></div>
+
+  <div class="card tldr"><code>mvn package</code> se <b>executable JAR</b> milta hai. GraalVM ke saath <code>-Pnative</code> se <b>native binary</b> milta hai jo <b>0.02 sec</b> me start hota hai.</div>
+
+  <h3>Executable JAR</h3>
+  <p>Normal JAR me sirf tumhara code hota hai. Quarkus ka <b>executable JAR</b> me tumhara code + dependencies + runtime sab hota hai. Isliye <code>java -jar</code> se seedha chal jata hai.</p>
+  <div class="scroll"><table>
+    <tr><th>Type</th><th>Kya hai</th><th>Command</th></tr>
+    <tr><td><b>JAR</b> (default, pehle Fast-JAR)</td><td>Code, libs alag-alag, plus <b>index</b> jo class dhundhna fast karta hai</td><td><code>mvn package</code></td></tr>
+    <tr><td><b>Legacy JAR</b></td><td>Bina index wala, thoda slow</td><td><code>-Dquarkus.package.type=legacy-jar</code></td></tr>
+    <tr><td><b>Uber-JAR</b> (Fat-JAR)</td><td>Hazaaron classes ek hi bade JAR me (~11 MB yahan)</td><td><code>-Dquarkus.package.type=uber-jar</code></td></tr>
+  </table></div>
+  <div class="card note"><span class="label">Confusion se bacho</span>
+    Quarkus 1.12 se pehle default "JAR" ko fast-jar bolte the aur legacy ko "jar". Purani docs padh rahe ho to naam ka dhyaan rakho.
+  </div>
+  <div class="card jargon"><span class="label">Classpath scanning kya hai?</span>
+    <p style="margin:4px 0">JVM ko ek class chahiye. Wo saare JAR files me dhundhta hai. Index ek "phone directory" hai jo seedha bata deta hai kaunse JAR me hai. Isliye fast.</p>
+  </div>
+  <div class="code"><span class="cap">Build &amp; run</span><button class="copy">Copy</button>
+<pre><code>mvn package -DskipTests
+java -jar target/quarkus-app/quarkus-run.jar          <span class="c"># default JAR</span>
+
+mvn package -DskipTests -Dquarkus.package.type=uber-jar
+java -jar target/rest-book-1.0-SNAPSHOT-runner.jar    <span class="c"># Uber-JAR</span>
+
+java -Dquarkus.banner.enabled=false -jar target/quarkus-app/quarkus-run.jar</code></pre></div>
+  <p><code>quarkus-app</code> folder me kya hai? <code>app/</code> tumhara code, <code>lib/boot</code> Quarkus ka core, <code>lib/main</code> external dependencies, <code>quarkus/</code> generated bytecode aur index.</p>
+  <div class="card note"><span class="label">Profile yaad hai?</span> JAR chalate hi <b>%prod</b> profile active hota hai. Isiliye <code>books.genre</code> ab <code>information technology</code> aayega.</div>
+
+  <h3>Native Executable (GraalVM)</h3>
+  <div class="scroll"><table>
+    <tr><th></th><th>Executable JAR</th><th>Native executable</th></tr>
+    <tr><td>Andar kya?</td><td>Bytecode</td><td>Seedha machine ka binary</td></tr>
+    <tr><td>JVM chahiye?</td><td>Haan (<code>java -jar</code>)</td><td>Nahi, binary me hi bundled</td></tr>
+    <tr><td>Build time</td><td>Kuch second</td><td>1+ minute, bahut resource lagta hai</td></tr>
+    <tr><td>Size (demo me)</td><td>11 MB (Uber-JAR)</td><td>31 MB</td></tr>
+  </table></div>
+  <div class="card jargon"><span class="label">Jargon Buster</span>
+    <dl class="terms">
+      <dt>Native image</dt><dd>GraalVM ke saath aane wala tool jo tumhari app ko tumhare OS ke binary me badalta hai.</dd>
+      <dt>Closed world assumption</dt><dd>GraalVM sirf wahi code rakhta hai jo app <b>sach me use</b> karti hai. Baaki phenk deta hai, kisi class ka unused method bhi. Isi se binary chhota bana rehta hai. Pack karte waqt sirf kaam ka saaman rakhna, jaise trip pe sirf zaroori kapde.</dd>
+      <dt>Ahead-of-Time (AOT) compilation</dt><dd>Code ko pehle hi (build time pe) compile kar lena, run time pe nahi. Pre-cooked khana jaisa: dabba kholo aur ready.</dd>
+    </dl>
+  </div>
+  <div class="code"><span class="cap">Native build</span><button class="copy">Copy</button>
+<pre><code>mvn package -Dquarkus.package.type=native
+mvn package -Pnative            <span class="c"># shortcut: native Maven profile</span>
+
+./target/rest-book-1.0-SNAPSHOT-runner
+./target/rest-book-1.0-SNAPSHOT-runner -Dquarkus.banner.enabled=false</code></pre></div>
+
+  <h3>Startup time: sab ek jagah</h3>
+  <div class="demo" id="startup">
+    <span class="tag">Instructor ke demo ke numbers</span>
+    <div class="bar-row"><span>Dev mode</span><div class="track"><div class="fill c-red" data-w="100" data-t="1.2"></div></div><b>1.2 sec</b></div>
+    <div class="bar-row"><span>JAR (prod)</span><div class="track"><div class="fill c-yellow" data-w="55" data-t="0.8"></div></div><b>0.8 sec</b></div>
+    <div class="bar-row"><span>Uber-JAR (prod)</span><div class="track"><div class="fill c-blue" data-w="50" data-t="0.6"></div></div><b>0.6 sec</b></div>
+    <div class="bar-row"><span>Native</span><div class="track"><div class="fill c-green" data-w="2" data-t="0.05"></div></div><b>0.02 sec</b></div>
+    <button class="btn small" data-replay="startup">🔁 Replay</button>
+  </div>
+
+  <h3>Native test: kyun zaroori?</h3>
+  <p>GraalVM bahut aggressive hai. Kabhi wo aisa code bhi phenk deta hai jo use hota tha (reflection jaise tricks). Tab binary ban jata hai par kuch cheezein <b>chalti nahi</b>. Isliye binary pe bhi test chalao.</p>
+  <div class="code"><span class="cap">NativeBookResourceIT.java</span><button class="copy">Copy</button>
+<pre><code><span class="k">@NativeImageTest</span>
+<span class="k">public class</span> NativeBookResourceIT <span class="k">extends</span> BookResourceTest {
+    <span class="c">// same tests, ab binary pe chalenge. Ya override/extra tests daalo.</span>
+}</code></pre></div>
+  <div class="code"><span class="cap">Native test chalao</span><button class="copy">Copy</button>
+<pre><code>mvn verify -Pnative       <span class="c"># mvn test sirf JVM tests chalata hai</span></code></pre></div>
+  <ul>
+    <li><code>@QuarkusTest</code> = JVM mode. <code>@NativeImageTest</code> = native mode.</li>
+    <li>Native test <b>verify</b> goal me chalta hai (failsafe plugin se).</li>
+    <li>Demo me JVM test pass hua par native fail, kyunki test me genre <code>IT</code> tha aur prod me <code>information technology</code>. Fix: native test me wo test override karo aur <code>"information technology"</code> expect karo.</li>
+  </ul>
+
+  <div class="quiz" data-quiz>
+    <h4>⚡ Quick Quiz</h4>
+    <div class="q" data-a="1"><p>Native binary ko chalane ke liye kya chahiye?</p>
+      <button>java -jar</button><button>Bas binary, JVM nahi</button><button>Tomcat</button><div class="fb"></div></div>
+    <div class="q" data-a="2"><p>Native tests kaunse command se chalte hain?</p>
+      <button>mvn test</button><button>mvn clean</button><button>mvn verify -Pnative</button><div class="fb"></div></div>
+    <div class="q" data-a="0"><p>JAR chalane pe kaunsa profile active hota hai?</p>
+      <button>%prod</button><button>%dev</button><button>%test</button><div class="fb"></div></div>
+  </div>
+  <label class="done-box"><input type="checkbox" data-done="p6"> Part 6 done!</label>
+</section>
+
+<!-- ================= PART 7 ================= -->
+<section class="part" id="p7" data-title="Docker">
+  <div class="part-head"><div class="part-num">7</div><h2>Docker Containers</h2></div>
+
+  <div class="card tldr">Ek extension add karo, <code>-Dquarkus.container.image.build=true</code> do aur Docker image ban jati hai. Native ke liye Linux binary banana padta hai, Quarkus Docker se ye bhi kar deta hai.</div>
+
+  <h3>JAR se Docker image</h3>
+  <p>Quarkus ke 2 extensions hain: <b>Docker</b> (Docker chahiye) aur <b>Jib</b> (bina Docker ke image bana sakta hai, CI/CD me kaam aata hai). Hum Docker wala use karenge.</p>
+  <div class="card note"><span class="label">Uber-JAR ke liye Dockerfile kyun nahi?</span>
+    Uber-JAR ek bada blob hai. Code me chhota change karo to pura blob dobara banana padta hai. JAR aur legacy JAR me libs alag hain, isliye Docker layers cache hoti hain aur build fast hota hai.
+  </div>
+  <div class="card jargon"><span class="label">Jargon Buster</span>
+    <dl class="terms">
+      <dt>Docker image</dt><dd>App ka ready-to-run packet: OS ka chhota hissa + Java + tumhara code.</dd>
+      <dt>Container</dt><dd>Image ko chalane par jo banta hai. Image recipe hai, container bana hua khana.</dd>
+      <dt>Dockerfile</dt><dd>Image banane ke steps ki file. Quarkus ne <code>Dockerfile.jvm</code> aur <code>Dockerfile.native</code> pehle hi bana ke diye hain.</dd>
+      <dt>UBI minimal</dt><dd>Red Hat ka bahut halka Linux (Universal Base Image). Bas zaroori cheezein.</dd>
+    </dl>
+  </div>
+  <p><b>Dockerfile.jvm</b> ye karta hai: UBI minimal lo ➜ Java 11 install karo ➜ <code>target/quarkus-app</code> ko <code>/deployments</code> me copy karo ➜ port 8080 expose karo ➜ run script chalao.</p>
+  <div class="code"><span class="cap">Extension jodo &amp; image banao</span><button class="copy">Copy</button>
+<pre><code>mvn quarkus:add-extension -Dextensions="container-image-docker"
+
+mvn package -Dquarkus.container.image.build=true \
+            -Dquarkus.container.image.tag=jvm
+
+docker image ls                             <span class="c"># ~500 MB (Linux + JVM + code)</span>
+docker run -p 8080:8080 agoncal/rest-book:jvm
+curl localhost:8080/api/books</code></pre></div>
+  <div class="card warn"><span class="label">Error aaye to</span> Docker extension ko Docker chahiye. Docker Desktop start karo.<br>Image naam <code>agoncal/rest-book:1.0-SNAPSHOT</code> default hota hai. <code>quarkus.container.image.tag</code> se tag badal sakte ho. Yahan <code>jvm</code> rakha taki baad me <code>native</code> alag dikhe.</div>
+
+  <h3>Linux native binary ka jugaad</h3>
+  <p>Problem: Mac pe bana binary Mac ke liye hai. Container ke andar Linux hai. Wo chalega nahi.</p>
+  <div class="card tip"><span class="label">Quarkus ka trick</span>
+    Quarkus Docker se ek Linux image khinchta hai jisme GraalVM aur native-image installed hain, aur usme <b>Linux binary build</b> karta hai. Tumhe Linux machine nahi chahiye.
+  </div>
+  <div class="code"><span class="cap">Native Docker image</span><button class="copy">Copy</button>
+<pre><code>mvn package -Dquarkus.package.type=native \
+            -Dquarkus.native.container-build=true \
+            -Dquarkus.container.image.build=true \
+            -Dquarkus.container.image.tag=native
+
+docker run -p 8080:8080 agoncal/rest-book:native</code></pre></div>
+  <div class="card warn"><span class="label">Instructor ne ye galti ki</span>
+    <code>native.container-build=true</code> bhoolne pe build fail hua ("binary Linux ka nahi hai"). Dekho: build ke baad bhi <code>target/</code> ka binary Mac pe nahi chalega, kyunki wo Linux ka hai. Wo sirf container me chalega.
+  </div>
+  <p><code>Dockerfile.native</code> me Java install hi nahi hota, kyunki 30 MB binary me sab kuch hai. Image sirf <b>135 MB</b> (UBI + binary) hai, JVM image ~<b>500 MB</b> ki thi.</p>
+
+  <div class="demo" id="pipe">
+    <span class="tag">Build Pipeline</span>
+    <div class="pipe">
+      <div class="stage"><b>1. Code</b>Book, Resource, Repository</div>
+      <div class="stage"><b>2. mvn package</b>JAR banta hai</div>
+      <div class="stage"><b>3. GraalVM</b>Native binary (Linux)</div>
+      <div class="stage"><b>4. Dockerfile</b>UBI + binary</div>
+      <div class="stage"><b>5. docker run</b>Container chal gaya</div>
+    </div>
+    <div style="text-align:center;margin-top:14px"><button class="btn small" id="pipebtn">▶ Next</button> <button class="btn small blue" id="pipereset">Reset</button></div>
+  </div>
+
+  <div class="demo" id="sizes">
+    <span class="tag">Docker image size</span>
+    <div class="bar-row"><span>JVM image</span><div class="track"><div class="fill c-red" data-w="100" data-t="1"></div></div><b>~500 MB</b></div>
+    <div class="bar-row"><span>Native image</span><div class="track"><div class="fill c-green" data-w="27" data-t="1"></div></div><b>135 MB</b></div>
+    <button class="btn small" data-replay="sizes">🔁 Replay</button>
+  </div>
+
+  <div class="quiz" data-quiz>
+    <h4>⚡ Quick Quiz</h4>
+    <div class="q" data-a="0"><p>Mac pe Linux native binary banane ke liye kaunsi property lagti hai?</p>
+      <button>quarkus.native.container-build=true</button><button>quarkus.banner.enabled</button><button>books.genre</button><div class="fb"></div></div>
+    <div class="q" data-a="2"><p>Native Docker image chhoti kyun hai?</p>
+      <button>Docker compress karta hai</button><button>Java 17 hai</button><button>JVM binary ke andar hi hai, alag install nahi</button><div class="fb"></div></div>
+    <div class="q" data-a="1"><p>Jib extension ki khaasiyat?</p>
+      <button>Sirf Windows pe chalta hai</button><button>Docker ke bina image bana sakta hai</button><button>Native test chalata hai</button><div class="fb"></div></div>
+  </div>
+  <label class="done-box"><input type="checkbox" data-done="p7"> Part 7 done!</label>
+</section>
+
+<!-- ================= PART 8 ================= -->
+<section class="part" id="p8" data-title="Recap">
+  <div class="part-head"><div class="part-num">8</div><h2>Recap &amp; Cheat Sheet</h2></div>
+
+  <div class="card tldr">Congratulations! 🎉 Bootstrap se Docker tak sab ho gaya. Neeche ek hi jagah saare commands hain.</div>
+
+  <h3>Poori kahani ek nazar me</h3>
+  <ol class="steps">
+    <li><b>Bootstrap:</b> Maven plugin se REST app bani.</li>
+    <li><b>Code:</b> Book class, JSON endpoint (JAX-RS + JSON-B).</li>
+    <li><b>Refactor:</b> BookRepository alag, <code>@Inject</code> (CDI / ArC).</li>
+    <li><b>Test:</b> <code>@QuarkusTest</code> + RestAssured, black box.</li>
+    <li><b>Config:</b> <code>@ConfigProperty</code>, <code>-D</code> override, <code>quarkus.*</code> keys.</li>
+    <li><b>Profiles:</b> <code>%dev</code>, <code>%test</code>, <code>%prod</code>, aur custom.</li>
+    <li><b>Package:</b> JAR, legacy JAR, Uber-JAR, aur native binary (GraalVM).</li>
+    <li><b>Native test:</b> <code>@NativeImageTest</code> aur <code>mvn verify -Pnative</code>.</li>
+    <li><b>Docker:</b> JVM image aur Linux native image.</li>
+  </ol>
+
+  <h3>Cheat Sheet</h3>
+  <div class="scroll"><table>
+    <tr><th>Kaam</th><th>Command</th></tr>
+    <tr><td>Dev mode (hot reload)</td><td><code>mvn quarkus:dev</code></td></tr>
+    <tr><td>JVM tests</td><td><code>mvn test</code></td></tr>
+    <tr><td>Property override</td><td><code>mvn quarkus:dev -Dbooks.genre=drama</code></td></tr>
+    <tr><td>Custom profile</td><td><code>-Dquarkus.profile=staging</code></td></tr>
+    <tr><td>JAR banana</td><td><code>mvn package</code></td></tr>
+    <tr><td>JAR chalana</td><td><code>java -jar target/quarkus-app/quarkus-run.jar</code></td></tr>
+    <tr><td>Uber-JAR</td><td><code>mvn package -Dquarkus.package.type=uber-jar</code></td></tr>
+    <tr><td>Native binary</td><td><code>mvn package -Pnative</code></td></tr>
+    <tr><td>Native tests</td><td><code>mvn verify -Pnative</code></td></tr>
+    <tr><td>Docker image (JVM)</td><td><code>mvn package -Dquarkus.container.image.build=true -Dquarkus.container.image.tag=jvm</code></td></tr>
+    <tr><td>Docker image (native)</td><td><code>mvn package -Dquarkus.package.type=native -Dquarkus.native.container-build=true -Dquarkus.container.image.build=true -Dquarkus.container.image.tag=native</code></td></tr>
+    <tr><td>Container chalana</td><td><code>docker run -p 8080:8080 agoncal/rest-book:native</code></td></tr>
+  </table></div>
+
+  <h3>Aage kya?</h3>
+  <ul>
+    <li>Quarkus ke aur extensions try karo: database (Hibernate), messaging (Kafka), Kubernetes.</li>
+    <li>Instructor ki Quarkus books aur articles, aur Quarkus ki official guides: <code>quarkus.io/guides</code>.</li>
+    <li>Instructor ki baat: jo music course me suna, wo unke jazz band "Around the Goat" ka hai, aur Creative Commons me hai. 🎸</li>
+  </ul>
+  <div class="bubble">Quarkus bahut bada ecosystem hai. Ye sirf <b>pehla kadam</b> tha. Shabaash, tum shuru kar chuke ho! 🚀</div>
+
+  <div class="quiz" data-quiz>
+    <h4>⚡ Final Quiz</h4>
+    <div class="q" data-a="1"><p>Kaunsa order sahi hai?</p>
+      <button>Docker ➜ Code ➜ Test</button><button>Bootstrap ➜ Code ➜ Test ➜ Config ➜ Package ➜ Docker</button><button>Test ➜ Docker ➜ Bootstrap</button><div class="fb"></div></div>
+    <div class="q" data-a="0"><p>Sabse tez startup kiska hai?</p>
+      <button>Native executable</button><button>Dev mode</button><button>Legacy JAR</button><div class="fb"></div></div>
+    <div class="q" data-a="2"><p>Quarkus kis liye optimize hai?</p>
+      <button>Sirf desktop apps</button><button>Sirf games</button><button>Cloud: tez start, kam memory</button><div class="fb"></div></div>
+  </div>
+  <label class="done-box"><input type="checkbox" data-done="p8"> Part 8 done!</label>
+</section>
+
+<!-- ================= GLOSSARY ================= -->
+<section class="part" id="gloss">
+  <div class="part-head"><div class="part-num">★</div><h2>Glossary (A to Z)</h2></div>
+  <div class="card">
+    <dl class="terms">
+      <dt>ArC</dt><dd>Quarkus ka CDI implementation. Beans ko inject karta hai.</dd>
+      <dt>Bean</dt><dd>Quarkus ka manage kiya hua Java object.</dd>
+      <dt>BOM</dt><dd>Bill of Materials. Sab extensions ke sahi versions ki list.</dd>
+      <dt>CDI</dt><dd>Java standard jo injection aur bean lifecycle sambhalta hai.</dd>
+      <dt>Container</dt><dd>Docker image ko chalane par bana running instance.</dd>
+      <dt>cURL</dt><dd>Terminal se URL call karne ka tool.</dd>
+      <dt>Dev UI</dt><dd>Dev mode me <code>localhost:8080</code> pe milne wala Quarkus ka control panel.</dd>
+      <dt>Dockerfile</dt><dd>Docker image banane ke steps ki file.</dd>
+      <dt>Endpoint</dt><dd>Ek URL jis pe app request leti hai.</dd>
+      <dt>Extension</dt><dd>Quarkus me jodne wala feature (REST, JSON, Docker...).</dd>
+      <dt>GraalVM</dt><dd>Java ko native binary me badalne wala tool.</dd>
+      <dt>HotSpot</dt><dd>Normal JVM.</dd>
+      <dt>Hot reload</dt><dd>Code badalte hi app khud reload ho jana.</dd>
+      <dt>Injection (DI)</dt><dd>Object khud <code>new</code> karne ki jagah framework se lena.</dd>
+      <dt>JAR</dt><dd>Java code ka zip-jaisa archive.</dd>
+      <dt>JAX-RS</dt><dd>REST ke liye Java rules.</dd>
+      <dt>JSON-B</dt><dd>Java object ↔ JSON badalne ka standard.</dd>
+      <dt>JUnit</dt><dd>Java testing framework.</dd>
+      <dt>Native executable</dt><dd>JVM ke bina chalne wala binary.</dd>
+      <dt>Profile</dt><dd>Environment ke hisaab se alag config (<code>%dev</code>, <code>%test</code>, <code>%prod</code>).</dd>
+      <dt>RESTEasy</dt><dd>JAX-RS ka Quarkus wala implementation.</dd>
+      <dt>RestAssured</dt><dd>REST APIs test karne ki library.</dd>
+      <dt>Uber-JAR / Fat-JAR</dt><dd>Sab kuch ek bade JAR me.</dd>
+    </dl>
+  </div>
+</section>
+
+<footer>
+  Ye blog "Start using Quarkus: the Supersonic Subatomic Java toolkit" course ke transcripts se banaya gaya hai. Course ka credit Antonio Goncalves ko. 💛
+</footer>
+</main>
+</div>
+
+<script>
+(function(){
+  const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+  const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+
+  /* theme */
+  const root=document.documentElement, tbtn=$('#theme');
+  function setTheme(t){root.dataset.theme=t;tbtn.textContent=t==='dark'?'☀️ Light':'🌙 Dark';store.set('qcg-theme',t)}
+  setTheme(store.get('qcg-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
+  tbtn.onclick=()=>setTheme(root.dataset.theme==='dark'?'light':'dark');
+
+  /* menu */
+  $('#menu').onclick=()=>$('#side').classList.toggle('open');
+  $$('#side a').forEach(a=>a.addEventListener('click',()=>$('#side').classList.remove('open')));
+
+  /* progress bar + active nav */
+  const prog=$('#progress');
+  function onScroll(){const h=document.documentElement;prog.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%'}
+  addEventListener('scroll',onScroll,{passive:true});onScroll();
+  const links=$$('#side a[href^="#"]');
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.toggle('active',l.getAttribute('href')==='#'+e.target.id))}}),{rootMargin:'-30% 0px -60% 0px'});
+  $$('section.part').forEach(s=>io.observe(s));
+
+  /* done checkboxes */
+  function paintDone(){links.forEach(l=>{const id=l.getAttribute('href').slice(1);l.classList.toggle('done',store.get('qcg-'+id)==='1')})}
+  $$('input[data-done]').forEach(c=>{
+    const id=c.dataset.done;c.checked=store.get('qcg-'+id)==='1';
+    c.onchange=()=>{c.checked?store.set('qcg-'+id,'1'):store.del('qcg-'+id);paintDone()};
+  });
+  paintDone();
+  $('#reset').onclick=()=>{if(confirm('Saari progress reset karni hai?')){for(let i=0;i<=8;i++)store.del('qcg-p'+i);$$('input[data-done]').forEach(c=>c.checked=false);paintDone()}};
+
+  /* copy buttons */
+  $$('.copy').forEach(b=>b.onclick=()=>{
+    const t=b.parentElement.querySelector('pre').innerText;
+    (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{b.textContent='Copied!';setTimeout(()=>b.textContent='Copy',1200)}).catch(()=>{b.textContent='Select + Ctrl+C'})
+  });
+
+  /* bar demos */
+  function runBars(box){
+    $$('.fill',box).forEach(f=>{f.style.transition='none';f.style.width='0';void f.offsetWidth;
+      const t=Math.max(+f.dataset.t,0.05);f.style.transition='width '+t+'s linear';f.style.width=f.dataset.w+'%'})
+  }
+  ['race','mem','startup','sizes'].forEach(id=>{
+    const box=$('#'+id);if(!box)return;
+    new IntersectionObserver((es,o)=>{if(es[0].isIntersecting){runBars(box);o.disconnect()}},{threshold:.4}).observe(box);
+    const rb=$('[data-replay="'+id+'"]');if(rb)rb.onclick=()=>runBars(box);
+  });
+
+  /* roadmap */
+  $('[data-run="roadmap"]').onclick=()=>{
+    const items=$$('#roadmap .node,#roadmap .arrow');items.forEach(n=>n.classList.remove('on'));
+    items.forEach((n,i)=>setTimeout(()=>n.classList.add('on'),i*350));
+  };
+
+  /* request flow */
+  const flowMsgs=[
+    'Tum curl se <code>GET /api/books/1</code> bhejte ho.',
+    'Quarkus request <b>BookResource</b> ko deta hai. @Path aur @GET se sahi method milta hai.',
+    'Resource, <code>@Inject</code> hue <b>BookRepository</b> se book maangta hai.',
+    '<b>JSON-B</b> Book object ko JSON bana deta hai. Jawab wapas browser ko!'];
+  let fi=-1;const fnodes=$$('#flow1 .node'),farrows=$$('#flow1 .arrow');
+  $('#flow1btn').onclick=()=>{
+    fi=(fi+1)%4;
+    fnodes.forEach((n,i)=>n.classList.toggle('on',i===fi));
+    farrows.forEach((a,i)=>a.classList.toggle('on',i===fi-1));
+    $('#flow1say').innerHTML=flowMsgs[fi];
+    $('#flow1btn').textContent=fi===3?'🔁 Phir se':'▶ Next step';
+  };
+
+  /* injection */
+  const fl=$('#flyer'),slot=$('#slot');
+  $('#injbtn').onclick=()=>{fl.classList.add('go');setTimeout(()=>{slot.classList.add('filled');slot.textContent='repository = ✔ BookRepository'},700)};
+  $('#injreset').onclick=()=>{fl.classList.remove('go');slot.classList.remove('filled');slot.textContent='repository = ???'};
+
+  /* hot reload */
+  $$('[data-hot]').forEach(b=>b.onclick=()=>{
+    const v=b.dataset.hot,t=$('#hotterm');
+    const row=document.createElement('div');row.className='flash';
+    t.querySelector('.cur')?.remove();
+    t.insertAdjacentHTML('beforeend','<div>[saved BookResource.java] return "'+v+'";</div><div>Hot reload... done in 0.3s</div><div>$ curl localhost:8080/api/books</div><div class="flash">'+v+'</div><div class="cur"></div>');
+    t.scrollTop=t.scrollHeight;
+  });
+
+  /* profiles */
+  const profData={
+    dev:['mvn quarkus:dev','%dev','drama','INFO'],
+    test:['mvn test','%test','IT','(default WARN)'],
+    prod:['java -jar target/quarkus-app/quarkus-run.jar','%prod','information technology','(default WARN)'],
+    staging:['mvn quarkus:dev -Dquarkus.profile=staging','%staging','custom','(default WARN)']};
+  function showProf(p){
+    const d=profData[p];
+    $('#profterm').innerHTML='<div>$ '+d[0]+'</div><div>Active profile: <b>'+d[1]+'</b></div><div>books.genre = <b class="flash">'+d[2]+'</b></div><div>log level = '+d[3]+'</div>';
+    $$('#profseg button').forEach(b=>b.classList.toggle('on',b.dataset.prof===p));
+  }
+  $$('#profseg button').forEach(b=>b.onclick=()=>showProf(b.dataset.prof));showProf('dev');
+
+  /* pipeline */
+  const stages=$$('#pipe .stage');let pi=-1;
+  $('#pipebtn').onclick=()=>{pi=Math.min(pi+1,stages.length-1);stages.forEach((s,i)=>s.classList.toggle('on',i<=pi))};
+  $('#pipereset').onclick=()=>{pi=-1;stages.forEach(s=>s.classList.remove('on'))};
+
+  /* quizzes */
+  $$('.q').forEach(q=>{
+    const ans=+q.dataset.a,btns=$$('button',q),fb=$('.fb',q);
+    btns.forEach((b,i)=>b.onclick=()=>{
+      if(q.dataset.done)return;
+      if(i===ans){b.classList.add('right');fb.textContent='🎯 Sahi jawab! Boom!';q.dataset.done=1}
+      else{b.classList.add('wrong');fb.textContent='😅 Oops, dobara try karo.'}
+    });
+  });
+})();
+</script>
+</body>
+</html>
