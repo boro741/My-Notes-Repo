@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Quarkus Internals: Lambda ke liye Supersonic Java</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Noto+Sans+Devanagari:wght@400;600&display=swap">
+<style>
+:root{
+  --paper:#fbf6ea; --card:#fffdf7; --ink:#2b2a33; --muted:#6a6675; --line:#e6dcc3;
+  --blue:#2f5fd0; --blue-soft:#e4ecff; --pink:#d6336c; --pink-soft:#ffe6ef;
+  --green:#2b8a5a; --green-soft:#e2f5ea; --amber:#c77700; --amber-soft:#fff0d1;
+  --violet:#6741d9; --violet-soft:#eee8ff; --red:#c92a2a; --red-soft:#ffe3e3;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth;color-scheme:light}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Comic Neue","Comic Sans MS","Comic Sans","Noto Sans Devanagari",cursive,sans-serif;
+  font-size:19px;line-height:1.75;-webkit-text-size-adjust:100%;
+  background-image:radial-gradient(#e9dfc4 1px,transparent 1px);background-size:22px 22px}
+.wrap{max-width:860px;margin:0 auto;padding:0 max(20px,env(safe-area-inset-left,0px)) 80px max(20px,env(safe-area-inset-right,0px))}
+h1,h2,h3{line-height:1.25;margin:0}
+h1{font-size:clamp(2rem,6vw,3.1rem);color:var(--ink)}
+h2{font-size:clamp(1.5rem,4vw,2rem);margin:0 0 14px;color:var(--blue)}
+h3{font-size:1.2rem;margin:20px 0 6px;color:var(--pink)}
+p{margin:0 0 14px}
+hr{border:0;border-top:3px dashed var(--line);margin:0}
+.hero{padding:64px 0 34px}
+.badge{display:inline-block;background:var(--ink);color:#fff;padding:4px 14px;border-radius:999px;font-weight:700;font-size:.9rem;margin-bottom:18px;transform:rotate(-2deg)}
+.hero p.sub{font-size:1.25rem;color:var(--muted);max-width:640px}
+.meta{font-size:.95rem;color:var(--muted)}
+.hi{font-family:"Noto Sans Devanagari","Comic Neue",sans-serif;font-weight:600}
+nav.toc{background:var(--card);border:2px solid var(--ink);border-radius:18px;padding:18px 24px;box-shadow:6px 6px 0 var(--ink);margin:10px 0 40px}
+nav.toc b{display:block;margin-bottom:6px}
+nav.toc a{display:block;color:var(--blue);text-decoration:none;padding:6px 0;font-weight:700}
+nav.toc a:hover,nav.toc a:focus-visible{text-decoration:underline;outline:none}
+section{padding:34px 0}
+.panel{background:var(--card);border:2px solid var(--ink);border-radius:18px;padding:22px 24px;box-shadow:6px 6px 0 var(--ink)}
+.callout{border-radius:14px;padding:14px 18px;margin:18px 0;border:2px solid}
+.callout.hindi{background:var(--violet-soft);border-color:var(--violet);border-style:dashed}
+.callout.tip{background:var(--green-soft);border-color:var(--green)}
+.callout.warn{background:var(--red-soft);border-color:var(--red)}
+.callout.int{background:var(--amber-soft);border-color:var(--amber)}
+.callout b.t{display:block;margin-bottom:2px}
+.callout p:last-child{margin:0}
+figure{margin:24px 0;background:var(--card);border:2px solid var(--ink);border-radius:18px;padding:12px;box-shadow:6px 6px 0 var(--ink)}
+figure svg{width:100%;height:auto;display:block}
+figcaption{font-size:.95rem;color:var(--muted);text-align:center;padding:8px 6px 2px}
+svg text{font-family:"Comic Neue","Comic Sans MS",cursive,sans-serif}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.82em;background:#efe7d0;padding:1px 6px;border-radius:6px}
+pre{background:#2b2a33;color:#f6f1e1;padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:.82rem;line-height:1.6;margin:14px 0;-webkit-overflow-scrolling:touch}
+pre code{background:none;padding:0;font-size:inherit;color:inherit}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;min-width:560px;background:var(--card);font-size:.95rem;line-height:1.5}
+th,td{border:2px solid var(--ink);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--amber-soft)}
+td.q{background:var(--blue-soft)}
+td.s{background:var(--pink-soft)}
+ul{padding-left:22px;margin:0 0 14px}
+li{margin-bottom:6px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:18px 0}
+.mini{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:14px 16px}
+.mini h3{margin-top:0;font-size:1.05rem}
+.mini p{margin:0;font-size:.95rem;line-height:1.55}
+footer{text-align:center;color:var(--muted);padding-top:30px;font-size:.95rem}
+a:focus-visible,summary:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+@media (max-width:640px){body{font-size:17.5px}.panel,.callout{padding:16px}}
+@media (hover:none){nav.toc a{padding:10px 0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <span class="badge">Java Deep Dive</span>
+  <h1>Quarkus ke Andar Kya Hai? Internal Architecture + Lambda</h1>
+  <p class="sub">Why does Quarkus start in milliseconds while old-style Java takes seconds? Chalo, step by step samajhte hain.</p>
+  <p class="meta">8 min read &bull; Architecture, AWS Lambda, Spring Boot comparison</p>
+</header>
+
+<nav class="toc" aria-label="Table of contents">
+  <b>Is blog mein kya hai</b>
+  <a href="#idea">1. The big idea: build time vs runtime</a>
+  <a href="#arch">2. Internal architecture</a>
+  <a href="#why">3. Why great for Lambda</a>
+  <a href="#deploy">4. Uploading to AWS Lambda</a>
+  <a href="#spring">5. Quarkus vs Spring Boot</a>
+  <a href="#sum">6. Summary</a>
+</nav>
+
+<hr>
+<section id="idea">
+  <h2>1. The big idea: kaam pehle hi kar lo</h2>
+  <p>A traditional Java framework wakes up, then <em>discovers</em> your app: it scans classes, reads annotations, builds dependency-injection wiring, creates proxies. All of this happens at <strong>runtime</strong>, on every start. That is slow and eats memory.</p>
+  <p>Quarkus flips this. It does the discovery work once, during the <strong>build</strong>. At startup it only runs the already-prepared result.</p>
+
+  <div class="callout hindi">
+    <b class="t">Analogy (हिंदी में)</b>
+    <p class="hi">मान लो आप रोज़ सुबह ऑफ़िस जाते हो। Traditional framework हर सुबह बैग पैक करता है। Quarkus रात को ही बैग पैक करके रखता है, सुबह बस उठाओ और निकलो।</p>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 820 330" role="img" aria-label="Traditional framework does work at runtime, Quarkus does it at build time">
+      <defs>
+        <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff8fa3"/><stop offset="1" stop-color="#d6336c"/></linearGradient>
+        <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#74c0fc"/><stop offset="1" stop-color="#2f5fd0"/></linearGradient>
+        <linearGradient id="g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8ce99a"/><stop offset="1" stop-color="#2b8a5a"/></linearGradient>
+        <filter id="sh" x="-10%" y="-10%" width="130%" height="140%"><feDropShadow dx="3" dy="3" stdDeviation="0" flood-color="#2b2a33"/></filter>
+        <marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2b2a33"/></marker>
+      </defs>
+      <text x="20" y="30" font-size="19" font-weight="700" fill="#d6336c">Traditional Java framework</text>
+      <g filter="url(#sh)" stroke="#2b2a33" stroke-width="2">
+        <rect x="20" y="44" width="130" height="56" rx="12" fill="#fffdf7"/>
+        <rect x="190" y="44" width="150" height="56" rx="12" fill="url(#g1)"/>
+        <rect x="380" y="44" width="150" height="56" rx="12" fill="url(#g1)"/>
+        <rect x="570" y="44" width="150" height="56" rx="12" fill="url(#g1)"/>
+      </g>
+      <g font-size="16" font-weight="700" text-anchor="middle" fill="#2b2a33">
+        <text x="85" y="78">Build jar</text>
+        <text x="265" y="78" fill="#fff">Scan classes</text>
+        <text x="455" y="78" fill="#fff">Build DI graph</text>
+        <text x="645" y="78" fill="#fff">Proxies, reflection</text>
+      </g>
+      <g stroke="#2b2a33" stroke-width="2.5" marker-end="url(#ar)"><line x1="150" y1="72" x2="188" y2="72"/><line x1="340" y1="72" x2="378" y2="72"/><line x1="530" y1="72" x2="568" y2="72"/></g>
+      <text x="190" y="124" font-size="14" fill="#c92a2a">all of this at STARTUP = slow, high RAM</text>
+      <path d="M190 130 H720" stroke="#c92a2a" stroke-width="3" stroke-dasharray="6 6"/>
+
+      <text x="20" y="186" font-size="19" font-weight="700" fill="#2f5fd0">Quarkus</text>
+      <g filter="url(#sh)" stroke="#2b2a33" stroke-width="2">
+        <rect x="20" y="200" width="130" height="56" rx="12" fill="#fffdf7"/>
+        <rect x="190" y="200" width="150" height="56" rx="12" fill="url(#g2)"/>
+        <rect x="380" y="200" width="150" height="56" rx="12" fill="url(#g2)"/>
+        <rect x="570" y="200" width="150" height="56" rx="12" fill="url(#g3)"/>
+      </g>
+      <g font-size="16" font-weight="700" text-anchor="middle" fill="#2b2a33">
+        <text x="85" y="234">Your code</text>
+        <text x="265" y="234" fill="#fff">Scan (build)</text>
+        <text x="455" y="234" fill="#fff">Wire (build)</text>
+        <text x="645" y="234" fill="#fff">Fast start!</text>
+      </g>
+      <g stroke="#2b2a33" stroke-width="2.5" marker-end="url(#ar)"><line x1="150" y1="228" x2="188" y2="228"/><line x1="340" y1="228" x2="378" y2="228"/><line x1="530" y1="228" x2="568" y2="228"/></g>
+      <path d="M190 276 H530" stroke="#2f5fd0" stroke-width="3"/>
+      <text x="190" y="300" font-size="14" fill="#2f5fd0">BUILD TIME (once)</text>
+      <path d="M570 276 H720" stroke="#2b8a5a" stroke-width="3"/>
+      <text x="570" y="300" font-size="14" fill="#2b8a5a">RUNTIME (tiny)</text>
+    </svg>
+    <figcaption>Fig 1: Same work, different moment. Quarkus shifts it to build time.</figcaption>
+  </figure>
+</section>
+
+<hr>
+<section id="arch">
+  <h2>2. Internal architecture</h2>
+  <p>Quarkus has four main parts working together. Pehle picture dekho, phir ek-ek part samjhenge.</p>
+
+  <figure>
+    <svg viewBox="0 0 820 500" role="img" aria-label="Quarkus layered architecture">
+      <defs>
+        <linearGradient id="a1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd8a8"/><stop offset="1" stop-color="#f59f00"/></linearGradient>
+        <linearGradient id="a2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a5d8ff"/><stop offset="1" stop-color="#2f5fd0"/></linearGradient>
+        <linearGradient id="a3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d0bfff"/><stop offset="1" stop-color="#6741d9"/></linearGradient>
+        <linearGradient id="a4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b2f2bb"/><stop offset="1" stop-color="#2b8a5a"/></linearGradient>
+        <filter id="sh2" x="-10%" y="-10%" width="130%" height="140%"><feDropShadow dx="3" dy="3" stdDeviation="0" flood-color="#2b2a33"/></filter>
+      </defs>
+      <g filter="url(#sh2)" stroke="#2b2a33" stroke-width="2">
+        <rect x="20" y="16" width="780" height="76" rx="16" fill="url(#a1)"/>
+        <rect x="20" y="112" width="780" height="96" rx="16" fill="url(#a2)"/>
+        <rect x="20" y="228" width="780" height="96" rx="16" fill="url(#a3)"/>
+        <rect x="20" y="344" width="780" height="140" rx="16" fill="url(#a4)"/>
+      </g>
+      <g font-size="17" font-weight="700" fill="#2b2a33">
+        <text x="40" y="44">Layer 1: Your App</text>
+        <text x="40" y="140" fill="#fff">Layer 2: Extensions (the brain, build time)</text>
+        <text x="40" y="256" fill="#fff">Layer 3: Runtime core</text>
+        <text x="40" y="372">Layer 4: Execution (JVM or Native)</text>
+      </g>
+      <g font-size="14" fill="#2b2a33">
+        <text x="40" y="70">REST endpoints, services, entities, @Inject, @Path</text>
+      </g>
+      <g stroke="#2b2a33" stroke-width="2" fill="#fffdf7">
+        <rect x="40" y="156" width="170" height="38" rx="10"/><rect x="230" y="156" width="170" height="38" rx="10"/>
+        <rect x="420" y="156" width="170" height="38" rx="10"/><rect x="610" y="156" width="170" height="38" rx="10"/>
+        <rect x="40" y="272" width="230" height="38" rx="10"/><rect x="290" y="272" width="230" height="38" rx="10"/><rect x="540" y="272" width="240" height="38" rx="10"/>
+        <rect x="40" y="396" width="350" height="64" rx="10"/><rect x="430" y="396" width="350" height="64" rx="10"/>
+      </g>
+      <g font-size="14" font-weight="700" text-anchor="middle" fill="#2b2a33">
+        <text x="125" y="180">ArC (DI)</text><text x="315" y="180">RESTEasy</text><text x="505" y="180">Hibernate</text><text x="695" y="180">Lambda ext.</text>
+        <text x="155" y="296">Vert.x + Netty</text><text x="405" y="296">Mutiny (reactive)</text><text x="660" y="296">Recorded bytecode</text>
+        <text x="215" y="424">JVM mode</text><text x="215" y="446" font-weight="400" font-size="13">fast start, JIT warmup</text>
+        <text x="605" y="424">GraalVM Native</text><text x="605" y="446" font-weight="400" font-size="13">no JVM, ms start, tiny RAM</text>
+      </g>
+    </svg>
+    <figcaption>Fig 2: Quarkus layers. Upar wali layers build time par kaam karti hain.</figcaption>
+  </figure>
+
+  <div class="cols">
+    <div class="mini"><h3>Extensions</h3><p>Each extension (REST, Hibernate, Lambda) has a build-time part that reads your code and a small runtime part. Yehi Quarkus ka dimaag hai.</p></div>
+    <div class="mini"><h3>ArC (CDI)</h3><p>Dependency injection is resolved during the build. No heavy reflection or scanning at startup.</p></div>
+    <div class="mini"><h3>Jandex index</h3><p>A pre-built index of your classes and annotations. Quarkus reads this instead of scanning every class.</p></div>
+    <div class="mini"><h3>Vert.x + Netty</h3><p>Event-loop based I/O underneath. Few threads handle many requests, so memory stays low.</p></div>
+  </div>
+
+  <h3>Build pipeline in 4 steps</h3>
+  <ul>
+    <li><strong>Index:</strong> Jandex scans your jar once.</li>
+    <li><strong>Augment:</strong> extensions process annotations and decide what is needed.</li>
+    <li><strong>Record:</strong> startup actions are saved as plain bytecode (no reflection).</li>
+    <li><strong>Package:</strong> output is a runnable jar or a GraalVM native binary.</li>
+  </ul>
+
+  <div class="callout int">
+    <b class="t">Interview line</b>
+    <p>"Quarkus moves classpath scanning, DI wiring and config parsing to build time (augmentation), so runtime has less work and a smaller footprint."</p>
+  </div>
+  <div class="callout warn">
+    <b class="t">Common mistake</b>
+    <p>Using reflection-heavy libraries in native mode. GraalVM needs to know every class upfront (closed-world), so dynamic loading must be registered or avoided.</p>
+  </div>
+</section>
+
+<hr>
+<section id="why">
+  <h2>3. Lambda ke liye kyun best?</h2>
+  <p>Lambda starts a fresh environment when no warm one exists. That is a <strong>cold start</strong>, and you pay for its time. Quarkus attacks exactly this pain.</p>
+
+  <figure>
+    <svg viewBox="0 0 820 300" role="img" aria-label="Cold start comparison bars, illustrative values">
+      <defs>
+        <linearGradient id="b1" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff8fa3"/><stop offset="1" stop-color="#d6336c"/></linearGradient>
+        <linearGradient id="b2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#74c0fc"/><stop offset="1" stop-color="#2f5fd0"/></linearGradient>
+        <linearGradient id="b3" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8ce99a"/><stop offset="1" stop-color="#2b8a5a"/></linearGradient>
+        <filter id="sh3" x="-5%" y="-10%" width="115%" height="140%"><feDropShadow dx="3" dy="3" stdDeviation="0" flood-color="#2b2a33"/></filter>
+      </defs>
+      <text x="20" y="28" font-size="18" font-weight="700" fill="#2b2a33">Typical cold start (illustrative, varies by app)</text>
+      <g filter="url(#sh3)" stroke="#2b2a33" stroke-width="2">
+        <rect x="190" y="50" width="600" height="46" rx="12" fill="url(#b1)"/>
+        <rect x="190" y="120" width="190" height="46" rx="12" fill="url(#b2)"/>
+        <rect x="190" y="190" width="34" height="46" rx="12" fill="url(#b3)"/>
+      </g>
+      <g font-size="16" font-weight="700" fill="#2b2a33">
+        <text x="20" y="79">Spring Boot JVM</text><text x="20" y="149">Quarkus JVM</text><text x="20" y="219">Quarkus Native</text>
+      </g>
+      <g font-size="15" fill="#2b2a33"><text x="590" y="79" fill="#fff" font-weight="700">~3 to 6 s</text><text x="240" y="149" fill="#fff" font-weight="700" x2="">~1 to 2 s</text><text x="240" y="219">~100 to 300 ms</text></g>
+      <text x="20" y="278" font-size="13" fill="#6a6675">Numbers are rough, commonly reported ranges. Measure your own function.</text>
+    </svg>
+    <figcaption>Fig 3: Cold start comparison (indicative, not a benchmark).</figcaption>
+  </figure>
+
+  <div class="cols">
+    <div class="mini"><h3>Fast cold start</h3><p>Build-time work + native image means almost no startup cost.</p></div>
+    <div class="mini"><h3>Low memory</h3><p>Smaller RAM setting on Lambda, so lower cost per invocation.</p></div>
+    <div class="mini"><h3>Small package</h3><p>Fewer classes and no unused framework code. Deploy aur upload dono fast.</p></div>
+  </div>
+
+  <div class="callout hindi">
+    <b class="t">Paisa-vasool point</b>
+    <p class="hi">Lambda में आप milliseconds और memory के हिसाब से पैसे देते हो। Quarkus कम समय और कम memory लेता है, इसलिए bill भी कम आता है।</p>
+  </div>
+  <div class="callout tip">
+    <b class="t">Tip</b>
+    <p>Even without native, the JVM build is a good Lambda citizen. Pair it with Lambda SnapStart if you want to stay on the JVM runtime.</p>
+  </div>
+</section>
+
+<hr>
+<section id="deploy">
+  <h2>4. AWS Lambda par upload kaise karein</h2>
+
+  <figure>
+    <svg viewBox="0 0 820 190" role="img" aria-label="Deployment pipeline to AWS Lambda">
+      <defs>
+        <linearGradient id="d1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd8a8"/><stop offset="1" stop-color="#f59f00"/></linearGradient>
+        <linearGradient id="d2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d0bfff"/><stop offset="1" stop-color="#6741d9"/></linearGradient>
+        <linearGradient id="d3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a5d8ff"/><stop offset="1" stop-color="#2f5fd0"/></linearGradient>
+        <linearGradient id="d4" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b2f2bb"/><stop offset="1" stop-color="#2b8a5a"/></linearGradient>
+        <filter id="sh4" x="-10%" y="-10%" width="130%" height="140%"><feDropShadow dx="3" dy="3" stdDeviation="0" flood-color="#2b2a33"/></filter>
+        <marker id="ar2" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2b2a33"/></marker>
+      </defs>
+      <g filter="url(#sh4)" stroke="#2b2a33" stroke-width="2">
+        <rect x="14" y="40" width="160" height="96" rx="14" fill="url(#d1)"/>
+        <rect x="224" y="40" width="160" height="96" rx="14" fill="url(#d2)"/>
+        <rect x="434" y="40" width="160" height="96" rx="14" fill="url(#d3)"/>
+        <rect x="644" y="40" width="160" height="96" rx="14" fill="url(#d4)"/>
+      </g>
+      <g text-anchor="middle" font-size="16" font-weight="700" fill="#2b2a33">
+        <text x="94" y="84">Quarkus app</text><text x="94" y="108" font-weight="400" font-size="13">+ lambda extension</text>
+        <text x="304" y="84" fill="#fff">mvn package</text><text x="304" y="108" font-weight="400" font-size="13" fill="#fff">-Dnative (optional)</text>
+        <text x="514" y="84" fill="#fff">function.zip</text><text x="514" y="108" font-weight="400" font-size="13" fill="#fff">in target/</text>
+        <text x="724" y="84">AWS Lambda</text><text x="724" y="108" font-weight="400" font-size="13">SAM / CLI deploy</text>
+      </g>
+      <g stroke="#2b2a33" stroke-width="2.5" marker-end="url(#ar2)"><line x1="174" y1="88" x2="222" y2="88"/><line x1="384" y1="88" x2="432" y2="88"/><line x1="594" y1="88" x2="642" y2="88"/></g>
+    </svg>
+    <figcaption>Fig 4: Code se Lambda tak ka rasta.</figcaption>
+  </figure>
+
+  <h3>Step 1: Add the extension</h3>
+<pre><code>&lt;dependency&gt;
+  &lt;groupId&gt;io.quarkus&lt;/groupId&gt;
+  &lt;artifactId&gt;quarkus-amazon-lambda&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+
+  <h3>Step 2: Write a handler</h3>
+<pre><code>@Named("hello")
+public class HelloLambda implements RequestHandler&lt;InputObject, OutputObject&gt; {
+    @Inject GreetingService service;   // normal CDI works
+
+    @Override
+    public OutputObject handleRequest(InputObject in, Context ctx) {
+        return new OutputObject(service.greet(in.getName()));
+    }
+}</code></pre>
+
+  <h3>Step 3: Build</h3>
+  <p><strong>Option A: JVM mode</strong> (simple, use Java 21 runtime or SnapStart)</p>
+<pre><code>./mvnw clean package
+# creates target/function.zip</code></pre>
+  <p><strong>Option B: Native mode</strong> (fastest start; build in a container so it targets Amazon Linux)</p>
+<pre><code>./mvnw clean package -Dnative -Dquarkus.native.container-build=true
+# creates target/function.zip with a "bootstrap" binary</code></pre>
+
+  <h3>Step 4: Upload</h3>
+<pre><code># JVM mode
+aws lambda create-function --function-name hello \
+  --zip-file fileb://target/function.zip \
+  --runtime java21 \
+  --handler io.quarkus.amazon.lambda.runtime.QuarkusStreamHandler::handleRequest \
+  --role arn:aws:iam::&lt;ACCOUNT_ID&gt;:role/&lt;LAMBDA_ROLE&gt; \
+  --environment Variables={QUARKUS_LAMBDA_HANDLER=hello}
+
+# Native mode: same, but use
+#   --runtime provided.al2023 --handler not.used.in.provided.runtime</code></pre>
+
+  <div class="callout int">
+    <b class="t">Good to know</b>
+    <p>Quarkus also generates <code>sam.jvm.yaml</code> and <code>sam.native.yaml</code> in <code>target/</code>, so <code>sam deploy</code> works too. Exact flags can change between versions, so check the current Quarkus AWS Lambda guide.</p>
+  </div>
+  <div class="callout warn">
+    <b class="t">Common mistake</b>
+    <p>Building native on macOS/Windows without <code>container-build=true</code>. The binary will not run on Lambda's Linux. Also, do not forget to set the architecture (x86_64 vs arm64) to match your build.</p>
+  </div>
+  <div class="callout hindi">
+    <b class="t">Short mein</b>
+    <p class="hi">Extension जोड़ो, mvn package चलाओ, function.zip बनेगी, उसे Lambda पर upload करो। बस इतना ही!</p>
+  </div>
+</section>
+
+<hr>
+<section id="spring">
+  <h2>5. Quarkus vs Spring Boot</h2>
+  <p>Spring Boot is mature and has a huge ecosystem. Quarkus is newer and built for containers and serverless. Dono acche hain, bas use case alag hai.</p>
+  <div class="scroll">
+  <table>
+    <tr><th>Point</th><th>Quarkus</th><th>Spring Boot</th></tr>
+    <tr><td><b>Core approach</b></td><td class="q">Build-time augmentation</td><td class="s">Mostly runtime reflection and proxies</td></tr>
+    <tr><td><b>Cold start (Lambda)</b></td><td class="q">Very fast, especially native</td><td class="s">Slower on JVM; improves with SnapStart or Spring native (AOT)</td></tr>
+    <tr><td><b>Memory</b></td><td class="q">Low</td><td class="s">Higher on JVM</td></tr>
+    <tr><td><b>Native image</b></td><td class="q">First-class, designed for it</td><td class="s">Supported (Spring AOT), more setup</td></tr>
+    <tr><td><b>Dev experience</b></td><td class="q">Live reload, dev services</td><td class="s">DevTools, very familiar</td></tr>
+    <tr><td><b>Ecosystem</b></td><td class="q">Growing, many extensions</td><td class="s">Huge, plenty of libs, jobs, tutorials</td></tr>
+    <tr><td><b>Learning curve</b></td><td class="q">Easy if you know CDI/JAX-RS; Spring devs have a compat layer</td><td class="s">Gentle for most Java devs</td></tr>
+    <tr><td><b>Best for</b></td><td class="q">Serverless, microservices, K8s</td><td class="s">Large enterprise apps, existing Spring teams</td></tr>
+  </table>
+  </div>
+  <div class="callout tip">
+    <b class="t">Kab kya choose karein</b>
+    <p>New Lambda function where cold start and cost matter: pick Quarkus. Big existing Spring codebase and team: Spring Boot with SnapStart is often the practical choice.</p>
+  </div>
+</section>
+
+<hr>
+<section id="sum">
+  <h2>6. Summary</h2>
+  <div class="panel">
+    <ul>
+      <li>Quarkus does scanning, DI and config work at <strong>build time</strong>, so runtime starts fast.</li>
+      <li>Core parts: extensions, ArC, Jandex, Vert.x/Netty, and JVM or GraalVM native output.</li>
+      <li>For Lambda: faster cold starts, less memory, lower bill.</li>
+      <li>Deploy with <code>quarkus-amazon-lambda</code>, build <code>function.zip</code>, upload via CLI or SAM.</li>
+      <li>Spring Boot wins on ecosystem; Quarkus wins on startup and footprint.</li>
+    </ul>
+    <p class="hi" style="margin:0">याद रखो: Quarkus = काम पहले, चलना बाद में।</p>
+  </div>
+</section>
+
+<footer>Happy learning, Pavan! Ab Lambda par Quarkus deploy karke dekho.</footer>
+</div>
+</body>
+</html>
