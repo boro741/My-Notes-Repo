@@ -1,0 +1,544 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Quarkus Simplified</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout concept: a short single-column blog. Green always means Spring Boot, blue always means Quarkus,
+     amber marks the "figuring things out" work, teal marks the JVM, so the reader sees who does what, and when. */
+  :root {
+    --bg: #F5F0E6;
+    --surface: #FBF8F1;
+    --ink: #2E2C28;
+    --muted: #615D52;
+    --line: #DDD5C4;
+    --code-bg: #ECE5D5;
+    --quarkus: #2F5F9E;
+    --quarkus-soft: #E3EAF0;
+    --spring: #3C7048;
+    --spring-soft: #E4ECDC;
+    --amber: #94651B;
+    --amber-soft: #F5E8C8;
+    --go: #2F6F68;
+    --go-soft: #DCE9E2;
+    --grey-soft: #E6DFCF;
+    --font-display: "Bangers", "Comic Sans MS", "Comic Neue", cursive, sans-serif;
+    --font-body: "Comic Neue", "Comic Sans MS", "Chalkboard SE", cursive, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1D1C1A;
+      --surface: #262523;
+      --ink: #DCD7CA;
+      --muted: #A8A294;
+      --line: #3A3833;
+      --code-bg: #171614;
+      --quarkus: #8DB0E0;
+      --quarkus-soft: #232C3A;
+      --spring: #8CC49A;
+      --spring-soft: #232E25;
+      --amber: #DDB567;
+      --amber-soft: #35301F;
+      --go: #7CC2B5;
+      --go-soft: #1F302D;
+      --grey-soft: #302E2A;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1D1C1A;
+    --surface: #262523;
+    --ink: #DCD7CA;
+    --muted: #A8A294;
+    --line: #3A3833;
+    --code-bg: #171614;
+    --quarkus: #8DB0E0;
+    --quarkus-soft: #232C3A;
+    --spring: #8CC49A;
+    --spring-soft: #232E25;
+    --amber: #DDB567;
+    --amber-soft: #35301F;
+    --go: #7CC2B5;
+    --go-soft: #1F302D;
+    --grey-soft: #302E2A;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 19px;
+    line-height: 1.75;
+    padding-block: 36px 72px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .wrap { max-width: 700px; margin: 0 auto; }
+  h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.12; margin: 0; }
+  h1 { font-size: clamp(2.6rem, 9vw, 4.2rem); }
+  h2 { font-size: clamp(1.9rem, 5vw, 2.4rem); margin-bottom: 14px; }
+  h3 { font-size: 1.45rem; margin: 22px 0 8px; }
+  body { font-weight: 400; }
+  h1, h2, h3, .bigidea p, .steps strong, .nest .tag, .vs b, .twocol b, .duo b, .lanes .who, .terms dt { font-weight: 400; letter-spacing: 0.04em; }
+  .bigidea p { font-size: 1.5rem; }
+  .nest .tag { font-size: 1.4rem; }
+  .steps strong, .vs b, .twocol b, .duo b { font-size: 1.15em; }
+  p { margin: 0 0 1em; }
+  a { color: var(--quarkus); }
+  code { font-family: var(--font-mono); font-size: 0.86em; background: var(--code-bg); padding: 0.1em 0.4em; border-radius: 5px; }
+  section { margin-top: 56px; }
+  .kicker { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+  .lede { font-size: 1.2rem; color: var(--muted); margin-top: 14px; }
+  .sp { color: var(--spring); font-weight: 700; }
+  .qk { color: var(--quarkus); font-weight: 700; }
+
+  .bigidea { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px 6px; }
+  .bigidea p { font-family: var(--font-display); font-weight: 600; font-size: 1.3rem; line-height: 1.3; }
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 18px 0 0; }
+  .duo > div { border-radius: 12px; padding: 14px 18px 2px; min-width: 0; font-size: 0.98rem; }
+  .duo .s { background: var(--spring-soft); }
+  .duo .q { background: var(--quarkus-soft); }
+  .duo .j { background: var(--amber-soft); }
+  .duo .a { background: var(--go-soft); }
+  .duo b { display: block; font-family: var(--font-display); margin-bottom: 2px; }
+  .duo .s b { color: var(--spring); }
+  .duo .q b { color: var(--quarkus); }
+
+  /* nested Java toolkit diagram */
+  .nest { border: 2px solid var(--line); border-radius: 14px; padding: 14px; background: var(--grey-soft); }
+  .nest .nest { margin-top: 12px; background: var(--surface); }
+  .nest .nest .nest { background: var(--go-soft); border-color: var(--go); }
+  .nest .tag { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; }
+  .nest .what { display: block; font-size: 0.88rem; color: var(--muted); margin-bottom: 8px; }
+  .nest .nest .nest .what { color: var(--ink); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font-size: 0.84rem; line-height: 1.25; padding: 4px 9px; border-radius: 8px; background: var(--grey-soft); }
+  .nest .chip { background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
+  .nest .nest .chip { background: var(--grey-soft); }
+  .nest .nest .nest .chip { background: var(--surface); }
+  .chip.work { background: var(--amber-soft); box-shadow: inset 0 0 0 1px var(--amber); }
+  .nest .nest .nest .chip.work { background: var(--amber-soft); }
+  .chip.go { background: var(--go-soft); }
+
+  .terms { margin: 0; display: grid; gap: 0; }
+  .terms > div { display: grid; grid-template-columns: 130px 1fr; gap: 14px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .terms dt { font-family: var(--font-mono); font-weight: 500; font-size: 0.92rem; padding-top: 2px; }
+  .terms dd { margin: 0; min-width: 0; }
+
+  .steps { list-style: none; padding: 0; margin: 16px 0; counter-reset: s; }
+  .steps li { counter-increment: s; position: relative; padding: 0 0 14px 46px; }
+  .steps li:last-child { padding-bottom: 0; }
+  .steps li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 500; background: var(--cs); color: var(--c); }
+  .steps strong { font-family: var(--font-display); font-weight: 600; }
+  .steps.spring { --c: var(--spring); --cs: var(--spring-soft); }
+  .steps.quarkus { --c: var(--quarkus); --cs: var(--quarkus-soft); }
+  .steps.java { --c: var(--go); --cs: var(--go-soft); }
+  .result { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 18px; color: var(--muted); }
+
+  .lanes { display: grid; grid-template-columns: 100px 1fr 1fr; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--surface); margin: 20px 0 8px; }
+  .lanes > div { padding: 12px; border-top: 1px solid var(--line); min-width: 0; }
+  .lanes > div:nth-child(-n+3) { border-top: 0; }
+  .lanes .head { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: var(--bg); }
+  .lanes .head small { display: block; text-transform: none; letter-spacing: 0; font-family: var(--font-body); font-size: 0.82rem; margin-top: 2px; }
+  .lanes .who { font-family: var(--font-display); font-weight: 800; display: flex; align-items: center; }
+  .lanes .who.s { color: var(--spring); }
+  .lanes .who.q { color: var(--quarkus); }
+  .caption { font-size: 0.88rem; color: var(--muted); }
+  .key { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 5px; }
+
+  ul.plain { padding-left: 1.2em; margin: 0 0 1em; }
+  ul.plain li { margin-bottom: 6px; }
+  .note { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px 2px; margin: 20px 0; font-size: 0.98rem; }
+  .note.warn { background: var(--amber-soft); border-color: transparent; }
+
+  .vs { border-top: 1px solid var(--line); margin: 14px 0; }
+  .vs .row { padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .vs b { font-family: var(--font-display); display: block; margin-bottom: 4px; }
+  .vs p { margin: 0 0 3px; font-size: 0.97rem; display: flex; gap: 10px; align-items: baseline; }
+  .vs .badge { flex: 0 0 76px; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.04em; text-transform: uppercase; }
+  .vs .badge.s { color: var(--spring); }
+  .vs .badge.q { color: var(--quarkus); }
+
+  .twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .twocol > div { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px 4px; min-width: 0; }
+  .twocol b { font-family: var(--font-display); }
+  .twocol ul { padding-left: 1.1em; margin: 6px 0 10px; }
+
+  pre { background: var(--code-bg); border-radius: 12px; padding: 14px 18px; overflow-x: auto; margin: 16px 0; font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.7; }
+  pre .c { color: var(--muted); }
+
+  .recap { background: var(--ink); color: var(--bg); border-radius: 16px; padding: 24px 24px 8px; }
+  .recap h2 { color: var(--bg); }
+  .recap ul { padding-left: 1.2em; margin: 0 0 14px; }
+  .recap li { margin-bottom: 8px; }
+  .diagram { margin: 26px 0 8px; }
+  .diagram .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); padding: 8px; }
+  .diagram svg { display: block; width: 100%; min-width: 640px; height: auto; color: var(--ink); }
+  .diagram svg text { font-family: var(--font-body); font-size: 14px; fill: currentColor; }
+  .diagram svg text.sm { font-size: 12px; }
+  .diagram svg text.b { font-weight: 700; }
+  .diagram figcaption { font-size: 0.9rem; color: var(--muted); margin-top: 8px; }
+  footer { margin-top: 36px; color: var(--muted); font-size: 0.9rem; }
+
+  @media (max-width: 640px) {
+    body { font-size: 18px; }
+    .duo, .twocol { grid-template-columns: 1fr; }
+    .terms > div { grid-template-columns: 1fr; gap: 2px; }
+    .lanes { grid-template-columns: 1fr; }
+    .lanes > div { border-top: 1px solid var(--line); }
+    .lanes > div:nth-child(1) { display: none; }
+    .lanes > div:nth-child(2) { border-top: 0; }
+    .lanes .who { padding-bottom: 0; background: var(--surface); }
+    .vs p { flex-direction: column; gap: 0; }
+  }
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="kicker">Quarkus vs Spring Boot</div>
+  <h1>Quarkus, simple bhasha mein</h1>
+  <p class="lede">Pehle Java ke basics (JDK, JRE, JVM, javac, JIT), phir Quarkus aur Spring Boot ka asli farak. Chhota aur seedha.</p>
+</header>
+
+<section>
+  <h2>Big idea</h2>
+  <div class="bigidea">
+    <p><span class="sp">Spring Boot</span> app start hote waqt sab kuch figure out karta hai. <span class="qk">Quarkus</span> ye kaam build time par ek baar kar leta hai.</p>
+  </div>
+  <div class="duo">
+    <div class="s"><b>Spring Boot</b><p>Restaurant jaisa: roz subah kitchen set karo, phir dukaan kholo.</p></div>
+    <div class="q"><b>Quarkus</b><p>Kitchen raat ko hi ready hai. Subah sirf gas on karo aur khana banao.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>Java ka toolkit: JDK, JRE, JVM</h2>
+  <p>Ye teen ek ke andar ek rakhe hain, jaise dabbe ke andar dabba.</p>
+  <div class="nest" role="img" aria-label="JDK ke andar JRE, JRE ke andar JVM, JVM ke andar interpreter aur JIT">
+    <span class="tag">JDK</span><span class="what">Developer ka poora toolkit. Code likhne aur build karne ke liye.</span>
+    <div class="chips"><span class="chip">javac</span><span class="chip">jar</span><span class="chip">debug tools</span></div>
+    <div class="nest">
+      <span class="tag">JRE</span><span class="what">Sirf app chalane ka package: JVM + standard libraries.</span>
+      <div class="nest">
+        <span class="tag">JVM</span><span class="what">Wo engine jo bytecode ko chalata hai.</span>
+        <div class="chips"><span class="chip">class loader</span><span class="chip">interpreter</span><span class="chip work">JIT compiler</span></div>
+      </div>
+    </div>
+  </div>
+  <p class="caption" style="margin-top:10px">Java 11 ke baad alag JRE download kam milta hai. Aaj zyadatar log seedha JDK hi install karte hain.</p>
+
+  <h3>Ek line mein har naam</h3>
+  <dl class="terms">
+    <div><dt>javac</dt><dd>Compiler jo <code>.java</code> ko bytecode (<code>.class</code>) mein badalta hai. Build time par chalta hai.</dd></div>
+    <div><dt>JVM</dt><dd>Bytecode ko run karta hai. Pehle interpreter se, phir JIT ke saath.</dd></div>
+    <div><dt>JIT</dt><dd>JVM ke andar ka compiler. Runtime par hot (baar-baar chalne wala) bytecode ko machine code bana kar RAM mein rakhta hai.</dd></div>
+    <div><dt>JRE</dt><dd>JVM aur libraries ka package, bas chalane ke liye.</dd></div>
+    <div><dt>JDK</dt><dd>JRE ke upar javac jaise build tools. Developer isse install karta hai.</dd></div>
+  </dl>
+
+  <h3>Code ka safar</h3>
+  <ol class="steps java">
+    <li><strong>Build time:</strong> <code>javac</code> tumhare <code>.java</code> ko bytecode bana deta hai.</li>
+    <li><strong>Run:</strong> <code>java -jar app.jar</code> par JVM start hota hai aur interpreter bytecode line-by-line chalata hai.</li>
+    <li><strong>Runtime:</strong> JIT dekhta hai kaunsa code bahut chal raha hai aur use machine code bana kar RAM (Code Cache) mein rakhta hai.</li>
+  </ol>
+  <div class="note warn">
+    <p><strong>Common galti:</strong> bytecode JIT nahi banata, <code>javac</code> banata hai. Aur JIT ka machine code sirf RAM mein rehta hai. App band hui toh sab gaya, aur agli baar warm-up phir zero se shuru hota hai.</p>
+  </div>
+</section>
+
+<section>
+  <h2>HotSpot, GraalVM, JIT vs AOT</h2>
+  <ul class="plain">
+    <li><strong>HotSpot:</strong> Default JVM. Iska JIT runtime par kaam karta hai, isliye warm-up time lagta hai.</li>
+    <li><strong>GraalVM:</strong> Upgraded JDK. Ya toh smarter JIT deta hai, ya Native Image (AOT).</li>
+  </ul>
+  <div class="duo">
+    <div class="j">
+      <b>JIT: run karte waqt</b>
+      <p>Trigger: <code>java -jar app.jar</code>.<br>Machine code RAM mein banta hai, aur har run par dobara.</p>
+    </div>
+    <div class="a">
+      <b>AOT: build karte waqt</b>
+      <p>Trigger: <code>./mvnw package -Dnative</code>.<br>Machine code disk par ek binary file mein save hota hai.</p>
+    </div>
+  </div>
+  <p>AOT ka matlab Ahead-Of-Time: code ko chalne se <em>pehle</em> hi machine code bana lo. Run par OS binary ko seedha RAM mein load karta hai. Na JVM, na JIT, na warm-up.</p>
+  <p><strong>Native file ko kaise pehchanein:</strong> Windows par <code>.exe</code>, Linux/macOS par bina extension ki file. Ise <code>./myapp</code> se chalate hain, <code>java</code> command ke bina.</p>
+</section>
+
+<section>
+  <h2>Kuch aur jargon</h2>
+  <dl class="terms">
+    <div><dt>Reflection</dt><dd>Runtime par naam se classes dhoondhna aur call karna. Flexible hai, par slow.</dd></div>
+    <div><dt>Classpath scan</dt><dd>Saare jars mein <code>@Component</code> jaisi annotations wali classes dhoondhna.</dd></div>
+    <div><dt>Proxy</dt><dd>Tumhari class par ek wrapper, jaise <code>@Transactional</code> ke liye.</dd></div>
+  </dl>
+</section>
+
+<section>
+  <h2>Spring Boot: har start par yeh hota hai</h2>
+  <ol class="steps spring">
+    <li><strong>Scan.</strong> Saari classes ki annotations reflection se padhta hai.</li>
+    <li><strong>Conditions check.</strong> Auto-configuration ki hundreds conditions dekhta hai. Zyadatar ka jawab "no" hota hai.</li>
+    <li><strong>Beans banata hai.</strong> Objects create karke ek-dusre se jodta hai.</li>
+    <li><strong>Proxies.</strong> Wrapper classes runtime par generate hoti hain.</li>
+    <li><strong>Server start.</strong> Tomcat on, ab app ready hai.</li>
+  </ol>
+  <p class="result">Har restart par yahi kaam repeat hota hai, aur iska data memory mein bhi padha rehta hai.</p>
+
+  <figure class="diagram">
+    <h3>Spring Boot architecture</h3>
+    <div class="scroll">
+      <svg viewBox="0 0 740 440" role="img" aria-label="Spring Boot par har start pe classpath se annotations padhi jaati hain, ApplicationContext paanch steps chalata hai, beans RAM mein rehte hain aur Tomcat start hota hai">
+        <defs>
+          <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker>
+        </defs>
+        <rect x="8" y="8" width="724" height="424" rx="16" fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-dasharray="6 5"/>
+        <text class="b" x="24" y="32">JVM (HotSpot): all of this runs on every start</text>
+
+        <rect x="20" y="70" width="150" height="100" rx="10" style="fill:var(--surface);stroke:currentColor;stroke-width:1.5"/>
+        <text class="b" x="95" y="100" text-anchor="middle">Classpath</text>
+        <text x="95" y="124" text-anchor="middle">your classes +</text>
+        <text x="95" y="144" text-anchor="middle">all library jars</text>
+
+        <line x1="170" y1="111" x2="264" y2="111" stroke="currentColor" stroke-width="1.6" marker-end="url(#ar1)"/>
+        <text class="sm" x="176" y="100">reflection</text>
+
+        <rect x="250" y="54" width="300" height="290" rx="12" style="fill:var(--spring-soft);stroke:var(--spring);stroke-width:2"/>
+        <text class="b" x="266" y="78" style="fill:var(--spring)">Spring ApplicationContext</text>
+
+        <rect x="266" y="92" width="268" height="38" rx="8" style="fill:var(--amber-soft);stroke:var(--amber);stroke-width:1.5"/>
+        <text x="280" y="116">1. Component scan</text>
+        <rect x="266" y="140" width="268" height="38" rx="8" style="fill:var(--amber-soft);stroke:var(--amber);stroke-width:1.5"/>
+        <text x="280" y="164">2. Auto-config conditions</text>
+        <rect x="266" y="188" width="268" height="38" rx="8" style="fill:var(--amber-soft);stroke:var(--amber);stroke-width:1.5"/>
+        <text x="280" y="212">3. Register bean definitions</text>
+        <rect x="266" y="236" width="268" height="38" rx="8" style="fill:var(--amber-soft);stroke:var(--amber);stroke-width:1.5"/>
+        <text x="280" y="260">4. Create beans, inject</text>
+        <rect x="266" y="284" width="268" height="38" rx="8" style="fill:var(--amber-soft);stroke:var(--amber);stroke-width:1.5"/>
+        <text x="280" y="308">5. Proxies (CGLIB, AOP)</text>
+
+        <line x1="400" y1="130" x2="400" y2="139" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar1)"/>
+        <line x1="400" y1="178" x2="400" y2="187" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar1)"/>
+        <line x1="400" y1="226" x2="400" y2="235" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar1)"/>
+        <line x1="400" y1="274" x2="400" y2="283" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar1)"/>
+
+        <line x1="550" y1="200" x2="598" y2="200" stroke="currentColor" stroke-width="1.6" marker-end="url(#ar1)"/>
+        <text class="sm" x="556" y="190">beans</text>
+        <rect x="600" y="130" width="120" height="140" rx="10" style="fill:var(--surface);stroke:currentColor;stroke-width:1.5"/>
+        <text class="b" x="660" y="160" text-anchor="middle">Live beans</text>
+        <text x="660" y="184" text-anchor="middle">wrapped in</text>
+        <text x="660" y="204" text-anchor="middle">proxies,</text>
+        <text x="660" y="224" text-anchor="middle">held in RAM</text>
+
+        <line x1="400" y1="344" x2="400" y2="371" stroke="currentColor" stroke-width="1.6" marker-end="url(#ar1)"/>
+        <text class="sm" x="410" y="362">then</text>
+        <rect x="250" y="372" width="300" height="44" rx="10" style="fill:var(--go-soft);stroke:var(--go);stroke-width:2"/>
+        <text class="b" x="400" y="400" text-anchor="middle">6. Embedded Tomcat starts</text>
+
+        <rect x="20" y="224" width="190" height="112" rx="10" fill="none" style="stroke:var(--amber);stroke-width:1.5" stroke-dasharray="5 4"/>
+        <text class="b" x="34" y="250">Stays in RAM</text>
+        <text x="34" y="274">scan results</text>
+        <text x="34" y="294">reflection metadata</text>
+        <text x="34" y="314">proxy classes</text>
+      </svg>
+    </div>
+    <figcaption>Amber boxes = figure out karne wala kaam. Ye sab app start hone ke baad hi hota hai, isliye user ko wait karna padta hai. (Chhoti screen par diagram ko side mein scroll karo.)</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>Quarkus: yeh sab build time par</h2>
+  <ol class="steps quarkus">
+    <li><strong>Index.</strong> Classes aur annotations sirf ek baar scan hoti hain (Jandex).</li>
+    <li><strong>Extensions decide karte hain.</strong> Kaunsa bean chahiye aur kaise jude, sab build mein tay ho jata hai.</li>
+    <li><strong>Code generate.</strong> Direct calls wala plain code ban jata hai. Reflection nahi.</li>
+    <li><strong>Unused hatao.</strong> Jo use nahi hota, wo app se nikal jata hai.</li>
+  </ol>
+  <p class="result">Startup par sirf generated code chalta hai. Scan nahi, check nahi, guess nahi.</p>
+
+  <figure class="diagram">
+    <h3>Quarkus architecture</h3>
+    <div class="scroll">
+      <svg viewBox="0 0 760 430" role="img" aria-label="Quarkus build time par classes ko index karta hai, extensions faisle lete hain, bytecode generate hota hai aur unused code hat jata hai. Runtime par sirf generated startup code chalta hai aur server start hota hai">
+        <defs>
+          <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker>
+        </defs>
+        <rect x="10" y="10" width="430" height="406" rx="16" style="fill:var(--quarkus-soft);stroke:var(--quarkus);stroke-width:2"/>
+        <text class="b" x="28" y="34" style="fill:var(--quarkus)">BUILD TIME: once, on laptop or CI</text>
+
+        <rect x="30" y="52" width="390" height="44" rx="8" style="fill:var(--surface);stroke:currentColor;stroke-width:1.5"/>
+        <text x="46" y="79">Your classes + libraries</text>
+        <rect x="30" y="114" width="390" height="44" rx="8" style="fill:var(--amber-soft);stroke:var(--amber);stroke-width:1.5"/>
+        <text x="46" y="141">Jandex index: scan annotations once</text>
+        <rect x="30" y="176" width="390" height="44" rx="8" style="fill:var(--amber-soft);stroke:var(--amber);stroke-width:1.5"/>
+        <text x="46" y="203">Extensions decide: beans, config, features</text>
+        <rect x="30" y="238" width="390" height="44" rx="8" style="fill:var(--amber-soft);stroke:var(--amber);stroke-width:1.5"/>
+        <text x="46" y="265">Generate bytecode: wiring and proxies</text>
+        <rect x="30" y="300" width="390" height="44" rx="8" style="fill:var(--amber-soft);stroke:var(--amber);stroke-width:1.5"/>
+        <text x="46" y="327">Prune unused classes</text>
+        <rect x="30" y="362" width="390" height="40" rx="8" style="fill:var(--surface);stroke:var(--quarkus);stroke-width:2.5"/>
+        <text class="b" x="46" y="387">quarkus-app jar or native binary</text>
+
+        <line x1="225" y1="96" x2="225" y2="113" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar2)"/>
+        <text class="sm" x="235" y="109">scan once</text>
+        <line x1="225" y1="158" x2="225" y2="175" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar2)"/>
+        <text class="sm" x="235" y="171">annotation data</text>
+        <line x1="225" y1="220" x2="225" y2="237" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar2)"/>
+        <text class="sm" x="235" y="233">decisions</text>
+        <line x1="225" y1="282" x2="225" y2="299" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar2)"/>
+        <text class="sm" x="235" y="295">wiring code</text>
+        <line x1="225" y1="344" x2="225" y2="361" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar2)"/>
+        <text class="sm" x="235" y="357">package</text>
+
+        <polyline points="420,382 465,382 465,98 508,98" fill="none" stroke="currentColor" stroke-width="1.8" marker-end="url(#ar2)"/>
+        <text class="sm" x="455" y="240" text-anchor="middle" transform="rotate(-90 455 240)">deploy and run</text>
+
+        <rect x="490" y="10" width="260" height="406" rx="16" style="fill:var(--go-soft);stroke:var(--go);stroke-width:2"/>
+        <text class="b" x="506" y="34" style="fill:var(--go)">RUNTIME: every start</text>
+
+        <rect x="510" y="70" width="220" height="56" rx="8" style="fill:var(--surface);stroke:currentColor;stroke-width:1.5"/>
+        <text x="526" y="94">JVM or native</text>
+        <text x="526" y="114">binary starts</text>
+        <line x1="620" y1="126" x2="620" y2="159" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar2)"/>
+        <text class="sm" x="630" y="147">loads</text>
+        <rect x="510" y="160" width="220" height="56" rx="8" style="fill:var(--surface);stroke:currentColor;stroke-width:1.5"/>
+        <text x="526" y="184">Runs generated</text>
+        <text x="526" y="204">startup code</text>
+        <line x1="620" y1="216" x2="620" y2="249" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar2)"/>
+        <text class="sm" x="630" y="237">direct calls</text>
+        <rect x="510" y="250" width="220" height="56" rx="8" style="fill:var(--surface);stroke:var(--go);stroke-width:2.5"/>
+        <text class="b" x="526" y="274">Server listening</text>
+        <text x="526" y="294">(Vert.x / Netty)</text>
+
+        <rect x="510" y="332" width="220" height="68" rx="8" fill="none" style="stroke:var(--go);stroke-width:1.5" stroke-dasharray="5 4"/>
+        <text x="526" y="356">No scanning,</text>
+        <text x="526" y="374">no condition checks,</text>
+        <text x="526" y="392">no reflection at startup</text>
+      </svg>
+    </div>
+    <figcaption>Left side mein sab figure out karne wala kaam ek baar hota hai. Right side mein sirf generated code chalta hai, isliye startup tez hai.</figcaption>
+  </figure>
+
+  <div class="lanes" role="table" aria-label="Kaam kab hota hai">
+    <div class="head" role="columnheader"></div>
+    <div class="head" role="columnheader">Build time<small>Ek baar</small></div>
+    <div class="head" role="columnheader">Startup<small>Har baar, user wait karta hai</small></div>
+
+    <div class="who s" role="rowheader">Spring Boot</div>
+    <div role="cell"><div class="chips"><span class="chip">compile</span><span class="chip">package</span></div></div>
+    <div role="cell"><div class="chips"><span class="chip work">scan</span><span class="chip work">conditions</span><span class="chip work">proxies</span><span class="chip work">wiring</span><span class="chip go">server</span></div></div>
+
+    <div class="who q" role="rowheader">Quarkus</div>
+    <div role="cell"><div class="chips"><span class="chip">compile</span><span class="chip work">index</span><span class="chip work">decide</span><span class="chip work">generate</span><span class="chip">package</span></div></div>
+    <div role="cell"><div class="chips"><span class="chip">run generated code</span><span class="chip go">server</span></div></div>
+  </div>
+  <p class="caption"><span class="key" style="background:var(--amber-soft);box-shadow:inset 0 0 0 1px var(--amber)"></span>Amber chips = figure out karne wala kaam. Quarkus ye build mein karta hai, Spring startup mein.</p>
+</section>
+
+<section>
+  <h2>Quarkus aur GraalVM ka jodi</h2>
+  <ul class="plain">
+    <li>Native Image ko build time par har class pata honi chahiye. Runtime reflection usko pasand nahi.</li>
+    <li>Spring Boot ko isliye extra AOT hints aur config files deni padti hain.</li>
+    <li>Quarkus sab build time par resolve karta hai, toh uska output native ke liye already ready hota hai.</li>
+  </ul>
+  <div class="note warn">
+    <p><strong>Trade-off:</strong> Native build mein minutes lagte hain, aur lambe, heavy load par warmed-up JIT kabhi-kabhi thoda aage nikal jata hai. Native optional hai. Kai teams sirf JVM mode mein Quarkus chalake bhi fayda le lete hain.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Chhota aur tez kyun?</h2>
+  <ul class="plain">
+    <li>Kam classes load hoti hain aur scanning ka data memory mein nahi rehta.</li>
+    <li>Unused code build time par hi hat jata hai.</li>
+    <li>Native mein JVM ka overhead bhi nahi hota.</li>
+  </ul>
+  <p><strong>Spring Boot bhari kyun lagta hai?</strong> Runtime scanning, conditions aur proxies ki wajah se. Ye galti nahi hai, flexibility ki keemat hai.</p>
+  <div class="note">
+    <p>Dhyan rahe: Spring Boot 3 mein AOT, native support, virtual threads aur CRaC aa chuke hain, aur gap kam ho raha hai. "Chhota" ka matlab zyadatar memory hota hai. Native file jar se badi ho sakti hai, par usse JDK nahi chahiye.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Side by side</h2>
+  <div class="vs">
+    <div class="row"><b>Kab decide hota hai</b>
+      <p><span class="badge s">Spring</span>Startup par</p>
+      <p><span class="badge q">Quarkus</span>Build time par</p></div>
+    <div class="row"><b>Classes dhoondhna</b>
+      <p><span class="badge s">Spring</span>Reflection scanning</p>
+      <p><span class="badge q">Quarkus</span>Build-time index</p></div>
+    <div class="row"><b>Proxies</b>
+      <p><span class="badge s">Spring</span>Runtime par</p>
+      <p><span class="badge q">Quarkus</span>Build par</p></div>
+    <div class="row"><b>Unused code</b>
+      <p><span class="badge s">Spring</span>App mein rehta hai</p>
+      <p><span class="badge q">Quarkus</span>Hat jata hai</p></div>
+    <div class="row"><b>Native</b>
+      <p><span class="badge s">Spring</span>Spring AOT se, extra step</p>
+      <p><span class="badge q">Quarkus</span>Built-in</p></div>
+    <div class="row"><b>Dev loop</b>
+      <p><span class="badge s">Spring</span>DevTools restart</p>
+      <p><span class="badge q">Quarkus</span>Live reload dev mode</p></div>
+    <div class="row"><b>Ecosystem</b>
+      <p><span class="badge s">Spring</span>Bahut bada</p>
+      <p><span class="badge q">Quarkus</span>Chhota par badhta hua</p></div>
+  </div>
+  <div class="twocol">
+    <div>
+      <b class="qk">Quarkus chuno jab</b>
+      <ul>
+        <li>Kubernetes ya serverless par chhoti services hain</li>
+        <li>Memory aur startup cost matter karte hain</li>
+      </ul>
+    </div>
+    <div>
+      <b class="sp">Spring Boot chuno jab</b>
+      <ul>
+        <li>Team aur code pehle se Spring mein hai</li>
+        <li>Spring ka koi khaas project chahiye</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Khud try karo</h2>
+  <p>Java 17+ aur Quarkus CLI (ya Maven) chahiye.</p>
+<pre><span class="c"># app banao aur dev mode mein chalao</span>
+quarkus create app org.acme:hello --extension=rest
+cd hello
+./mvnw quarkus:dev
+
+<span class="c"># native build (container mein hota hai)</span>
+./mvnw package -Dnative -Dquarkus.native.container-build=true
+
+<span class="c"># Linux par check karo ki ye asli binary hai</span>
+file target/*-runner</pre>
+  <p>Normal build ke baad <code>target/quarkus-app/quarkus/generated-bytecode.jar</code> kholo. Wahan wo classes hain jo Quarkus ne tumhare liye build time par likhi hain.</p>
+</section>
+
+<section>
+  <div class="recap">
+    <h2>Yaad rakhne ke liye</h2>
+    <ul>
+      <li><code>javac</code> bytecode banata hai. JIT runtime par hot code ko machine code banata hai.</li>
+      <li>Spring Boot: startup par figure out karta hai.</li>
+      <li>Quarkus: build par figure out karta hai, startup par sirf run karta hai.</li>
+      <li>GraalVM Native (AOT): isi ko build time par binary bana deta hai, instant start ke saath.</li>
+    </ul>
+  </div>
+  <footer>Numbers app ke hisaab se badalte hain. Decide karne se pehle apni service par khud measure karo.</footer>
+</section>
+
+</div>
+
+</body></html>
