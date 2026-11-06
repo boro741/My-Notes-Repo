@@ -1,0 +1,736 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Clothing Shop Maths</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one reading column on a cool paper ground, price-tag motif for numbers (mono, tag-shaped chips), gamosa red as the single accent, muga gold for warnings. */
+:root{
+  --bg:#f4f6f9; --surface:#ffffff; --fg:#14202e; --muted:#566475; --line:#d8dee7;
+  --accent:#b3262d; --accent-soft:#fbe6e7; --gold:#9a6a12; --gold-soft:#f8efd9;
+  --good:#1b7a4b; --good-soft:#dff3e8; --bad:#b3262d; --bad-soft:#fbe6e7; --ink-soft:#e9edf3;
+  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1620; --surface:#16212d; --fg:#e8edf3; --muted:#9aa8b8; --line:#2a3646;
+    --accent:#ff7a80; --accent-soft:#3a1d21; --gold:#e3b559; --gold-soft:#33290f;
+    --good:#58d19a; --good-soft:#123324; --bad:#ff7a80; --bad-soft:#3a1d21; --ink-soft:#1e2b3a;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1620; --surface:#16212d; --fg:#e8edf3; --muted:#9aa8b8; --line:#2a3646;
+  --accent:#ff7a80; --accent-soft:#3a1d21; --gold:#e3b559; --gold-soft:#33290f;
+  --good:#58d19a; --good-soft:#123324; --bad:#ff7a80; --bad-soft:#3a1d21; --ink-soft:#1e2b3a;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--fg);font-family:var(--body);font-size:18px;line-height:1.65;
+  padding-block:0 64px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.wrap{max-width:760px;margin:0 auto;min-width:0}
+h1,h2,h3{font-family:var(--display);line-height:1.12;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.2rem,7vw,3.4rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(1.55rem,4.5vw,2.1rem);font-weight:700;letter-spacing:-.01em}
+h3{font-size:1.2rem;font-weight:700;margin-top:34px}
+p{margin:14px 0}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.mono,.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+header.top{padding-block:48px 28px;border-bottom:2px solid var(--fg)}
+.kicker{font-family:var(--mono);font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600}
+header.top p.lead{font-size:1.2rem;color:var(--muted);max-width:60ch;margin-top:18px}
+.disclaimer{margin-top:20px;font-size:.95rem;color:var(--muted);border:1px dashed var(--line);padding:12px 14px;border-radius:4px;background:var(--surface)}
+
+nav.toc{margin-block:28px 8px}
+nav.toc h2{font-size:1.1rem;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--muted)}
+nav.toc ol{list-style:none;margin:14px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:2px 24px}
+nav.toc li{min-width:0}
+nav.toc a{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);color:var(--fg);text-decoration:none;font-weight:500;font-size:1rem;line-height:1.35}
+nav.toc a:hover{color:var(--accent)}
+nav.toc .n{font-family:var(--mono);color:var(--accent);min-width:2ch;font-weight:600}
+
+section.chapter{padding-top:56px}
+.chap-head{display:flex;gap:14px;align-items:baseline;border-top:2px solid var(--fg);padding-top:14px;margin-bottom:6px}
+.chap-no{font-family:var(--mono);font-weight:600;color:var(--accent);font-size:1rem;white-space:nowrap}
+.why{background:var(--ink-soft);padding:12px 16px;border-radius:4px;font-size:1rem;margin-top:16px}
+.why b{font-family:var(--mono);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:2px;font-weight:600}
+
+.formula{font-family:var(--mono);background:var(--surface);border:1px solid var(--line);padding:14px 16px;margin:18px 0;font-size:.98rem;line-height:1.8;overflow-x:auto;border-radius:4px}
+.formula b{color:var(--accent);font-weight:600}
+.formula .cap{display:block;font-family:var(--body);font-size:.85rem;color:var(--muted);margin-bottom:4px}
+
+.ledger{background:var(--surface);border:1px solid var(--line);border-radius:4px;margin:18px 0;overflow-x:auto}
+.ledger .title{font-family:var(--mono);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:10px 16px;border-bottom:1px dashed var(--line);font-weight:600}
+.ledger table{width:100%;border-collapse:collapse;font-size:.98rem}
+.ledger td,.ledger th{padding:9px 16px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.ledger tr:last-child td{border-bottom:0}
+.ledger td.r,.ledger th.r{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ledger th{font-size:.8rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;background:var(--ink-soft)}
+.ledger tr.total td{font-weight:700;border-top:2px solid var(--fg)}
+.ledger tr.hl td{background:var(--accent-soft)}
+
+.rule{border:2px solid var(--fg);padding:14px 18px;margin:24px 0;background:var(--surface);border-radius:4px}
+.rule .lab{display:inline-block;font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;background:var(--fg);color:var(--bg);padding:2px 8px;margin-bottom:6px;font-weight:600;border-radius:2px}
+.rule p{margin:4px 0}
+.warn{border:1px solid var(--gold);background:var(--gold-soft);padding:14px 18px;margin:24px 0;border-radius:4px}
+.warn .lab{display:block;font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;font-weight:600}
+
+ul.plain,ol.plain{padding-left:1.25em;margin:12px 0}
+ul.plain li,ol.plain li{margin:6px 0}
+
+/* calculators */
+.calc{background:var(--surface);border:2px solid var(--fg);margin:28px 0;border-radius:4px}
+.calc .ch{background:var(--fg);color:var(--bg);padding:8px 16px;font-family:var(--mono);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+.calc .cb{padding:16px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:14px}
+.field{min-width:0}
+.field label{display:block;font-size:.88rem;font-weight:600;margin-bottom:4px;line-height:1.3}
+.field .hint{display:block;font-size:.8rem;color:var(--muted);font-weight:400}
+.inp{display:flex;align-items:center;border:1px solid var(--line);background:var(--bg);border-radius:4px}
+.inp:focus-within{border-color:var(--accent);outline:2px solid var(--accent)}
+.inp span{padding:0 10px;color:var(--muted);font-family:var(--mono)}
+.inp input{flex:1;min-width:0;border:0;background:transparent;color:var(--fg);font-family:var(--mono);font-size:1.05rem;padding:10px 10px 10px 0;outline:none;width:100%}
+.inp span.after{padding:0 10px 0 0}
+.inp input.pre{padding-left:10px}
+.results{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:10px;margin-top:18px}
+.res{border:1px solid var(--line);padding:10px 12px;border-radius:4px;min-width:0;background:var(--bg)}
+.res .k{font-size:.78rem;color:var(--muted);line-height:1.25}
+.res .v{font-family:var(--mono);font-size:1.3rem;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.res.big{border:2px solid var(--accent);background:var(--accent-soft)}
+.res.big .v{color:var(--accent)}
+.verdict{margin-top:14px;padding:10px 14px;border-radius:4px;font-weight:600;font-size:1rem}
+.verdict.good{background:var(--good-soft);color:var(--good)}
+.verdict.warn{background:var(--gold-soft);color:var(--gold)}
+.verdict.bad{background:var(--bad-soft);color:var(--bad)}
+.ladder{margin-top:18px;overflow-x:auto;border:1px solid var(--line);border-radius:4px}
+.ladder table{width:100%;border-collapse:collapse;font-size:.95rem}
+.ladder th{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--ink-soft);padding:8px 12px;text-align:right;font-weight:600}
+.ladder th:first-child,.ladder td:first-child{text-align:left}
+.ladder td{padding:8px 12px;text-align:right;border-top:1px solid var(--line);font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:.78rem;font-family:var(--body);font-weight:700}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--gold-soft);color:var(--gold)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+
+details.q{background:var(--surface);border:1px solid var(--line);border-radius:4px;margin:14px 0}
+details.q summary{cursor:pointer;padding:12px 16px;font-weight:600;list-style:none}
+details.q summary::-webkit-details-marker{display:none}
+details.q summary::before{content:"+";font-family:var(--mono);color:var(--accent);margin-right:10px;font-weight:700}
+details.q[open] summary::before{content:"\2212"}
+details.q .ans{padding:0 16px 14px;border-top:1px dashed var(--line);font-size:1rem}
+details.q .ans p{margin:8px 0}
+
+.cheat{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:12px;margin:18px 0}
+.cheat div{background:var(--surface);border:1px solid var(--line);padding:12px 14px;border-radius:4px;min-width:0}
+.cheat b{display:block;font-family:var(--mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.cheat code{font-family:var(--mono);font-size:.92rem;overflow-wrap:anywhere}
+
+footer{margin-top:64px;padding-top:16px;border-top:2px solid var(--fg);font-size:.92rem;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){ details.q summary{transition:background .15s} details.q summary:hover{background:var(--ink-soft)} }
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <div class="kicker">Retail maths for a new shop &middot; Goreswar, Assam</div>
+  <h1>Clothing Shop Maths</h1>
+  <p class="lead">Everything about price, profit, discount and bargaining, starting from zero. You will learn why each number matters, how to calculate it, and how to set a price that still makes money when the customer bargains.</p>
+  <p class="disclaimer">All rupee figures in this guide are examples to teach the method. Your real wholesale rates, rent and salaries will differ. Use the calculators with your own numbers. This is learning material, not tax or legal advice.</p>
+</header>
+
+<nav class="toc" aria-label="Chapters">
+  <h2>Chapters</h2>
+  <ol>
+    <li><a href="#c1"><span class="n">1</span>Why maths decides if the shop survives</a></li>
+    <li><a href="#c2"><span class="n">2</span>The words you must know</a></li>
+    <li><a href="#c3"><span class="n">3</span>Percentages from zero</a></li>
+    <li><a href="#c4"><span class="n">4</span>Profit: margin and markup</a></li>
+    <li><a href="#c5"><span class="n">5</span>What one shirt really costs you</a></li>
+    <li><a href="#c6"><span class="n">6</span>Setting a price when customers bargain</a></li>
+    <li><a href="#c7"><span class="n">7</span>Handling the bargain: 500, 550, 600</a></li>
+    <li><a href="#c8"><span class="n">8</span>Discounts and offers: the trap</a></li>
+    <li><a href="#c9"><span class="n">9</span>Break-even: how much must you sell</a></li>
+    <li><a href="#c10"><span class="n">10</span>Stock, cash and dead stock</a></li>
+    <li><a href="#c11"><span class="n">11</span>GST and billing, briefly</a></li>
+    <li><a href="#c12"><span class="n">12</span>Competing with M Baazar and the tiny shops</a></li>
+    <li><a href="#c13"><span class="n">13</span>Practice problems</a></li>
+    <li><a href="#c14"><span class="n">14</span>One-page cheat sheet</a></li>
+  </ol>
+</nav>
+
+<!-- 1 -->
+<section class="chapter" id="c1">
+  <div class="chap-head"><span class="chap-no">01</span><h2>Why maths decides if the shop survives</h2></div>
+  <p>A shop can be full of customers and still lose money. This happens when the selling price is too close to what you paid, when you give discounts without checking the profit, or when you forget costs like rent, electricity and a helper's salary.</p>
+  <p>A shop can also be quiet and still earn well, if every sale carries enough profit. The difference is arithmetic, and the arithmetic is not hard. It uses addition, subtraction, multiplication, division and one idea called percentage.</p>
+  <div class="why"><b>Why this matters</b>You will make hundreds of small decisions: what to buy, what to charge, how low to go when someone bargains. If you decide by feeling, you will sometimes sell below cost without knowing. If you decide by numbers, you will always know what each sale earned.</div>
+  <p>This guide has four calculators. Use them as you read. By the end you will be able to do most of it in your head.</p>
+</section>
+
+<!-- 2 -->
+<section class="chapter" id="c2">
+  <div class="chap-head"><span class="chap-no">02</span><h2>The words you must know</h2></div>
+  <p>Business talk uses short words for simple ideas. Learn these first. We will use them in every chapter.</p>
+  <div class="ledger">
+    <div class="title">Glossary</div>
+    <table>
+      <tr><th>Word</th><th>Meaning</th></tr>
+      <tr><td><b>CP</b><br>Cost Price</td><td>What you pay the wholesaler for one piece.</td></tr>
+      <tr><td><b>Landed cost</b></td><td>CP plus everything you spent to bring the piece to your shelf: transport, loading, packing, tags. This is your real cost.</td></tr>
+      <tr><td><b>SP</b><br>Selling Price</td><td>What the customer finally pays you.</td></tr>
+      <tr><td><b>Tag price</b></td><td>The price written on the tag or the first price you say. Also called the asking price. In a bargaining town it is higher than the price you expect to get.</td></tr>
+      <tr><td><b>MRP</b></td><td>Maximum Retail Price printed by a brand. You cannot charge more than MRP on branded goods. You can charge less.</td></tr>
+      <tr><td><b>Profit</b></td><td>SP minus landed cost, for one piece.</td></tr>
+      <tr><td><b>Margin</b></td><td>Profit as a percentage of the <i>selling price</i>.</td></tr>
+      <tr><td><b>Markup</b></td><td>Profit as a percentage of the <i>cost</i>.</td></tr>
+      <tr><td><b>Discount</b></td><td>How much below the tag price the customer pays. Usually a percentage of the tag price.</td></tr>
+      <tr><td><b>Floor price</b></td><td>Your lowest allowed price for a piece. Below it you refuse the sale. You decide it before the customer arrives.</td></tr>
+      <tr><td><b>Overheads</b></td><td>Shop costs that exist even when you sell nothing: rent, electricity, salary, internet, loan interest.</td></tr>
+      <tr><td><b>Stock / inventory</b></td><td>All the clothes you own and have not yet sold. It is money sitting on shelves.</td></tr>
+      <tr><td><b>Dead stock</b></td><td>Pieces nobody wants at the current price. Money stuck.</td></tr>
+    </table>
+  </div>
+  <div class="why"><b>Why this matters</b>Most confusion in pricing comes from mixing these words, especially margin and markup. Chapter 4 fixes that.</div>
+</section>
+
+<!-- 3 -->
+<section class="chapter" id="c3">
+  <div class="chap-head"><span class="chap-no">03</span><h2>Percentages from zero</h2></div>
+  <p>The word <i>percent</i> means <b>out of 100</b>. So 20% means 20 out of every 100.</p>
+  <p>If something costs ₹100 and you take 20%, you take ₹20. If it costs ₹500, there are five hundreds in it, so you take 5 × ₹20 = ₹100. That is all a percentage is: a fraction with 100 at the bottom.</p>
+  <div class="formula"><span class="cap">The one formula</span>
+    <b>Percent of a number</b> = number × percent ÷ 100<br>
+    20% of ₹500 = 500 × 20 ÷ 100 = ₹100
+  </div>
+
+  <h3>Quick tricks to do it in your head</h3>
+  <ul class="plain">
+    <li><b>10%</b>: move the last digit away. 10% of ₹640 is ₹64.</li>
+    <li><b>5%</b>: half of 10%. 5% of ₹640 is ₹32.</li>
+    <li><b>20%</b>: double 10%. 20% of ₹640 is ₹128.</li>
+    <li><b>25%</b>: divide by 4. 25% of ₹640 is ₹160.</li>
+    <li><b>50%</b>: divide by 2.</li>
+    <li><b>15%</b>: 10% plus 5%. 15% of ₹640 is ₹64 + ₹32 = ₹96.</li>
+  </ul>
+
+  <div class="ledger">
+    <div class="title">Percent of ₹800</div>
+    <table>
+      <tr><th>Percent</th><th class="r">Amount</th></tr>
+      <tr><td>5%</td><td class="r">₹40</td></tr>
+      <tr><td>10%</td><td class="r">₹80</td></tr>
+      <tr><td>15%</td><td class="r">₹120</td></tr>
+      <tr><td>20%</td><td class="r">₹160</td></tr>
+      <tr><td>25%</td><td class="r">₹200</td></tr>
+      <tr><td>30%</td><td class="r">₹240</td></tr>
+      <tr><td>50%</td><td class="r">₹400</td></tr>
+    </table>
+  </div>
+
+  <h3>Going the other way: what percent is this?</h3>
+  <p>A customer is given ₹50 off a ₹500 shirt. What percent discount is that?</p>
+  <div class="formula"><b>Percent</b> = part ÷ whole × 100<br>50 ÷ 500 × 100 = 10%</div>
+
+  <div class="rule"><span class="lab">The most important habit</span>
+    <p>Every percentage is a percentage <b>of something</b>. Before you use one, ask: <b>percent of what?</b> That "what" is called the base.</p>
+    <p>Discount % uses the <b>tag price</b> as the base. Margin % uses the <b>selling price</b>. Markup % uses the <b>cost</b>. Different bases give different numbers for the same rupees. Most mistakes in shops come from forgetting this.</p>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="chapter" id="c4">
+  <div class="chap-head"><span class="chap-no">04</span><h2>Profit: margin and markup</h2></div>
+  <p>Profit on one piece is simple:</p>
+  <div class="formula"><b>Profit</b> = Selling Price − Landed Cost</div>
+  <p>Now take a shirt that cost you ₹330 landed and sells for ₹440. Profit is ₹110. Two different percentages describe it.</p>
+  <div class="ledger">
+    <div class="title">Same shirt, two percentages</div>
+    <table>
+      <tr><td>Landed cost</td><td class="r">₹330</td></tr>
+      <tr><td>Selling price</td><td class="r">₹440</td></tr>
+      <tr><td>Profit</td><td class="r">₹110</td></tr>
+      <tr class="hl"><td><b>Markup</b> = 110 ÷ 330 × 100 (base: cost)</td><td class="r">33.3%</td></tr>
+      <tr class="hl"><td><b>Margin</b> = 110 ÷ 440 × 100 (base: selling price)</td><td class="r">25%</td></tr>
+    </table>
+  </div>
+  <div class="formula">
+    <b>Margin %</b> = (SP − Cost) ÷ SP × 100<br>
+    <b>Markup %</b> = (SP − Cost) ÷ Cost × 100<br><br>
+    <span class="cap">Price from a target</span>
+    SP from target margin: <b>SP = Cost ÷ (1 − margin)</b><br>
+    SP from target markup: <b>SP = Cost × (1 + markup)</b>
+  </div>
+  <p>Check the first one: cost ₹330, target margin 25% (which is 0.25). SP = 330 ÷ 0.75 = ₹440. Correct.</p>
+
+  <div class="rule"><span class="lab">Use margin</span>
+    <p>Margin tells you how much of each ₹100 a customer hands over is yours before shop costs. A 25% margin means ₹25 of every ₹100. Discounts, bargaining and the customer's wallet all work on the selling price, so margin follows what is really happening at the counter. Use margin for your decisions.</p>
+  </div>
+  <div class="warn"><span class="lab">Common trap</span>
+    <p>A supplier or friend says "keep 30% profit". Ask which one. 30% markup on ₹330 gives ₹429. 30% margin gives ₹471. That is ₹42 difference on one shirt, and over 500 shirts it is ₹21,000.</p>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="chapter" id="c5">
+  <div class="chap-head"><span class="chap-no">05</span><h2>What one shirt really costs you</h2></div>
+  <p>The price on the wholesaler's bill is not your cost. Suppose you buy 40 shirts at ₹300 each from a wholesale market, for example Fancy Bazar in Guwahati. Then you pay to bring them home.</p>
+  <div class="ledger">
+    <div class="title">Buying 40 shirts</div>
+    <table>
+      <tr><td>40 shirts × ₹300</td><td class="r">₹12,000</td></tr>
+      <tr><td>Transport (bus or truck)</td><td class="r">₹800</td></tr>
+      <tr><td>Loading and unloading</td><td class="r">₹200</td></tr>
+      <tr><td>Polythene, tags, hangers</td><td class="r">₹200</td></tr>
+      <tr class="total"><td>Total spent</td><td class="r">₹13,200</td></tr>
+      <tr><td>Per shirt (₹13,200 ÷ 40)</td><td class="r">₹330</td></tr>
+    </table>
+  </div>
+  <p>Now add one more truth. Some pieces get damaged, come with a stitching fault, or stay unsold forever. Suppose 2 of the 40 never sell. You spent ₹13,200 but only 38 pieces will pay you back.</p>
+  <div class="formula"><b>Landed cost per sellable piece</b> = total spent ÷ pieces you can sell<br>13,200 ÷ 38 = <b>₹347</b></div>
+  <p>That ₹347 is your real cost. Every price you set must start from it, not from ₹300.</p>
+  <div class="why"><b>Why this matters</b>If you price from ₹300, you think you earn ₹140 on a ₹440 shirt. Starting from ₹347 you actually earn ₹93. The first number is a pleasant story. The second is the one that pays your rent.</div>
+  <p>In the calculators below, "damaged or unsold allowance" does this step for you. Start with 3% to 5% and adjust with experience.</p>
+</section>
+
+<!-- 6 -->
+<section class="chapter" id="c6">
+  <div class="chap-head"><span class="chap-no">06</span><h2>Setting a price when customers bargain</h2></div>
+  <p>In Goreswar you know the customer will ask for less. So the number you say first, the tag price, has to be high enough to leave room for the bargain and still give you profit at the lowest price you will accept.</p>
+  <p>Work backwards in three steps.</p>
+  <ol class="plain">
+    <li><b>Landed cost.</b> From chapter 5. Example: ₹347.</li>
+    <li><b>Floor price.</b> The lowest price you accept. Choose a minimum margin you are happy with at the floor, say 20%. Floor = Cost ÷ (1 − 0.20) = 347 ÷ 0.80 = <b>₹434</b>.</li>
+    <li><b>Tag price.</b> Decide the largest bargain you will allow, say 20% off the tag. Tag = Floor ÷ (1 − 0.20) = 434 ÷ 0.80 = <b>₹543</b>. Round up to a friendly price like <b>₹549</b>.</li>
+  </ol>
+  <div class="formula">
+    <b>Floor</b> = Cost ÷ (1 − minimum margin)<br>
+    <b>Tag</b> = Floor ÷ (1 − biggest bargain)<br>
+    <span class="cap">Together</span>
+    <b>Tag</b> = Cost ÷ [(1 − minimum margin) × (1 − biggest bargain)]
+  </div>
+  <p>At tag ₹549, a 20% bargain takes the price to ₹439. That is above your ₹434 floor, so you still earn about 21% margin. If the customer pays the full ₹549, your margin is about 37%. You do not need every customer to bargain. The ones who pay full price make up for the ones who push hard.</p>
+
+  <div class="calc" id="calcA">
+    <div class="ch">Calculator 1 &middot; Price setter</div>
+    <div class="cb">
+      <div class="fields">
+        <div class="field"><label for="a_buy">Price you pay the wholesaler</label>
+          <div class="inp"><span>₹</span><input id="a_buy" type="number" inputmode="decimal" min="0" value="300"></div></div>
+        <div class="field"><label for="a_extra">Extra cost per piece <span class="hint">transport, loading, packing, tag</span></label>
+          <div class="inp"><span>₹</span><input id="a_extra" type="number" inputmode="decimal" min="0" value="30"></div></div>
+        <div class="field"><label for="a_loss">Damaged or unsold allowance <span class="hint">pieces you will not recover</span></label>
+          <div class="inp"><input id="a_loss" class="pre" type="number" inputmode="decimal" min="0" max="50" value="5"><span class="after">%</span></div></div>
+        <div class="field"><label for="a_marg">Minimum margin at floor price</label>
+          <div class="inp"><input id="a_marg" class="pre" type="number" inputmode="decimal" min="0" max="90" value="20"><span class="after">%</span></div></div>
+        <div class="field"><label for="a_barg">Biggest bargain you allow <span class="hint">% off the tag</span></label>
+          <div class="inp"><input id="a_barg" class="pre" type="number" inputmode="decimal" min="0" max="80" value="20"><span class="after">%</span></div></div>
+      </div>
+      <div class="results" id="a_out"></div>
+      <div class="ladder" id="a_ladder"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="chapter" id="c7">
+  <div class="chap-head"><span class="chap-no">07</span><h2>Handling the bargain: 500, 550, 600</h2></div>
+  <p>Customers do not say "15% off". They say "₹500". You have to turn their rupee offer into a profit number in your head, quickly and calmly. Here is the same shirt (landed cost ₹347, tag ₹549) at different amounts the customer might pay.</p>
+  <div class="ledger">
+    <div class="title">Tag ₹549, landed cost ₹347</div>
+    <table>
+      <tr><th>Customer pays</th><th class="r">Off tag</th><th class="r">Profit</th><th class="r">Margin</th></tr>
+      <tr><td>₹549</td><td class="r">0%</td><td class="r">₹202</td><td class="r">36.7%</td></tr>
+      <tr><td>₹500</td><td class="r">8.9%</td><td class="r">₹153</td><td class="r">30.5%</td></tr>
+      <tr><td>₹450</td><td class="r">18.0%</td><td class="r">₹103</td><td class="r">22.8%</td></tr>
+      <tr class="hl"><td>₹434 (your floor)</td><td class="r">20.9%</td><td class="r">₹87</td><td class="r">20.0%</td></tr>
+      <tr><td>₹400</td><td class="r">27.1%</td><td class="r">₹53</td><td class="r">13.2%</td></tr>
+      <tr><td>₹350</td><td class="r">36.2%</td><td class="r">₹3</td><td class="r">0.8%</td></tr>
+    </table>
+  </div>
+  <p>Look at the ₹350 row. The customer feels they got a great deal and you feel you made a sale. You earned ₹3, and the shop spent more than ₹3 on electricity while they stood there. A sale at nearly cost is not a sale, it is a gift.</p>
+
+  <div class="calc" id="calcB">
+    <div class="ch">Calculator 2 &middot; Check any offer</div>
+    <div class="cb">
+      <div class="fields">
+        <div class="field"><label for="b_cost">Landed cost</label>
+          <div class="inp"><span>₹</span><input id="b_cost" type="number" inputmode="decimal" min="0" value="347"></div></div>
+        <div class="field"><label for="b_tag">Tag price</label>
+          <div class="inp"><span>₹</span><input id="b_tag" type="number" inputmode="decimal" min="0" value="549"></div></div>
+        <div class="field"><label for="b_offer">Customer offers</label>
+          <div class="inp"><span>₹</span><input id="b_offer" type="number" inputmode="decimal" min="0" value="450"></div></div>
+        <div class="field"><label for="b_min">Your minimum margin</label>
+          <div class="inp"><input id="b_min" class="pre" type="number" inputmode="decimal" min="0" max="90" value="20"><span class="after">%</span></div></div>
+      </div>
+      <div class="results" id="b_out"></div>
+      <div id="b_verdict"></div>
+    </div>
+  </div>
+
+  <h3>Rules for bargaining without losing money</h3>
+  <ul class="plain">
+    <li><b>Know your floor before opening the shop each day.</b> Write it on the back of the tag in a code only you and your helper understand. Then nobody has to calculate while a customer is waiting.</li>
+    <li><b>Come down in small steps.</b> From ₹549 go to ₹520, then ₹499, then ₹470. Small steps show the customer you are really moving, and they take longer to reach your floor.</li>
+    <li><b>Give a reason with each drop.</b> "Because you are taking two" or "because it is your first purchase". The customer feels they earned it.</li>
+    <li><b>Sell more pieces, not a lower price.</b> "Two shirts for ₹950" lowers the price per piece a little but doubles the profit rupees from one customer. Check the floor on each piece first.</li>
+    <li><b>It is fine to say no.</b> Below your floor, smile and let them walk. Another customer will pay properly, and the one who left often comes back.</li>
+    <li><b>Let your helper bargain only inside the floor.</b> Give them a written floor for each item type and a small reward for selling above it.</li>
+  </ul>
+  <div class="why"><b>Why this matters</b>Your bargaining limit is a business rule, not a feeling. When the rule is set in advance, you lose no sleep over any individual sale.</div>
+</section>
+
+<!-- 8 -->
+<section class="chapter" id="c8">
+  <div class="chap-head"><span class="chap-no">08</span><h2>Discounts and offers: the trap</h2></div>
+  <p>Discounts look small and cost a lot. Take a shirt with landed cost ₹70 sold at ₹100. Margin is 30%, so you earn ₹30 per shirt. Now give 10% off: the price drops to ₹90 and the cost is still ₹70, so profit falls to ₹20.</p>
+  <p>A 10% discount cut your profit by one third, because profit is the small piece left after cost, and the discount comes out of that small piece.</p>
+  <div class="formula">
+    <span class="cap">If margin is m and discount is d (both as decimals)</span>
+    <b>New margin</b> = (m − d) ÷ (1 − d)<br>
+    <b>Sales needed to earn the same total profit</b> = m ÷ (m − d) × your old sales
+  </div>
+  <p>Here m = 0.30 and d = 0.10. New margin = 0.20 ÷ 0.90 = 22%. Sales needed = 0.30 ÷ 0.20 = 1.5 times. You must sell <b>50% more shirts</b> just to earn what you earned before the discount.</p>
+
+  <div class="calc" id="calcC">
+    <div class="ch">Calculator 3 &middot; What does a discount really cost</div>
+    <div class="cb">
+      <div class="fields">
+        <div class="field"><label for="c_m">Your margin now</label>
+          <div class="inp"><input id="c_m" class="pre" type="number" inputmode="decimal" min="1" max="90" value="30"><span class="after">%</span></div></div>
+        <div class="field"><label for="c_d">Discount you want to give</label>
+          <div class="inp"><input id="c_d" class="pre" type="number" inputmode="decimal" min="0" max="90" value="10"><span class="after">%</span></div></div>
+      </div>
+      <div class="results" id="c_out"></div>
+      <div id="c_verdict"></div>
+    </div>
+  </div>
+
+  <h3>Two discounts in a row do not add up</h3>
+  <p>"10% off, and another 5% off on the bill" is not 15% off. The second discount applies to the already reduced price. On ₹1,000: 10% off gives ₹900, then 5% of ₹900 is ₹45, so you pay ₹855. That is 14.5% off in total. Smaller than 15%, which is good for you, but know the real number.</p>
+
+  <div class="warn"><span class="lab">Safer ways to give value</span>
+    <ul class="plain">
+      <li>Offer a bundle: "2 for ₹950". The customer feels a deal and you move two pieces.</li>
+      <li>Add something cheap that costs you little: free alteration, a pair of socks that cost you ₹15.</li>
+      <li>Run clearance on old stock only, not on new arrivals (chapter 10).</li>
+      <li>Never advertise "flat 50% off" unless you have checked that your tag price allows it. Use calculator 1 first.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="chapter" id="c9">
+  <div class="chap-head"><span class="chap-no">09</span><h2>Break-even: how much must you sell</h2></div>
+  <p>Profit per shirt is not your profit. From the money made on shirts you must pay the shop's fixed monthly costs. Only what remains is yours.</p>
+  <p>Break-even is the amount of sales where you have paid every fixed cost and earned exactly zero. Below it you lose money. Above it you earn.</p>
+  <div class="formula">
+    <b>Break-even sales per month</b> = fixed costs per month ÷ average margin<br>
+    Example: costs ₹30,000, average margin 28% → 30,000 ÷ 0.28 = ₹1,07,143
+  </div>
+  <p>That is about ₹4,121 of sales on each of 26 working days, only to reach zero. Everything above that is profit. If this number feels scary, good. It is far better to know it now than in month three.</p>
+  <p>Include your own pay in the costs. If you do not, the shop looks profitable while you live on nothing. Also include loan interest if you borrowed to start.</p>
+
+  <div class="calc" id="calcD">
+    <div class="ch">Calculator 4 &middot; Break-even</div>
+    <div class="cb">
+      <div class="fields">
+        <div class="field"><label for="d_rent">Shop rent per month</label>
+          <div class="inp"><span>₹</span><input id="d_rent" type="number" inputmode="decimal" min="0" value="8000"></div></div>
+        <div class="field"><label for="d_sal">Helper salary per month</label>
+          <div class="inp"><span>₹</span><input id="d_sal" type="number" inputmode="decimal" min="0" value="8000"></div></div>
+        <div class="field"><label for="d_elec">Electricity, internet, phone</label>
+          <div class="inp"><span>₹</span><input id="d_elec" type="number" inputmode="decimal" min="0" value="2000"></div></div>
+        <div class="field"><label for="d_own">Your own pay per month</label>
+          <div class="inp"><span>₹</span><input id="d_own" type="number" inputmode="decimal" min="0" value="10000"></div></div>
+        <div class="field"><label for="d_other">Loan interest, transport, repairs, other</label>
+          <div class="inp"><span>₹</span><input id="d_other" type="number" inputmode="decimal" min="0" value="2000"></div></div>
+        <div class="field"><label for="d_marg">Average margin on what you really sell <span class="hint">after bargaining</span></label>
+          <div class="inp"><input id="d_marg" class="pre" type="number" inputmode="decimal" min="1" max="90" value="28"><span class="after">%</span></div></div>
+        <div class="field"><label for="d_days">Days open per month</label>
+          <div class="inp"><input id="d_days" class="pre" type="number" inputmode="decimal" min="1" max="31" value="26"></div></div>
+        <div class="field"><label for="d_asp">Average selling price of one piece</label>
+          <div class="inp"><span>₹</span><input id="d_asp" type="number" inputmode="decimal" min="1" value="500"></div></div>
+      </div>
+      <div class="results" id="d_out"></div>
+      <div id="d_verdict"></div>
+    </div>
+  </div>
+  <div class="why"><b>Why this matters</b>Break-even turns "I hope the shop does well" into a clear target: sell this many pieces a day. You can check it every evening.</div>
+  <p>Use your <i>actual average margin</i>, which is lower than the margin on tag price because of bargaining and occasional discounts. Track it for the first month and update this number.</p>
+</section>
+
+<!-- 10 -->
+<section class="chapter" id="c10">
+  <div class="chap-head"><span class="chap-no">10</span><h2>Stock, cash and dead stock</h2></div>
+  <p>Stock is money you have turned into cloth. Until it sells, you cannot use that money for rent, salary or new buying. A shop with ₹2 lakh of stock and ₹500 in the drawer is in trouble even if it is "worth" a lot.</p>
+
+  <h3>How fast stock sells</h3>
+  <p>Count how many pieces you sold this month and divide by pieces on hand at month end.</p>
+  <div class="formula">
+    <b>Months to sell the stock</b> = pieces in stock ÷ pieces sold per month<br>
+    300 pieces in stock, 100 sold per month → 3 months
+  </div>
+  <p>If one type of item takes 6 months or more to sell, buy less of it next time. If another sells out in two weeks, buy more and buy earlier.</p>
+
+  <h3>A markdown plan for slow pieces</h3>
+  <p>Decide in advance how long a piece may stay before its price drops. For example (adjust to your own numbers):</p>
+  <ul class="plain">
+    <li>Months 1 to 2: full tag price with normal bargaining.</li>
+    <li>Month 3: lower the tag by about 15% to 20%.</li>
+    <li>Month 4: clear it at close to landed cost and put the money into something that sells.</li>
+  </ul>
+  <p>Selling an old shirt at cost is better than keeping it forever, because the cash can buy a new shirt that earns profit.</p>
+
+  <h3>Buy for your customers and the calendar</h3>
+  <p>Demand in Assam moves with festivals and seasons: Bohag Bihu, Magh Bihu, Durga Puja, Eid, Diwali, Christmas, wedding months, school reopening and the winter months. Start buying a few weeks ahead for each. Plan sizes too: a store with only medium and large will lose the shoppers who need small and extra large.</p>
+
+  <h3>Keep a cash reserve</h3>
+  <p>A common safety rule is to hold several months of fixed costs in cash outside your stock, so a slow month does not force you to sell below cost. Aim for at least two to three months if you can.</p>
+
+  <div class="warn"><span class="lab">Be careful with credit (udhar)</span>
+    <p>If a customer pays later, your profit is on paper but your cash is stuck. Give credit only to people you know well, set a limit, and write every amount in a notebook with the date. Do not give credit on thin-margin items.</p>
+  </div>
+</section>
+
+<!-- 11 -->
+<section class="chapter" id="c11">
+  <div class="chap-head"><span class="chap-no">11</span><h2>GST and billing, briefly</h2></div>
+  <p>GST is a tax added to what the customer pays. You collect it and pass it to the government. It is not your profit and it is not your cost, so never mix it into your margin calculation.</p>
+  <p>As of the rate changes that took effect on 22 September 2025, readymade garments are reported as taxed at 5% when the price per piece is up to ₹2,500, and 18% above that (<a href="https://www.caclubindia.com/news/gst-rate-on-apparel-rationalised-18-percent-tax-for-garments-above-rs-2500-25945.asp" target="_blank" rel="noopener">CAclubindia report</a>). Rates and thresholds change, so confirm the current rule before you print your first bill.</p>
+  <div class="formula"><span class="cap">If your tag price already includes 5% GST</span>
+    <b>Price before tax</b> = price with GST ÷ 1.05<br>
+    ₹549 ÷ 1.05 = ₹523 before tax, ₹26 is GST.
+  </div>
+  <p>Decide now whether your tag prices include GST. Your margin should be worked out on the price <b>before</b> GST, because the tax goes to the government. Whether you must register depends on your yearly sales and your state. Ask a local chartered accountant (CA) in your first week. A short visit costs little and prevents mistakes that cost a lot.</p>
+</section>
+
+<!-- 12 -->
+<section class="chapter" id="c12">
+  <div class="chap-head"><span class="chap-no">12</span><h2>Competing with M Baazar and the tiny shops</h2></div>
+  <p>You have a larger shop to compete against and smaller ones beside you. The maths helps you choose where to compete. These are suggestions to test, not guarantees.</p>
+
+  <h3>Do a price survey in week one</h3>
+  <p>Walk into M Baazar and two of the tiny shops. For 20 popular items (basic T-shirt, formal shirt, jeans, kurta, nightwear, school wear, saree, innerwear), note the tag price and the price they come down to when you bargain. Put it in a notebook. Then compare with your own landed cost for similar pieces.</p>
+  <ul class="plain">
+    <li>If their price is below your cost for an item, do not copy it. Do not stock that item, or stock it only to bring people in.</li>
+    <li>If their price leaves you a healthy margin, you can match it and compete on service.</li>
+    <li>If an item has no good version nearby, you have found a gap to fill.</li>
+  </ul>
+
+  <h3>Where a smaller shop can win</h3>
+  <ul class="plain">
+    <li><b>Range and sizes.</b> A tiny shop cannot hold every size. You can. Customers who cannot find their size elsewhere will pay your price.</li>
+    <li><b>Specific customers.</b> Pick one or two groups to serve well: school and college students, young men's casual wear, women's kurtis and ethnic wear, festival and wedding wear. Doing a few things well beats doing everything average.</li>
+    <li><b>Quick service.</b> Alterations, easy exchanges, a friendly trial room, a clean shop. These cost little and customers talk about them.</li>
+    <li><b>Trust.</b> If your quality is steady and your prices are fair, regular customers stop comparing every shirt.</li>
+    <li><b>Value you can explain.</b> If your cloth is better, say why: the stitching, the fabric, the wash. Reasons let you hold a higher price.</li>
+  </ul>
+
+  <div class="rule"><span class="lab">Avoid a price war</span>
+    <p>M Baazar can probably buy in larger quantity and accept lower margins. A price war makes both shops poorer and the bigger one lasts longer. Use calculator 4 to find your break-even, then compete where you can still reach it.</p>
+  </div>
+
+  <h3>Fixed price or bargaining?</h3>
+  <p>Bargaining wins customers who like the game and lets you earn more from those who pay readily. A clearly printed fixed price saves time and builds trust, and suits busy buyers and anyone who dislikes bargaining. You can mix: bargain on some items and put "fixed price" on basics. Whichever you choose, set the price with the method in chapter 6.</p>
+</section>
+
+<!-- 13 -->
+<section class="chapter" id="c13">
+  <div class="chap-head"><span class="chap-no">13</span><h2>Practice problems</h2></div>
+  <p>Try each one on paper first. Then open the answer. Use the formulas from this guide.</p>
+
+  <details class="q"><summary>1. A shirt has landed cost ₹360 and sells for ₹480. Find profit, margin and markup.</summary>
+    <div class="ans"><p>Profit = 480 − 360 = <b>₹120</b>.</p><p>Margin = 120 ÷ 480 × 100 = <b>25%</b>.</p><p>Markup = 120 ÷ 360 × 100 = <b>33.3%</b>.</p></div></details>
+
+  <details class="q"><summary>2. Landed cost is ₹350. You want a 30% margin. What selling price?</summary>
+    <div class="ans"><p>SP = 350 ÷ (1 − 0.30) = 350 ÷ 0.70 = <b>₹500</b>. Check: profit ₹150, and 150 ÷ 500 = 30%.</p></div></details>
+
+  <details class="q"><summary>3. Tag ₹799. The customer pays ₹650. What discount percent did they get?</summary>
+    <div class="ans"><p>Discount = 799 − 650 = ₹149. 149 ÷ 799 × 100 = <b>18.6%</b>.</p></div></details>
+
+  <details class="q"><summary>4. Landed cost ₹400. What is the lowest price that still gives 15% margin?</summary>
+    <div class="ans"><p>Floor = 400 ÷ 0.85 = 470.6, so <b>₹471</b>. Anything lower gives less than 15%.</p></div></details>
+
+  <details class="q"><summary>5. Jeans: landed cost ₹580, tag ₹1,299. A customer offers ₹900. What are your profit and margin? Would you accept if your minimum margin is 25%?</summary>
+    <div class="ans"><p>Profit = 900 − 580 = ₹320. Margin = 320 ÷ 900 × 100 = <b>35.6%</b>. Yes, accept. It is above 25%.</p></div></details>
+
+  <details class="q"><summary>6. Landed cost ₹250. Minimum margin at floor 20%, biggest bargain 15%. What tag price?</summary>
+    <div class="ans"><p>Floor = 250 ÷ 0.80 = ₹312.5. Tag = 312.5 ÷ 0.85 = 367.6. Round up to <b>₹369</b> or <b>₹379</b>.</p></div></details>
+
+  <details class="q"><summary>7. You give 10% off, then an extra 5% off, on ₹1,000. What does the customer pay?</summary>
+    <div class="ans"><p>After 10%: ₹900. 5% of 900 = ₹45. Pays <b>₹855</b>, which is 14.5% off, not 15%.</p></div></details>
+
+  <details class="q"><summary>8. Margin is 25%. You give a 10% discount. How many times your normal sales do you need to earn the same profit?</summary>
+    <div class="ans"><p>m ÷ (m − d) = 0.25 ÷ 0.15 = <b>1.67 times</b>. You must sell about two-thirds more.</p></div></details>
+
+  <details class="q"><summary>9. Fixed costs are ₹30,000 a month. Average margin is 28%. What monthly sales to break even, and per day over 26 days?</summary>
+    <div class="ans"><p>30,000 ÷ 0.28 = <b>₹1,07,143</b> a month. ÷ 26 = <b>₹4,121</b> a day.</p></div></details>
+
+  <details class="q"><summary>10. You buy 50 kurtis at ₹400 each. Transport and packing come to ₹1,500. You expect 3 to stay unsold. What is the landed cost per sellable kurti?</summary>
+    <div class="ans"><p>Total = 50 × 400 + 1,500 = ₹21,500. Sellable = 47. 21,500 ÷ 47 = <b>₹457</b>.</p></div></details>
+</section>
+
+<!-- 14 -->
+<section class="chapter" id="c14">
+  <div class="chap-head"><span class="chap-no">14</span><h2>One-page cheat sheet</h2></div>
+  <div class="cheat">
+    <div><b>Profit</b><code>SP − landed cost</code></div>
+    <div><b>Margin %</b><code>(SP − cost) ÷ SP × 100</code></div>
+    <div><b>Markup %</b><code>(SP − cost) ÷ cost × 100</code></div>
+    <div><b>Price from margin</b><code>SP = cost ÷ (1 − margin)</code></div>
+    <div><b>Floor price</b><code>cost ÷ (1 − minimum margin)</code></div>
+    <div><b>Tag price</b><code>floor ÷ (1 − biggest bargain)</code></div>
+    <div><b>Discount %</b><code>(tag − paid) ÷ tag × 100</code></div>
+    <div><b>Sales needed after a discount</b><code>m ÷ (m − d) × old sales</code></div>
+    <div><b>Break-even sales</b><code>fixed costs ÷ average margin</code></div>
+    <div><b>Landed cost</b><code>total spent ÷ sellable pieces</code></div>
+    <div><b>Price before GST</b><code>price with GST ÷ 1.05 (at 5%)</code></div>
+    <div><b>Months of stock</b><code>pieces in stock ÷ sold per month</code></div>
+  </div>
+  <div class="rule"><span class="lab">Seven habits of a shop that survives</span>
+    <ol class="plain">
+      <li>Price from landed cost, never from the bill price alone.</li>
+      <li>Fix your floor price before the customer arrives.</li>
+      <li>Always ask "percent of what?"</li>
+      <li>Check the profit before any discount.</li>
+      <li>Know your daily break-even number.</li>
+      <li>Do not let stock sit. Mark down on schedule.</li>
+      <li>Write everything down: purchases, sales, credit.</li>
+    </ol>
+  </div>
+</section>
+
+<footer>
+  <p>Keep a notebook for the first three months. Write each day's sales, the number of pieces sold and what you bought. After a month, update the margin and break-even numbers in calculators 1 and 4 with your real figures. That is how the maths becomes your own.</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  function num(id){ var v = parseFloat($(id).value); return isFinite(v) ? v : 0; }
+  function rs(n){ return "₹" + Math.round(n).toLocaleString("en-IN"); }
+  function pc(n){ return (Math.round(n*10)/10).toFixed(1) + "%"; }
+  function res(k, v, big){ return '<div class="res' + (big ? ' big' : '') + '"><div class="k">' + k + '</div><div class="v">' + v + '</div></div>'; }
+  function verdict(el, cls, text){ el.innerHTML = '<div class="verdict ' + cls + '">' + text + '</div>'; }
+
+  /* Calculator 1 */
+  function calcA(){
+    var buy = num("a_buy"), extra = num("a_extra");
+    var loss = Math.min(num("a_loss"), 50) / 100;
+    var m = Math.min(num("a_marg"), 90) / 100;
+    var b = Math.min(num("a_barg"), 80) / 100;
+    var out = $("a_out"), lad = $("a_ladder");
+    if (buy <= 0) { out.innerHTML = ""; lad.innerHTML = ""; return; }
+    var landed = (buy + extra) / (1 - loss);
+    var floor = landed / (1 - m);
+    var tagRaw = floor / (1 - b);
+    var tag = Math.ceil((tagRaw + 1) / 10) * 10 - 1;
+    var floorAtTag = tag * (1 - b);
+    var marginAtFloor = (floorAtTag - landed) / floorAtTag * 100;
+    var marginFull = (tag - landed) / tag * 100;
+    out.innerHTML =
+      res("Landed cost per sellable piece", rs(landed)) +
+      res("Floor price (lowest you accept)", rs(floor)) +
+      res("Calculated tag price", rs(tagRaw)) +
+      res("Suggested tag price", rs(tag), true) +
+      res("Margin if customer pays full tag", pc(marginFull)) +
+      res("Margin at biggest bargain (" + rs(floorAtTag) + ")", pc(marginAtFloor));
+    var step = tag >= 400 ? 50 : 20;
+    var rows = "", pay = tag, n = 0;
+    while (n < 14) {
+      var profit = pay - landed;
+      var mg = pay > 0 ? profit / pay * 100 : 0;
+      var off = (tag - pay) / tag * 100;
+      var cls = mg >= m * 100 - 0.05 ? "good" : (profit > 0 ? "warn" : "bad");
+      var label = cls === "good" ? "OK" : (cls === "warn" ? "Below your minimum" : "Loss");
+      rows += "<tr><td>" + rs(pay) + "</td><td>" + pc(off) + "</td><td>" + (profit < 0 ? "−" : "") + rs(Math.abs(profit)) + "</td><td>" + pc(mg) + '</td><td><span class="pill ' + cls + '">' + label + "</span></td></tr>";
+      if (profit < 0) break;
+      pay = pay - step; n++;
+      if (pay <= 0) break;
+    }
+    lad.innerHTML = '<table><thead><tr><th>Customer pays</th><th>Off tag</th><th>Profit</th><th>Margin</th><th>Verdict</th></tr></thead><tbody>' + rows + "</tbody></table>";
+  }
+
+  /* Calculator 2 */
+  function calcB(){
+    var cost = num("b_cost"), tag = num("b_tag"), offer = num("b_offer"), min = num("b_min");
+    var out = $("b_out"), v = $("b_verdict");
+    if (offer <= 0) { out.innerHTML = ""; v.innerHTML = ""; return; }
+    var profit = offer - cost;
+    var margin = profit / offer * 100;
+    var markup = cost > 0 ? profit / cost * 100 : 0;
+    var off = tag > 0 ? (tag - offer) / tag * 100 : 0;
+    var floor = cost / (1 - Math.min(min, 90) / 100);
+    out.innerHTML =
+      res("Discount from tag", tag > 0 ? pc(off) : "n/a") +
+      res("Profit on this sale", (profit < 0 ? "−" : "") + rs(Math.abs(profit)), true) +
+      res("Margin", pc(margin)) +
+      res("Markup", pc(markup)) +
+      res("Your floor at " + pc(min), rs(floor));
+    if (profit <= 0) verdict(v, "bad", "Refuse. This is below your landed cost. You lose " + rs(-profit) + " on this piece.");
+    else if (margin < min) verdict(v, "warn", "Below your minimum margin. Counter with " + rs(Math.ceil(floor)) + " or higher.");
+    else verdict(v, "good", "Accept. It meets your minimum margin.");
+  }
+
+  /* Calculator 3 */
+  function calcC(){
+    var m = num("c_m") / 100, d = num("c_d") / 100;
+    var out = $("c_out"), v = $("c_verdict");
+    if (m <= 0) { out.innerHTML = ""; v.innerHTML = ""; return; }
+    if (d <= 0) { out.innerHTML = res("New margin", pc(m*100)) + res("Sales needed", "1.00 times"); verdict(v, "good", "No discount, no change."); return; }
+    if (d >= m) {
+      out.innerHTML = res("New margin", d === m ? "0.0%" : "Negative") + res("Sales needed", "Never enough");
+      verdict(v, "bad", "A discount of " + pc(d*100) + " is as big as your whole margin. You earn nothing or lose money on each piece, and selling more does not fix that.");
+      return;
+    }
+    var nm = (m - d) / (1 - d);
+    var mult = m / (m - d);
+    out.innerHTML =
+      res("New margin", pc(nm * 100)) +
+      res("Profit per piece falls by", pc((1 - (m - d) / m) * 100)) +
+      res("Sales needed for the same profit", mult.toFixed(2) + " times", true) +
+      res("That is", "+" + Math.round((mult - 1) * 100) + "% more pieces");
+    var cls = mult > 1.5 ? "bad" : (mult > 1.25 ? "warn" : "good");
+    verdict(v, cls, "To earn the same total profit after a " + pc(d*100) + " discount, you must sell " + Math.round((mult - 1) * 100) + "% more pieces than before.");
+  }
+
+  /* Calculator 4 */
+  function calcD(){
+    var fixed = num("d_rent") + num("d_sal") + num("d_elec") + num("d_own") + num("d_other");
+    var m = num("d_marg") / 100, days = num("d_days"), asp = num("d_asp");
+    var out = $("d_out"), v = $("d_verdict");
+    if (m <= 0 || days <= 0) { out.innerHTML = ""; v.innerHTML = ""; return; }
+    var month = fixed / m, day = month / days;
+    var pieces = asp > 0 ? day / asp : 0;
+    out.innerHTML =
+      res("Fixed costs per month", rs(fixed)) +
+      res("Break-even sales per month", rs(month), true) +
+      res("Break-even sales per day", rs(day), true) +
+      res("Pieces per day at " + rs(asp), pieces.toFixed(1)) +
+      res("Profit left per month if you sell double", rs(month * 2 * m - fixed));
+    verdict(v, pieces > 12 ? "warn" : "good", "You need about " + Math.ceil(pieces) + " pieces sold every day you are open just to reach zero. Compare this with how many customers you can realistically serve in a day.");
+  }
+
+  var groups = [
+    [["a_buy","a_extra","a_loss","a_marg","a_barg"], calcA],
+    [["b_cost","b_tag","b_offer","b_min"], calcB],
+    [["c_m","c_d"], calcC],
+    [["d_rent","d_sal","d_elec","d_own","d_other","d_marg","d_days","d_asp"], calcD]
+  ];
+  groups.forEach(function(g){
+    g[0].forEach(function(id){ $(id).addEventListener("input", g[1]); });
+    g[1]();
+  });
+})();
+</script>
+
+</body></html>
