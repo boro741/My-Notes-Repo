@@ -76,6 +76,16 @@ section.chapter{padding-top:56px}
 .ledger tr.total td{font-weight:700;border-top:2px solid var(--fg)}
 .ledger tr.hl td{background:var(--accent-soft)}
 
+.mm-fig{margin:22px 0;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:4px}
+.mm-row{margin:6px 0 22px}.mm-row:last-child{margin-bottom:4px}
+.mm-row .h{font-weight:700;margin-bottom:8px}
+.mm-bar{display:flex;height:46px;border-radius:4px;overflow:hidden;font-family:var(--mono);font-size:.85rem;font-weight:600}
+.mm-bar span{display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.15;padding:0 4px}
+.mm-bar .c{flex:0 0 75%;background:var(--ink-soft);color:var(--fg)}
+.mm-bar .p{flex:0 0 25%;background:var(--accent);color:var(--bg)}
+.mm-base{height:10px;border:2px solid var(--fg);border-top:0;margin-top:6px}
+.mm-note{font-size:.95rem;margin-top:6px}
+.mm-note b{color:var(--accent)}
 .rule{border:2px solid var(--fg);padding:14px 18px;margin:24px 0;background:var(--surface);border-radius:4px}
 .rule .lab{display:inline-block;font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;background:var(--fg);color:var(--bg);padding:2px 8px;margin-bottom:6px;font-weight:600;border-radius:2px}
 .rule p{margin:4px 0}
@@ -134,15 +144,117 @@ details.q .ans p{margin:8px 0}
 
 footer{margin-top:64px;padding-top:16px;border-top:2px solid var(--fg);font-size:.92rem;color:var(--muted)}
 @media (prefers-reduced-motion:no-preference){ details.q summary{transition:background .15s} details.q summary:hover{background:var(--ink-soft)} }
+
+/* ---- additions: progress, hero demo, steps, stacked bars, tips, tools ---- */
+.progress{position:fixed;inset:0 0 auto 0;height:3px;z-index:20;background:transparent}
+.progress i{display:block;height:100%;width:0;background:var(--accent)}
+
+.fig{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px 18px 20px;margin-top:24px}
+.fig .ctl{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:flex-end;margin-bottom:18px}
+.fig .ctl .f{min-width:0}
+.fig label{display:block;font-size:.88rem;font-weight:600;margin-bottom:4px}
+.fig .rng{flex:1;min-width:200px}
+.fig input[type=range]{width:100%;accent-color:var(--accent)}
+.fig .outs{display:flex;flex-wrap:wrap;gap:6px 26px}
+.fig .out{font-family:var(--mono);font-weight:600;font-size:1.35rem;line-height:1.2}
+.fig .out small{display:block;font-family:var(--body);font-size:.8rem;color:var(--muted);font-weight:500}
+.hbar{display:flex;height:54px;border-radius:4px;overflow:hidden;font-family:var(--mono);font-weight:600;font-size:.9rem}
+.hbar .seg{display:flex;align-items:center;justify-content:center;text-align:center;padding:0 6px;overflow:hidden;white-space:nowrap;transition:width .3s ease}
+.hbar .cost{background:var(--ink-soft);color:var(--fg)}
+.hbar .profit{background:var(--accent);color:var(--bg)}
+.brk{height:11px;border:2px solid currentColor;border-top:0;margin-top:8px;transition:width .3s ease}
+.brk.mk{color:var(--gold)}
+.brk.mg{color:var(--fg)}
+.brk-label{margin:6px 0 12px;font-size:.95rem;line-height:1.4}
+.brk-label b{font-family:var(--mono)}
+.brk-label.mk{color:var(--gold)}
+.fig-note{margin:12px 0 0;color:var(--muted);font-size:.92rem}
+@media (prefers-reduced-motion:reduce){.hbar .seg,.brk{transition:none}}
+
+.steps{counter-reset:s;list-style:none;padding:0;margin:20px 0}
+.steps li{counter-increment:s;position:relative;padding:0 0 20px 50px}
+.steps li::before{content:counter(s);position:absolute;left:0;top:0;width:34px;height:34px;border-radius:50%;background:var(--fg);color:var(--bg);font-family:var(--mono);font-weight:700;font-size:.9rem;display:grid;place-items:center}
+.steps li::after{content:"";position:absolute;left:16px;top:40px;bottom:6px;width:2px;background:var(--line)}
+.steps li:last-child::after{display:none}
+.steps b.t{display:block;font-size:1.05rem;margin-bottom:2px}
+
+.scen{margin:22px 0}
+.scen h4{margin:0 0 8px;font-size:1rem;font-family:var(--body);font-weight:700}
+.stack{display:flex;height:32px;border-radius:4px;overflow:hidden;background:var(--line)}
+.stack i{display:block;height:100%}
+.stack .c{background:var(--muted)} .stack .e{background:var(--accent)} .stack .l{background:var(--good)}
+.leg{display:flex;flex-wrap:wrap;gap:4px 20px;margin:8px 0 0;font-size:.92rem}
+.leg span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;background:var(--muted)}
+.leg .e::before{background:var(--accent)} .leg .l::before{background:var(--good)}
+
+.tip{border-left:4px solid var(--good);background:var(--good-soft);padding:12px 16px;margin:22px 0;border-radius:0 4px 4px 0}
+.tip .lab{display:block;font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--good);margin-bottom:4px;font-weight:700}
+.tip p{margin:6px 0}
+.tip ul{margin:6px 0;padding-left:1.2em}
+
+.tagcard{display:inline-block;margin:6px 0 14px;padding:14px 22px;background:var(--gold-soft);border:1.5px solid var(--gold);border-radius:6px 16px 16px 6px}
+.tagcard .k{display:block;font-size:.88rem;color:var(--gold);font-weight:700}
+.tagcard .v{font-family:var(--mono);font-size:1.7rem;font-weight:600;line-height:1.15}
+.tagcard .s{display:block;font-size:.9rem;color:var(--muted)}
+
+h3.doubts{font-family:var(--mono);font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-top:30px;margin-bottom:4px}
+.btn{font:inherit;font-weight:600;padding:10px 18px;border-radius:4px;border:1.5px solid var(--fg);background:transparent;color:var(--fg);cursor:pointer}
+.btn:hover{background:var(--fg);color:var(--bg)}
+.cheat ul{margin:4px 0 0;padding-left:1.1em;font-size:.95rem}
+.cheat li{margin:3px 0}
+.ledger td.c3,.ledger th.c3{text-align:left}
+.src{font-size:.88rem;color:var(--muted)}
+@media (max-width:640px){
+  .ledger.cmp table,.ledger.cmp tbody,.ledger.cmp tr,.ledger.cmp td{display:block;width:100%}
+  .ledger.cmp tr:first-child{display:none}
+  .ledger.cmp tr{padding:10px 16px;border-bottom:1px solid var(--line)}
+  .ledger.cmp td{border:0;padding:3px 0}
+  .ledger.cmp td:first-child{font-size:1.05rem;padding-bottom:4px}
+  .ledger.cmp td[data-l]::before{content:attr(data-l);display:block;font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+}
+@media print{
+  body.printing-cs{background:#fff;color:#000}
+  body.printing-cs .progress,body.printing-cs header.top,body.printing-cs nav.toc,body.printing-cs footer,
+  body.printing-cs section.chapter:not(#c16),body.printing-cs .btn{display:none!important}
+  body.printing-cs #c16{padding-top:0}
+  body.printing-cs .cheat div{break-inside:avoid}
+}
 </style>
 
+<div class="progress" aria-hidden="true"><i id="pbar"></i></div>
 <div class="wrap">
 
 <header class="top">
   <div class="kicker">Retail maths for a new shop &middot; Goreswar, Assam</div>
   <h1>Clothing Shop Maths</h1>
-  <p class="lead">Everything about price, profit, discount and bargaining, starting from zero. You will learn why each number matters, how to calculate it, and how to set a price that still makes money when the customer bargains.</p>
-  <p class="disclaimer">All rupee figures in this guide are examples to teach the method. Your real wholesale rates, rent and salaries will differ. Use the calculators with your own numbers. This is learning material, not tax or legal advice.</p>
+  <p class="lead">Price, profit, discount aur bargaining ka poora hisaab, bilkul zero se. Yahan aap samjhoge ki har number kyun matter karta hai, kaise nikalte hain, aur customer bargain kare tab bhi price kaise set karein ki paisa banta rahe. Hum ek experienced shopkeeper ki tarah ek-ek doubt clear karenge.</p>
+  <p class="disclaimer">Is guide ke saare rupee figures sirf examples hain, method samjhane ke liye. Aapke asli wholesale rates, rent aur salary alag honge. Calculators mein apne numbers daalo. Yeh learning material hai, tax ya legal advice nahi.</p>
+
+  <div class="fig" role="group" aria-label="Interactive demo: profit, markup and margin">
+    <div class="ctl">
+      <div class="f">
+        <label for="h-cost">Landed cost of one shirt (₹)</label>
+        <div class="inp" style="width:150px"><span>₹</span><input id="h-cost" type="number" min="1" value="330" inputmode="numeric"></div>
+      </div>
+      <div class="f rng">
+        <label for="h-sp">Drag to change your selling price</label>
+        <input id="h-sp" type="range" min="350" max="800" step="5" value="440">
+      </div>
+      <div class="outs">
+        <div class="out"><span id="h-spv">₹440</span><small>selling price</small></div>
+        <div class="out"><span id="h-pv">₹110</span><small>profit</small></div>
+      </div>
+    </div>
+    <div class="hbar" aria-hidden="true">
+      <div class="seg cost" id="h-bc" style="width:75%"><span id="h-bct">Cost ₹330</span></div>
+      <div class="seg profit" id="h-bp" style="width:25%"><span id="h-bpt">₹110</span></div>
+    </div>
+    <div class="brk mk" id="h-kmk" style="width:75%"></div>
+    <p class="brk-label mk" id="h-lmk"></p>
+    <div class="brk mg" id="h-kmg" style="width:100%"></div>
+    <p class="brk-label" id="h-lmg"></p>
+    <p class="fig-note">Slider hilao aur dekho: profit (laal hissa) same rehta hai, bas usse kis cheez se compare karte ho woh badalta hai. Markup usse <b>cost</b> se compare karta hai, margin <b>selling price</b> se. Isliye margin hamesha chhota number hota hai. Chapter 4 mein yeh detail mein samjhaya hai.</p>
+  </div>
 </header>
 
 <nav class="toc" aria-label="Chapters">
@@ -156,55 +268,87 @@ footer{margin-top:64px;padding-top:16px;border-top:2px solid var(--fg);font-size
     <li><a href="#c6"><span class="n">6</span>Setting a price when customers bargain</a></li>
     <li><a href="#c7"><span class="n">7</span>Handling the bargain: 500, 550, 600</a></li>
     <li><a href="#c8"><span class="n">8</span>Discounts and offers: the trap</a></li>
-    <li><a href="#c9"><span class="n">9</span>Break-even: how much must you sell</a></li>
+    <li><a href="#c9"><span class="n">9</span>Break-even and how much margin you need</a></li>
     <li><a href="#c10"><span class="n">10</span>Stock, cash and dead stock</a></li>
-    <li><a href="#c11"><span class="n">11</span>GST and billing, briefly</a></li>
+    <li><a href="#c11"><span class="n">11</span>GST and paperwork, briefly</a></li>
     <li><a href="#c12"><span class="n">12</span>Competing with M Baazar and the tiny shops</a></li>
-    <li><a href="#c13"><span class="n">13</span>Practice problems</a></li>
-    <li><a href="#c14"><span class="n">14</span>One-page cheat sheet</a></li>
+    <li><a href="#c13"><span class="n">13</span>Your first 90 days</a></li>
+    <li><a href="#c14"><span class="n">14</span>Billing software or Excel?</a></li>
+    <li><a href="#c15"><span class="n">15</span>Practice problems</a></li>
+    <li><a href="#c16"><span class="n">16</span>One-page cheat sheet</a></li>
   </ol>
 </nav>
+
+<div class="tip" style="margin-top:28px"><span class="lab">Kaise padhein</span>
+  <p>Pehli baar shop khol rahe ho, toh sab kuch ek din mein yaad karne ki zaroorat nahi. Chapter 1 se 5 basics hain (words, percentage, profit, cost). Chapter 6 se 9 mein pricing aur survival ka hisaab hai, wahi sabse zaroori hai. Chapter 10 se 14 shop chalane ke practical tareeke hain.</p>
+  <p>Do tarah ke boxes milenge: <b>"Anubhav se"</b> (hare wale) mein ek experienced shopkeeper ki salah hai, aur <b>"Doubt?"</b> (plus wale) mein woh sawaal hain jo naye owner ke mind mein aate hain. Ek notebook saath rakho aur apne numbers likhte jao.</p>
+</div>
 
 <!-- 1 -->
 <section class="chapter" id="c1">
   <div class="chap-head"><span class="chap-no">01</span><h2>Why maths decides if the shop survives</h2></div>
-  <p>A shop can be full of customers and still lose money. This happens when the selling price is too close to what you paid, when you give discounts without checking the profit, or when you forget costs like rent, electricity and a helper's salary.</p>
-  <p>A shop can also be quiet and still earn well, if every sale carries enough profit. The difference is arithmetic, and the arithmetic is not hard. It uses addition, subtraction, multiplication, division and one idea called percentage.</p>
-  <div class="why"><b>Why this matters</b>You will make hundreds of small decisions: what to buy, what to charge, how low to go when someone bargains. If you decide by feeling, you will sometimes sell below cost without knowing. If you decide by numbers, you will always know what each sale earned.</div>
-  <p>This guide has four calculators. Use them as you read. By the end you will be able to do most of it in your head.</p>
+  <p>Ek shop customers se bhari ho sakti hai aur phir bhi loss mein chal sakti hai. Aisa tab hota hai jab selling price aapki kharid se bas thoda upar ho, jab aap bina profit check kiye discount de dete ho, ya jab rent, bijli aur helper ki salary jaise costs bhool jaate ho.</p>
+  <p>Ulta bhi sach hai: shop shaant ho tab bhi achha kama sakti hai, agar har sale mein kaafi profit ho. Farak sirf arithmetic ka hai, aur arithmetic mushkil nahi. Bas jod, ghata, guna, bhag aur ek idea: percentage.</p>
+  <div class="why"><b>Why this matters</b>Aap hazaaron chhote decisions loge: kya kharidna hai, kitna price lena hai, bargain par kitna neeche jaana hai. Agar feeling se decide karoge, toh kabhi-kabhi cost se neeche bech doge aur pata bhi nahi chalega. Numbers se decide karoge, toh har sale ka profit pata hoga.</div>
+  <p>Is guide mein paanch calculators hain. Padhte waqt unhe use karo. End tak aap zyaadatar hisaab dimaag mein hi kar loge.</p>
+
+  <div class="warn"><span class="lab">Naye owners ki 6 common galtiyan</span>
+    <ol class="plain">
+      <li>Wholesaler ke bill price se hi tag lagana, transport aur packing bhool jaana. (Chapter 5)</li>
+      <li>"Cost ka double" rakh dena bina dekhe ki market mein wahi shirt kitne mein mil rahi hai. (Chapter 6)</li>
+      <li>Bargain mein floor price pata hi nahi hona. (Chapters 6, 7)</li>
+      <li>Margin aur markup ko ek samajhna. (Chapter 4)</li>
+      <li>Pehli baar mein bahut zyada stock le lena. (Chapters 10, 13)</li>
+      <li>Shop ka paisa aur ghar ka paisa mila dena, aur records na rakhna. (Chapters 13, 14)</li>
+    </ol>
+  </div>
+
+  <h3 class="doubts">Doubt? Yeh poochhna normal hai</h3>
+  <details class="q"><summary>Meri maths kamzor hai. Kya main yeh sab kar paunga?</summary>
+    <div class="ans"><p>Haan. Sirf chaar kaam aate hain: jod, ghata, guna, bhag. Mobile ka calculator aur is guide ke calculators aapka kaam kar denge. Shuru ke ek mahine mein har baar calculate karo. Uske baad aapko 5 ya 6 numbers yaad ho jaayenge (jaise har item type ka floor price), aur baaki kaam dimaag mein ho jayega.</p></div></details>
+  <details class="q"><summary>Kya mujhe har customer ke saamne calculation karni padegi?</summary>
+    <div class="ans"><p>Nahi. Calculation <b>pehle</b> karni hai, customer aane se pehle. Har item type ka floor price (sabse neeche ka price) ek baar nikaal ke likh lo. Phir counter par sirf yeh dekhna hai: "customer ka offer floor se upar hai ya neeche?". Chapter 7 mein yahi sikhenge.</p></div></details>
 </section>
 
 <!-- 2 -->
 <section class="chapter" id="c2">
   <div class="chap-head"><span class="chap-no">02</span><h2>The words you must know</h2></div>
-  <p>Business talk uses short words for simple ideas. Learn these first. We will use them in every chapter.</p>
+  <p>Business ki baat chhote words mein hoti hai, jo simple ideas hain. Inhe pehle seekh lo. Har chapter mein yahi use honge. Market mein wholesalers aur billing apps bhi yahi words bolte hain.</p>
   <div class="ledger">
     <div class="title">Glossary</div>
     <table>
       <tr><th>Word</th><th>Meaning</th></tr>
-      <tr><td><b>CP</b><br>Cost Price</td><td>What you pay the wholesaler for one piece.</td></tr>
-      <tr><td><b>Landed cost</b></td><td>CP plus everything you spent to bring the piece to your shelf: transport, loading, packing, tags. This is your real cost.</td></tr>
-      <tr><td><b>SP</b><br>Selling Price</td><td>What the customer finally pays you.</td></tr>
-      <tr><td><b>Tag price</b></td><td>The price written on the tag or the first price you say. Also called the asking price. In a bargaining town it is higher than the price you expect to get.</td></tr>
-      <tr><td><b>MRP</b></td><td>Maximum Retail Price printed by a brand. You cannot charge more than MRP on branded goods. You can charge less.</td></tr>
-      <tr><td><b>Profit</b></td><td>SP minus landed cost, for one piece.</td></tr>
-      <tr><td><b>Margin</b></td><td>Profit as a percentage of the <i>selling price</i>.</td></tr>
-      <tr><td><b>Markup</b></td><td>Profit as a percentage of the <i>cost</i>.</td></tr>
-      <tr><td><b>Discount</b></td><td>How much below the tag price the customer pays. Usually a percentage of the tag price.</td></tr>
-      <tr><td><b>Floor price</b></td><td>Your lowest allowed price for a piece. Below it you refuse the sale. You decide it before the customer arrives.</td></tr>
-      <tr><td><b>Overheads</b></td><td>Shop costs that exist even when you sell nothing: rent, electricity, salary, internet, loan interest.</td></tr>
-      <tr><td><b>Stock / inventory</b></td><td>All the clothes you own and have not yet sold. It is money sitting on shelves.</td></tr>
-      <tr><td><b>Dead stock</b></td><td>Pieces nobody wants at the current price. Money stuck.</td></tr>
+      <tr><td><b>CP</b><br>Cost Price</td><td>Wholesaler ko ek piece ke liye jo aap dete ho.</td></tr>
+      <tr><td><b>Landed cost</b></td><td>CP plus woh sab jo piece ko aapki shelf tak laane mein laga: transport, loading, packing, tags. Yahi aapki <b>asli cost</b> hai.</td></tr>
+      <tr><td><b>SP</b><br>Selling Price</td><td>Customer finally aapko jo paisa deta hai.</td></tr>
+      <tr><td><b>Tag price</b></td><td>Tag par likha price, ya woh pehla price jo aap bolte ho. Ise asking price bhi kehte hain. Bargaining wale town mein yeh us price se zyada hota hai jo aap expect karte ho.</td></tr>
+      <tr><td><b>MRP</b></td><td>Brand ka chhapa hua Maximum Retail Price. Branded goods par MRP se zyada nahi le sakte. Kam le sakte ho.</td></tr>
+      <tr><td><b>Profit</b></td><td>SP minus landed cost, ek piece ke liye. (Ise <b>gross profit</b> bhi kehte hain, neeche dekho.)</td></tr>
+      <tr><td><b>Margin</b></td><td>Profit, <i>selling price</i> ke percentage ke roop mein.</td></tr>
+      <tr><td><b>Markup</b></td><td>Profit, <i>cost</i> ke percentage ke roop mein.</td></tr>
+      <tr><td><b>Discount</b></td><td>Tag price se kitna neeche customer pay karta hai. Aam taur par tag price ka percentage.</td></tr>
+      <tr><td><b>Floor price</b></td><td>Ek piece ke liye aapka sabse neeche ka allowed price. Isse neeche sale mana kar do. Customer aane se pehle hi decide karo.</td></tr>
+      <tr><td><b>Overheads / fixed costs</b></td><td>Shop ke woh kharche jo tab bhi lagte hain jab ek bhi piece nahi bika: rent, bijli, salary, internet, loan interest.</td></tr>
+      <tr><td><b>Stock / inventory</b></td><td>Aapke paas jitne bhi kapde hain aur abhi bike nahi. Shelf par baitha hua paisa.</td></tr>
+      <tr><td><b>Dead stock</b></td><td>Woh pieces jo current price par koi nahi leta. Phasa hua paisa.</td></tr>
+      <tr><td><b>Footfall</b></td><td>Din mein kitne log shop mein aate hain (kharide ya na kharide).</td></tr>
+      <tr><td><b>Udhar</b></td><td>Customer ya supplier ke saath paisa baad mein dene ka arrangement.</td></tr>
     </table>
   </div>
-  <div class="why"><b>Why this matters</b>Most confusion in pricing comes from mixing these words, especially margin and markup. Chapter 4 fixes that.</div>
+
+  <div class="rule"><span class="lab">Gross profit vs net profit</span>
+    <p><b>Gross profit</b> = selling price − landed cost. Yeh sirf <i>kapde</i> ka profit hai, shop ke kharche se pehle.</p>
+    <p><b>Net profit</b> = poore mahine ka gross profit − rent, salary, bijli, loan interest aur baaki fixed costs (aur tax). Yahi paisa asal mein aapke paas bachta hai.</p>
+    <p>Is guide mein chapter 4 se 8 tak "profit" ka matlab gross profit hai. Chapter 9 mein hum dekhenge ki gross profit se rent kaise nikalta hai.</p>
+  </div>
+  <div class="why"><b>Why this matters</b>Pricing mein zyaadatar confusion in words ko mix karne se hota hai, khaaskar margin aur markup. Chapter 4 mein yeh saaf ho jayega.</div>
 </section>
 
 <!-- 3 -->
 <section class="chapter" id="c3">
   <div class="chap-head"><span class="chap-no">03</span><h2>Percentages from zero</h2></div>
-  <p>The word <i>percent</i> means <b>out of 100</b>. So 20% means 20 out of every 100.</p>
-  <p>If something costs ₹100 and you take 20%, you take ₹20. If it costs ₹500, there are five hundreds in it, so you take 5 × ₹20 = ₹100. That is all a percentage is: a fraction with 100 at the bottom.</p>
+  <p><i>Percent</i> ka matlab hai <b>100 mein se</b>. Toh 20% ka matlab hua har 100 mein se 20.</p>
+  <p>Agar kisi cheez ki cost ₹100 hai aur aap 20% lete ho, toh ₹20 liye. Agar cost ₹500 hai, toh usmein paanch sau hain, isliye 5 × ₹20 = ₹100. Percentage bas itna hi hai: ek fraction jiske neeche 100 hai.</p>
   <div class="formula"><span class="cap">The one formula</span>
     <b>Percent of a number</b> = number × percent ÷ 100<br>
     20% of ₹500 = 500 × 20 ÷ 100 = ₹100
@@ -212,12 +356,12 @@ footer{margin-top:64px;padding-top:16px;border-top:2px solid var(--fg);font-size
 
   <h3>Quick tricks to do it in your head</h3>
   <ul class="plain">
-    <li><b>10%</b>: move the last digit away. 10% of ₹640 is ₹64.</li>
-    <li><b>5%</b>: half of 10%. 5% of ₹640 is ₹32.</li>
-    <li><b>20%</b>: double 10%. 20% of ₹640 is ₹128.</li>
-    <li><b>25%</b>: divide by 4. 25% of ₹640 is ₹160.</li>
-    <li><b>50%</b>: divide by 2.</li>
-    <li><b>15%</b>: 10% plus 5%. 15% of ₹640 is ₹64 + ₹32 = ₹96.</li>
+    <li><b>10%</b>: aakhri digit hata do. ₹640 ka 10% hai ₹64.</li>
+    <li><b>5%</b>: 10% ka aadha. ₹640 ka 5% hai ₹32.</li>
+    <li><b>20%</b>: 10% ko double karo. ₹640 ka 20% hai ₹128.</li>
+    <li><b>25%</b>: 4 se bhag do. ₹640 ka 25% hai ₹160.</li>
+    <li><b>50%</b>: 2 se bhag do.</li>
+    <li><b>15%</b>: 10% plus 5%. ₹640 ka 15% hai ₹64 + ₹32 = ₹96.</li>
   </ul>
 
   <div class="ledger">
@@ -235,21 +379,32 @@ footer{margin-top:64px;padding-top:16px;border-top:2px solid var(--fg);font-size
   </div>
 
   <h3>Going the other way: what percent is this?</h3>
-  <p>A customer is given ₹50 off a ₹500 shirt. What percent discount is that?</p>
+  <p>Ek customer ko ₹500 ki shirt par ₹50 off diya. Yeh kitna percent discount hua?</p>
   <div class="formula"><b>Percent</b> = part ÷ whole × 100<br>50 ÷ 500 × 100 = 10%</div>
 
-  <div class="rule"><span class="lab">The most important habit</span>
-    <p>Every percentage is a percentage <b>of something</b>. Before you use one, ask: <b>percent of what?</b> That "what" is called the base.</p>
-    <p>Discount % uses the <b>tag price</b> as the base. Margin % uses the <b>selling price</b>. Markup % uses the <b>cost</b>. Different bases give different numbers for the same rupees. Most mistakes in shops come from forgetting this.</p>
+  <h3>Price ko seedha kam ya zyada karna</h3>
+  <p>Calculator ke bina bhi ek shortcut kaam aata hai. Percent ko 100 mein se ghatao ya 100 mein jodo, phir decimal banake guna karo.</p>
+  <div class="formula">
+    <b>20% off</b>: price × 0.80 &nbsp;→&nbsp; ₹549 × 0.80 = ₹439<br>
+    <b>5% GST add</b>: price × 1.05 &nbsp;→&nbsp; ₹500 × 1.05 = ₹525
   </div>
+
+  <div class="rule"><span class="lab">The most important habit</span>
+    <p>Har percentage kisi <b>cheez ka</b> percentage hota hai. Use karne se pehle poochho: <b>percent of what?</b> Us "what" ko base kehte hain.</p>
+    <p>Discount % ka base hai <b>tag price</b>. Margin % ka base hai <b>selling price</b>. Markup % ka base hai <b>cost</b>. Alag base, toh same rupees ke liye alag number aata hai. Shops mein zyaadatar galtiyan yahi bhool jaane se hoti hain.</p>
+  </div>
+
+  <h3 class="doubts">Doubt? Yeh poochhna normal hai</h3>
+  <details class="q"><summary>Customer bolta hai "20% kam karo". Kisme se 20%?</summary>
+    <div class="ans"><p>Customer ka matlab hamesha <b>tag price</b> ka 20% hota hai. Tag ₹549 hai toh 20% = ₹110, aur woh ₹439 dena chahega. Aapko isse apne floor price (₹434) se compare karna hai. Chapter 7 mein poora example hai.</p></div></details>
 </section>
 
 <!-- 4 -->
 <section class="chapter" id="c4">
   <div class="chap-head"><span class="chap-no">04</span><h2>Profit: margin and markup</h2></div>
-  <p>Profit on one piece is simple:</p>
+  <p>Ek piece ka profit simple hai:</p>
   <div class="formula"><b>Profit</b> = Selling Price − Landed Cost</div>
-  <p>Now take a shirt that cost you ₹330 landed and sells for ₹440. Profit is ₹110. Two different percentages describe it.</p>
+  <p>Ab ek shirt lo jo aapko landed ₹330 padi aur ₹440 mein bik gayi. Profit hua ₹110. Is ₹110 ko do alag percentages se bata sakte hain.</p>
   <div class="ledger">
     <div class="title">Same shirt, two percentages</div>
     <table>
@@ -260,6 +415,72 @@ footer{margin-top:64px;padding-top:16px;border-top:2px solid var(--fg);font-size
       <tr class="hl"><td><b>Margin</b> = 110 ÷ 440 × 100 (base: selling price)</td><td class="r">25%</td></tr>
     </table>
   </div>
+
+  <h3 id="c4-diff">Margin or markup? The difference, made simple</h3>
+  <p>Margin aur markup do alag profit <b>nahi</b> hain. Yeh wahi ₹110 hai, bas percentage mein do alag tareeke se likha gaya. Farak sirf is mein hai ki aap ₹110 ko <b>kis se divide</b> karte ho.</p>
+  <ol class="plain">
+    <li><b>Apni cost nikalo.</b> Yeh landed cost hai: supplier ka price + transport + loading + packing (chapter 5). Hamari shirt ke liye: <b>₹330</b>.</li>
+    <li><b>Rupees mein profit nikalo.</b> Selling price − cost = 440 − 330 = <b>₹110</b>. Margin aur markup dono ke liye yeh number same hai.</li>
+    <li><b>₹110 ko percentage banao.</b> Yahan dono alag hote hain:
+      <ul class="plain">
+        <li><b>Markup:</b> profit ko <b>cost</b> se divide karo. 110 ÷ 330 = <b>33%</b></li>
+        <li><b>Margin:</b> profit ko <b>selling price</b> se divide karo. 110 ÷ 440 = <b>25%</b></li>
+      </ul>
+    </li>
+  </ol>
+
+  <div class="mm-fig" role="img" aria-label="A ₹440 bar split into ₹330 cost and ₹110 profit. Margin compares the profit with the whole bar. Markup compares the profit with the cost part only.">
+    <div class="mm-row">
+      <div class="h">Margin: profit compared with the whole selling price</div>
+      <div class="mm-bar"><span class="c">Cost ₹330</span><span class="p">Profit ₹110</span></div>
+      <div class="mm-base" style="width:100%"></div>
+      <div class="mm-note">Base = poori bar, <b>₹440</b>. Toh 110 ÷ 440 = <b>25%</b>.</div>
+    </div>
+    <div class="mm-row">
+      <div class="h">Markup: profit compared with the cost only</div>
+      <div class="mm-bar"><span class="c">Cost ₹330</span><span class="p">Profit ₹110</span></div>
+      <div class="mm-base" style="width:75%"></div>
+      <div class="mm-note">Base = sirf cost wala hissa, <b>₹330</b>. Toh 110 ÷ 330 = <b>33%</b>.</div>
+    </div>
+  </div>
+  <p>Laal hissa wahi hai, par bade base (₹440) se naapo toh percentage chhota aata hai. Isliye <b>markup hamesha bada number hota hai</b>.</p>
+
+  <div class="ledger">
+    <div class="title">Side by side</div>
+    <table>
+      <tr><th></th><th>Markup</th><th>Margin</th></tr>
+      <tr><td><b>Question it answers</b></td><td>Maine cost ke upar kitna add kiya?</td><td>Customer ke har ₹100 mein se kitna mera hai?</td></tr>
+      <tr><td><b>Divide profit by</b></td><td>Cost (₹330)</td><td>Selling price (₹440)</td></tr>
+      <tr><td><b>Our shirt</b></td><td>33%</td><td>25%</td></tr>
+      <tr><td><b>To get the price</b></td><td>Cost × 1.33</td><td>Cost ÷ 0.75</td></tr>
+      <tr><td><b>Can it go above 100%?</b></td><td>Haan. Price double karna = 100% markup.</td><td>Nahi, kabhi nahi. Price double karna = 50% margin.</td></tr>
+      <tr><td><b>Who uses it</b></td><td>Suppliers aur dusre dukandaar, baat karte waqt</td><td>Aap: floor price, bargaining, discount aur break-even ke liye</td></tr>
+    </table>
+  </div>
+
+  <p>Koi markup bataye toh kuch bhi decide karne se pehle use margin mein convert karo. Yeh table common numbers ke liye convert kar deti hai:</p>
+  <div class="ledger">
+    <div class="title">Markup to margin, on a ₹330 shirt</div>
+    <table>
+      <tr><th>Multiply cost by</th><th class="r">Markup</th><th class="r">Margin</th><th class="r">Price</th></tr>
+      <tr><td>× 1.25</td><td class="r">25%</td><td class="r">20%</td><td class="r">₹413</td></tr>
+      <tr class="hl"><td>× 1.33</td><td class="r">33%</td><td class="r">25%</td><td class="r">₹440</td></tr>
+      <tr><td>× 1.50</td><td class="r">50%</td><td class="r">33%</td><td class="r">₹495</td></tr>
+      <tr><td>× 2.00</td><td class="r">100%</td><td class="r">50%</td><td class="r">₹660</td></tr>
+    </table>
+  </div>
+  <div class="formula">
+    <span class="cap">Converting between them (decimals use karo: 33% = 0.33)</span>
+    <b>Margin</b> = markup ÷ (1 + markup) &nbsp;→&nbsp; 0.33 ÷ 1.33 = 0.25 = 25%<br>
+    <b>Markup</b> = margin ÷ (1 − margin) &nbsp;→&nbsp; 0.25 ÷ 0.75 = 0.33 = 33%
+  </div>
+  <div class="rule"><span class="lab">Remember it like this</span>
+    <p><b>Mark-UP</b> aapki cost se upar dekhta hai: "maine upar kitna rakha?"</p>
+    <p><b>Margin</b> customer ke paise ko dekhta hai: "unhone jo diya, usmein se kitna mera hai?"</p>
+    <p>Rupees same, base alag. Decision margin se lo.</p>
+  </div>
+
+  <h3>The formulas</h3>
   <div class="formula">
     <b>Margin %</b> = (SP − Cost) ÷ SP × 100<br>
     <b>Markup %</b> = (SP − Cost) ÷ Cost × 100<br><br>
@@ -267,20 +488,39 @@ footer{margin-top:64px;padding-top:16px;border-top:2px solid var(--fg);font-size
     SP from target margin: <b>SP = Cost ÷ (1 − margin)</b><br>
     SP from target markup: <b>SP = Cost × (1 + markup)</b>
   </div>
-  <p>Check the first one: cost ₹330, target margin 25% (which is 0.25). SP = 330 ÷ 0.75 = ₹440. Correct.</p>
+  <p>Pehle wale ko check karo: cost ₹330, target margin 25% (yaani 0.25). SP = 330 ÷ 0.75 = ₹440. Sahi.</p>
 
-  <div class="rule"><span class="lab">Use margin</span>
-    <p>Margin tells you how much of each ₹100 a customer hands over is yours before shop costs. A 25% margin means ₹25 of every ₹100. Discounts, bargaining and the customer's wallet all work on the selling price, so margin follows what is really happening at the counter. Use margin for your decisions.</p>
+  <div class="rule"><span class="lab">Where you use each one</span>
+    <p><b>Use margin at your counter.</b> Ek customer ₹440 wali shirt ke liye ₹400 offer karta hai. Profit hoga ₹70, aur ₹400 mein se ₹70 hai 17.5%. Agar aap kabhi 20% se neeche nahi jaate, toh aap mana kar doge. Yeh decision seconds mein ho jata hai kyunki margin us paise ka hissa hai jo customer de raha hai.</p>
+    <p><b>Know markup when a supplier quotes it.</b> Ek wholesaler bolta hai "main apni cost mein 20% add karta hoon". Uski cost ₹250 hai, toh woh ₹300 mein bechta hai. Yeh 20% markup hai, par uska margin sirf 50 ÷ 300 = 16.7% hai. Agar aap 20% off maangoge, toh woh ₹240 par hoga, jo uski apni cost ₹250 se neeche hai. Farak jaanne se pata chalta hai ki woh bargain mein asal mein kitna neeche aa sakta hai.</p>
+  </div>
+  <div class="warn"><span class="lab">This is not your take-home</span>
+    <p>Yahan margin <i>shop ke kharche se pehle</i> ka hai. Har ₹100 mein se jo ₹25 bache, unhi se rent, bijli, helper, loan EMI aur aapki apni salary deni hai. Chapter 9 mein dekhenge ki iske liye kitni shirts bechni padengi.</p>
   </div>
   <div class="warn"><span class="lab">Common trap</span>
-    <p>A supplier or friend says "keep 30% profit". Ask which one. 30% markup on ₹330 gives ₹429. 30% margin gives ₹471. That is ₹42 difference on one shirt, and over 500 shirts it is ₹21,000.</p>
+    <p>Koi supplier ya dost bolta hai "30% profit rakho". Shirt aapko ₹330 padi. Poochho: 30% kis cheez ka? Do jawab hain.</p>
+    <ul class="plain">
+      <li><b>Cost ka 30% (markup).</b> ₹330 ka 30% hai ₹99. Jod do: 330 + 99 = <b>₹429</b>.</li>
+      <li><b>Selling price ka 30% (margin).</b> Aap chahte ho ki customer ke har ₹100 mein se ₹30 aapke ho, toh cost ke liye 70% bachta hai. Divide karo: 330 ÷ 0.70 = <b>₹471</b>. Check: profit ₹141, aur 141 ÷ 471 = 30%.</li>
+    </ul>
+    <p>Words same, par ek shirt par ₹42 ka farak (471 − 429). 500 shirts bechi toh 42 × 500 = <b>₹21,000</b>. Isliye hamesha poochho ki unka matlab kaunsa hai.</p>
   </div>
+
+  <h3 class="doubts">Doubt? Yeh poochhna normal hai</h3>
+  <details class="q"><summary>Mujhe sirf markup se price set karna aasan lagta hai. Kya galat hai?</summary>
+    <div class="ans"><p>Galat nahi hai, "cost × 1.33" dimaag mein karna aasan hai. Bas result ko margin mein check karo: 330 × 1.33 = ₹440, aur ₹440 par margin 25% hai. Agar 25% aapke minimum se upar hai toh theek. Pehle markup se price nikalo, phir margin se decision lo.</p></div></details>
+  <details class="q"><summary>100% markup ka matlab 100% margin hota hai kya?</summary>
+    <div class="ans"><p>Nahi. 100% markup matlab price cost ka double: ₹330 ki shirt ₹660 mein. Profit ₹330, aur ₹330 ÷ ₹660 = 50% margin. Margin kabhi 100% nahi hota jab tak cost zero na ho.</p></div></details>
+  <details class="q"><summary>Customer ko kya batana chahiye, margin ya markup?</summary>
+    <div class="ans"><p>Kuch nahi. Customer ko sirf price se matlab hai. Margin aur markup aapke apne hisaab ke numbers hain. Customer ke saamne apna margin kabhi mat bolo.</p></div></details>
+  <details class="q"><summary>Isme rent aur bijli kahan hai?</summary>
+    <div class="ans"><p>Is chapter ke numbers mein nahi hain. Margin sirf yeh batata hai ki kapde se kitna bacha. Rent, bijli, salary alag hain aur chapter 9 mein judte hain. Dono ko mat mix karo.</p></div></details>
 </section>
 
 <!-- 5 -->
 <section class="chapter" id="c5">
   <div class="chap-head"><span class="chap-no">05</span><h2>What one shirt really costs you</h2></div>
-  <p>The price on the wholesaler's bill is not your cost. Suppose you buy 40 shirts at ₹300 each from a wholesale market, for example Fancy Bazar in Guwahati. Then you pay to bring them home.</p>
+  <p>Wholesaler ke bill ka price aapki cost nahi hai. Maan lo aap kisi wholesale market se (jaise Guwahati ka Fancy Bazar) 40 shirts ₹300 ke hisaab se kharidte ho. Phir unhe ghar tak laane ka kharcha bhi dena padta hai.</p>
   <div class="ledger">
     <div class="title">Buying 40 shirts</div>
     <table>
@@ -292,22 +532,35 @@ footer{margin-top:64px;padding-top:16px;border-top:2px solid var(--fg);font-size
       <tr><td>Per shirt (₹13,200 ÷ 40)</td><td class="r">₹330</td></tr>
     </table>
   </div>
-  <p>Now add one more truth. Some pieces get damaged, come with a stitching fault, or stay unsold forever. Suppose 2 of the 40 never sell. You spent ₹13,200 but only 38 pieces will pay you back.</p>
+  <p>Ab ek aur sachchai jodo. Kuch pieces kharab nikalte hain, stitching fault ke saath aate hain, ya hamesha unsold rehte hain. Maan lo 40 mein se 2 kabhi nahi bikte. Aapne ₹13,200 kharch kiye, par sirf 38 pieces hi paisa wapas laayenge.</p>
   <div class="formula"><b>Landed cost per sellable piece</b> = total spent ÷ pieces you can sell<br>13,200 ÷ 38 = <b>₹347</b></div>
-  <p>That ₹347 is your real cost. Every price you set must start from it, not from ₹300.</p>
-  <div class="why"><b>Why this matters</b>If you price from ₹300, you think you earn ₹140 on a ₹440 shirt. Starting from ₹347 you actually earn ₹93. The first number is a pleasant story. The second is the one that pays your rent.</div>
-  <p>In the calculators below, "damaged or unsold allowance" does this step for you. Start with 3% to 5% and adjust with experience.</p>
+  <p>Yeh ₹347 aapki asli cost hai. Har price isi se shuru karo, ₹300 se nahi.</p>
+  <div class="why"><b>Why this matters</b>Agar aap ₹300 se price set karoge, toh sochoge ki ₹440 ki shirt par ₹140 kamate ho. ₹347 se shuru karoge toh asal mein ₹93 kamate ho. Pehla number ek achhi kahani hai. Doosra woh number hai jo sach mein har shirt aapko deti hai.</div>
+  <p>Dhyan do: ₹347 sirf <i>shirt</i> ki cost hai. Rent, bijli, helper ki salary, loan EMI aur aapki apni pay isme nahi hain, kyunki woh har shirt bikne ke saath nahi badalte. Har shirt par ₹93 woh paisa hai jo inhe dene ke liye available hai. Chapter 9 mein hum mahine ke yeh kharche jodte hain aur dekhte hain ki unhe cover karne ke liye kitni shirts bechni padengi. Uske baad jo bachta hai, wahi aapka asli profit hai.</p>
+  <p>Neeche calculators mein "damaged or unsold allowance" yahi step aapke liye kar deta hai. 3% se 5% se shuru karo aur experience ke saath adjust karo.</p>
+
+  <div class="tip"><span class="lab">Anubhav se</span>
+    <p>Pehli baar maal aaye toh bill ke saath ek chhoti list bana lo: kapde ka paisa, gaadi, coolie, packing, aur khaane-peene ka kharcha jo sirf maal laane ke liye hua. Sab jodo aur pieces se divide karo. Yeh 10 minute ka kaam hai, aur yahi aapki asli landed cost hai.</p>
+  </div>
+
+  <h3 class="doubts">Doubt? Yeh poochhna normal hai</h3>
+  <details class="q"><summary>Landed cost mein rent aur electricity kyun nahi jodte?</summary>
+    <div class="ans"><p>Kyunki rent ₹8,000 hai chahe aap 10 shirts bechein ya 200. Woh ek shirt se nahi jude. Landed cost sirf woh kharche hain jo is maal ko laane mein hue. Rent aur baaki fixed kharche chapter 9 (break-even) mein alag se judte hain.</p></div></details>
+  <details class="q"><summary>"Damaged or unsold" kitna maanu? 3%, 5% ya 10%?</summary>
+    <div class="ans"><p>Shuru mein 5% rakho, thoda safe side par. Ek-do mahine baad apna asli number dekho: kitne pieces kharab aaye, kitne bilkul nahi bike. Phir allowance badal do. Naye owner aksar isse kam andaza lagate hain, aur baad mein pachtate hain.</p></div></details>
+  <details class="q"><summary>Wholesaler se bill lena zaroori hai?</summary>
+    <div class="ans"><p>Haan. Bill ke bina aapke paas na cost ka proof hai, na GST ka record, aur kharab maal wapas karne ki baat karna mushkil hota hai. Har kharid ka pucca bill ya parchi lo aur uski photo phone mein rakho.</p></div></details>
 </section>
 
 <!-- 6 -->
 <section class="chapter" id="c6">
   <div class="chap-head"><span class="chap-no">06</span><h2>Setting a price when customers bargain</h2></div>
-  <p>In Goreswar you know the customer will ask for less. So the number you say first, the tag price, has to be high enough to leave room for the bargain and still give you profit at the lowest price you will accept.</p>
-  <p>Work backwards in three steps.</p>
+  <p>Goreswar mein aapko pata hai ki customer kam price maangega. Isliye jo number aap pehle bolte ho, yaani tag price, itna high hona chahiye ki bargain ke baad bhi, sabse kam price par jo aap accept karte ho, usme profit bacha rahe.</p>
+  <p>Teen steps mein ulta chalo.</p>
   <ol class="plain">
-    <li><b>Landed cost.</b> From chapter 5. Example: ₹347.</li>
-    <li><b>Floor price.</b> The lowest price you accept. Choose a minimum margin you are happy with at the floor, say 20%. Floor = Cost ÷ (1 − 0.20) = 347 ÷ 0.80 = <b>₹434</b>.</li>
-    <li><b>Tag price.</b> Decide the largest bargain you will allow, say 20% off the tag. Tag = Floor ÷ (1 − 0.20) = 434 ÷ 0.80 = <b>₹543</b>. Round up to a friendly price like <b>₹549</b>.</li>
+    <li><b>Landed cost.</b> Chapter 5 se. Example: ₹347.</li>
+    <li><b>Floor price.</b> Sabse kam price jo aap accept karte ho. Floor par ek minimum margin choose karo jisse aap khush ho, maan lo 20%. Floor = Cost ÷ (1 − 0.20) = 347 ÷ 0.80 = <b>₹434</b>.</li>
+    <li><b>Tag price.</b> Sabse bada bargain decide karo jo aap allow karoge, maan lo tag ka 20% off. Tag = Floor ÷ (1 − 0.20) = 434 ÷ 0.80 = <b>₹543</b>. Isse ek friendly price tak round up karo, jaise <b>₹549</b>.</li>
   </ol>
   <div class="formula">
     <b>Floor</b> = Cost ÷ (1 − minimum margin)<br>
@@ -315,7 +568,8 @@ footer{margin-top:64px;padding-top:16px;border-top:2px solid var(--fg);font-size
     <span class="cap">Together</span>
     <b>Tag</b> = Cost ÷ [(1 − minimum margin) × (1 − biggest bargain)]
   </div>
-  <p>At tag ₹549, a 20% bargain takes the price to ₹439. That is above your ₹434 floor, so you still earn about 21% margin. If the customer pays the full ₹549, your margin is about 37%. You do not need every customer to bargain. The ones who pay full price make up for the ones who push hard.</p>
+  <div class="tagcard"><span class="k">Floor price for this shirt</span><span class="v">₹434</span><span class="s">Landed ₹347, minimum margin 20%. Tag ₹549.</span></div>
+  <p>₹549 ke tag par 20% bargain se price ₹439 ho jata hai. Yeh aapke ₹434 floor se upar hai, toh aapko phir bhi lagbhag 21% margin milta hai. Agar customer poora ₹549 de de toh margin lagbhag 37% hai. Har customer ko bargain karne ki zaroorat nahi. Jo poora price dete hain, woh un logon ki kami poori kar dete hain jo zyada dabate hain.</p>
 
   <div class="calc" id="calcA">
     <div class="ch">Calculator 1 &middot; Price setter</div>
@@ -336,12 +590,25 @@ footer{margin-top:64px;padding-top:16px;border-top:2px solid var(--fg);font-size
       <div class="ladder" id="a_ladder"></div>
     </div>
   </div>
+
+  <div class="tip"><span class="lab">Anubhav se</span>
+    <p>Shuru mein har ek item ke liye alag calculation mat karo. Items ko 3 ya 4 groups mein baanto (jaise basic T-shirts, formal shirts, jeans, kurtis), har group ka ek typical landed cost lo, aur us group ka floor aur tag nikaal lo. Baad mein jab sales ka pattern samajh aaye tab item-wise karo.</p>
+    <p>Round figure (₹549, ₹499) isliye achha lagta hai ki customer ko ₹550 ya ₹500 se thoda kam lagta hai. Zyaadatar dukaandar yahi karte hain.</p>
+  </div>
+
+  <h3 class="doubts">Doubt? Yeh poochhna normal hai</h3>
+  <details class="q"><summary>Main cost ka seedha double kyun nahi rakh sakta?</summary>
+    <div class="ans"><p>Double matlab 100% markup, yaani 50% margin. ₹330 ki shirt ₹660 mein. Agar nearby shops mein wahi shirt ₹500 mein mil rahi hai toh aapki ₹660 wali shirt koi nahi lega. Price aapki cost se nahi, market ke ceiling se bhi bandha hota hai. Chapter 9 mein "maximum margin" yahi batata hai.</p></div></details>
+  <details class="q"><summary>Customer bolta hai "dusri shop mein ₹499 mein mil rahi hai". Ab?</summary>
+    <div class="ans"><p>Apna floor dekho. Is shirt ka floor ₹434 hai, toh ₹499 par aap ₹152 kamate ho aur margin 30.5% rehta hai. Aap match kar sakte ho. Agar unka price aapke floor se neeche hota (jaise ₹400) toh match mat karo. Shayad woh loss mein bech rahe hain ya unki cost kam hai. Aap size, quality aur service se jeeto, loss se nahi.</p></div></details>
+  <details class="q"><summary>Kya main ek hi tag price sab par laga doon, jaise sab T-shirt ₹499?</summary>
+    <div class="ans"><p>Sirf tab jab sabki landed cost lagbhag same ho. Agar ek T-shirt ₹250 ki hai aur doosri ₹350 ki, toh ₹499 par pehli par bahut margin aur doosri par bahut kam margin hoga. Group ke andar cost jitni kareeb ho, ek price utna theek chalta hai.</p></div></details>
 </section>
 
 <!-- 7 -->
 <section class="chapter" id="c7">
   <div class="chap-head"><span class="chap-no">07</span><h2>Handling the bargain: 500, 550, 600</h2></div>
-  <p>Customers do not say "15% off". They say "₹500". You have to turn their rupee offer into a profit number in your head, quickly and calmly. Here is the same shirt (landed cost ₹347, tag ₹549) at different amounts the customer might pay.</p>
+  <p>Customer "15% off" nahi bolta. Woh bolta hai "₹500". Aapko unka rupees wala offer apne dimaag mein profit ke number mein badalna hai, jaldi aur shaanti se. Yeh wahi shirt hai (landed cost ₹347, tag ₹549) alag-alag amounts par jo customer de sakta hai.</p>
   <div class="ledger">
     <div class="title">Tag ₹549, landed cost ₹347</div>
     <table>
@@ -354,7 +621,7 @@ footer{margin-top:64px;padding-top:16px;border-top:2px solid var(--fg);font-size
       <tr><td>₹350</td><td class="r">36.2%</td><td class="r">₹3</td><td class="r">0.8%</td></tr>
     </table>
   </div>
-  <p>Look at the ₹350 row. The customer feels they got a great deal and you feel you made a sale. You earned ₹3, and the shop spent more than ₹3 on electricity while they stood there. A sale at nearly cost is not a sale, it is a gift.</p>
+  <p>₹350 wali row dekho. Customer ko lagta hai unhe bahut achha deal mila, aur aapko lagta hai sale ho gayi. Aapne kamaye ₹3, aur jitni der woh khade rahe, shop ne usse zyada ki bijli kharch kar di. Cost ke kareeb ki sale, sale nahi hoti, woh gift hoti hai.</p>
 
   <div class="calc" id="calcB">
     <div class="ch">Calculator 2 &middot; Check any offer</div>
@@ -376,27 +643,41 @@ footer{margin-top:64px;padding-top:16px;border-top:2px solid var(--fg);font-size
 
   <h3>Rules for bargaining without losing money</h3>
   <ul class="plain">
-    <li><b>Know your floor before opening the shop each day.</b> Write it on the back of the tag in a code only you and your helper understand. Then nobody has to calculate while a customer is waiting.</li>
-    <li><b>Come down in small steps.</b> From ₹549 go to ₹520, then ₹499, then ₹470. Small steps show the customer you are really moving, and they take longer to reach your floor.</li>
-    <li><b>Give a reason with each drop.</b> "Because you are taking two" or "because it is your first purchase". The customer feels they earned it.</li>
-    <li><b>Sell more pieces, not a lower price.</b> "Two shirts for ₹950" lowers the price per piece a little but doubles the profit rupees from one customer. Check the floor on each piece first.</li>
-    <li><b>It is fine to say no.</b> Below your floor, smile and let them walk. Another customer will pay properly, and the one who left often comes back.</li>
-    <li><b>Let your helper bargain only inside the floor.</b> Give them a written floor for each item type and a small reward for selling above it.</li>
+    <li><b>Roz shop kholne se pehle apna floor jaano.</b> Tag ke peeche ek code mein likh do jo sirf aap aur aapka helper samjhe. Phir customer ke saamne kisi ko calculate nahi karna padta.</li>
+    <li><b>Chhote steps mein neeche aao.</b> ₹549 se ₹520, phir ₹499, phir ₹470. Chhote steps se customer ko dikhta hai ki aap sach mein hil rahe ho, aur floor tak pahunchne mein time lagta hai.</li>
+    <li><b>Har kami ke saath ek wajah do.</b> "Aap do le rahe ho" ya "pehli baar aa rahe ho". Customer ko lagta hai unhone yeh kamaya hai.</li>
+    <li><b>Price nahi, pieces zyada becho.</b> "Do shirts ₹950 mein" se har piece ka price thoda kam hota hai, par ek customer se profit ke rupees double ho jaate hain. Pehle har piece par floor check karo.</li>
+    <li><b>Mana karna bilkul theek hai.</b> Floor se neeche muskurao aur jaane do. Doosra customer sahi price dega, aur jo gaya woh aksar wapas aata hai.</li>
+    <li><b>Helper ko sirf floor ke andar bargain karne do.</b> Har item type ka written floor do, aur floor se upar bechne par chhota sa inaam.</li>
   </ul>
-  <div class="why"><b>Why this matters</b>Your bargaining limit is a business rule, not a feeling. When the rule is set in advance, you lose no sleep over any individual sale.</div>
+  <div class="why"><b>Why this matters</b>Aapki bargaining limit ek business rule hai, feeling nahi. Jab rule pehle se tay ho, toh kisi bhi sale ke liye neend kharab nahi hoti.</div>
+
+  <div class="tip"><span class="lab">Anubhav se</span>
+    <ul>
+      <li>Pehla offer kabhi seedha accept mat karo, chahe woh floor se upar ho. Ek chhota counter zaroor do. Customer ko lagta hai unhone bargain jeeta, aur aap ₹20 se ₹30 zyada kamate ho.</li>
+      <li>Jo customer bina bargain ke poora price de, use khush rakho. Wahi aapke margin ko upar le jata hai.</li>
+      <li>Roz shaam ko 5 minute lo aur dekho: aaj sabse zyada kis price par deals band hui? Yahi aapke asli "market price" ka sabse accha signal hai.</li>
+    </ul>
+  </div>
+
+  <h3 class="doubts">Doubt? Yeh poochhna normal hai</h3>
+  <details class="q"><summary>Customer ek saath 3 shirts le raha hai aur bulk discount maangta hai. Kitna dun?</summary>
+    <div class="ans"><p>Pehle total profit dekho. Agar har shirt par ₹100 profit hai, toh teen par ₹300. Total ₹60 (₹20 per shirt) ki kami dena theek hai, kyunki profit abhi ₹240 hai aur aap teen pieces nikaal rahe ho. Bas har piece par floor ke upar raho.</p></div></details>
+  <details class="q"><summary>Customer aaya, bahut dekha, par bina kharide chala gaya. Kya main kuch galat kar raha hoon?</summary>
+    <div class="ans"><p>Zaroori nahi. Zyaadatar customers pehli baar mein nahi kharidte. Dekho kya wapas aate hain, aur unse pooch lo ki unhe kya chahiye tha (size, colour, price). Ek notebook mein "maanga par nahi tha" likh lo. Yeh aapki next buying ki list ban jayegi.</p></div></details>
 </section>
 
 <!-- 8 -->
 <section class="chapter" id="c8">
   <div class="chap-head"><span class="chap-no">08</span><h2>Discounts and offers: the trap</h2></div>
-  <p>Discounts look small and cost a lot. Take a shirt with landed cost ₹70 sold at ₹100. Margin is 30%, so you earn ₹30 per shirt. Now give 10% off: the price drops to ₹90 and the cost is still ₹70, so profit falls to ₹20.</p>
-  <p>A 10% discount cut your profit by one third, because profit is the small piece left after cost, and the discount comes out of that small piece.</p>
+  <p>Discount chhote dikhte hain par bahut mehnge padte hain. Ek shirt lo jiski landed cost ₹70 hai aur ₹100 mein bikti hai. Margin 30% hai, toh aap har shirt par ₹30 kamate ho. Ab 10% off do: price ₹90 ho gaya aur cost abhi bhi ₹70, toh profit gir ke ₹20 reh gaya.</p>
+  <p>10% discount ne aapka profit ek-tihai kam kar diya, kyunki profit cost ke baad bacha hua chhota sa hissa hai, aur discount usi chhote hisse mein se nikalta hai.</p>
   <div class="formula">
     <span class="cap">If margin is m and discount is d (both as decimals)</span>
     <b>New margin</b> = (m − d) ÷ (1 − d)<br>
     <b>Sales needed to earn the same total profit</b> = m ÷ (m − d) × your old sales
   </div>
-  <p>Here m = 0.30 and d = 0.10. New margin = 0.20 ÷ 0.90 = 22%. Sales needed = 0.30 ÷ 0.20 = 1.5 times. You must sell <b>50% more shirts</b> just to earn what you earned before the discount.</p>
+  <p>Yahan m = 0.30 aur d = 0.10. New margin = 0.20 ÷ 0.90 = 22%. Sales needed = 0.30 ÷ 0.20 = 1.5 guna. Pehle jitna kamate the utna hi kamane ke liye aapko <b>50% zyada shirts</b> bechni padengi.</p>
 
   <div class="calc" id="calcC">
     <div class="ch">Calculator 3 &middot; What does a discount really cost</div>
@@ -413,29 +694,68 @@ footer{margin-top:64px;padding-top:16px;border-top:2px solid var(--fg);font-size
   </div>
 
   <h3>Two discounts in a row do not add up</h3>
-  <p>"10% off, and another 5% off on the bill" is not 15% off. The second discount applies to the already reduced price. On ₹1,000: 10% off gives ₹900, then 5% of ₹900 is ₹45, so you pay ₹855. That is 14.5% off in total. Smaller than 15%, which is good for you, but know the real number.</p>
+  <p>"10% off, aur bill par 5% aur off" matlab 15% off nahi hota. Doosra discount pehle se kam hue price par lagta hai. ₹1,000 par: 10% off se ₹900, phir ₹900 ka 5% hai ₹45, toh customer dega ₹855. Yeh kul 14.5% off hua. 15% se thoda kam, jo aapke liye achha hai, par asli number jaano.</p>
 
   <div class="warn"><span class="lab">Safer ways to give value</span>
     <ul class="plain">
-      <li>Offer a bundle: "2 for ₹950". The customer feels a deal and you move two pieces.</li>
-      <li>Add something cheap that costs you little: free alteration, a pair of socks that cost you ₹15.</li>
-      <li>Run clearance on old stock only, not on new arrivals (chapter 10).</li>
-      <li>Never advertise "flat 50% off" unless you have checked that your tag price allows it. Use calculator 1 first.</li>
+      <li>Bundle offer do: "2 for ₹950". Customer ko deal lagti hai aur aap do pieces nikaalte ho.</li>
+      <li>Kuch sasta add kar do jo aapko kam padta hai: free alteration, ya ₹15 wale ek jode moze.</li>
+      <li>Clearance sirf purane stock par karo, naye arrivals par nahi (chapter 10).</li>
+      <li>"Flat 50% off" tab tak advertise mat karo jab tak check na kar lo ki aapka tag price isse allow karta hai. Pehle calculator 1 use karo.</li>
     </ul>
   </div>
+
+  <h3 class="doubts">Doubt? Yeh poochhna normal hai</h3>
+  <details class="q"><summary>Festival par "Flat 30% off" laga sakta hoon kya?</summary>
+    <div class="ans"><p>Is shirt ke liye (landed ₹347, tag ₹549): 549 × 0.70 = ₹384. Profit sirf ₹37, aur margin lagbhag 10%. Yeh aapke 20% minimum se aadha hai, aur rent nikalne ke liye bahut kam. Agar festival offer chahiye toh "10% off" ya "2 for ₹950" jaise offers chuno, ya sirf slow items par discount do.</p></div></details>
+  <details class="q"><summary>Sale se customers aayenge, toh volume se profit nahi badhega?</summary>
+    <div class="ans"><p>Kabhi-kabhi, par calculator 3 se check karo. 30% margin par 10% discount ke liye 50% zyada sales chahiye. Kya aapke paas utne customers aur utna stock hai? Agar nahi, toh discount se profit girega, badhega nahi.</p></div></details>
 </section>
 
 <!-- 9 -->
 <section class="chapter" id="c9">
-  <div class="chap-head"><span class="chap-no">09</span><h2>Break-even: how much must you sell</h2></div>
-  <p>Profit per shirt is not your profit. From the money made on shirts you must pay the shop's fixed monthly costs. Only what remains is yours.</p>
-  <p>Break-even is the amount of sales where you have paid every fixed cost and earned exactly zero. Below it you lose money. Above it you earn.</p>
+  <div class="chap-head"><span class="chap-no">09</span><h2>Break-even and how much margin you need</h2></div>
+  <p>Ek shirt ka profit aapka profit nahi hai. Shirts se jo paisa bana, usme se shop ke mahine ke fixed kharche dene padte hain. Jo bachta hai, wahi aapka hai.</p>
+  <p>Break-even woh sales hai jahan aapne har fixed cost chuka diya aur kamaya bilkul zero. Isse neeche loss, isse upar kamai.</p>
+
+  <h3>Rent kahan se aata hai? Step by step</h3>
+  <p>Rent, salary aur bijli tab bhi dene padte hain jab ek bhi customer shop mein na aaye. Yeh paisa kapde ki sale ke <b>gross profit</b> se aata hai. Margin batata hai ki har sale mein se kitna us "rent pool" mein jata hai.</p>
+  <ol class="steps">
+    <li><b class="t">Har ₹100 ki sale mein se kitna aapka hai?</b>Margin ka matlab yahi hai. 28% margin par ₹100 ki sale mein se ₹72 supplier ke liye gaye aur ₹28 aapke paas bache.</li>
+    <li><b class="t">Rent unhi ₹28 se nikalta hai.</b>Rent, salary aur bijli supplier wale ₹72 se nahi nikalte. Sirf bache hue ₹28 se nikalte hain.</li>
+    <li><b class="t">Ab ginti karo: kitni sale chahiye?</b>Maan lo fixed kharche ₹30,000 hain. Har ₹100 se ₹28 bachte hain, toh 30,000 ÷ 28 = 1,071 baar ₹100, yaani lagbhag <b>₹1,07,143</b> ki sales.</li>
+  </ol>
+
+  <div class="scen">
+    <h4>Har ₹100 ki sale mein se, 20% margin par</h4>
+    <div class="stack" role="img" aria-label="Of 100 rupees, 80 goes to the supplier and 20 is gross profit."><i class="c" style="width:80%"></i><i class="e" style="width:20%"></i></div>
+    <div class="leg"><span>Supplier ₹80</span><span class="e">Gross profit ₹20</span></div>
+  </div>
+  <div class="scen">
+    <h4>Har ₹100 ki sale mein se, 40% margin par</h4>
+    <div class="stack" role="img" aria-label="Of 100 rupees, 60 goes to the supplier and 40 is gross profit."><i class="c" style="width:60%"></i><i class="e" style="width:40%"></i></div>
+    <div class="leg"><span>Supplier ₹60</span><span class="e">Gross profit ₹40</span></div>
+  </div>
+
   <div class="formula">
     <b>Break-even sales per month</b> = fixed costs per month ÷ average margin<br>
     Example: costs ₹30,000, average margin 28% → 30,000 ÷ 0.28 = ₹1,07,143
   </div>
-  <p>That is about ₹4,121 of sales on each of 26 working days, only to reach zero. Everything above that is profit. If this number feels scary, good. It is far better to know it now than in month three.</p>
-  <p>Include your own pay in the costs. If you do not, the shop looks profitable while you live on nothing. Also include loan interest if you borrowed to start.</p>
+  <p>Yeh 26 working days mein roz lagbhag ₹4,121 ki sales hai, sirf zero tak pahunchne ke liye. Isse upar ka sab profit hai. Agar yeh number dara raha hai, toh achha hai. Teesre mahine ki jagah abhi pata chal jaye toh behtar.</p>
+
+  <div class="ledger">
+    <div class="title">Same ₹30,000 kharche, alag margin</div>
+    <table>
+      <tr><th>Margin</th><th>Calculation</th><th class="r">Sales needed</th></tr>
+      <tr><td>20%</td><td>30,000 ÷ 0.20</td><td class="r">₹1,50,000</td></tr>
+      <tr class="hl"><td>28%</td><td>30,000 ÷ 0.28</td><td class="r">₹1,07,143</td></tr>
+      <tr><td>40%</td><td>30,000 ÷ 0.40</td><td class="r">₹75,000</td></tr>
+    </table>
+  </div>
+  <div class="warn"><span class="lab">Yeh take-home nahi hai</span>
+    <p>Break-even ke baad bhi jo "extra" dikhta hai woh abhi gross profit mein se hai. Tax, loan ki principal aur kuch unexpected kharche abhi baaki ho sakte hain.</p>
+  </div>
+  <p>Apni khud ki pay costs mein jodo. Nahi jodoge toh shop profitable dikhegi aur aap khud kuch nahi kamaoge. Agar shuru karne ke liye loan liya hai toh loan interest bhi jodo.</p>
 
   <div class="calc" id="calcD">
     <div class="ch">Calculator 4 &middot; Break-even</div>
@@ -456,159 +776,399 @@ footer{margin-top:64px;padding-top:16px;border-top:2px solid var(--fg);font-size
         <div class="field"><label for="d_days">Days open per month</label>
           <div class="inp"><input id="d_days" class="pre" type="number" inputmode="decimal" min="1" max="31" value="26"></div></div>
         <div class="field"><label for="d_asp">Average selling price of one piece</label>
-          <div class="inp"><span>₹</span><input id="d_asp" type="number" inputmode="decimal" min="1" value="500"></div></div>
+          <div class="inp"><span>₹</span><input id="d_asp" type="number" inputmode="decimal" min="0" value="500"></div></div>
       </div>
       <div class="results" id="d_out"></div>
       <div id="d_verdict"></div>
     </div>
   </div>
-  <div class="why"><b>Why this matters</b>Break-even turns "I hope the shop does well" into a clear target: sell this many pieces a day. You can check it every evening.</div>
-  <p>Use your <i>actual average margin</i>, which is lower than the margin on tag price because of bargaining and occasional discounts. Track it for the first month and update this number.</p>
+  <div class="why"><b>Why this matters</b>Break-even "umeed hai shop achhi chalegi" ko ek saaf target mein badal deta hai: roz itne pieces bechne hain. Aap ise har shaam check kar sakte ho.</div>
+  <p>Apna <i>actual average margin</i> use karo. Yeh tag price ke margin se kam hota hai kyunki bargaining aur kabhi-kabhi discount hota hai. Pehle mahine ise track karo aur number update karo.</p>
+
+  <h3>How much margin do you need? Three numbers</h3>
+  <p>Koi ek "sahi" margin nahi hota. Aapko teen numbers chahiye: neeche ki line (survival margin), jo aap chahte ho (target margin), aur upar ki chhat jo market lagata hai (ceiling margin). Pehle do aapke apne kharche se nikalte hain. Teesra market se.</p>
+  <ol class="plain">
+    <li><b>Survival margin</b> = fixed costs ÷ expected monthly sales. Isse kam margin par har mahine loss. Example: ₹30,000 ÷ ₹1,50,000 = <b>20%</b>.</li>
+    <li><b>Target margin</b> = (fixed costs + profit you want) ÷ expected monthly sales. Example: (30,000 + 15,000) ÷ 1,50,000 = <b>30%</b>.</li>
+    <li><b>Ceiling margin</b> = (market price − your cost) ÷ market price. Nearby shops mein similar shirt ₹549 mein bik rahi hai, aapki cost ₹347 hai: (549 − 347) ÷ 549 = <b>36.8%</b>.</li>
+  </ol>
+  <p>Teeno ko saath dekho. Agar ceiling target se upar hai, toh item achha hai. Agar ceiling target se neeche par survival se upar hai, toh item kharche nikalta hai par aapka profit goal nahi. Agar ceiling survival se bhi neeche hai, toh woh item apni cost nahi nikaal sakta. Cost negotiate karo, ya chhod do, ya jaan-bujhkar sirf footfall ke liye rakho.</p>
+  <p>Yaad rakho: chapter 6 mein aapne floor par jo minimum margin rakha, woh kabhi bhi survival margin se neeche nahi hona chahiye. Isi liye us example mein floor margin 20% hai.</p>
+
+  <div class="calc" id="calcE">
+    <div class="ch">Calculator 5 &middot; Margin range finder</div>
+    <div class="cb">
+      <div class="fields">
+        <div class="field"><label for="r_ex">Fixed costs per month</label>
+          <div class="inp"><span>₹</span><input id="r_ex" type="number" inputmode="decimal" min="0" value="30000"></div></div>
+        <div class="field"><label for="r_pr">Profit you want per month <span class="hint">on top of your pay</span></label>
+          <div class="inp"><span>₹</span><input id="r_pr" type="number" inputmode="decimal" min="0" value="15000"></div></div>
+        <div class="field"><label for="r_ss">Expected monthly sales <span class="hint">use a slow month, not the festival month</span></label>
+          <div class="inp"><span>₹</span><input id="r_ss" type="number" inputmode="decimal" min="0" value="150000"></div></div>
+        <div class="field"><label for="r_ic">Item landed cost</label>
+          <div class="inp"><span>₹</span><input id="r_ic" type="number" inputmode="decimal" min="0" value="347"></div></div>
+        <div class="field"><label for="r_mp">Typical market price nearby</label>
+          <div class="inp"><span>₹</span><input id="r_mp" type="number" inputmode="decimal" min="0" value="549"></div></div>
+      </div>
+      <div class="results" id="r_out"></div>
+      <div id="r_verdict"></div>
+    </div>
+  </div>
+  <div class="tip"><span class="lab">Anubhav se</span>
+    <p>Expected sales hamesha slow month ke hisaab se lo. Agar best festive month ka number lete ho toh margin kam dikhega aur aap dhokha khaoge. Aur yaad rakho: sales kam hongi toh zyada margin chahiye. Isliye pehle kuch mahine margin ko halke mein mat lo.</p>
+  </div>
+
+  <h3 class="doubts">Doubt? Yeh poochhna normal hai</h3>
+  <details class="q"><summary>Mujhe pata hi nahi ki mera pehla mahine kitna bikega. Break-even kaise nikaalun?</summary>
+    <div class="ans"><p>Bilkul normal hai. Pehle mahine ke liye estimate mat banao, sirf fixed costs jodo aur apna expected margin (28% jaisa) rakho, aur "kitna bechna hai" ka target nikaal lo. Pehle mahine ke baad asli sales aur asli margin daal ke calculator dobara chalao. Do-teen mahine mein aapka sahi number mil jayega.</p></div></details>
+  <details class="q"><summary>Break-even se upar jo bacha woh poora mera hai?</summary>
+    <div class="ans"><p>Lagbhag, par poora nahi. Usme se tax, loan ki principal wapas karna, naya stock kharidna (shop ko chalte rehne ke liye) aur emergency cushion nikalna padega. Jo sach mein ghar le ja sakte ho woh isse kam hota hai. Isliye apni fixed salary pehle se costs mein jodo, aur baaki ko shop mein rehne do.</p></div></details>
+  <details class="q"><summary>Mera average margin 28% hai, par bargaining ke baad asal mein kitna hota hai?</summary>
+    <div class="ans"><p>Kam hota hai. Tag par 37% margin hai, par agar customer average 10% kam paise dete hain toh asli margin lagbhag 30% ho jata hai (tag ₹549, price ₹494: (494 − 347) ÷ 494). Isliye break-even ke liye hamesha "after bargaining" wala margin lo.</p></div></details>
 </section>
 
 <!-- 10 -->
 <section class="chapter" id="c10">
   <div class="chap-head"><span class="chap-no">10</span><h2>Stock, cash and dead stock</h2></div>
-  <p>Stock is money you have turned into cloth. Until it sells, you cannot use that money for rent, salary or new buying. A shop with ₹2 lakh of stock and ₹500 in the drawer is in trouble even if it is "worth" a lot.</p>
+  <p>Stock woh paisa hai jo aapne kapde mein badal diya. Jab tak woh bik nahi jata, aap us paise ko rent, salary ya naya maal kharidne ke liye use nahi kar sakte. ₹2 lakh ka stock aur ₹500 drawer mein wali shop musibat mein hai, chahe woh "worth" kitni bhi ho.</p>
 
   <h3>How fast stock sells</h3>
-  <p>Count how many pieces you sold this month and divide by pieces on hand at month end.</p>
+  <p>Gino is mahine kitne pieces bike, aur mahine ke end mein kitne pieces haath mein hain, phir divide karo.</p>
   <div class="formula">
     <b>Months to sell the stock</b> = pieces in stock ÷ pieces sold per month<br>
     300 pieces in stock, 100 sold per month → 3 months
   </div>
-  <p>If one type of item takes 6 months or more to sell, buy less of it next time. If another sells out in two weeks, buy more and buy earlier.</p>
+  <p>Agar koi item type 6 mahine ya zyada mein bikta hai, toh agli baar kam kharido. Agar doosra do hafte mein sold out ho jata hai, toh zyada aur pehle kharido.</p>
 
   <h3>A markdown plan for slow pieces</h3>
-  <p>Decide in advance how long a piece may stay before its price drops. For example (adjust to your own numbers):</p>
+  <p>Pehle se decide kar lo ki ek piece kitne din rakhne ke baad uska price girega. Example (apne numbers ke hisaab se badlo):</p>
   <ul class="plain">
-    <li>Months 1 to 2: full tag price with normal bargaining.</li>
-    <li>Month 3: lower the tag by about 15% to 20%.</li>
-    <li>Month 4: clear it at close to landed cost and put the money into something that sells.</li>
+    <li>Mahina 1 se 2: poora tag price, normal bargaining ke saath.</li>
+    <li>Mahina 3: tag lagbhag 15% se 20% kam karo.</li>
+    <li>Mahina 4: landed cost ke kareeb par clear karo aur paisa aise item mein lagao jo bikta hai.</li>
   </ul>
-  <p>Selling an old shirt at cost is better than keeping it forever, because the cash can buy a new shirt that earns profit.</p>
+  <p>Purani shirt ko cost par bech dena usse hamesha ke liye rakhne se behtar hai, kyunki us paise se nayi shirt kharid sakte ho jo profit degi.</p>
 
   <h3>Buy for your customers and the calendar</h3>
-  <p>Demand in Assam moves with festivals and seasons: Bohag Bihu, Magh Bihu, Durga Puja, Eid, Diwali, Christmas, wedding months, school reopening and the winter months. Start buying a few weeks ahead for each. Plan sizes too: a store with only medium and large will lose the shoppers who need small and extra large.</p>
+  <p>Assam mein demand festivals aur mausam ke saath badalti hai: Bohag Bihu, Magh Bihu, Durga Puja, Eid, Diwali, Christmas, shaadi ke mahine, school reopening aur sardi. Har ek ke liye kuch hafte pehle kharidna shuru karo. Sizes bhi plan karo: sirf medium aur large rakhne wali shop un customers ko kho degi jinhe small aur extra large chahiye.</p>
 
   <h3>Keep a cash reserve</h3>
-  <p>A common safety rule is to hold several months of fixed costs in cash outside your stock, so a slow month does not force you to sell below cost. Aim for at least two to three months if you can.</p>
+  <p>Ek common safety rule hai ki stock ke bahar cash mein kai mahine ke fixed costs rakho, taaki slow mahine mein cost se neeche bechna na pade. Kam se kam do se teen mahine ka lakshya rakho.</p>
 
   <div class="warn"><span class="lab">Be careful with credit (udhar)</span>
-    <p>If a customer pays later, your profit is on paper but your cash is stuck. Give credit only to people you know well, set a limit, and write every amount in a notebook with the date. Do not give credit on thin-margin items.</p>
+    <p>Agar customer baad mein paisa deta hai, toh aapka profit kaagaz par hai par cash phasa hua hai. Udhar sirf unhe do jinhe achhe se jaante ho, limit tay karo, aur har amount date ke saath notebook mein likho. Kam margin wale items par udhar mat do.</p>
   </div>
+
+  <div class="tip"><span class="lab">Anubhav se</span>
+    <ul>
+      <li><b>Shuruaat mein stock zyada nahi, variety zyada.</b> Har design ke 10 pieces ki jagah 4 ya 5 designs ke 2 ya 3 pieces lo. Dekho kya bikta hai, phir sirf winners dobara mangao.</li>
+      <li><b>Size-wise count rakho.</b> Jab sirf XL aur XXL bache hon toh item slow ho jata hai. Dobara order karte waqt missing sizes pehle bharo.</li>
+      <li><b>Hafte mein ek baar stock gino.</b> Bills ke hisaab se jitna hona chahiye, shelf par utna hai ya nahi. Gap ka matlab chori, galat billing ya bina bill ke maal gaya.</li>
+      <li><b>Chhote kharche bhi count karo:</b> packing bags, alteration, repairs, UPI charges. Yeh chhote lagte hain par mahine ke end mein margin kha jaate hain.</li>
+    </ul>
+  </div>
+
+  <h3 class="doubts">Doubt? Yeh poochhna normal hai</h3>
+  <details class="q"><summary>Pehle order mein kitna stock lun?</summary>
+    <div class="ans"><p>Rule of thumb: shuru mein itna stock lo jo lagbhag 4 se 6 hafte ki expected sales ke barabar ho (cost ke hisaab se), aur uske baad sirf winners dobara mangao. Agar aapko pata nahi ki kitna bikega, toh kam lo. Kam stock se thoda chook sakte ho, par zyada stock se paisa phasta hai, aur woh zyada mehenga padta hai. Sizes ka mix wholesaler se poochho, aur apne customers ke hisaab se adjust karo. Aam taur par beech ke sizes zyada bikte hain, par apne town ka pattern dekho.</p></div></details>
+  <details class="q"><summary>Sirf kuch sizes bache hain, baaki bik gaye. Kya karun?</summary>
+    <div class="ans"><p>Un bachi hui sizes ko ek alag rack par "last pieces" ke naam se rakho, thoda kam price par. Sabse pehle apna markdown rule dekho. Agli baar wholesaler se woh sizes pehle mangao jo bik gaye.</p></div></details>
+  <details class="q"><summary>Helper bill kiye bina kapde de de ya paisa rakh le toh?</summary>
+    <div class="ans"><p>Isse rokne ke simple tareeke: har sale ka bill (ya billing app mein entry), hafte mein stock count, aur shuru ke mahino mein cash drawer aap khud sambhalo. Staff ko saaf batao ki discount kitna de sakte hain (floor) aur kab aapse poochna hai. Bharose ke saath checking dono rakho.</p></div></details>
+  <details class="q"><summary>Return ya exchange ki policy kya rakhun?</summary>
+    <div class="ans"><p>Pehle se likh lo aur counter par laga do: jaise "exchange 7 din mein, bill ke saath, tag laga ho, dhula na ho". Cash refund sirf kharabi par. Customer aur staff dono ko clarity milti hai, aur jhagde kam hote hain. Apne area ke rules ke liye CA ya local dukaandar se poochh lo.</p></div></details>
 </section>
 
 <!-- 11 -->
 <section class="chapter" id="c11">
-  <div class="chap-head"><span class="chap-no">11</span><h2>GST and billing, briefly</h2></div>
-  <p>GST is a tax added to what the customer pays. You collect it and pass it to the government. It is not your profit and it is not your cost, so never mix it into your margin calculation.</p>
-  <p>As of the rate changes that took effect on 22 September 2025, readymade garments are reported as taxed at 5% when the price per piece is up to ₹2,500, and 18% above that (<a href="https://www.caclubindia.com/news/gst-rate-on-apparel-rationalised-18-percent-tax-for-garments-above-rs-2500-25945.asp" target="_blank" rel="noopener">CAclubindia report</a>). Rates and thresholds change, so confirm the current rule before you print your first bill.</p>
+  <div class="chap-head"><span class="chap-no">11</span><h2>GST and paperwork, briefly</h2></div>
+  <p>GST ek tax hai jo customer ke diye hue paise mein judta hai. Aap use collect karte ho aur government ko dete ho. Yeh na aapka profit hai, na aapki cost, isliye ise apne margin ke hisaab mein kabhi mat milao.</p>
+  <p>22 September 2025 se lage rate changes ke hisaab se, readymade garments par ₹2,500 per piece tak 5% aur usse upar 18% GST lagne ki report hai (<a href="https://www.caclubindia.com/news/gst-rate-on-apparel-rationalised-18-percent-tax-for-garments-above-rs-2500-25945.asp" target="_blank" rel="noopener">CAclubindia report</a>). Rates aur thresholds badalte rehte hain, isliye pehla bill print karne se pehle current rule confirm kar lo.</p>
   <div class="formula"><span class="cap">If your tag price already includes 5% GST</span>
     <b>Price before tax</b> = price with GST ÷ 1.05<br>
     ₹549 ÷ 1.05 = ₹523 before tax, ₹26 is GST.
   </div>
-  <p>Decide now whether your tag prices include GST. Your margin should be worked out on the price <b>before</b> GST, because the tax goes to the government. Whether you must register depends on your yearly sales and your state. Ask a local chartered accountant (CA) in your first week. A short visit costs little and prevents mistakes that cost a lot.</p>
+  <p>Abhi decide karo ki aapke tag prices mein GST included hoga ya nahi. Aapka margin GST se <b>pehle</b> wale price par nikalna chahiye, kyunki tax government ko jata hai. Registration aapki saalana sales aur aapke state par depend karta hai. Pehle hafte mein kisi local chartered accountant (CA) se mil lo. Ek chhoti visit sasti hai aur woh galtiyan bachati hai jo mehengi padti hain.</p>
+
+  <div class="rule"><span class="lab">CA se pehle hafte mein yeh poochho</span>
+    <ol class="plain">
+      <li>Mere liye GST registration abhi zaroori hai ya nahi? Kab zaroori hoga?</li>
+      <li>Kya mere liye koi simple scheme (jaise composition) sahi rahegi, ya regular GST?</li>
+      <li>Shop ke liye kaun si licence ya registration chahiye (shop and establishment, trade licence, Udyam)?</li>
+      <li>Garments par bill ka sahi format kya hai, aur MRP ya tag par kya likhna zaroori hai?</li>
+      <li>Shop ka alag current account kab aur kaise kholun?</li>
+      <li>Mujhe saal mein kaun se returns file karne honge, aur unki kya dates hain?</li>
+    </ol>
+  </div>
+
+  <h3 class="doubts">Doubt? Yeh poochhna normal hai</h3>
+  <details class="q"><summary>Kya bina GST registration ke shop shuru kar sakta hoon?</summary>
+    <div class="ans"><p>Yeh aapki expected sales aur state ke rules par depend karta hai. Yahan main ek pakka jawab nahi de sakta, isliye yeh sawaal CA se pehle hafte mein hi poochho. Jawab chahe jo bhi ho, apne bill aur records pehle din se saaf rakhna aage kaam aayega.</p></div></details>
+  <details class="q"><summary>Bill dena zaroori hai kya, ya sirf customer maange tab?</summary>
+    <div class="ans"><p>Rules aapki registration ki sthiti par alag hote hain. CA se confirm karo. Business ke liye faida yeh hai ki har sale ka record banta hai, stock apne aap kam hota hai (billing app mein), aur kharab maal wapas aane par proof rehta hai. Chapter 14 mein billing ke options hain.</p></div></details>
 </section>
 
 <!-- 12 -->
 <section class="chapter" id="c12">
   <div class="chap-head"><span class="chap-no">12</span><h2>Competing with M Baazar and the tiny shops</h2></div>
-  <p>You have a larger shop to compete against and smaller ones beside you. The maths helps you choose where to compete. These are suggestions to test, not guarantees.</p>
+  <p>Aapke saamne ek bada shop hai aur aapke bagal mein chhote shops. Maths aapko batata hai ki kahan compete karna hai. Yeh suggestions hain test karne ke liye, guarantee nahi.</p>
 
   <h3>Do a price survey in week one</h3>
-  <p>Walk into M Baazar and two of the tiny shops. For 20 popular items (basic T-shirt, formal shirt, jeans, kurta, nightwear, school wear, saree, innerwear), note the tag price and the price they come down to when you bargain. Put it in a notebook. Then compare with your own landed cost for similar pieces.</p>
+  <p>M Baazar aur do chhote shops mein jao. 20 popular items (basic T-shirt, formal shirt, jeans, kurta, nightwear, school wear, saree, innerwear) ka tag price note karo aur woh price bhi jahan tak bargain mein aate hain. Notebook mein likho. Phir apni landed cost se compare karo.</p>
   <ul class="plain">
-    <li>If their price is below your cost for an item, do not copy it. Do not stock that item, or stock it only to bring people in.</li>
-    <li>If their price leaves you a healthy margin, you can match it and compete on service.</li>
-    <li>If an item has no good version nearby, you have found a gap to fill.</li>
+    <li>Agar unka price aapki cost se neeche hai, toh copy mat karo. Woh item mat rakho, ya sirf logon ko laane ke liye rakho.</li>
+    <li>Agar unke price par aapko achha margin bachta hai, toh match kar sakte ho aur service par compete karo.</li>
+    <li>Agar kisi item ka aas-paas koi achha version nahi hai, toh aapne ek gap dhoond liya.</li>
   </ul>
 
   <h3>Where a smaller shop can win</h3>
   <ul class="plain">
-    <li><b>Range and sizes.</b> A tiny shop cannot hold every size. You can. Customers who cannot find their size elsewhere will pay your price.</li>
-    <li><b>Specific customers.</b> Pick one or two groups to serve well: school and college students, young men's casual wear, women's kurtis and ethnic wear, festival and wedding wear. Doing a few things well beats doing everything average.</li>
-    <li><b>Quick service.</b> Alterations, easy exchanges, a friendly trial room, a clean shop. These cost little and customers talk about them.</li>
-    <li><b>Trust.</b> If your quality is steady and your prices are fair, regular customers stop comparing every shirt.</li>
-    <li><b>Value you can explain.</b> If your cloth is better, say why: the stitching, the fabric, the wash. Reasons let you hold a higher price.</li>
+    <li><b>Range and sizes.</b> Chhota shop har size nahi rakh sakta. Aap rakh sakte ho. Jinhe kahin aur apni size nahi milti woh aapka price denge.</li>
+    <li><b>Specific customers.</b> Ek ya do groups ko achhe se serve karo: school aur college students, young men's casual wear, women's kurtis aur ethnic wear, festival aur wedding wear. Kuch cheezein achhi karna sab kuch average karne se behtar hai.</li>
+    <li><b>Quick service.</b> Alterations, aasaan exchange, friendly trial room, saaf shop. Inme kam kharch lagta hai aur customers inki baat karte hain.</li>
+    <li><b>Trust.</b> Agar aapki quality steady hai aur prices fair, toh regular customers har shirt compare karna band kar dete hain.</li>
+    <li><b>Value you can explain.</b> Agar aapka cloth behtar hai, toh batao kyun: stitching, fabric, wash. Wajah batane se aap higher price rakh paate ho.</li>
   </ul>
 
   <div class="rule"><span class="lab">Avoid a price war</span>
-    <p>M Baazar can probably buy in larger quantity and accept lower margins. A price war makes both shops poorer and the bigger one lasts longer. Use calculator 4 to find your break-even, then compete where you can still reach it.</p>
+    <p>M Baazar bade quantity mein kharid sakta hai aur kam margin accept kar sakta hai. Price war dono shops ko garib karti hai aur bada shop zyada der tikta hai. Calculator 4 se apna break-even nikalo, phir wahan compete karo jahan aap phir bhi uske upar reh sakte ho.</p>
   </div>
 
   <h3>Fixed price or bargaining?</h3>
-  <p>Bargaining wins customers who like the game and lets you earn more from those who pay readily. A clearly printed fixed price saves time and builds trust, and suits busy buyers and anyone who dislikes bargaining. You can mix: bargain on some items and put "fixed price" on basics. Whichever you choose, set the price with the method in chapter 6.</p>
+  <p>Bargaining un customers ko jeet leti hai jinhe game pasand hai, aur un se zyada kamane deti hai jo aasani se pay kar dete hain. Saaf chhapa fixed price time bachata hai, trust banata hai, aur busy buyers ke liye achha hai. Aap mix kar sakte ho: kuch items par bargain, aur basics par "fixed price". Jo bhi choose karo, price chapter 6 ke method se set karo.</p>
+
+  <h3 class="doubts">Doubt? Yeh poochhna normal hai</h3>
+  <details class="q"><summary>M Baazar ne sale laga di. Kya main bhi lagaun?</summary>
+    <div class="ans"><p>Nahi, automatically nahi. Pehle dekho woh kin items par sale hai. Un items par aapka floor kya hai? Agar unka sale price aapke floor se neeche hai, toh aap match nahi kar sakte. Doosre items par normal price rakho, aur apne regular customers ko apni service ke baare mein yaad dilao. Chhoti shop sirf price se bade shop se nahi jeet sakti.</p></div></details>
+  <details class="q"><summary>Online (Instagram/WhatsApp) se bechna chahiye kya?</summary>
+    <div class="ans"><p>Shuru mein sirf customers ke WhatsApp number lo (permission ke saath) aur festival se pehle naye stock ki photos bhejo. Free hai aur repeat customers laata hai. Online selling ke liye packing, delivery aur returns ki alag planning chahiye, isliye pehle shop sambhal jaye, phir sochna.</p></div></details>
 </section>
 
 <!-- 13 -->
 <section class="chapter" id="c13">
-  <div class="chap-head"><span class="chap-no">13</span><h2>Practice problems</h2></div>
-  <p>Try each one on paper first. Then open the answer. Use the formulas from this guide.</p>
+  <div class="chap-head"><span class="chap-no">13</span><h2>Your first 90 days</h2></div>
+  <p>Pehli baar shop shuru karte waqt sabse bada darr hota hai "kahan se shuru karun?" Yahan ek simple plan hai jo ek experienced shopkeeper aapko dega. Ise apne hisaab se badlo.</p>
+
+  <h3>Startup money: kitna chahiye?</h3>
+  <p>Sirf stock ka paisa kaafi nahi hota. Yeh sab alag-alag jodo:</p>
+  <div class="formula">
+    <b>Startup money</b> = first stock + shop set-up + licences, CA and billing setup + cash reserve (2 to 3 months of fixed costs)
+  </div>
+  <div class="ledger">
+    <div class="title">Example only. Apne numbers daalo.</div>
+    <table>
+      <tr><td>First stock</td><td class="r">₹1,50,000</td></tr>
+      <tr><td>Shop set-up (racks, mirror, lights, signboard, deposit)</td><td class="r">₹80,000</td></tr>
+      <tr><td>Licences, CA fees, billing setup</td><td class="r">₹15,000</td></tr>
+      <tr><td>Cash reserve (3 × ₹30,000 fixed costs)</td><td class="r">₹90,000</td></tr>
+      <tr class="total"><td>Total startup money</td><td class="r">₹3,35,000</td></tr>
+    </table>
+  </div>
+  <p>Reserve sabse zyada naye owners bhoolte hain. Pehle 2 se 3 mahine sales slow hoti hain, aur rent phir bhi dena hai. Agar reserve nahi hai toh slow mahine mein aap cost se neeche bechne ko majboor ho jaoge.</p>
+
+  <h3>The 90-day plan</h3>
+  <ol class="steps">
+    <li><b class="t">Week 1: Setup aur seekhna (maal kharidne se pehle)</b>CA se mil lo (chapter 11 ki list). Price survey karo (chapter 12). Shop ka alag bank account aur UPI QR banao. Billing app choose karo (chapter 14). Apne fixed costs jodo aur calculator 4 chalao.</li>
+    <li><b class="t">Week 2: Pehla chhota order</b>4 se 6 hafte ke hisaab se maal kharido, variety zyada aur quantity kam. Har item group ki landed cost nikalo (chapter 5). Floor aur tag set karo (chapter 6). Floor price tag ke peeche code mein likh do.</li>
+    <li><b class="t">Week 3 aur 4: Opening aur daily routine</b>Pehle kuch mahine khud floor par customers ko attend karo. Roz shop band karte waqt cash close karo (opening cash, sales, expenses, closing cash). Note karo kis price par deals band hui.</li>
+    <li><b class="t">Mahine 1 ke end mein: Pehla review</b>Asli average margin nikalo (bargaining ke baad). Calculator 4 mein asli numbers daalo. Dekho kaun se items bike aur kaun se nahi. Sirf winners ka dobara order do.</li>
+    <li><b class="t">Mahina 2: Rules aur relationships</b>Markdown rule likh do (chapter 10). Wholesaler se better rate maango (bulk ya regular order par). Customers ke WhatsApp numbers lo. Agle festival ke liye 6 se 8 hafte pehle plan karo.</li>
+    <li><b class="t">Mahina 3: Safai aur decision</b>Jo stock markdown deadline paar kar gaya use clear karo. Dekho sales break-even tak pahunch rahi hain ya nahi. Agar haan, toh apni fixed salary leni shuru karo. Agar nahi, toh sabse bade kharche (rent, stock, ya margin) par sochna shuru karo.</li>
+  </ol>
+
+  <div class="tip"><span class="lab">Anubhav se</span>
+    <ul>
+      <li>Pehle 3 mahine "seekhne" ke mahine hain, kamane ke nahi. Agar kuch loss hai toh ghabrao mat, bas har hafte numbers dekho aur galtiyan jaldi pakdo.</li>
+      <li>Apna personal kharcha aur shop ka paisa alag rakho. Ek fixed monthly salary decide karo aur usse zyada mat nikaalo.</li>
+      <li>Ek notebook ya app mein har din likho: sales, kharche, cash. Yeh 10 minute ki aadat aapko saal bhar ke liye bachayegi.</li>
+    </ul>
+  </div>
+
+  <h3 class="doubts">Doubt? Yeh poochhna normal hai</h3>
+  <details class="q"><summary>Wholesaler se udhar maal lun?</summary>
+    <div class="ans"><p>Shuruaat mein jitna ho sake cash mein kharido, kyunki udhar maal bikne se pehle hi payment ka dabav banata hai. Jab wholesaler aapko jaan le aur aap time par payment karte rahein, tab thoda udhar maangna theek hai. Pehle chhote amount se shuru karo, aur payment ki date calendar mein likho.</p></div></details>
+  <details class="q"><summary>Loan lena chahiye ya apne paise se shuru karun?</summary>
+    <div class="ans"><p>Loan lo toh uski EMI aur interest ko fixed costs mein jodo (calculator 4 ka "loan interest" box) aur dekho break-even kitna badh gaya. Chhota loan jo aap sales slow hone par bhi chuka sako, theek hai. Itna bada loan mat lo ki pehle 3 mahine ki sales se EMI hi na nikle.</p></div></details>
+  <details class="q"><summary>Main khud kitna salary lun?</summary>
+    <div class="ans"><p>Ek fixed monthly amount decide karo jo aapke ghar ke kharche ke liye zaroori hai, aur use calculator 4 mein "your own pay" mein daalo. Shuru ke kuch mahine agar shop is amount ko nahi nikaal paati toh bhi hisaab mein rakho, taaki aapko pata rahe ki shop kitni door hai.</p></div></details>
+</section>
+
+<!-- 14 -->
+<section class="chapter" id="c14">
+  <div class="chap-head"><span class="chap-no">14</span><h2>Billing software or Excel?</h2></div>
+  <p>Seedha jawab: <b>billing ke liye Excel mat use karo, aur shuru mein mehenga software mat kharido.</b> Ek free ya sasta billing app lo. Excel ko apne <i>decisions</i> ke liye rakho (price survey, margin tracker, break-even).</p>
+
+  <div class="ledger cmp">
+    <div class="title">Options compared</div>
+    <table>
+      <tr><th>Option</th><th>Achha kisme</th><th>Problem</th><th>Verdict</th></tr>
+      <tr><td><b>Notebook (bahi)</b></td><td data-l="Achha kisme">Udhar ki entries, roz ka cash close</td><td data-l="Problem">Bill print nahi hota, stock track karna mushkil, hisaab mein galti</td><td data-l="Verdict">Backup ke taur par rakho</td></tr>
+      <tr><td><b>Excel on laptop</b></td><td data-l="Achha kisme">Price survey, margin tracker, break-even</td><td data-l="Problem">Har bill par stock apne aap kam nahi hota, invoice numbering nahi, overwrite hone ka khatra, counter par ek hi laptop</td><td data-l="Verdict">Billing ke liye nahi, analysis ke liye</td></tr>
+      <tr><td><b>Free billing app</b><br>(jaise Vyapar ka free mobile plan)</td><td data-l="Achha kisme">Bills, stock, daily sales report, GST invoice</td><td data-l="Problem">Free plan mein limits ho sakti hain (invoices, devices, features)</td><td data-l="Verdict"><b>Yahan se shuru karo</b></td></tr>
+      <tr><td><b>Paid billing app</b><br>(reported ~₹3,400 se ₹4,000 per year + 18% GST)</td><td data-l="Achha kisme">Laptop + mobile, zyada stock features, barcode, multiple staff</td><td data-l="Problem">Har saal ka kharcha</td><td data-l="Verdict">Jab free plan kam pade</td></tr>
+      <tr><td><b>Full ERP</b><br>(Marg, Tally; reported ₹5,500 se upar)</td><td data-l="Achha kisme">Bade shops, bahut saare items</td><td data-l="Problem">Ek naye single shop ke liye bhaari aur mehenga</td><td data-l="Verdict">Abhi nahi</td></tr>
+    </table>
+  </div>
+  <p class="src">Prices third-party sites se hain (<a href="https://www.itqlick.com/vyapar" target="_blank" rel="noopener">ITQlick</a>, <a href="https://www.getapp.com/finance-accounting-software/a/vyapar/" target="_blank" rel="noopener">GetApp</a>, <a href="https://www.taxaj.com/learn/best-gst-billing-software-indian-retailers-2026/" target="_blank" rel="noopener">Taxaj comparison</a>) aur badalte rehte hain. Free plan ki limits bhi alag sources mein alag likhi hain. Kuch kharidne ya setup karne se pehle official website par current price aur limits check karo.</p>
+
+  <h3>Meri recommendation: 5 steps</h3>
+  <ol class="steps">
+    <li><b class="t">Pehle din se ek free billing app use karo.</b>Isse har bill ka record banta hai, stock apne aap kam hota hai, aur din ka sales report mil jata hai. Agar aap GST registered ho gaye toh software ki zaroorat aur badh jati hai, kyunki sahi invoice chahiye.</li>
+    <li><b class="t">Har item type ka cost, floor aur tag app mein daalo.</b>Isse billing ke waqt galat price lagne ka chance kam hota hai.</li>
+    <li><b class="t">Excel ko decisions ke liye rakho.</b>Ek sheet price survey ki, ek margin tracker ki, ek break-even ki. Is guide ke calculators yahi kaam karte hain.</li>
+    <li><b class="t">Roz shaam ko cash close karo.</b>App ki daily sales report se apne drawer ka cash milao. Gap mile toh usi din dhoondo.</li>
+    <li><b class="t">Upgrade tab karo jab zaroorat dikhe.</b>Rule of thumb: jab roz kai bills ban rahe hon, items ki sankhya badh jaye, ek se zyada staff hon, ya aapko barcode chahiye. Tab ek sasta paid plan sochna.</li>
+  </ol>
+
+  <div class="rule"><span class="lab">Chhoti hardware list</span>
+    <ul class="plain">
+      <li>Ek phone ya laptop jo counter par hamesha chale, aur power cut ke liye power bank ya battery.</li>
+      <li>UPI QR code (shop ke bank account se juda).</li>
+      <li>Bill printer: shuru mein optional. Pehle phone se bill share kar sakte ho.</li>
+      <li>Barcode scanner aur label printer: baad mein, jab items kaafi badh jayein.</li>
+    </ul>
+  </div>
+
+  <h3 class="doubts">Doubt? Yeh poochhna normal hai</h3>
+  <details class="q"><summary>Excel mein sab kar sakta hoon, paise kyun kharchun?</summary>
+    <div class="ans"><p>Excel mein bill banana, har bill ke baad stock kam karna, invoice number maintain karna aur kisi galti se kuch overwrite na hone dena, sab aapko khud karna padega, aur counter par customer ke saamne. Kuch hi hafte mein yeh dikkat dene lagta hai. Billing app yeh sab apne aap kar deta hai. Excel analysis ke liye bahut achha hai.</p></div></details>
+  <details class="q"><summary>Agar phone ya laptop kharab ho gaya toh data chala jayega?</summary>
+    <div class="ans"><p>Isliye aisa app lo jisme cloud backup ho (data internet par bhi save hota hai), ya haftey mein ek baar backup download karo. Aur ek simple notebook mein roz ka total sales aur cash likhna mat chhodo. Yeh aapka dusra backup hai.</p></div></details>
+  <details class="q"><summary>Staff ko app sikhana mushkil nahi hoga?</summary>
+    <div class="ans"><p>Zyaadatar billing apps simple hote hain. Pehle 2 se 3 din aap khud billing karo, phir staff ko saath baitha ke sikhao. Pehle sirf "bill banao" sikhao, baaki features baad mein.</p></div></details>
+</section>
+
+<!-- 15 -->
+<section class="chapter" id="c15">
+  <div class="chap-head"><span class="chap-no">15</span><h2>Practice problems</h2></div>
+  <p>Har ek ko pehle paper par karo. Phir answer kholo. Is guide ke formulas use karo.</p>
 
   <details class="q"><summary>1. A shirt has landed cost ₹360 and sells for ₹480. Find profit, margin and markup.</summary>
     <div class="ans"><p>Profit = 480 − 360 = <b>₹120</b>.</p><p>Margin = 120 ÷ 480 × 100 = <b>25%</b>.</p><p>Markup = 120 ÷ 360 × 100 = <b>33.3%</b>.</p></div></details>
 
   <details class="q"><summary>2. Landed cost is ₹350. You want a 30% margin. What selling price?</summary>
-    <div class="ans"><p>SP = 350 ÷ (1 − 0.30) = 350 ÷ 0.70 = <b>₹500</b>. Check: profit ₹150, and 150 ÷ 500 = 30%.</p></div></details>
+    <div class="ans"><p>SP = 350 ÷ (1 − 0.30) = 350 ÷ 0.70 = <b>₹500</b>. Check: profit ₹150, aur 150 ÷ 500 = 30%.</p></div></details>
 
   <details class="q"><summary>3. Tag ₹799. The customer pays ₹650. What discount percent did they get?</summary>
     <div class="ans"><p>Discount = 799 − 650 = ₹149. 149 ÷ 799 × 100 = <b>18.6%</b>.</p></div></details>
 
   <details class="q"><summary>4. Landed cost ₹400. What is the lowest price that still gives 15% margin?</summary>
-    <div class="ans"><p>Floor = 400 ÷ 0.85 = 470.6, so <b>₹471</b>. Anything lower gives less than 15%.</p></div></details>
+    <div class="ans"><p>Floor = 400 ÷ 0.85 = 470.6, toh <b>₹471</b>. Isse kam par 15% se kam margin milega.</p></div></details>
 
   <details class="q"><summary>5. Jeans: landed cost ₹580, tag ₹1,299. A customer offers ₹900. What are your profit and margin? Would you accept if your minimum margin is 25%?</summary>
-    <div class="ans"><p>Profit = 900 − 580 = ₹320. Margin = 320 ÷ 900 × 100 = <b>35.6%</b>. Yes, accept. It is above 25%.</p></div></details>
+    <div class="ans"><p>Profit = 900 − 580 = ₹320. Margin = 320 ÷ 900 × 100 = <b>35.6%</b>. Haan, accept karo. Yeh 25% se upar hai.</p></div></details>
 
   <details class="q"><summary>6. Landed cost ₹250. Minimum margin at floor 20%, biggest bargain 15%. What tag price?</summary>
-    <div class="ans"><p>Floor = 250 ÷ 0.80 = ₹312.5. Tag = 312.5 ÷ 0.85 = 367.6. Round up to <b>₹369</b> or <b>₹379</b>.</p></div></details>
+    <div class="ans"><p>Floor = 250 ÷ 0.80 = ₹312.5. Tag = 312.5 ÷ 0.85 = 367.6. Round up karo <b>₹369</b> ya <b>₹379</b> tak.</p></div></details>
 
   <details class="q"><summary>7. You give 10% off, then an extra 5% off, on ₹1,000. What does the customer pay?</summary>
-    <div class="ans"><p>After 10%: ₹900. 5% of 900 = ₹45. Pays <b>₹855</b>, which is 14.5% off, not 15%.</p></div></details>
+    <div class="ans"><p>10% ke baad: ₹900. 900 ka 5% = ₹45. Customer dega <b>₹855</b>, yaani 14.5% off, 15% nahi.</p></div></details>
 
   <details class="q"><summary>8. Margin is 25%. You give a 10% discount. How many times your normal sales do you need to earn the same profit?</summary>
-    <div class="ans"><p>m ÷ (m − d) = 0.25 ÷ 0.15 = <b>1.67 times</b>. You must sell about two-thirds more.</p></div></details>
+    <div class="ans"><p>m ÷ (m − d) = 0.25 ÷ 0.15 = <b>1.67 guna</b>. Aapko lagbhag do-tihai zyada bechna padega.</p></div></details>
 
   <details class="q"><summary>9. Fixed costs are ₹30,000 a month. Average margin is 28%. What monthly sales to break even, and per day over 26 days?</summary>
     <div class="ans"><p>30,000 ÷ 0.28 = <b>₹1,07,143</b> a month. ÷ 26 = <b>₹4,121</b> a day.</p></div></details>
 
   <details class="q"><summary>10. You buy 50 kurtis at ₹400 each. Transport and packing come to ₹1,500. You expect 3 to stay unsold. What is the landed cost per sellable kurti?</summary>
     <div class="ans"><p>Total = 50 × 400 + 1,500 = ₹21,500. Sellable = 47. 21,500 ÷ 47 = <b>₹457</b>.</p></div></details>
+
+  <details class="q"><summary>11. A supplier says he adds 25% markup on his cost. What is his margin?</summary>
+    <div class="ans"><p>Margin = markup ÷ (1 + markup) = 0.25 ÷ 1.25 = <b>20%</b>. Check: cost ₹100, price ₹125, profit ₹25, aur 25 ÷ 125 = 20%.</p></div></details>
+
+  <details class="q"><summary>12. Fixed costs are ₹40,000, expected sales ₹2,00,000. What is the survival margin? And the target margin if you also want ₹20,000 profit?</summary>
+    <div class="ans"><p>Survival = 40,000 ÷ 2,00,000 = <b>20%</b>. Target = (40,000 + 20,000) ÷ 2,00,000 = <b>30%</b>.</p></div></details>
 </section>
 
-<!-- 14 -->
-<section class="chapter" id="c14">
-  <div class="chap-head"><span class="chap-no">14</span><h2>One-page cheat sheet</h2></div>
+<!-- 16 -->
+<section class="chapter" id="c16">
+  <div class="chap-head"><span class="chap-no">16</span><h2>One-page cheat sheet</h2></div>
+  <p>Poori guide ek page par. Isse bookmark kar lo, ya print karke billing counter ke paas laga do.</p>
+  <p><button class="btn" id="print-cs" type="button">Print this cheat sheet</button></p>
+
   <div class="cheat">
     <div><b>Profit</b><code>SP − landed cost</code></div>
     <div><b>Margin %</b><code>(SP − cost) ÷ SP × 100</code></div>
     <div><b>Markup %</b><code>(SP − cost) ÷ cost × 100</code></div>
+    <div><b>Margin from markup</b><code>markup ÷ (1 + markup)</code></div>
+    <div><b>Markup from margin</b><code>margin ÷ (1 − margin)</code></div>
     <div><b>Price from margin</b><code>SP = cost ÷ (1 − margin)</code></div>
     <div><b>Floor price</b><code>cost ÷ (1 − minimum margin)</code></div>
     <div><b>Tag price</b><code>floor ÷ (1 − biggest bargain)</code></div>
     <div><b>Discount %</b><code>(tag − paid) ÷ tag × 100</code></div>
+    <div><b>Price after discount</b><code>tag × (1 − discount)</code></div>
     <div><b>Sales needed after a discount</b><code>m ÷ (m − d) × old sales</code></div>
     <div><b>Break-even sales</b><code>fixed costs ÷ average margin</code></div>
+    <div><b>Survival margin</b><code>fixed costs ÷ expected sales</code></div>
+    <div><b>Target margin</b><code>(fixed costs + profit wanted) ÷ expected sales</code></div>
+    <div><b>Ceiling margin</b><code>(market price − cost) ÷ market price</code></div>
     <div><b>Landed cost</b><code>total spent ÷ sellable pieces</code></div>
     <div><b>Price before GST</b><code>price with GST ÷ 1.05 (at 5%)</code></div>
     <div><b>Months of stock</b><code>pieces in stock ÷ sold per month</code></div>
   </div>
+
+  <h3>Kab kya use karein</h3>
+  <div class="ledger">
+    <table>
+      <tr><th>Situation</th><th>Use</th><th>What to do</th></tr>
+      <tr><td>Naya stock aaya, tag lagana hai</td><td><b>Margin</b> (markup se shortcut)</td><td>Target margin se price nikalo, floor aur tag set karo, ceiling se check karo</td></tr>
+      <tr><td>Customer bargain kar raha hai</td><td><b>Margin</b></td><td>Floor price ke upar hi deal band karo</td></tr>
+      <tr><td>Supplier "% profit" bata raha hai</td><td><b>Markup to margin</b></td><td>Poochho kaunsa, aur margin mein convert karo</td></tr>
+      <tr><td>Month-end review</td><td><b>Margin</b></td><td>Asli average margin nikalo (bargaining ke baad)</td></tr>
+      <tr><td>Shop chal payegi ya nahi</td><td><b>Break-even</b></td><td>Fixed costs ÷ margin, aur roz kitne pieces chahiye</td></tr>
+      <tr><td>Purana stock clear karna hai</td><td><b>Margin</b></td><td>Kam se kam cost recover karo, loss soch samajh ke accept karo</td></tr>
+    </table>
+  </div>
+
   <div class="rule"><span class="lab">Seven habits of a shop that survives</span>
     <ol class="plain">
-      <li>Price from landed cost, never from the bill price alone.</li>
-      <li>Fix your floor price before the customer arrives.</li>
-      <li>Always ask "percent of what?"</li>
-      <li>Check the profit before any discount.</li>
-      <li>Know your daily break-even number.</li>
-      <li>Do not let stock sit. Mark down on schedule.</li>
-      <li>Write everything down: purchases, sales, credit.</li>
+      <li>Price landed cost se set karo, kabhi sirf bill price se nahi.</li>
+      <li>Customer aane se pehle apna floor price tay karo.</li>
+      <li>Hamesha poochho "percent of what?"</li>
+      <li>Kisi bhi discount se pehle profit check karo.</li>
+      <li>Apna daily break-even number jaano.</li>
+      <li>Stock ko baithne mat do. Schedule se markdown karo.</li>
+      <li>Sab kuch likho: purchases, sales, udhar.</li>
     </ol>
+  </div>
+
+  <h3>Checklists</h3>
+  <div class="cheat">
+    <div><b>Har naye item ke liye</b>
+      <ul>
+        <li>Landed cost likho.</li>
+        <li>Target margin se price nikalo.</li>
+        <li>Nearby market price check karo (ceiling).</li>
+        <li>Bargain buffer jodke tag price set karo.</li>
+        <li>Floor price register mein likho.</li>
+      </ul></div>
+    <div><b>Roz</b>
+      <ul>
+        <li>Cash close: opening, sales, expenses, closing.</li>
+        <li>Sales aur kharche record karo.</li>
+        <li>Note karo customers ne kya maanga jo nahi tha.</li>
+        <li>Display saaf karo, best sellers aage rakho.</li>
+      </ul></div>
+    <div><b>Har hafte (30 minute)</b>
+      <ul>
+        <li>Top 5 aur slowest 5 items likho.</li>
+        <li>Hafte ka margin nikalo.</li>
+        <li>Cash ko due kharchon ke saath milao.</li>
+        <li>Reorder plan karo, missing sizes se shuru.</li>
+      </ul></div>
+    <div><b>Har mahine</b>
+      <ul>
+        <li>Asli margin ko target margin se compare karo.</li>
+        <li>Sales ko break-even se compare karo.</li>
+        <li>Markdown deadline paar karne wale items clear karo.</li>
+        <li>Supplier rates aur nearby shops ke prices dekho.</li>
+        <li>Apni fixed salary lo.</li>
+      </ul></div>
   </div>
 </section>
 
 <footer>
-  <p>Keep a notebook for the first three months. Write each day's sales, the number of pieces sold and what you bought. After a month, update the margin and break-even numbers in calculators 1 and 4 with your real figures. That is how the maths becomes your own.</p>
+  <p>Pehle teen mahine ek notebook rakho. Har din ki sales, bike hue pieces aur kya kharida, sab likho. Ek mahine baad calculators 1 aur 4 mein apne asli numbers daalo. Aise hi yeh maths aapka apna ban jata hai.</p>
 </footer>
 
 </div>
@@ -720,16 +1280,73 @@ footer{margin-top:64px;padding-top:16px;border-top:2px solid var(--fg);font-size
     verdict(v, pieces > 12 ? "warn" : "good", "You need about " + Math.ceil(pieces) + " pieces sold every day you are open just to reach zero. Compare this with how many customers you can realistically serve in a day.");
   }
 
+  /* Calculator 5: margin range finder */
+  function calcE(){
+    var ex = num("r_ex"), pr = num("r_pr"), ss = num("r_ss"), ic = num("r_ic"), mp = num("r_mp");
+    var out = $("r_out"), v = $("r_verdict");
+    if (ss <= 0) { out.innerHTML = ""; v.innerHTML = ""; return; }
+    var min = ex / ss, tg = (ex + pr) / ss;
+    var mx = mp > 0 ? (mp - ic) / mp : NaN;
+    var pt = tg < 1 ? ic / (1 - tg) : NaN;
+    out.innerHTML =
+      res("Survival margin", pc(min * 100)) +
+      res("Target margin", pc(tg * 100)) +
+      res("Ceiling margin (market)", isFinite(mx) ? pc(mx * 100) : "n/a", true) +
+      res("Price at target margin", isFinite(pt) ? rs(pt) : "n/a");
+    if (tg >= 1) { verdict(v, "bad", "Fixed costs plus the profit you want are as big as your expected sales. No margin can fix that: raise sales or cut costs."); return; }
+    if (!isFinite(mx)) { v.innerHTML = ""; return; }
+    if (mx < min) verdict(v, "bad", "At the market price this item earns less than your survival margin. Negotiate the cost, skip it, or keep it only to bring people in.");
+    else if (mx < tg) verdict(v, "warn", "This item covers your costs but cannot reach your profit goal at the market price. Price near " + rs(mp) + " and push volume.");
+    else verdict(v, "good", "Good item. Price it anywhere between " + rs(pt) + " (your target) and " + rs(mp) + " (the market ceiling).");
+  }
+
+  /* Hero demo */
+  function hero(){
+    var cost = num("h-cost"), sp = num("h-sp");
+    if (cost <= 0 || sp <= 0) return;
+    var profit = sp - cost, markup = profit / cost * 100, margin = profit / sp * 100;
+    var cw = Math.max(0, Math.min(100, cost / sp * 100));
+    $("h-spv").textContent = rs(sp);
+    $("h-pv").textContent = (profit < 0 ? "−" : "") + rs(Math.abs(profit));
+    $("h-bc").style.width = cw + "%";
+    $("h-bp").style.width = (100 - cw) + "%";
+    $("h-bct").textContent = "Cost " + rs(cost);
+    $("h-bpt").textContent = rs(profit);
+    $("h-kmk").style.width = cw + "%";
+    $("h-lmk").innerHTML = "Markup: " + rs(profit) + " profit ÷ " + rs(cost) + " cost = <b>" + pc(markup) + "</b>";
+    $("h-lmg").innerHTML = "Margin: " + rs(profit) + " profit ÷ " + rs(sp) + " selling price = <b>" + pc(margin) + "</b>";
+  }
+  function heroCost(){
+    var cost = num("h-cost"), s = $("h-sp");
+    if (cost <= 0) return;
+    s.min = Math.ceil(cost * 1.05 / 5) * 5;
+    s.max = Math.ceil(cost * 2.5 / 5) * 5;
+    s.value = Math.round(cost * 4 / 3 / 5) * 5;
+    hero();
+  }
+  $("h-cost").addEventListener("input", heroCost);
+  $("h-sp").addEventListener("input", hero);
+  heroCost();
+
   var groups = [
     [["a_buy","a_extra","a_loss","a_marg","a_barg"], calcA],
     [["b_cost","b_tag","b_offer","b_min"], calcB],
     [["c_m","c_d"], calcC],
-    [["d_rent","d_sal","d_elec","d_own","d_other","d_marg","d_days","d_asp"], calcD]
+    [["d_rent","d_sal","d_elec","d_own","d_other","d_marg","d_days","d_asp"], calcD],
+    [["r_ex","r_pr","r_ss","r_ic","r_mp"], calcE]
   ];
   groups.forEach(function(g){
     g[0].forEach(function(id){ $(id).addEventListener("input", g[1]); });
     g[1]();
   });
+  /* reading progress */
+  var pbar = $("pbar");
+  function prog(){ var h = document.documentElement, mx = h.scrollHeight - h.clientHeight; pbar.style.width = (mx > 0 ? h.scrollTop / mx * 100 : 0) + "%"; }
+  addEventListener("scroll", prog, {passive:true}); prog();
+
+  /* print only the cheat sheet */
+  $("print-cs").addEventListener("click", function(){ document.body.classList.add("printing-cs"); window.print(); });
+  addEventListener("afterprint", function(){ document.body.classList.remove("printing-cs"); });
 })();
 </script>
 
