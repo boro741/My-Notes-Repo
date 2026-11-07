@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Markup vs Margin: Pricing Maths for Clothing Store Owners</title>
+<meta name="description" content="Markup sets your price tag, margin protects your profit. A practical Hinglish guide with examples, a floor-price method for bargaining, and a calculator.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Young+Serif&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6F7FA; --surface:#FFFFFF; --ink:#12172B; --muted:#586079; --line:#DCE0EA;
+    --cost:#1F2A6B; --indigo-text:#1F2A6B; --indigo-soft:#E7EAF8;
+    --gold:#E9A23B; --gold-text:#8F5300; --gold-soft:#FBEFD7;
+    --teal:#1F7A66; --teal-soft:#DDF1EA;
+    --serif:"Young Serif",Georgia,"Times New Roman",serif;
+    --sans:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#0E1122; --surface:#161A33; --ink:#ECEEF8; --muted:#A0A7C2; --line:#2B3158;
+      --cost:#4050C8; --indigo-text:#B3BDFF; --indigo-soft:#222952;
+      --gold:#EDAE4F; --gold-text:#F3BE6B; --gold-soft:#3A2D14;
+      --teal:#4FC9A9; --teal-soft:#12342D;
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{transition:none!important} }
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:1.125rem;line-height:1.7;-webkit-font-smoothing:antialiased}
+  a{color:var(--indigo-text)}
+  :focus-visible{outline:3px solid var(--gold);outline-offset:3px;border-radius:4px}
+
+  .progress{position:fixed;inset:0 0 auto 0;height:3px;z-index:20;background:transparent}
+  .progress i{display:block;height:100%;width:0;background:var(--gold)}
+
+  .page{width:min(1040px,100% - 32px);margin:0 auto}
+  .prose{max-width:680px}
+  p{margin:0 0 1.1em}
+  b,strong{font-weight:700}
+
+  /* masthead */
+  .mast{display:flex;justify-content:space-between;align-items:baseline;padding:28px 0 0;font-size:.95rem;color:var(--muted)}
+  .mast strong{color:var(--ink);font-family:var(--serif);font-weight:400;font-size:1.1rem}
+
+  /* hero */
+  .hero{padding:56px 0 24px}
+  h1{font-family:var(--serif);font-weight:400;font-size:clamp(2.5rem,6.4vw,4.6rem);line-height:1.04;letter-spacing:-.015em;margin:0 0 22px;max-width:15ch}
+  .lede{font-size:1.25rem;line-height:1.6;color:var(--muted);max-width:40em;margin:0 0 8px}
+  .byline{font-size:.95rem;color:var(--muted);margin:0 0 36px}
+
+  .fig{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px 30px}
+  .ctl{display:flex;flex-wrap:wrap;gap:22px 36px;align-items:flex-end;margin-bottom:26px}
+  .ctl label{display:block;font-size:.9rem;color:var(--muted);margin-bottom:4px;font-weight:500}
+  .ctl input[type=number]{width:140px;padding:9px 12px;font:inherit;font-weight:600;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
+  .ctl .rng{flex:1;min-width:220px}
+  .ctl input[type=range]{width:100%;accent-color:var(--gold)}
+  .out{font-family:var(--serif);font-size:1.5rem;line-height:1.2}
+  .out small{display:block;font-family:var(--sans);font-size:.9rem;color:var(--muted);font-weight:500}
+
+  .ruler{height:10px;border-bottom:1px solid var(--muted);background:repeating-linear-gradient(90deg,var(--muted) 0 1px,transparent 1px 5%);opacity:.45}
+  .bar{display:flex;height:64px;border-radius:0 0 8px 8px;overflow:hidden;margin-top:0}
+  .seg{display:flex;align-items:center;padding:0 14px;font-weight:600;font-size:1rem;white-space:nowrap;overflow:hidden;transition:width .35s ease}
+  .seg.cost{background:var(--cost);color:#fff}
+  .seg.profit{background:var(--gold);color:#2A1A00}
+  .brk{height:12px;border:2px solid currentColor;border-top:0;border-radius:0 0 5px 5px;margin-top:14px;transition:width .35s ease}
+  .brk.mk{color:var(--gold-text)}
+  .brk.mg{color:var(--indigo-text)}
+  .brk-label{margin:8px 0 0;font-size:1rem;line-height:1.45}
+  .brk-label.mk{color:var(--gold-text)}
+  .brk-label.mg{color:var(--indigo-text)}
+  .brk-label b{font-family:var(--serif);font-weight:400;font-size:1.35rem}
+  .fig-note{margin:22px 0 0;color:var(--muted);font-size:.95rem}
+
+  /* contents */
+  .toc{margin:56px 0 8px;padding:20px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .toc h2{font-family:var(--sans);font-size:1rem;font-weight:700;margin:0 0 10px}
+  .toc ol{margin:0;padding:0;list-style:none;columns:2;column-gap:40px;font-size:1rem}
+  .toc li{break-inside:avoid;padding:3px 0}
+  @media(max-width:640px){.toc ol{columns:1}}
+
+  /* article */
+  section{padding-top:56px}
+  h2{font-family:var(--serif);font-weight:400;font-size:clamp(1.8rem,3.6vw,2.4rem);line-height:1.15;margin:0 0 18px;letter-spacing:-.01em;max-width:20ch}
+  h3{font-size:1.2rem;line-height:1.3;margin:34px 0 8px}
+
+  .eq{margin:22px 0;padding:18px 0 14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .eq-main{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;font-family:var(--serif);font-size:1.5rem;line-height:1.3}
+  .frac{display:inline-flex;flex-direction:column;align-items:center;text-align:center;font-size:1.15rem}
+  .frac span:first-child{border-bottom:1.5px solid currentColor;padding:0 .5em .12em}
+  .frac span:last-child{padding-top:.12em}
+  .eq-work{margin:8px 0 0;font-size:1rem;color:var(--muted);font-variant-numeric:tabular-nums}
+  .eq-work b{color:var(--ink)}
+  .eq.mk .eq-main > .name{color:var(--gold-text)}
+  .eq.mg .eq-main > .name{color:var(--indigo-text)}
+
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:26px 0;border:1px solid var(--line);border-radius:16px;background:var(--surface);overflow:hidden}
+  .pair > div{padding:22px 24px}
+  .pair > div + div{border-left:1px solid var(--line)}
+  .pair h3{margin:0 0 6px;font-family:var(--serif);font-weight:400;font-size:1.45rem}
+  .pair .mk h3{color:var(--gold-text)} .pair .mg h3{color:var(--indigo-text)}
+  .pair p{margin:0;font-size:1.02rem}
+  @media(max-width:640px){.pair{grid-template-columns:1fr}.pair > div + div{border-left:0;border-top:1px solid var(--line)}}
+
+  .aside{margin:26px 0;padding:4px 0 4px 20px;border-left:4px solid var(--gold)}
+  .aside p{margin:0}
+  .aside strong{display:block;margin-bottom:2px}
+
+  .scroll{overflow-x:auto;margin:20px 0}
+  table{width:100%;border-collapse:collapse;font-size:1rem;font-variant-numeric:tabular-nums}
+  th{text-align:left;font-weight:600;color:var(--muted);padding:10px 14px 10px 0;border-bottom:1.5px solid var(--ink);white-space:nowrap}
+  td{padding:12px 14px 12px 0;border-bottom:1px solid var(--line);vertical-align:top}
+  tr.hl td{background:var(--gold-soft)}
+  tr.hl td:first-child{padding-left:12px} tr.hl td:last-child{padding-right:12px}
+  td.num,th.num{text-align:right}
+  .pill{display:inline-block;padding:1px 10px;border-radius:99px;font-size:.88rem;font-weight:600;white-space:nowrap}
+  .pill.mk{background:var(--gold-soft);color:var(--gold-text)}
+  .pill.mg{background:var(--indigo-soft);color:var(--indigo-text)}
+
+  /* stacked cost bars */
+  .scen{margin:30px 0}
+  .scen h3{margin:0 0 8px;font-size:1.05rem}
+  .stack{display:flex;height:34px;border-radius:8px;overflow:hidden;background:var(--line)}
+  .stack i{display:block;height:100%}
+  .stack .c{background:var(--cost)} .stack .e{background:var(--gold)} .stack .l{background:var(--teal)}
+  .leg{display:flex;flex-wrap:wrap;gap:4px 22px;margin:8px 0 0;font-size:.95rem;font-variant-numeric:tabular-nums}
+  .leg span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px;background:var(--cost)}
+  .leg .e::before{background:var(--gold)} .leg .l::before{background:var(--teal)}
+
+  /* floor price tag */
+  .tag{position:relative;display:inline-block;margin:10px 0 18px;padding:16px 26px 16px 54px;background:var(--gold-soft);border:1.5px solid var(--gold-text);border-radius:6px 18px 18px 6px}
+  .tag::before{content:"";position:absolute;left:18px;top:50%;width:14px;height:14px;margin-top:-7px;border-radius:50%;background:var(--paper);border:1.5px solid var(--gold-text)}
+  .tag .k{display:block;font-size:.92rem;color:var(--gold-text);font-weight:600}
+  .tag .v{font-family:var(--serif);font-size:2rem;line-height:1.1}
+  .tag .s{display:block;font-size:.92rem;color:var(--muted)}
+
+  ul.plain{padding:0;margin:14px 0;list-style:none}
+  ul.plain li{padding:14px 0;border-bottom:1px solid var(--line)}
+  ul.plain li:first-child{border-top:1px solid var(--line)}
+  ul.plain b{display:block}
+
+  /* calculator */
+  .calc{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px}
+  .calc .row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media(max-width:640px){.calc .row{grid-template-columns:1fr}}
+  .calc label{display:block;font-size:.9rem;color:var(--muted);font-weight:500;margin-bottom:4px}
+  .calc input{width:100%;padding:10px 12px;font:inherit;font-weight:600;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
+  .res{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:24px;border-top:1px solid var(--line)}
+  .res div{padding:16px 12px 0 0}
+  .res small{display:block;color:var(--muted);font-size:.9rem}
+  .res b{font-family:var(--serif);font-weight:400;font-size:1.6rem;line-height:1.2}
+  .res .full{grid-column:1/-1;padding-top:14px}
+  @media(max-width:640px){.res{grid-template-columns:repeat(2,1fr)}}
+
+  details{border-bottom:1px solid var(--line)}
+  details:first-of-type{border-top:1px solid var(--line)}
+  summary{cursor:pointer;padding:16px 28px 16px 0;font-weight:600;list-style:none;position:relative}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+";position:absolute;right:4px;top:12px;font-size:1.5rem;font-weight:400;color:var(--gold-text)}
+  details[open] summary::after{content:"\2212"}
+  details p{margin:0 0 16px;color:var(--muted)}
+  details p b{color:var(--ink)}
+
+  /* closing */
+  .closing{margin-top:12px}
+  .closing .big{font-family:var(--serif);font-size:clamp(1.6rem,3.4vw,2.3rem);line-height:1.2;margin:0;padding:18px 0;border-bottom:1px solid var(--line)}
+  .closing .big:first-of-type{border-top:1px solid var(--line)}
+  .closing .big span{color:var(--gold-text)}
+  footer{margin:64px 0 0;padding:22px 0 60px;border-top:1px solid var(--line);color:var(--muted);font-size:.92rem}
+
+  /* step list */
+  .steps{counter-reset:s;list-style:none;padding:0;margin:24px 0}
+  .steps li{counter-increment:s;position:relative;padding:0 0 24px 54px}
+  .steps li::before{content:counter(s);position:absolute;left:0;top:0;width:36px;height:36px;border-radius:50%;background:var(--cost);color:#fff;font-weight:700;font-size:.95rem;display:grid;place-items:center}
+  .steps li::after{content:"";position:absolute;left:17px;top:42px;bottom:6px;width:2px;background:var(--line)}
+  .steps li:last-child::after{display:none}
+  .steps b{display:block;font-size:1.08rem;margin-bottom:2px}
+  .calc .row + .row{margin-top:16px}
+
+  .prose h4{font-size:1.02rem;margin:30px 0 0;font-weight:700;color:var(--indigo-text)}
+
+  /* cheatsheet */
+  .btn{font:inherit;font-weight:600;padding:10px 18px;border-radius:10px;border:1.5px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer}
+  .btn:hover{background:var(--ink);color:var(--paper)}
+  .cs-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin:22px 0}
+  @media(max-width:700px){.cs-grid{grid-template-columns:1fr}}
+  .cs-card{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:18px 22px}
+  .cs-card h3{margin:0 0 6px;font-family:var(--serif);font-weight:400;font-size:1.25rem}
+  .cs-card ul{margin:0;padding-left:20px;font-size:1rem;line-height:1.55}
+  .cs-card li{padding:3px 0}
+  .cs h3.t{font-family:var(--serif);font-weight:400;font-size:1.4rem;margin:36px 0 4px}
+  .cs table{font-size:.97rem}
+  .cs td:nth-child(2){font-weight:600}
+  tr.grp td{font-weight:700;background:var(--indigo-soft);color:var(--indigo-text);padding-left:12px}
+  .cs .keys{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden;margin:20px 0}
+  .cs .keys div{padding:14px 16px;border-left:1px solid var(--line)}
+  .cs .keys div:first-child{border-left:0}
+  .cs .keys small{display:block;color:var(--muted);font-size:.88rem}
+  .cs .keys b{font-family:var(--serif);font-weight:400;font-size:1.4rem}
+  @media(max-width:700px){.cs .keys{grid-template-columns:repeat(2,1fr)}.cs .keys div:nth-child(3){border-left:0}.cs .keys div:nth-child(n+3){border-top:1px solid var(--line)}}
+  @media print{
+    body.printing-cs{background:#fff;color:#000;font-size:11pt}
+    body.printing-cs .progress,body.printing-cs .mast,body.printing-cs .hero,body.printing-cs .toc,body.printing-cs footer,
+    body.printing-cs main > section:not(#cheatsheet),body.printing-cs main > .pair,body.printing-cs .btn{display:none!important}
+    body.printing-cs #cheatsheet{padding-top:0}
+    body.printing-cs tr,body.printing-cs .cs-card{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="progress" aria-hidden="true"><i id="bar"></i></div>
+
+<div class="page">
+  <div class="mast"><strong>Retail Maths for Shop Owners</strong><span>10 minute read</span></div>
+
+  <header class="hero">
+    <h1>Same ₹500 profit. Two very different percentages.</h1>
+    <p class="lede">Markup tells you how to set the price tag. Margin tells you whether you are actually earning. Is guide mein hum dono ko clothing store ke examples se samjhenge, bargaining ke saath.</p>
+    <p class="byline">Written for first-time clothing store owners</p>
+
+    <div class="fig" role="group" aria-label="Interactive markup and margin demo">
+      <div class="ctl">
+        <div>
+          <label for="h-cp">Cost price of one shirt (₹)</label>
+          <input id="h-cp" type="number" min="1" value="1000" inputmode="numeric">
+        </div>
+        <div class="rng">
+          <label for="h-mk">Drag to change your markup</label>
+          <input id="h-mk" type="range" min="10" max="150" step="5" value="50">
+        </div>
+        <div class="out"><span id="h-sp">₹1,500</span><small>selling price</small></div>
+        <div class="out"><span id="h-gp">₹500</span><small>gross profit</small></div>
+      </div>
+
+      <div class="ruler" aria-hidden="true"></div>
+      <div class="bar" aria-hidden="true">
+        <div class="seg cost" id="h-cost" style="width:66.67%"><span id="h-costt">Cost ₹1,000</span></div>
+        <div class="seg profit" id="h-prof" style="width:33.33%"><span id="h-proft">Profit ₹500</span></div>
+      </div>
+
+      <div class="brk mk" id="h-bmk" style="width:66.67%"></div>
+      <p class="brk-label mk" id="h-lmk"></p>
+      <div class="brk mg" id="h-bmg" style="width:100%"></div>
+      <p class="brk-label mg" id="h-lmg"></p>
+
+      <p class="fig-note">Profit wahi rehta hai. Markup usse cost se compare karta hai, margin selling price se. Isliye margin hamesha chhota number hota hai.</p>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Contents">
+    <h2>In this guide</h2>
+    <ol>
+      <li><a href="#basics">The difference in one minute</a></li>
+      <li><a href="#markup">Markup: how to price</a></li>
+      <li><a href="#margin">Margin: how to judge profit</a></li>
+      <li><a href="#convert">Converting between the two</a></li>
+      <li><a href="#rent">Why margin pays the rent</a></li>
+      <li><a href="#range">How much margin to aim for</a></li>
+      <li><a href="#discount">Bargaining and the floor price</a></li>
+      <li><a href="#playbook">Your playbook</a></li>
+      <li><a href="#calc">Try the calculator</a></li>
+      <li><a href="#test">Quick test</a></li>
+      <li><a href="#cheatsheet">Cheatsheet</a></li>
+    </ol>
+  </nav>
+
+  <main>
+  <section id="basics" class="prose">
+    <h2>The difference in one minute</h2>
+    <p>Most new shop owners use the words markup and margin as if they mean the same thing. They don't, and mixing them up quietly eats your profit, especially when customers start asking for discount.</p>
+    <p>Start with one shirt. Supplier ne aapko shirt ₹1,000 mein di. Aapne tag ₹1,500 ka lagaya. Customer ne ₹1,500 pay kiye. Gross profit: ₹500.</p>
+  </section>
+
+  <div class="pair" role="group" aria-label="Markup versus margin">
+    <div class="mk">
+      <h3>Markup</h3>
+      <p>A pricing tool. "Maine shirt ₹1,000 mein kharidi. Ab customer ko kitne mein bechun?" You start from the cost.</p>
+    </div>
+    <div class="mg">
+      <h3>Margin</h3>
+      <p>A performance tool. "Customer ne mujhe ₹1,500 diye. Usmein se kitna percent mera gross profit hai?" You start from the sale.</p>
+    </div>
+  </div>
+
+  <section id="markup" class="prose">
+    <h2>Markup: how to price</h2>
+    <p>Markup batata hai ki aapne cost price ke upar kitna extra add kiya. Jab supplier ka bill haath mein ho aur tag lagana ho, tab markup natural tool hai, kyunki cost aapko already pata hai.</p>
+    <div class="eq mk">
+      <div class="eq-main"><span class="name">Markup %</span> = <span class="frac"><span>SP − CP</span><span>CP</span></span> × 100</div>
+      <p class="eq-work">(1,500 − 1,000) ÷ 1,000 × 100 = <b>50%</b></p>
+    </div>
+    <p>Aur price nikalna ho toh formula ulta chalta hai:</p>
+    <div class="eq mk">
+      <div class="eq-main"><span class="name">Selling price</span> = CP × (1 + Markup%)</div>
+      <p class="eq-work">₹1,000 × 1.50 = <b>₹1,500</b></p>
+    </div>
+  </section>
+
+  <section id="margin" class="prose">
+    <h2>Margin: how to judge profit</h2>
+    <p>Margin batata hai ki customer ke diye hue paise mein se kitna percent aapke paas profit ke roop mein bacha. Month-end par jab aap register dekhte ho, tab yahi number sach batata hai.</p>
+    <div class="eq mg">
+      <div class="eq-main"><span class="name">Margin %</span> = <span class="frac"><span>SP − CP</span><span>SP</span></span> × 100</div>
+      <p class="eq-work">(1,500 − 1,000) ÷ 1,500 × 100 = <b>33.33%</b></p>
+    </div>
+    <p>Same shirt, same ₹500, lekin 50% markup aur 33.33% margin. Farq sirf denominator ka hai: markup cost se divide karta hai, margin selling price se.</p>
+    <div class="aside">
+      <p><strong>The classic mistake</strong>"Mujhe 40% margin chahiye, toh cost pe 40% add kar deta hoon." Galat. 40% markup se sirf 28.57% margin milta hai. Neeche wali table is gap ko fix karti hai.</p>
+    </div>
+  </section>
+
+  <section id="convert">
+    <div class="prose">
+      <h2>Converting between the two</h2>
+      <p>Agar aapko target margin pata hai, toh required markup is table se mil jayega. Isko print karke counter ke paas laga do.</p>
+    </div>
+    <div class="scroll"><table>
+      <tr><th>Target margin</th><th>Markup needed</th><th class="num">Cost ₹1,000 becomes</th></tr>
+      <tr><td>20%</td><td>25%</td><td class="num">₹1,250</td></tr>
+      <tr><td>25%</td><td>33.33%</td><td class="num">₹1,333</td></tr>
+      <tr><td>30%</td><td>42.86%</td><td class="num">₹1,429</td></tr>
+      <tr class="hl"><td>33.33%</td><td>50%</td><td class="num">₹1,500</td></tr>
+      <tr><td>40%</td><td>66.67%</td><td class="num">₹1,667</td></tr>
+      <tr><td>50%</td><td>100%</td><td class="num">₹2,000</td></tr>
+    </table></div>
+    <div class="prose">
+      <p>Seedha target margin se price chahiye? Ek formula yaad rakho:</p>
+      <div class="eq mg">
+        <div class="eq-main"><span class="name">Selling price</span> = <span class="frac"><span>CP</span><span>1 − Margin</span></span></div>
+        <p class="eq-work">CP ₹1,000, margin 40%: 1,000 ÷ 0.60 = <b>₹1,667</b></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="rent">
+    <div class="prose">
+      <h2>Why margin pays the rent</h2>
+      <p>Ek simple baat se shuru karte hain: rent, salary aur electricity tab bhi dene padte hain jab ek bhi customer shop mein na aaye. Maan lo yeh fixed expenses ₹60,000 per month hain: rent ₹20,000, salaries ₹25,000, electricity ₹5,000 aur other ₹10,000.</p>
+      <p>Yeh ₹60,000 kahan se aayenge? Sirf <b>gross profit</b> se, yaani sale ke paise minus clothes ki cost. Aur margin batata hai ki har sale mein se kitna paisa is "rent pool" mein jaata hai. Chalo step by step dekhte hain.</p>
+    </div>
+
+    <ol class="steps prose">
+      <li><b>Every ₹100 sale mein se kitna aapka hai?</b>Margin ka matlab hi yeh hai. 20% margin par ₹100 ki sale mein se ₹80 supplier ke liye gaye aur ₹20 aapke paas bache. 40% margin par ₹60 gaye aur ₹40 bache.</li>
+      <li><b>Un bache hue paison se rent pay hota hai</b>Rent, salary aur electricity un ₹20 ya ₹40 se hi nikalte hain, supplier wale ₹80 ya ₹60 se nahi.</li>
+      <li><b>Ab ginti karo: kitni sale chahiye?</b>₹60,000 pay karne hain. Agar har ₹100 se ₹20 bachte hain, toh ₹60,000 ÷ ₹20 = 3,000 baar ₹100, yaani ₹3,00,000 ki sales. Agar ₹40 bachte hain, toh ₹60,000 ÷ ₹40 = 1,500 baar ₹100, yaani ₹1,50,000.</li>
+    </ol>
+
+    <div class="scen">
+      <h3>Out of every ₹100 you sell, at 20% margin</h3>
+      <div class="stack" role="img" aria-label="Of 100 rupees, 80 goes to the supplier and 20 is gross profit."><i class="c" style="width:80%"></i><i class="e" style="width:20%"></i></div>
+      <div class="leg"><span>Supplier ₹80</span><span class="e">Gross profit ₹20</span></div>
+    </div>
+    <div class="scen">
+      <h3>Out of every ₹100 you sell, at 40% margin</h3>
+      <div class="stack" role="img" aria-label="Of 100 rupees, 60 goes to the supplier and 40 is gross profit."><i class="c" style="width:60%"></i><i class="e" style="width:40%"></i></div>
+      <div class="leg"><span>Supplier ₹60</span><span class="e">Gross profit ₹40</span></div>
+    </div>
+
+    <div class="prose">
+      <h3>The break-even formula, demonstrated</h3>
+      <p>Upar ki ginti ko hi ek formula bana dete hain. Break-even ka matlab hai woh sales jahan gross profit exactly expenses ke barabar ho jaye. Na profit, na loss.</p>
+      <div class="eq mg">
+        <div class="eq-main"><span class="name">Break-even sales</span> = <span class="frac"><span>Monthly expenses</span><span>Gross margin (as a decimal)</span></span></div>
+        <p class="eq-work">Margin ko decimal mein likho: 20% = 0.20, 40% = 0.40.</p>
+      </div>
+      <p>Example ke saath, 20% margin par:</p>
+      <div class="eq mg">
+        <div class="eq-main">₹60,000 ÷ 0.20 = <b>₹3,00,000</b></div>
+        <p class="eq-work">Check karo: ₹3,00,000 × 20% = ₹60,000 gross profit. Expenses bhi ₹60,000. Left over ₹0. Yahi break-even hai.</p>
+      </div>
+    </div>
+
+    <div class="scroll"><table>
+      <tr><th>Gross margin</th><th>Calculation</th><th class="num">Break-even sales</th><th class="num">Per day (30 days)</th></tr>
+      <tr><td>20%</td><td>60,000 ÷ 0.20</td><td class="num">₹3,00,000</td><td class="num">₹10,000</td></tr>
+      <tr><td>30%</td><td>60,000 ÷ 0.30</td><td class="num">₹2,00,000</td><td class="num">₹6,667</td></tr>
+      <tr class="hl"><td>40%</td><td>60,000 ÷ 0.40</td><td class="num">₹1,50,000</td><td class="num">₹5,000</td></tr>
+    </table></div>
+
+    <div class="scen">
+      <h3>Same ₹3,00,000 of sales, two margins</h3>
+      <div class="stack" role="img" aria-label="With 20 percent margin, clothes cost 80 percent and expenses take the remaining 20 percent."><i class="c" style="width:80%"></i><i class="e" style="width:20%"></i></div>
+      <div class="leg"><span>Clothes ₹2,40,000</span><span class="e">Expenses ₹60,000</span><span class="l">Left over ₹0</span></div>
+      <div class="stack" style="margin-top:14px" role="img" aria-label="With 40 percent margin, clothes cost 60 percent, expenses 20 percent, and 20 percent is left over."><i class="c" style="width:60%"></i><i class="e" style="width:20%"></i><i class="l" style="width:20%"></i></div>
+      <div class="leg"><span>Clothes ₹1,80,000</span><span class="e">Expenses ₹60,000</span><span class="l">Left over ₹60,000</span></div>
+    </div>
+
+    <div class="prose">
+      <p>Gold aur green milkar gross profit hain. Gold hissa expenses pay karta hai, green hissa aapke paas bachta hai. Is example mein same sales par 40% margin wali shop ke paas ₹60,000 extra hain. (Yeh final net profit nahi hai, tax aur interest abhi baaki hain.)</p>
+      <h3>In shirts, not rupees</h3>
+      <p>₹1,500 ki shirt par 33.33% margin ka matlab hai ₹500 gross profit per shirt. Toh ₹60,000 ÷ ₹500 = <b>120 shirts per month</b>, yaani roz lagbhag 4 shirts sirf expenses cover karne ke liye.</p>
+      <h3>What if you also want profit?</h3>
+      <p>Break-even sirf zero-profit point hai. Apne liye kuch kamana ho toh desired profit ko expenses mein add kar do:</p>
+      <div class="eq mg">
+        <div class="eq-main"><span class="name">Sales needed</span> = <span class="frac"><span>Expenses + Desired profit</span><span>Gross margin</span></span></div>
+        <p class="eq-work">₹30,000 profit chahiye, margin 40%: (60,000 + 30,000) ÷ 0.40 = <b>₹2,25,000</b></p>
+      </div>
+      <div class="aside">
+        <p><strong>The point</strong>Higher margin ka matlab hai ki rent pay karne ke liye kam sales chahiye. Chhote town mein jahan footfall limited hai, yeh bahut bada fayda hai.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="range">
+    <div class="prose">
+      <h2>How much margin should you aim for?</h2>
+      <p>Koi ek "sahi" margin nahi hota. Aapko teen numbers nikalne hain: minimum margin (neeche nahi jaana), target margin (jo aap chahte ho) aur maximum margin (jahan market rok deta hai). Pehle do aapke apne numbers se nikalte hain, teesra market se.</p>
+
+      <h3>1. Minimum margin: the survival line</h3>
+      <p>Yeh woh margin hai jahan gross profit sirf expenses cover kare. Isse neeche jaoge toh har mahine loss.</p>
+      <div class="eq mg">
+        <div class="eq-main"><span class="name">Minimum margin</span> = <span class="frac"><span>Monthly expenses</span><span>Expected monthly sales</span></span></div>
+        <p class="eq-work">Expenses ₹60,000, expected sales ₹2,50,000: 60,000 ÷ 2,50,000 = <b>24%</b></p>
+      </div>
+      <p>"Expected sales" mein realistic number lo, apne normal slow months ke hisaab se. Best festive month ka number lene se margin kam dikhega aur dhokha ho jayega.</p>
+
+      <h3>2. Target margin: survival plus your own income</h3>
+      <p>Aap shop sirf rent bharne ke liye nahi chala rahe. Apni salary ya profit bhi add karo. Unsold stock aur markdown ka andaza bhi expenses mein jod do.</p>
+      <div class="eq mg">
+        <div class="eq-main"><span class="name">Target margin</span> = <span class="frac"><span>Expenses + Desired profit</span><span>Expected monthly sales</span></span></div>
+        <p class="eq-work">₹30,000 profit chahiye: (60,000 + 30,000) ÷ 2,50,000 = <b>36%</b></p>
+      </div>
+
+      <p>Dekho expected sales badalne par kya hota hai (expenses ₹60,000, desired profit ₹30,000):</p>
+    </div>
+    <div class="scroll"><table>
+      <tr><th>Expected monthly sales</th><th class="num">Minimum margin</th><th class="num">Target margin</th></tr>
+      <tr><td>₹2,00,000</td><td class="num">30%</td><td class="num">45%</td></tr>
+      <tr class="hl"><td>₹2,50,000</td><td class="num">24%</td><td class="num">36%</td></tr>
+      <tr><td>₹3,00,000</td><td class="num">20%</td><td class="num">30%</td></tr>
+    </table></div>
+    <div class="prose">
+      <p>Sales kam hongi toh aapko zyada margin chahiye. Isliye shuruat mein, jab customers kam hote hain, margin ko lightly mat lo.</p>
+
+      <h3>3. Maximum margin: the market sets the ceiling</h3>
+      <p>Maximum ka koi formula nahi hota, kyunki yeh customers aur competitors decide karte hain. Aapko pata karna hai ki customers us item ke liye zyada se zyada kitna normally pay karte hain. Nearby shops mein 4 ya 5 similar items ke prices note karo, aur ek typical price lo (sabse mehenga nahi).</p>
+      <div class="eq mg">
+        <div class="eq-main"><span class="name">Maximum margin</span> = <span class="frac"><span>Market price − Your cost</span><span>Market price</span></span></div>
+        <p class="eq-work">Kurti ki cost ₹600, nearby shops mein similar kurti ₹1,000: (1,000 − 600) ÷ 1,000 = <b>40%</b></p>
+      </div>
+      <p>Isse upar price rakhoge toh customers doosri shop chale jayenge, jab tak aap kuch extra (better fit, quality, alteration, service) na do. Basic items par ceiling kam hoti hai, festive aur wedding wear par zyada.</p>
+
+      <h3>How to use the three numbers together</h3>
+      <ul class="plain">
+        <li><b>Minimum ≤ Target ≤ Maximum: good item</b>Aap kahin bhi target price aur market ceiling ke beech price rakh sakte ho. Target ke paas rakhoge toh jaldi bikega, ceiling ke paas rakhoge toh zyada kamaoge.</li>
+        <li><b>Maximum is below your target, but above minimum</b>Item expenses cover karta hai lekin aapka profit goal nahi. Ceiling par price karo aur volume badhao.</li>
+        <li><b>Maximum is below minimum: skip it</b>Is item par market itna nahi deta ki woh apna kharcha nikaale. Supplier se cost negotiate karo, ya chhodo, ya jaanbujhkar footfall item ki tarah rakho.</li>
+      </ul>
+      <p>Dhyan rakho: minimum aur target margin poori shop ka average hain. Kuch items ko zyada margin par rakhna padega taaki doosre kam margin wale items sambhal jayein.</p>
+
+      <h3>Don't forget the bargaining buffer</h3>
+      <p>Agar customers aam taur par discount maangte hain, toh tag price target price se thoda upar rakho:</p>
+      <div class="eq mg">
+        <div class="eq-main"><span class="name">Tag price</span> = <span class="frac"><span>Target selling price</span><span>1 − Usual discount</span></span></div>
+        <p class="eq-work">Target ₹1,333, customers usually 10% maangte hain: 1,333 ÷ 0.90 = ₹1,481, yaani tag <b>₹1,499</b>. 10% off ke baad bhi ₹1,349 milta hai.</p>
+      </div>
+
+      <h3>Find your numbers</h3>
+      <p>Apne expenses, expected sales aur ek item ka cost aur market price daal ke dekho:</p>
+    </div>
+
+    <div class="calc">
+      <div class="row">
+        <div><label for="r-ex">Monthly expenses (₹)</label><input id="r-ex" type="number" value="60000" min="0" inputmode="decimal"></div>
+        <div><label for="r-pr">Profit you want per month (₹)</label><input id="r-pr" type="number" value="30000" min="0" inputmode="decimal"></div>
+        <div><label for="r-ss">Expected monthly sales (₹)</label><input id="r-ss" type="number" value="250000" min="0" inputmode="decimal"></div>
+      </div>
+      <div class="row" style="margin-top:16px">
+        <div><label for="r-ic">Item cost price (₹)</label><input id="r-ic" type="number" value="600" min="0" inputmode="decimal"></div>
+        <div><label for="r-mp">Typical market price (₹)</label><input id="r-mp" type="number" value="1000" min="0" inputmode="decimal"></div>
+      </div>
+      <div class="res" aria-live="polite">
+        <div><small>Minimum margin</small><b id="r-min">-</b></div>
+        <div><small>Target margin</small><b id="r-tg">-</b></div>
+        <div><small>Maximum margin</small><b id="r-mx">-</b></div>
+        <div><small>Price at target margin</small><b id="r-pt">-</b></div>
+        <div class="full"><small>What it means for this item</small><b id="r-v" style="font-family:var(--sans);font-size:1.05rem;font-weight:600">-</b></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="discount">
+    <div class="prose">
+      <h2>Bargaining and the floor price</h2>
+      <p>"Bhaiya, thoda kam karo" aapko roz sunna padega. Dekho ek chhota discount kitna bada asar karta hai. Jeans ki cost ₹1,000 hai aur tag ₹1,600. Customer ₹200 kam maangta hai aur aap maan jaate ho.</p>
+    </div>
+    <div class="scroll"><table>
+      <tr><th></th><th class="num">Before discount</th><th class="num">After discount</th></tr>
+      <tr><td>Cost price</td><td class="num">₹1,000</td><td class="num">₹1,000</td></tr>
+      <tr><td>Selling price</td><td class="num">₹1,600</td><td class="num">₹1,400</td></tr>
+      <tr><td>Gross profit</td><td class="num">₹600</td><td class="num">₹400</td></tr>
+      <tr class="hl"><td>Gross margin</td><td class="num">37.5%</td><td class="num">28.57%</td></tr>
+    </table></div>
+    <div class="prose">
+      <p>Customer ko sirf 12.5% discount mila, lekin aapka profit 33.33% gir gaya. Isliye discount ko hamesha profit ke terms mein sochiye, tag price ke terms mein nahi.</p>
+      <h3>Give every item a floor price</h3>
+      <p>Upar nikala hua minimum margin use karo (example ke liye hum 25% lete hain). Phir sabse neeche ka acceptable price nikalo:</p>
+      <div class="eq mg">
+        <div class="eq-main"><span class="name">Floor price</span> = <span class="frac"><span>CP</span><span>1 − Minimum margin</span></span></div>
+        <p class="eq-work">1,000 ÷ 0.75 = <b>₹1,333</b></p>
+      </div>
+      <div class="tag"><span class="k">Floor price for the ₹1,600 jeans</span><span class="v">₹1,333</span><span class="s">Maximum discount: ₹267, about 16.7%</span></div>
+      <p>Floor price salesman ko bata do, ya tag ke peeche code mein likh do. Phir woh bina loss ke confidently bargain kar sakta hai.</p>
+    </div>
+  </section>
+
+  <section id="playbook">
+    <div class="prose">
+      <h2>Your playbook</h2>
+      <p>Kab kya use karna hai, ek nazar mein:</p>
+    </div>
+    <div class="scroll"><table>
+      <tr><th>Situation</th><th>Use</th><th>What to do</th></tr>
+      <tr><td>New stock aaya, tag lagana hai</td><td><span class="pill mk">Markup</span></td><td>Target margin decide karo, conversion table se markup lo, price set karo</td></tr>
+      <tr><td>Customer bargain kar raha hai</td><td><span class="pill mg">Margin</span></td><td>Floor price ke upar hi deal close karo</td></tr>
+      <tr><td>Month-end review</td><td><span class="pill mg">Margin</span></td><td>Total sales aur cost of goods sold se gross margin nikalo</td></tr>
+      <tr><td>Business sustainable hai ya nahi</td><td><span class="pill mg">Margin</span></td><td>Break-even sales calculate karo</td></tr>
+      <tr><td>Purana stock clear karna hai</td><td><span class="pill mg">Margin</span></td><td>Kam se kam cost recover karo, aur loss ko soch samajhkar accept karo</td></tr>
+    </table></div>
+
+    <div class="prose">
+      <h3>Habits for a first-time store owner</h3>
+      <p>Pehli baar shop chala rahe ho, toh sab kuch ek saath perfect karna zaroori nahi. In habits ko ek-ek karke apni routine mein daalo. Pehle chaar groups mein se jo sabse zyada zaroori lage, wahan se shuru karo.</p>
+
+      <h4>Pricing and margin</h4>
+      <ul class="plain">
+        <li><b>Different categories, different margins</b>Basics jaise innerwear aur plain tees lower margin par rakho taaki footfall aaye. Festive aur wedding-season wear par higher margin rakho.</li>
+        <li><b>Track margin by item</b>Fast-moving item at 25% margin kabhi kabhi slow item at 50% se zyada kamata hai, kyunki stock jaldi rotate hota hai.</li>
+        <li><b>Compete on value, not only price</b>Competitors ke saath price war mat karo. Fit, quality, alteration aur service se alag dikho.</li>
+        <li><b>Calculate margin without GST</b>Agar aap GST registered ho, toh cost aur selling price dono se GST hata ke margin nikalo, warna margin galat dikhega. Exact rules apne CA se confirm kar lo.</li>
+        <li><b>Negotiate with your supplier</b>Cost kam hoti hai toh margin seedha badhta hai. ₹1,500 ke tag par cost ₹1,000 se ₹950 hui toh margin 33.3% se 36.7% ho jaata hai. Bulk order, advance payment ya regular orders par better rate maango.</li>
+      </ul>
+
+      <h4>Buying and stock</h4>
+      <ul class="plain">
+        <li><b>Start small and reorder the winners</b>Pehli baar mein zyada stock mat lo. Chhoti quantity mein size aur colour ka mix lo, dekho kya bikta hai, aur phir sirf winners reorder karo.</li>
+        <li><b>Buy for your town's budget</b>Apna taste nahi, apne customers ka budget aur taste dekho. Shuru mein 2 ya 3 price bands (jaise ₹500 ke neeche, ₹500 se ₹1,000, ₹1,000 se upar) rakho aur dekho kaunsa band sabse zyada bikta hai.</li>
+        <li><b>Remember the hidden cost</b>Unsold stock mein aapka paisa phasa hota hai. Jitna zyada time stock pada rehta hai, utna aapka cash block rehta hai.</li>
+        <li><b>Set a markdown rule in advance</b>Pehle se decide karo ki item kitne din mein nahi bika toh discount lagega, jaise 60 din. Rule ready hoga toh decision lena emotionally aasan hota hai.</li>
+        <li><b>Track stock by size and colour</b>Jab sirf XL aur XXL bache hon, toh item slow ho jaata hai. Size-wise count rakho aur reorder karte waqt missing sizes pehle bharo.</li>
+      </ul>
+
+      <h4>Money and records</h4>
+      <ul class="plain">
+        <li><b>Keep a simple register</b>Har item ka CP, SP aur margin likho. Notebook ya Excel, kuch bhi chalega.</li>
+        <li><b>Close the cash every day</b>Roz shop band karte waqt likho: opening cash, total sales, expenses aur closing cash. Agar kahin gap mile toh usi din check karo.</li>
+        <li><b>Separate shop money from personal money</b>Alag bank account rakho, ya kam se kam alag notebook. Apne liye ek fixed monthly salary decide karo aur baaki paisa business mein rehne do.</li>
+        <li><b>Keep a cash cushion</b>Shuruat ke mahine slow ho sakte hain. Kam se kam 2 mahine ke expenses alag rakho (₹60,000 wale example mein ₹1,20,000) taaki rent ka tension na ho.</li>
+        <li><b>Count the small costs</b>Packing bags, transport, alteration, repairs aur payment charges. Yeh chhote kharche expenses mein add karo, warna aapka minimum margin kam nikalega.</li>
+      </ul>
+
+      <h4>Customers and daily routine</h4>
+      <ul class="plain">
+        <li><b>Sell on the floor yourself at first</b>Pehle kuch mahine khud customers ko attend karo. Aapko pata chalega ki log kya poochte hain, kya reject karte hain aur kis price par haan bolte hain.</li>
+        <li><b>Write down your return and alteration policy</b>Pehle se decide karo ki exchange hoga ya nahi, kitne din mein, aur bill ke saath. Customer aur staff dono ko clarity milti hai, aur jhagde kam hote hain.</li>
+        <li><b>Keep customer contacts, with permission</b>Naam aur phone number lo, aur festival se pehle new stock ya offer ka message bhejo. Repeat customer sabse sasta customer hota hai.</li>
+        <li><b>Plan for festive and wedding season early</b>Eid, Durga Puja, Bihu, Diwali aur wedding season ke liye 6 se 8 hafte pehle stock plan karo, kyunki suppliers ke paas bhi us time rush hota hai.</li>
+        <li><b>Train staff on the floor price</b>Staff ko batao ki woh kitna discount de sakte hain aur kab aapse poochna hai. Phir har bargain ke liye aapko shop mein rukna nahi padega.</li>
+        <li><b>Do a 30-minute weekly review</b>Har hafte ek fixed time par dekho: top 5 selling items, 5 slowest items, is hafte ka margin aur cash position. Chhoti problems bade hone se pehle pakad mein aa jaati hain.</li>
+        <li><b>Check nearby shops every month</b>Mahine mein ek baar nearby shops ke prices aur new designs dekho. Yeh aapke maximum margin ka sabse reliable data hai.</li>
+        <li><b>Keep the shop neat and easy to browse</b>Best sellers entrance ke paas, size-wise arrangement, saaf trial room aur achhi lighting. Yeh almost free hai aur customer ko rukne ki wajah deta hai.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="calc">
+    <div class="prose">
+      <h2>Try the calculator</h2>
+      <p>Apne kisi bhi item ke numbers daal ke dekho.</p>
+    </div>
+    <div class="calc">
+      <div class="row">
+        <div><label for="cp">Cost price (₹)</label><input id="cp" type="number" value="1000" min="0" inputmode="decimal"></div>
+        <div><label for="sp">Selling price (₹)</label><input id="sp" type="number" value="1500" min="0" inputmode="decimal"></div>
+        <div><label for="mm">Minimum margin to protect (%)</label><input id="mm" type="number" value="25" min="0" max="99" inputmode="decimal"></div>
+      </div>
+      <div class="res" aria-live="polite">
+        <div><small>Gross profit</small><b id="gp">-</b></div>
+        <div><small>Markup</small><b id="mk">-</b></div>
+        <div><small>Margin</small><b id="mg">-</b></div>
+        <div><small>Floor price</small><b id="fl">-</b></div>
+        <div class="full"><small>Maximum discount you can give</small><b id="md">-</b></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="test" class="prose">
+    <h2>Quick test</h2>
+    <p>Ek kurti ₹500 mein kharidi aur ₹1,000 mein bechi. Pehle khud socho, phir answer kholo.</p>
+    <details>
+      <summary>Purchase price ke upar kitna extra add kiya? Markup ya margin?</summary>
+      <p><b>Markup.</b> (1,000 − 500) ÷ 500 = 100% markup.</p>
+    </details>
+    <details>
+      <summary>Customer ke ₹1,000 mein se kitna percent gross profit hai?</summary>
+      <p><b>Margin.</b> (1,000 − 500) ÷ 1,000 = 50% margin.</p>
+    </details>
+    <details>
+      <summary>100% markup ka matlab 100% margin hota hai kya?</summary>
+      <p><b>Nahi.</b> 100% markup sirf 50% margin hai. Margin kabhi 100% nahi hota jab tak cost zero na ho.</p>
+    </details>
+  </section>
+
+  <section class="closing">
+    <div class="prose"><h2>What to remember</h2></div>
+    <p class="big"><span>Markup</span> sets the tag.</p>
+    <p class="big"><span>Margin</span> protects the profit.</p>
+    <p class="big">A <span>floor price</span> ends the bargaining loss.</p>
+  </section>
+  
+  <section id="cheatsheet" class="cs">
+    <div class="prose">
+      <h2>Cheatsheet</h2>
+      <p>Everything from this guide on one page. Bookmark this section, or print it and keep it near the billing counter.</p>
+      <button class="btn" id="print-cs" type="button">Print this cheatsheet</button>
+    </div>
+
+    <h3 class="t">The one-line difference</h3>
+    <div class="keys" role="group" aria-label="Example numbers">
+      <div><small>Cost price</small><b>₹1,000</b></div>
+      <div><small>Selling price</small><b>₹1,500</b></div>
+      <div><small>Markup</small><b>50%</b></div>
+      <div><small>Margin</small><b>33.33%</b></div>
+    </div>
+    <div class="prose">
+      <p><b>Markup</b> starts from your cost and is used to set prices. <b>Margin</b> starts from the sale price and is used to judge profit and discounts. Margin is always lower than markup.</p>
+    </div>
+
+    <h3 class="t">All formulas</h3>
+    <p class="prose" style="margin-bottom:0">SP = selling price, CP = cost price. Convert percentages to decimals before using them (40% = 0.40).</p>
+    <div class="scroll"><table>
+      <tr><th>What you want</th><th>Formula</th><th>Example</th></tr>
+      <tr class="grp"><td colspan="3">Basics</td></tr>
+      <tr><td>Gross profit</td><td>SP − CP</td><td>1,500 − 1,000 = ₹500</td></tr>
+      <tr><td>Markup %</td><td>(SP − CP) ÷ CP × 100</td><td>500 ÷ 1,000 = 50%</td></tr>
+      <tr><td>Margin %</td><td>(SP − CP) ÷ SP × 100</td><td>500 ÷ 1,500 = 33.33%</td></tr>
+      <tr class="grp"><td colspan="3">Setting the price</td></tr>
+      <tr><td>Price from markup</td><td>CP × (1 + markup)</td><td>1,000 × 1.50 = ₹1,500</td></tr>
+      <tr><td>Price from target margin</td><td>CP ÷ (1 − margin)</td><td>1,000 ÷ 0.60 = ₹1,667 (40% margin)</td></tr>
+      <tr><td>Markup needed for a margin</td><td>Margin ÷ (1 − margin)</td><td>0.40 ÷ 0.60 = 66.67%</td></tr>
+      <tr><td>Margin from a markup</td><td>Markup ÷ (1 + markup)</td><td>0.50 ÷ 1.50 = 33.33%</td></tr>
+      <tr><td>Tag price with bargaining buffer</td><td>Target price ÷ (1 − usual discount)</td><td>1,333 ÷ 0.90 ≈ ₹1,481, tag ₹1,499</td></tr>
+      <tr class="grp"><td colspan="3">Rent and break-even</td></tr>
+      <tr><td>Break-even sales</td><td>Monthly expenses ÷ gross margin</td><td>60,000 ÷ 0.20 = ₹3,00,000</td></tr>
+      <tr><td>Sales needed for a profit goal</td><td>(Expenses + desired profit) ÷ margin</td><td>(60,000 + 30,000) ÷ 0.40 = ₹2,25,000</td></tr>
+      <tr><td>Minimum margin</td><td>Expenses ÷ expected sales</td><td>60,000 ÷ 2,50,000 = 24%</td></tr>
+      <tr><td>Target margin</td><td>(Expenses + desired profit) ÷ expected sales</td><td>90,000 ÷ 2,50,000 = 36%</td></tr>
+      <tr><td>Maximum margin</td><td>(Market price − CP) ÷ market price</td><td>(1,000 − 600) ÷ 1,000 = 40%</td></tr>
+      <tr class="grp"><td colspan="3">Bargaining</td></tr>
+      <tr><td>Floor price</td><td>CP ÷ (1 − minimum margin)</td><td>1,000 ÷ 0.75 = ₹1,333</td></tr>
+      <tr><td>Maximum discount</td><td>(Tag price − floor price) ÷ tag price</td><td>(1,600 − 1,333) ÷ 1,600 = 16.7%</td></tr>
+    </table></div>
+
+    <h3 class="t">Margin and markup conversion</h3>
+    <div class="scroll"><table>
+      <tr><th>Margin</th><th>Markup needed</th><th class="num">CP ₹1,000 becomes</th></tr>
+      <tr><td>20%</td><td>25%</td><td class="num">₹1,250</td></tr>
+      <tr><td>25%</td><td>33.33%</td><td class="num">₹1,333</td></tr>
+      <tr><td>30%</td><td>42.86%</td><td class="num">₹1,429</td></tr>
+      <tr><td>33.33%</td><td>50%</td><td class="num">₹1,500</td></tr>
+      <tr><td>40%</td><td>66.67%</td><td class="num">₹1,667</td></tr>
+      <tr><td>50%</td><td>100%</td><td class="num">₹2,000</td></tr>
+    </table></div>
+
+    <h3 class="t">Which one to use</h3>
+    <div class="scroll"><table>
+      <tr><th>Situation</th><th>Use</th><th>Do this</th></tr>
+      <tr><td>New stock arrives and you set the tag</td><td><span class="pill mk">Markup</span></td><td>Pick a target margin, convert it to a price, then add the bargaining buffer</td></tr>
+      <tr><td>Customer asks for a discount</td><td><span class="pill mg">Margin</span></td><td>Never go below the floor price</td></tr>
+      <tr><td>Month-end review</td><td><span class="pill mg">Margin</span></td><td>Gross margin = (sales − cost of goods sold) ÷ sales</td></tr>
+      <tr><td>Checking if the shop can survive</td><td><span class="pill mg">Margin</span></td><td>Compare sales with break-even sales</td></tr>
+      <tr><td>Clearing old stock</td><td><span class="pill mg">Margin</span></td><td>Recover at least the cost, and accept the loss on purpose</td></tr>
+    </table></div>
+
+    <h3 class="t">Judging an item</h3>
+    <div class="scroll"><table>
+      <tr><th>What you find</th><th>What it means</th><th>What to do</th></tr>
+      <tr><td>Maximum margin is above target margin</td><td>Good item</td><td>Price between your target price and the market price</td></tr>
+      <tr><td>Maximum is below target but above minimum</td><td>Covers expenses, misses profit goal</td><td>Price at the market ceiling and push volume</td></tr>
+      <tr><td>Maximum is below minimum</td><td>Item cannot pay for itself</td><td>Negotiate the cost, skip it, or keep it only to bring in footfall</td></tr>
+    </table></div>
+
+    <h3 class="t">Rules of thumb</h3>
+    <div class="cs-grid">
+      <div class="cs-card">
+        <h3>Always</h3>
+        <ul>
+          <li>Set the price with markup, judge the profit with margin.</li>
+          <li>Decide a floor price for every item before it goes on the rack.</li>
+          <li>Calculate minimum margin with sales from a slow month.</li>
+          <li>Record cost, selling price and margin for every item.</li>
+          <li>Keep at least 2 months of expenses as a cash cushion.</li>
+          <li>If you are GST registered, calculate margin on prices without GST.</li>
+        </ul>
+      </div>
+      <div class="cs-card">
+        <h3>Never</h3>
+        <ul>
+          <li>Add a margin percentage to cost as if it were markup. 40% markup is only 28.57% margin.</li>
+          <li>Sell below the floor price, except in a planned clearance.</li>
+          <li>Treat gross margin as net profit. Tax, interest and other costs still come out.</li>
+          <li>Price only by copying competitors. Check your own cost first.</li>
+          <li>Mix shop money with personal money.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 class="t">Checklists</h3>
+    <div class="cs-grid">
+      <div class="cs-card">
+        <h3>For every new item</h3>
+        <ul>
+          <li>Write down the cost price.</li>
+          <li>Choose the target margin and calculate the price.</li>
+          <li>Check the nearby market price (the maximum margin).</li>
+          <li>Add the bargaining buffer to get the tag price.</li>
+          <li>Note the floor price in your register.</li>
+        </ul>
+      </div>
+      <div class="cs-card">
+        <h3>Every day</h3>
+        <ul>
+          <li>Close the cash: opening, sales, expenses, closing.</li>
+          <li>Record sales and any expense.</li>
+          <li>Note what customers asked for but you did not have.</li>
+          <li>Tidy the display and put best sellers up front.</li>
+        </ul>
+      </div>
+      <div class="cs-card">
+        <h3>Every week (30 minutes)</h3>
+        <ul>
+          <li>List the top 5 and the slowest 5 items.</li>
+          <li>Calculate the week's gross margin.</li>
+          <li>Check cash against the expenses due.</li>
+          <li>Plan reorders, starting with missing sizes.</li>
+        </ul>
+      </div>
+      <div class="cs-card">
+        <h3>Every month</h3>
+        <ul>
+          <li>Compare gross margin with your target margin.</li>
+          <li>Compare sales with break-even sales.</li>
+          <li>Mark down items that passed your markdown deadline.</li>
+          <li>Review supplier rates and nearby shop prices.</li>
+          <li>Pay yourself the fixed salary you decided on.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+  </main>
+
+  <footer>Gross margin mein operating costs, taxes aur interest shamil nahi hain. Saare figures sirf examples hain.</footer>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const inr = n => isFinite(n) ? "₹" + Math.round(n).toLocaleString("en-IN") : "-";
+  const p1 = n => (Math.round(n*10)/10) + "%";
+  const p2 = n => (Math.round(n*100)/100) + "%";
+
+  /* hero */
+  function hero(){
+    const cp = parseFloat($("h-cp").value), mk = parseFloat($("h-mk").value);
+    if(!(cp > 0)) return;
+    const sp = cp*(1 + mk/100), gp = sp - cp, mg = gp/sp*100, cw = cp/sp*100;
+    $("h-sp").textContent = inr(sp);
+    $("h-gp").textContent = inr(gp);
+    $("h-cost").style.width = cw + "%";
+    $("h-prof").style.width = (100 - cw) + "%";
+    $("h-costt").textContent = "Cost " + inr(cp);
+    $("h-proft").textContent = "Profit " + inr(gp);
+    $("h-bmk").style.width = cw + "%";
+    $("h-lmk").innerHTML = "Markup: " + inr(gp) + " profit ÷ " + inr(cp) + " cost = <b>" + p1(mk) + "</b>";
+    $("h-lmg").innerHTML = "Margin: " + inr(gp) + " profit ÷ " + inr(sp) + " price = <b>" + p1(mg) + "</b>";
+  }
+  ["h-cp","h-mk"].forEach(i => $(i).addEventListener("input", hero));
+  hero();
+
+  /* calculator */
+  function calc(){
+    const cp = parseFloat($("cp").value), sp = parseFloat($("sp").value), mm = parseFloat($("mm").value)/100;
+    $("gp").textContent = inr(sp - cp);
+    $("mk").textContent = cp > 0 ? p2((sp - cp)/cp*100) : "-";
+    $("mg").textContent = sp > 0 ? p2((sp - cp)/sp*100) : "-";
+    const floor = (mm >= 0 && mm < 1) ? cp/(1 - mm) : NaN;
+    $("fl").textContent = inr(floor);
+    if(isFinite(floor) && sp > 0){
+      const d = sp - floor;
+      $("md").textContent = d > 0 ? inr(d) + " (" + p1(d/sp*100) + " off the tag)" : "No room: the tag price is already below your floor";
+    } else $("md").textContent = "-";
+  }
+  ["cp","sp","mm"].forEach(i => $(i).addEventListener("input", calc));
+  calc();
+
+
+  /* margin range finder */
+  function rangeFinder(){
+    const ex = parseFloat($("r-ex").value), pr = parseFloat($("r-pr").value), ss = parseFloat($("r-ss").value);
+    const ic = parseFloat($("r-ic").value), mp = parseFloat($("r-mp").value);
+    const min = ss > 0 ? ex/ss : NaN;
+    const tg = ss > 0 ? (ex + (pr || 0))/ss : NaN;
+    const mx = mp > 0 ? (mp - ic)/mp : NaN;
+    $("r-min").textContent = isFinite(min) ? p1(min*100) : "-";
+    $("r-tg").textContent = isFinite(tg) ? p1(tg*100) : "-";
+    $("r-mx").textContent = isFinite(mx) ? p1(mx*100) : "-";
+    const pt = (isFinite(tg) && tg < 1) ? ic/(1 - tg) : NaN;
+    $("r-pt").textContent = inr(pt);
+    let v = "-";
+    if(isFinite(tg) && (tg >= 1 || min >= 1)){
+      v = "Expenses are as high as your expected sales. No margin can fix that: raise sales or cut expenses.";
+    } else if(isFinite(min) && isFinite(mx) && ic >= 0){
+      if(mx < min) v = "At the market price this item earns less than your survival margin. Negotiate the cost, skip it, or keep it only as a footfall item.";
+      else if(mx < tg) v = "This item covers expenses but cannot reach your profit goal at market price. Price near " + inr(mp) + " and push volume.";
+      else v = "Good item. Price it anywhere between " + inr(pt) + " (target) and " + inr(mp) + " (market ceiling).";
+    }
+    $("r-v").textContent = v;
+  }
+  ["r-ex","r-pr","r-ss","r-ic","r-mp"].forEach(i => $(i).addEventListener("input", rangeFinder));
+  rangeFinder();
+
+  /* print cheatsheet only */
+  $("print-cs").addEventListener("click", () => { document.body.classList.add("printing-cs"); window.print(); });
+  addEventListener("afterprint", () => document.body.classList.remove("printing-cs"));
+
+  /* reading progress */
+  const bar = $("bar");
+  function prog(){
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max > 0 ? h.scrollTop/max*100 : 0) + "%";
+  }
+  addEventListener("scroll", prog, {passive:true}); prog();
+</script>
+</body>
+</html>
