@@ -1,0 +1,805 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Kapda Parakh</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Hind:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one long course page. Gamosa-style red woven border = section divider.
+   Chapters alternate prose + a hands-on tool (tabs, scorecard, calculators). */
+:root{
+  --bg:#F6F8F6;          /* cool white, slight tea-green bias */
+  --card:#FFFFFF;
+  --ink:#1D2420;
+  --muted:#5B6760;
+  --line:#D7DED9;
+  --red:#B8232B;         /* gamosa red */
+  --red-soft:#F7E3E3;
+  --tea:#2C6A4D;         /* Assam tea-garden green */
+  --tea-soft:#E1F0E8;
+  --indigo:#2D3C6B;      /* denim */
+  --indigo-soft:#E4E8F5;
+  --ok:#237A4B; --warn:#9A6200; --bad:#B8232B;
+  --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --font-body:'Hind','Segoe UI',system-ui,sans-serif;
+  --font-mono:'DM Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111613; --card:#1A211D; --ink:#E7ECE8; --muted:#9AA6A0; --line:#2C3631;
+    --red:#EE6168; --red-soft:#3A1E21; --tea:#6FC49B; --tea-soft:#16301F;
+    --indigo:#9DB0EE; --indigo-soft:#1E2640;
+    --ok:#6FC49B; --warn:#E3B341; --bad:#EE6168;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111613; --card:#1A211D; --ink:#E7ECE8; --muted:#9AA6A0; --line:#2C3631;
+  --red:#EE6168; --red-soft:#3A1E21; --tea:#6FC49B; --tea-soft:#16301F;
+  --indigo:#9DB0EE; --indigo-soft:#1E2640;
+  --ok:#6FC49B; --warn:#E3B341; --bad:#EE6168;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.65;
+  padding-block:0 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+.wrap{max-width:1040px;margin-inline:auto}
+h1,h2,h3{font-family:var(--font-display);line-height:1.12;text-wrap:balance;margin:0}
+p{margin:0 0 1em;max-width:66ch}
+a{color:var(--indigo)}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px;border-radius:4px}
+.mono{font-family:var(--font-mono);letter-spacing:.06em;text-transform:uppercase;font-size:.74rem}
+
+/* nav */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line);margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding-inline:max(16px,env(safe-area-inset-left,0px))}
+.nav-in{max-width:1040px;margin-inline:auto;display:flex;gap:6px;overflow-x:auto;padding-block:10px;scrollbar-width:thin}
+.nav a{white-space:nowrap;text-decoration:none;color:var(--ink);font-family:var(--font-mono);font-size:.76rem;letter-spacing:.04em;padding:6px 11px;border:1px solid var(--line);border-radius:999px;background:var(--card)}
+.nav a:hover{border-color:var(--red);color:var(--red)}
+
+/* gamosa band */
+.gamosa{height:18px;margin-block:0;background:
+  linear-gradient(var(--red),var(--red)) top/100% 3px no-repeat,
+  linear-gradient(var(--red),var(--red)) bottom/100% 3px no-repeat,
+  repeating-linear-gradient(90deg,var(--red) 0 5px,transparent 5px 12px) center/100% 8px no-repeat}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:36px;align-items:center;padding-block:44px 40px}
+.hero h1{font-size:clamp(2.3rem,6.4vw,4.4rem);font-weight:800;letter-spacing:-.02em}
+.hero h1 em{font-style:normal;color:var(--red)}
+.hero .lead{font-size:1.15rem;color:var(--muted);margin-top:18px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.chip{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.04em;padding:5px 10px;border-radius:6px;background:var(--tea-soft);color:var(--tea)}
+.tag{position:relative;background:var(--card);border:2px solid var(--ink);padding:48px 24px 24px;clip-path:polygon(0 18px,18px 0,100% 0,100% 100%,0 100%);margin-inline:auto;max-width:360px;width:100%}
+.tag::before{content:"";position:absolute;top:14px;left:50%;width:16px;height:16px;border-radius:50%;border:2px solid var(--ink);background:var(--bg);transform:translateX(-50%)}
+.tag h2{font-size:1.3rem;margin-bottom:12px}
+.tag ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.tag li{display:flex;gap:10px;align-items:baseline;border-bottom:1px dashed var(--line);padding-bottom:8px}
+.tag li b{font-family:var(--font-mono);font-weight:500;color:var(--red);min-width:78px;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em}
+.tag .price{margin-top:16px;font-family:var(--font-mono);font-size:.8rem;color:var(--muted)}
+
+/* chapters */
+.chapter{padding-block:52px 8px}
+.ch-head{display:flex;flex-direction:column;gap:8px;margin-bottom:24px}
+.ch-head .mono{color:var(--red)}
+.ch-head h2{font-size:clamp(1.7rem,4.2vw,2.6rem);font-weight:800;letter-spacing:-.015em}
+h3{font-size:1.25rem;font-weight:600;margin-bottom:8px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}
+.grid>*{min-width:0}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px}
+.panel.red{border-color:var(--red);background:var(--red-soft)}
+.panel.tea{background:var(--tea-soft);border-color:transparent}
+.panel.ind{background:var(--indigo-soft);border-color:transparent}
+.panel h3{margin-bottom:6px}
+.panel p:last-child{margin-bottom:0}
+.pill{display:inline-block;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:5px;margin-bottom:10px;background:var(--ink);color:var(--bg)}
+.callout{border-left:5px solid var(--tea);background:var(--tea-soft);padding:14px 18px;border-radius:0 8px 8px 0;margin-block:20px;max-width:760px}
+.callout.warn{border-color:var(--red);background:var(--red-soft)}
+.callout p:last-child{margin:0}
+.callout strong{font-family:var(--font-display)}
+
+/* tabs */
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.tab{font-family:var(--font-display);font-weight:600;font-size:.98rem;padding:9px 16px;border-radius:8px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tab:hover{border-color:var(--red)}
+.fab{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:14px}
+.fab>div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.fab h4{margin:0 0 4px;font-family:var(--font-mono);font-weight:500;font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.fab p{margin:0;font-size:.97rem}
+.fab .test{background:var(--tea-soft);border-color:transparent}
+
+/* gsm scale */
+.scale{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px 20px 12px}
+.srow{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;align-items:center;margin-bottom:10px}
+.srow span.n{font-size:.9rem;line-height:1.25}
+.track{position:relative;height:26px;background:repeating-linear-gradient(90deg,var(--line) 0 1px,transparent 1px 22.222%);border-radius:4px}
+.bar{position:absolute;top:3px;bottom:3px;border-radius:4px;display:flex;align-items:center;padding-inline:8px;font-family:var(--font-mono);font-size:.68rem;color:#fff;white-space:nowrap;overflow:hidden}
+.axis{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;font-family:var(--font-mono);font-size:.68rem;color:var(--muted)}
+.axis div{position:relative;height:18px}
+.axis i{position:absolute;font-style:normal;transform:translateX(-50%)}
+.axis i:first-child{transform:none}
+
+/* tools */
+.tool{background:var(--card);border:2px solid var(--ink);border-radius:12px;padding:22px;margin-block:22px}
+.tool>h3{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tool>h3 .pill{margin:0;background:var(--red);color:#fff}
+.fields{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));margin-block:14px}
+.fields label{display:flex;flex-direction:column;gap:5px;font-size:.88rem;color:var(--muted);min-width:0}
+.fields input{font:inherit;font-size:1.05rem;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;font-family:var(--font-mono)}
+.fields input:focus{border-color:var(--red);outline:none;box-shadow:0 0 0 3px var(--red-soft)}
+.result{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));margin-block:14px}
+.result>div{background:var(--bg);border-radius:8px;padding:12px 14px;min-width:0}
+.result small{display:block;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.result b{font-family:var(--font-display);font-size:1.6rem;font-weight:800;font-variant-numeric:tabular-nums}
+.result .big{background:var(--red);color:#fff}
+.result .big small{color:#fff;opacity:.85}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.95rem}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--font-mono);font-weight:500;font-size:.7rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+tr:last-child td{border-bottom:none}
+td.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.st-ok{color:var(--ok);font-weight:600}.st-warn{color:var(--warn);font-weight:600}.st-bad{color:var(--bad);font-weight:600}
+
+/* scorecard */
+.group{margin-block:18px 6px}
+.group h4{margin:0 0 8px;font-family:var(--font-mono);font-weight:500;font-size:.74rem;letter-spacing:.07em;text-transform:uppercase;color:var(--indigo)}
+.check{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px;cursor:pointer;background:var(--bg)}
+.check input{width:20px;height:20px;margin-top:3px;accent-color:var(--tea);flex:none}
+.check span{min-width:0}
+.check em{font-style:normal;font-family:var(--font-mono);font-size:.64rem;letter-spacing:.06em;background:var(--red);color:#fff;border-radius:4px;padding:1px 6px;margin-left:6px;vertical-align:2px}
+.verdict{margin-top:16px;padding:16px 18px;border-radius:10px;border:2px solid var(--line);background:var(--bg)}
+.verdict b{font-family:var(--font-display);font-size:1.25rem;display:block;margin-bottom:2px}
+.verdict.ok{border-color:var(--ok)}.verdict.ok b{color:var(--ok)}
+.verdict.warn{border-color:var(--warn)}.verdict.warn b{color:var(--warn)}
+.verdict.bad{border-color:var(--bad)}.verdict.bad b{color:var(--bad)}
+.meter{height:8px;background:var(--line);border-radius:5px;margin:10px 0 4px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--tea);width:0;transition:width .25s}
+
+/* chat scripts */
+.chat{display:grid;gap:12px;max-width:760px}
+.bubble{position:relative;padding:14px 16px;border-radius:14px;max-width:min(100%,600px);background:var(--card);border:1px solid var(--line)}
+.bubble.me{background:var(--tea-soft);border-color:transparent;margin-left:auto;border-bottom-right-radius:4px}
+.bubble.them{border-bottom-left-radius:4px}
+.bubble small{display:block;font-family:var(--font-mono);font-size:.66rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.bubble p{margin:0}
+.copy{margin-top:8px;font-family:var(--font-mono);font-size:.7rem;background:none;border:1px solid var(--line);color:var(--muted);border-radius:6px;padding:3px 9px;cursor:pointer}
+.copy:hover{border-color:var(--red);color:var(--red)}
+.stack{display:grid;gap:10px}
+.rule{display:flex;gap:14px;align-items:flex-start}
+.rule b.k{flex:none;width:30px;height:30px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;font-family:var(--font-mono);font-size:.8rem;font-weight:500}
+.rule div{min-width:0}
+.rule p{margin:0}
+.two{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.two>*{min-width:0}
+.formula{font-family:var(--font-mono);font-size:.92rem;background:var(--bg);padding:10px 12px;border-radius:8px;margin-block:10px;overflow-x:auto}
+ul.plain{margin:0 0 1em;padding-left:1.2em;max-width:66ch}
+ul.plain li{margin-bottom:.4em}
+footer{padding-top:44px}
+footer ul{padding-left:1.1em;font-size:.9rem;color:var(--muted)}
+footer li{margin-bottom:4px;overflow-wrap:anywhere}
+.cheat{counter-reset:c;list-style:none;margin:0;padding:0;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.cheat li{counter-increment:c;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px 14px 54px;position:relative}
+.cheat li::before{content:counter(c);position:absolute;left:14px;top:12px;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-family:var(--font-mono);font-size:.8rem}
+
+@media (max-width:760px){
+  body{font-size:16px}
+  .hero{grid-template-columns:minmax(0,1fr);gap:28px;padding-block:30px}
+  .srow,.axis{grid-template-columns:96px minmax(0,1fr)}
+  .srow span.n{font-size:.8rem}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.meter i{transition:none}}
+</style>
+
+<nav class="nav" aria-label="Chapters"><div class="nav-in">
+  <a href="#quality">Quality</a><a href="#fabric">Fabric</a><a href="#stitching">Stitching</a><a href="#wash">Wash test</a><a href="#scorecard">Scorecard</a><a href="#rates">Rates</a><a href="#markets">Markets</a><a href="#tagprice">Tag price</a><a href="#bargain">Bargaining</a><a href="#plan">Pehli kharidari</a><a href="#ladieskids">Ladies &amp; kids</a><a href="#breakeven">Break-even</a>
+</div></nav>
+
+<div class="wrap">
+
+<header class="hero">
+  <div>
+    <p class="mono" style="color:var(--red);margin-bottom:14px">Goreswar ki nayi dukaan ke liye · Wholesale buying course</p>
+    <h1>Kapda <em>parakhna</em> seekho. Sahi daam pe kharido.</h1>
+    <p class="lead">Is blog ko padhne ke baad aap dukaan mein ghus ke 2 minute mein bata sakoge ki maal accha hai ya nahi, rate theek hai ya zyada, aur wholesaler se kitna kam karwana hai. Zero experience chalega. Sab kuch step-by-step, apni bhasha mein.</p>
+    <div class="chips"><span class="chip">12 chapters</span><span class="chip">5 hands-on tools</span><span class="chip">Hinglish 50/50</span></div>
+  </div>
+  <aside class="tag" aria-label="Quality ke 4 pillars">
+    <h2>Quality = 4 cheezein</h2>
+    <ul>
+      <li><b>Fabric</b><span>Kapde ka material aur weight</span></li>
+      <li><b>Stitching</b><span>Seams, thread, strength</span></li>
+      <li><b>Finish</b><span>Collar, button, zip, size</span></li>
+      <li><b>Wash</b><span>Shrink aur colour bleed</span></li>
+    </ul>
+    <p class="price">Rate = 3 dukaan compare karo</p>
+  </aside>
+</header>
+
+<div class="gamosa" role="presentation"></div>
+
+<!-- CH 1 -->
+<section class="chapter" id="quality">
+  <div class="ch-head"><span class="mono">Chapter 1 / 12</span><h2>Quality ka asli matlab</h2></div>
+  <p>Log bolte hain "accha maal lao, rate reasonable ho". Par <strong>good quality</strong> ka matlab kisi brand ka naam ya mehnga hona nahi hai. Aapki dukaan ke liye iska simple matlab hai: <strong>customer ne kapda kharida, 5 se 6 wash ke baad bhi shape, colour aur silai wese hi hai, aur wo wapas aaya.</strong> Yehi aapka repeat customer banata hai, aur chhote town mein repeat customer hi poora business hai.</p>
+  <div class="grid">
+    <div class="panel"><span class="pill">Pillar 1</span><h3>Fabric</h3><p>Kapde ka material (cotton, polyester, blend) aur uska weight, jise GSM bolte hain. Patla ya khurdura fabric jaldi kharab hota hai.</p></div>
+    <div class="panel"><span class="pill">Pillar 2</span><h3>Stitching</h3><p>Silai seedhi, tight aur even honi chahiye. Seams ka khulna sabse common complaint hai.</p></div>
+    <div class="panel"><span class="pill">Pillar 3</span><h3>Finishing</h3><p>Collar, button, zip, label, size ka naap. Ek hi size ke 3 pieces alag naap ke nahi hone chahiye.</p></div>
+    <div class="panel"><span class="pill">Pillar 4</span><h3>Wash performance</h3><p>Dhone ke baad kitna sikudta hai aur rang nikalta hai ya nahi. Ye test dukaan mein nahi, ghar pe hota hai.</p></div>
+  </div>
+  <div class="callout warn"><p><strong>Sabse badi galti:</strong> sirf haath se chhoo ke ya design dekh ke maal utha lena. Design sabko pasand aata hai, par silai khulne wala piece wapas aake aapki dukaan ki reputation kharab karta hai. Wholesale mein ek defective lot ka matlab hai poora paisa phasa hua.</p></div>
+</section>
+
+<!-- CH 2 -->
+<section class="chapter" id="fabric">
+  <div class="ch-head"><span class="mono">Chapter 2 / 12</span><h2>Fabric pehchano</h2></div>
+  <p>Fabric kharidari ki neev hai. Neeche tab pe click karke har fabric ka haath se feel, fayda, nuksan aur ek chhota test dekho.</p>
+  <div class="tabs" role="tablist" aria-label="Fabric types" id="fabtabs"></div>
+  <div class="fab" id="fabpanel" role="tabpanel" aria-live="polite"></div>
+
+  <div class="callout" style="margin-top:26px"><p><strong>Thread burn test (sirf ek loose dhaage pe):</strong> cotton kagaz jaisa jalta hai aur halki grey raakh chhodta hai. Polyester pighalta hai aur sakht kaala dana ban jaata hai. Ye test sirf ek chhote dhaage pe karo, kapde pe nahi, aur dukaandaar ki ijazat se. Bahut jagah ye nahi karna padega, haath ka feel aur label kaafi hota hai.</p></div>
+
+  <h3 style="margin-top:34px">GSM kya hota hai?</h3>
+  <p>GSM matlab <strong>Grams per Square Metre</strong>, yani 1 square metre kapde ka wazan. Zyada GSM = kapda bhaari aur mota. Par zyada GSM hamesha accha nahi hota. Garmi mein bahut mota t-shirt chubhta hai. Zaroori ye hai ki poore kapde mein GSM <em>ek jaisa</em> ho aur supplier jo bole wohi mile.</p>
+  <div class="scale" aria-label="GSM ka scale">
+    <div id="gsmrows"></div>
+    <div class="axis"><span></span><div><i style="left:0%">0</i><i style="left:22.222%">100</i><i style="left:44.444%">200</i><i style="left:66.666%">300</i><i style="left:88.888%">400 GSM</i></div></div>
+  </div>
+  <p style="margin-top:12px;font-size:.92rem;color:var(--muted)">Jersey t-shirt, chiffon aur denim ki ranges standard sourcing guides se hain. Hoodie/fleece ki range thumb rule hai. T-shirt ke liye 180 se 200 GSM comfort aur durability ka accha balance maana jaata hai.</p>
+
+  <div class="tool">
+    <h3><span class="pill">Tool 1</span>GSM khud naapo</h3>
+    <p>Wholesaler bolta hai "200 GSM hai". Sach hai ya nahi? Ek jewellery wali chhoti digital scale (0.01 gram wali, kaafi sasti aati hai) aur ek 10 cm x 10 cm ka card ka tukda kaafi hai. Kapde ko us card ke naap se kaato (ek hi piece ke kinare ya tag ke paas se, jahan wholesaler maane), tukde ka wazan gram mein lo.</p>
+    <div class="formula">10 cm x 10 cm = 0.01 m²  →  GSM = wazan (gram) x 100</div>
+    <div class="fields">
+      <label for="gw">Tukde ka wazan (gram)<input id="gw" type="number" step="0.01" min="0" value="1.9" inputmode="decimal"></label>
+      <label for="gc">Supplier ka claim (GSM)<input id="gc" type="number" step="1" min="0" value="200" inputmode="numeric"></label>
+    </div>
+    <div class="result">
+      <div class="big"><small>Aapka measured GSM</small><b id="gm">190</b></div>
+      <div><small>Claim se farak</small><b id="gd">-5%</b></div>
+    </div>
+    <p id="gv" style="margin:0"></p>
+  </div>
+</section>
+
+<div class="gamosa" role="presentation" style="margin-top:44px"></div>
+
+<!-- CH 3 -->
+<section class="chapter" id="stitching">
+  <div class="ch-head"><span class="mono">Chapter 3 / 12</span><h2>Stitching: 2 minute ka inspection</h2></div>
+  <p>Fabric achha ho par silai kharab ho toh kapda bekaar. Har naye supplier ke 3 se 4 random pieces nikalwao (sirf upar rakhe hue nahi, beech ke packet se bhi) aur ye routine chalao:</p>
+  <div class="two">
+    <div class="stack">
+      <div class="rule"><b class="k">1</b><div><p><strong>Andar se dekho.</strong> Kapde ko ulta karo. Andar ki silai bahar jitni saaf honi chahiye. Latakte dhaage aur uneven overlock matlab jaldbaazi ka kaam.</p></div></div>
+      <div class="rule"><b class="k">2</b><div><p><strong>Pull test.</strong> Seam ke dono taraf ke kapde ko halka kheencho. Achhi silai na khulti hai na dhaaga dikhta hai. Shoulder, cuff aur hem pe khaas dhyan do.</p></div></div>
+      <div class="rule"><b class="k">3</b><div><p><strong>Stitch gino.</strong> 1 inch mein kitne tanke hain? Thumb rule: zyada tanke aam taur pe zyada strong silai. Do pieces ko compare karo, jo piece dheela-dheela hai usse bachho.</p></div></div>
+      <div class="rule"><b class="k">4</b><div><p><strong>Skipped stitch aur broken thread.</strong> Seam ke saath ungli ghumao. Kahin tanka chhoota ho toh wo piece B-grade hai.</p></div></div>
+    </div>
+    <div class="stack">
+      <div class="rule"><b class="k">5</b><div><p><strong>Collar aur placket.</strong> Collar dono taraf barabar aur seedha ho. Shirt ko hanger pe latkao, kapda ek taraf khinch raha ho toh cutting kharab hai.</p></div></div>
+      <div class="rule"><b class="k">6</b><div><p><strong>Button aur zip.</strong> Button ko khinch ke dekho, thread tight ho. Button-hole ke kinare fray na ho. Zip 5 baar upar neeche karo, atke nahi.</p></div></div>
+      <div class="rule"><b class="k">7</b><div><p><strong>Check wale kapde mein pattern match.</strong> Pocket aur seam pe lines milni chahiye. Na mile toh sasta kaam hai.</p></div></div>
+      <div class="rule"><b class="k">8</b><div><p><strong>Size consistency.</strong> Ek hi size ke 3 pieces ka chest aur length naapo. 1 se 2 cm se zyada farak ho toh size label pe bharosa mat karo.</p></div></div>
+    </div>
+  </div>
+  <div class="callout"><p><strong>Light test:</strong> kapde ko roshni ke saamne pakdo. Jahan patla patch ya chhote ched dikhein, wahan kapda jaldi phatega. Ek hi piece mein kahin mota kahin patla ho toh GSM uneven hai.</p></div>
+</section>
+
+<!-- CH 4 -->
+<section class="chapter" id="wash">
+  <div class="ch-head"><span class="mono">Chapter 4 / 12</span><h2>Wash test: dukaan ke bahar ka sach</h2></div>
+  <p>Bade orders se pehle <strong>ek sample piece kharido</strong> (koi bhi wholesaler 1 piece sample de deta hai, ya paise le ke) aur ghar pe wash karo. Wholesale buyers ke liye colour bleed aur shrinkage do sabse badi cheezein hain.</p>
+  <div class="grid">
+    <div class="panel ind"><span class="pill">Colour bleed</span><h3>Safed kapde ke saath dhoo</h3><p>Dark ya gehre rang ke piece ko ek safed kapde ke saath thande paani mein bhigo do aur 30 minute baad dekho. Safed kapde pe rang aaya toh us piece ko reject karo. Dark colour mein ye non-negotiable hai, kyunki customer ke baaki kapde bhi kharab honge.</p></div>
+    <div class="panel tea"><span class="pill">Shrinkage</span><h3>Naap ke dhoo</h3><p>Dhone se pehle kapde pe 2 nishaan lagao jo ek seedhi line mein ho (jaise 50 cm door). Dhone aur sukhane ke baad dobara naapo. Shrinkage % neeche ke tool se nikaalo.</p></div>
+    <div class="panel"><span class="pill">Shape</span><h3>Twist aur pilling</h3><p>Dhone ke baad seam tedhi ho gayi, side seams ghoom gaye ya sataha pe chhote gole (pilling) aa gaye toh kapda kamzor hai.</p></div>
+  </div>
+  <div class="tool">
+    <h3><span class="pill">Tool 2</span>Shrinkage calculator</h3>
+    <div class="fields">
+      <label for="sb">Dhone se pehle (cm)<input id="sb" type="number" step="0.1" min="0" value="50" inputmode="decimal"></label>
+      <label for="sa">Dhone ke baad (cm)<input id="sa" type="number" step="0.1" min="0" value="48" inputmode="decimal"></label>
+    </div>
+    <div class="result">
+      <div class="big"><small>Shrinkage</small><b id="sh">4%</b></div>
+    </div>
+    <p id="sv" style="margin:0"></p>
+    <p style="margin:10px 0 0;font-size:.88rem;color:var(--muted)">Thumb rule: 3% tak accha, 3 se 5% chalega par cotton ke liye size ek upar rakhne ka sochna padega, 5% se zyada seedha reject.</p>
+  </div>
+</section>
+
+<div class="gamosa" role="presentation" style="margin-top:44px"></div>
+
+<!-- CH 5 -->
+<section class="chapter" id="scorecard">
+  <div class="ch-head"><span class="mono">Chapter 5 / 12</span><h2>Sample scorecard</h2></div>
+  <p>Ab ek sample piece ko upar ke sab tests se guzaaro aur jo pass ho wo tick karo. <strong>Laal "must" wale 3 checks pass hone zaroori hain</strong>, warna maal mat lo.</p>
+  <div class="tool" id="score">
+    <h3><span class="pill">Tool 3</span>Maal lena hai ya nahi?</h3>
+
+    <div class="group"><h4>Fabric</h4>
+      <label class="check"><input type="checkbox" data-n="Feel"><span>Haath mein feel ek jaisa hai, khurdura ya chipchipa patch nahi.</span></label>
+      <label class="check"><input type="checkbox" data-n="Light test"><span>Roshni mein dekha: koi patla patch ya ched nahi.</span></label>
+      <label class="check"><input type="checkbox" data-n="Stretch"><span>Halka kheencho toh kapda wapas shape mein aata hai.</span></label>
+      <label class="check"><input type="checkbox" data-n="GSM claim" data-crit="1"><span>GSM aur material label/claim se match karta hai.<em>MUST</em></span></label>
+    </div>
+    <div class="group"><h4>Stitching</h4>
+      <label class="check"><input type="checkbox" data-n="Seams"><span>Seams seedhi, even, koi skipped stitch nahi.</span></label>
+      <label class="check"><input type="checkbox" data-n="Pull test"><span>Shoulder, cuff aur hem pull test mein pass.</span></label>
+      <label class="check"><input type="checkbox" data-n="Threads"><span>Andar aur bahar latakte dhaage bahut kam.</span></label>
+    </div>
+    <div class="group"><h4>Finishing</h4>
+      <label class="check"><input type="checkbox" data-n="Button/zip"><span>Button tight, zip smooth, button-hole saaf.</span></label>
+      <label class="check"><input type="checkbox" data-n="Collar"><span>Collar aur placket barabar, kapda ek taraf khinch nahi raha.</span></label>
+      <label class="check"><input type="checkbox" data-n="Size"><span>Ek size ke 3 pieces ka naap lagbhag same, label sahi.</span></label>
+    </div>
+    <div class="group"><h4>Wash test</h4>
+      <label class="check"><input type="checkbox" data-n="Colour bleed" data-crit="1"><span>Dhone pe rang nahi nikla.<em>MUST</em></span></label>
+      <label class="check"><input type="checkbox" data-n="Shrinkage" data-crit="1"><span>Shrinkage 5% se kam.<em>MUST</em></span></label>
+    </div>
+    <div class="meter" aria-hidden="true"><i id="mtr"></i></div>
+    <div class="mono" style="color:var(--muted)" id="cnt">0 / 12 pass</div>
+    <div class="verdict" id="vd" aria-live="polite"><b>Verdict yahan dikhega</b><span>Upar ke checks karte jao.</span></div>
+  </div>
+</section>
+
+<!-- CH 6 -->
+<section class="chapter" id="rates">
+  <div class="ch-head"><span class="mono">Chapter 6 / 12</span><h2>Rate ka andaaza</h2></div>
+  <p>"Reasonable rate" ek number nahi, ek <strong>range</strong> hoti hai, aur wo kapde ki quality ke saath badalti hai. Neeche online wholesale listings (Indiamart, Surat catalog sites, Tiruppur-Mumbai-Delhi sellers) ka andaaza hai. <strong>Ye shuruaati compass hai, final rate nahi.</strong> Guwahati ke Fancy Bazar ya aapke apne supplier ka rate alag ho sakta hai.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Item</th><th>Listing range (₹ / piece)</th><th>Is range mein kya expect karein</th></tr></thead>
+    <tbody>
+      <tr><td>Men's cotton t-shirt (basic)</td><td class="num">₹150 – ₹350</td><td>Neeche ke rate pe patla ya poly-mix, upar wale pe thick cotton aur bio-wash finish. ₹100 se neeche zyadatar bahut bade MOQ pe milta hai.</td></tr>
+      <tr><td>Men's shirt (casual)</td><td class="num">₹139 – ₹590</td><td>₹250 ke aaspaas basic cotton. ₹450+ mein achha print, collar aur finishing mil jaati hai.</td></tr>
+      <tr><td>Men's jeans</td><td class="num">₹375 – ₹550</td><td>Stretch (lycra) aur wash effect ke saath rate badhta hai. Seam aur rivet check karna zaroori.</td></tr>
+      <tr><td>Hoodie / sweatshirt</td><td class="num">₹320 – ₹950</td><td>Fleece ka weight aur andar ki softness rate decide karti hai. Pilling check karo.</td></tr>
+      <tr><td>Night suit (set)</td><td class="num">₹280 – ₹750</td><td>Set mein 2 pieces, isliye per-piece rate nikaalo. Colour bleed check zaroor.</td></tr>
+      <tr><td>Kurta pajama set (premium)</td><td class="num">Up to ₹2,500</td><td>Festive wear. Embroidery aur fabric pe rate nirbhar. Bihu aur puja season mein demand.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout warn"><p><strong>"60% OFF" ke jhaanse mein mat aao.</strong> Online listings mein aksar ₹500 ka MRP likh ke "-60% off" dikhate hain aur asli rate ₹200 hota hai. Ye sirf dikhawa hai. Aap sirf <em>actual per-piece rate</em> aur <em>minimum order quantity (MOQ)</em> dekho.</p></div>
+  <h3 style="margin-top:28px">Apna rate sense kaise banayein (1 hafte ka kaam)</h3>
+  <ul class="plain">
+    <li><strong>Price diary banao.</strong> Ek notebook mein har dukaan ka rate likho: item, GSM/quality ka note, rate, MOQ, payment terms.</li>
+    <li><strong>Sirf same quality compare karo.</strong> ₹220 ka patla t-shirt aur ₹260 ka 190 GSM t-shirt same cheez nahi hai. GSM tool se naap lo.</li>
+    <li><strong>Kam se kam 3 supplier</strong> ke rate lo, tab hi apna "market rate" samajh aayega.</li>
+    <li><strong>Per-piece landed cost</strong> nikaalo: rate + transport + packing, kyunki "sasta" wholesaler door ho toh bhada khaa jaata hai.</li>
+  </ul>
+</section>
+
+<div class="gamosa" role="presentation" style="margin-top:44px"></div>
+
+<!-- CH 7 -->
+<section class="chapter" id="markets">
+  <div class="ch-head"><span class="mono">Chapter 7 / 12</span><h2>Maal kahan se laayen</h2></div>
+  <div class="grid">
+    <div class="panel red"><span class="pill">Aapke sabse nazdeek</span><h3>Guwahati: Fancy Bazar</h3><p>Assam aur poore North-East ka sabse bada kapda hub maana jaata hai. Aas-paas New Market, Tiwari Market, Shiv Market jaise wholesale centres hain. Readymade, jeans, ladies wear, bachchon ke kapde, Assamese silk, sab milta hai.</p><p style="font-size:.9rem;color:var(--muted)">Jaane se pehle timing aur closed day confirm kar lo, kyunki alag sources mein alag timing likhi hai. Fancy Bazar ko shift karne ki baat bhi chali thi, isliye current location bhi check kar lena.</p></div>
+    <div class="panel"><span class="pill">T-shirts</span><h3>Tiruppur (Tamil Nadu)</h3><p>Cotton t-shirts aur knitwear ke liye mashhoor. MOQ aam taur pe 50 se 100+ pieces hota hai, par rate achha milta hai. Shuruat mein Guwahati ke agents se lena zyada practical hai.</p></div>
+    <div class="panel"><span class="pill">Ethnic wear</span><h3>Surat (Gujarat)</h3><p>Kurta, kurta-pajama, night suits, ladies kurti ke catalog sets. Minimum order aksar 1 catalog set (5 se 12 pieces per design).</p></div>
+    <div class="panel"><span class="pill">Winter & denim</span><h3>Ludhiana, Delhi, Kolkata</h3><p>Hoodies, jackets aur sweaters ke liye Ludhiana, jeans ke liye Delhi (Gandhi Nagar), aur Kolkata (Burrabazar) paas ka option hai. Shuruat mein door ke markets ka risk mat lo.</p></div>
+  </div>
+  <div class="callout"><p><strong>Pehli baar akele mat jao.</strong> Kisi anubhavi dukaandaar ya kapde ke kaam jaanne wale rishtedaar ko saath le jao. Aur pehle din kuch kharido mat, sirf rate aur quality dekho aur notes lo.</p></div>
+</section>
+
+<!-- CH 8 -->
+<section class="chapter" id="tagprice">
+  <div class="ch-head"><span class="mono">Chapter 8 / 12</span><h2>Tag price kaise tay karein</h2></div>
+  <p>Goreswar mein customer bargain karega, ₹500 ki cheez ₹450 maangega, phir ₹400. Agar aapne tag price bina socche rakha toh bargain mein aapka munafa gayab ho jayega. Isliye <strong>pehle bargain ki jagah banao, phir tag lagao</strong>.</p>
+
+  <h3>Markup aur margin alag cheezein hain</h3>
+  <div class="two">
+    <div class="panel"><span class="pill">Markup</span><div class="formula">Markup % = profit ÷ cost x 100</div><p>Maal ₹500 mein aaya, aapne 40% markup lagaya, toh bechne ka rate ₹700 aur profit ₹200.</p></div>
+    <div class="panel"><span class="pill">Margin</span><div class="formula">Margin % = profit ÷ selling price x 100</div><p>Wahi ₹200 profit, ₹700 ki sale pe sirf <strong>28.6% margin</strong> hai, 40% nahi. Asli 40% margin ke liye ₹500 ka maal ₹833 mein bechna padega, yani 66.7% markup.</p></div>
+  </div>
+  <div class="callout"><p><strong>Yaad rakho:</strong> dukaandar jab "40% munafa" bolta hai toh wo aksar markup bolta hai. Asli kamaayi margin se napi jaati hai, aur usme se abhi rent, bijli, helper ki salary aur kharab maal nikalna baaki hai. Chhoti dukaano ke liye 15 se 30% gross margin common bataya jaata hai, bade value-fashion chains lagbhag 33% pe chalte hain.</p></div>
+
+  <div class="tool">
+    <h3><span class="pill">Tool 4</span>Tag price + bargain ladder</h3>
+    <div class="fields">
+      <label for="tr">Wholesale rate (₹)<input id="tr" type="number" min="0" value="380" inputmode="decimal"></label>
+      <label for="te">Transport/packing per piece (₹)<input id="te" type="number" min="0" value="12" inputmode="decimal"></label>
+      <label for="tm">Chahiye margin (%)<input id="tm" type="number" min="0" max="90" value="30" inputmode="decimal"></label>
+      <label for="tb">Bargain ki jagah (%)<input id="tb" type="number" min="0" max="60" value="10" inputmode="decimal"></label>
+    </div>
+    <div class="result">
+      <div><small>Landed cost / piece</small><b id="tl">₹392</b></div>
+      <div><small>Sabse kam bechne ka rate</small><b id="tf">₹560</b></div>
+      <div class="big"><small>Tag price rakho</small><b id="tt">₹649</b></div>
+    </div>
+    <p style="margin:0 0 10px;font-size:.92rem;color:var(--muted)">Tag price aise nikalta hai ki customer maximum bargain karwa le toh bhi aapka margin bacha rahe. Rate .49 ya .99 pe round hota hai.</p>
+    <div class="tablewrap"><table style="min-width:480px">
+      <thead><tr><th>Customer ko discount</th><th>Bechne ka rate</th><th>Aapka profit</th><th>Margin</th></tr></thead>
+      <tbody id="ladder"></tbody>
+    </table></div>
+    <p style="margin:10px 0 0;font-size:.88rem;color:var(--muted)">Hari line = target margin pura. Peeli = profit hai par target se kam. Laal = nuksan. Customer ko "last rate" bolne se pehle ye table dekh lo.</p>
+  </div>
+  <p><strong>Ek aur baat:</strong> kharab ya na bika maal ka hisaab bhi jodna padta hai. Jo piece sale pe nikaalna padega, uska nuksan baaki pieces ke margin se poora hota hai. Isiliye margin ko 25 se 35% ke aaspaas rakhna safe hai.</p>
+</section>
+
+<div class="gamosa" role="presentation" style="margin-top:44px"></div>
+
+<!-- CH 9 -->
+<section class="chapter" id="bargain">
+  <div class="ch-head"><span class="mono">Chapter 9 / 12</span><h2>Bargaining: wholesaler se</h2></div>
+  <p>Ab aap bhi bargain karne wale ho. Wholesaler ke paas bhi room hota hai, aur aapko seekhna hai kaise poochna hai. Wholesale ki bargaining dukaan mein kapde ki bargaining se alag hai: yahan <strong>volume, repeat business aur payment</strong> aapke hathiyaar hain.</p>
+  <div class="two">
+    <div class="stack">
+      <div class="rule"><b class="k">1</b><div><p><strong>Apni pasand mat dikhao.</strong> "Wah, kya piece hai!" bolne ke baad rate nahi girta. Shaant raho aur sirf rate poochho.</p></div></div>
+      <div class="rule"><b class="k">2</b><div><p><strong>Total bill pe bargain karo.</strong> Har piece pe ₹5 kam karwane se bada fayda, poore order pe ek discount maangne mein hai.</p></div></div>
+      <div class="rule"><b class="k">3</b><div><p><strong>Competitor ka rate use karo.</strong> "Wahan same quality ₹350 mein dikha" bolna sabse powerful line hai, par tabhi bolo jab sach ho. Price diary kaam aayegi.</p></div></div>
+      <div class="rule"><b class="k">4</b><div><p><strong>Pehla quote 8 se 15% neeche laane ki koshish karo.</strong> Ye thumb rule hai, har item pe alag hoga. Ek-do round mein rate girta hai.</p></div></div>
+    </div>
+    <div class="stack">
+      <div class="rule"><b class="k">5</b><div><p><strong>Cash ya turant payment ka fayda lo.</strong> Cash dene pe discount maango. Shuruat mein udhaar mat lo, kyunki udhaar ka dabaav aapko galat rate pe maal lene pe majboor karta hai.</p></div></div>
+      <div class="rule"><b class="k">6</b><div><p><strong>Terms likhwao.</strong> Defective piece ka replacement ya return, pakka bill, delivery ki date, size-wise breakup. Bina bill ke maal mat lo.</p></div></div>
+      <div class="rule"><b class="k">7</b><div><p><strong>Walk away karna seekho.</strong> "Main ek round aur lagake aata hoon" bol ke nikal jao. Aksar aap darwaze tak pahunchte ho aur rate gir jaata hai.</p></div></div>
+      <div class="rule"><b class="k">8</b><div><p><strong>Rishta banao.</strong> Samay pe paisa do, repeat order do. 3 se 4 orders ke baad wholesaler khud aapko behtar rate aur naye designs pehle dikhata hai.</p></div></div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:34px">Seedhe bol sakne wale scripts</h3>
+  <div class="chat" id="chat">
+    <div class="bubble me"><small>Pehli mulaqat</small><p>Bhaiya, main Goreswar mein nayi dukaan khol raha hoon. Regular maal lunga. 50 piece pe aapka best rate kya hoga?</p><button class="copy" type="button">Copy</button></div>
+    <div class="bubble them"><small>Wholesaler</small><p>₹400 per piece.</p></div>
+    <div class="bubble me"><small>Counter (15% neeche)</small><p>Itna toh retail jaisa lag raha hai. ₹340 mein de do, aaj hi cash dunga.</p><button class="copy" type="button">Copy</button></div>
+    <div class="bubble them"><small>Wholesaler</small><p>₹380 final.</p></div>
+    <div class="bubble me"><small>Competitor ka reference</small><p>Dusri jagah same GSM ka piece ₹350 mein dekha. Aap ₹360 kar do toh yahin se lunga, aur agle mahine phir order dunga.</p><button class="copy" type="button">Copy</button></div>
+    <div class="bubble me"><small>Quality ko hathiyaar banao</small><p>Is piece mein silai dheeli hai, ya toh 10% kam karo ya ye replace kar do.</p><button class="copy" type="button">Copy</button></div>
+    <div class="bubble me"><small>Walk away</small><p>Theek hai bhaiya, ek round aur laga ke aata hoon.</p><button class="copy" type="button">Copy</button></div>
+    <div class="bubble me"><small>Terms pakki karo</small><p>Defective piece replace hoga na? Pakka bill aur size-wise packing chahiye.</p><button class="copy" type="button">Copy</button></div>
+  </div>
+  <div class="callout"><p><strong>Maths dekho:</strong> ₹400 ka quote ₹365 pe settle hua toh bachat ₹35 per piece. 100 pieces pe <strong>₹3,500</strong> seedhe aapki jeb mein. Yehi paisa aapki pehli festive stock ya dukaan ke bijli bill ka kharcha nikaal deta hai.</p></div>
+
+  <h3 style="margin-top:34px">Red flags: seedha hat jao</h3>
+  <div class="grid">
+    <div class="panel red"><h3>Sample dene se mana</h3><p>Achhe maal wala sample dene mein hichkichata nahi.</p></div>
+    <div class="panel red"><h3>Bill nahi dega</h3><p>Kal ko kharab maal hua toh aapke paas kuch saboot nahi.</p></div>
+    <div class="panel red"><h3>"Aaj hi lo, kal rate badh jaayega"</h3><p>Jaldbaazi ka dabaav banane wale supplier se door raho.</p></div>
+    <div class="panel red"><h3>Rate sabse sasta, quality sab ek-si</h3><p>Bahut zyada sasta maal aksar patla, poly-heavy ya B-grade hota hai.</p></div>
+  </div>
+</section>
+
+<div class="gamosa" role="presentation" style="margin-top:44px"></div>
+
+<!-- CH 10 -->
+<section class="chapter" id="plan">
+  <div class="ch-head"><span class="mono">Chapter 10 / 12</span><h2>Pehli kharidari ka plan</h2></div>
+  <p>Nayi dukaan ka sabse bada khatra ye hai ki aap saara paisa ek hi baar mein stock mein laga do. Ek example split dekho, ₹1,00,000 ke stock budget ke liye (apne budget aur customer ke hisaab se badlo):</p>
+  <div class="grid">
+    <div class="panel tea"><span class="pill">55%</span><h3>₹55,000: Basics</h3><p>T-shirts, shirts, jeans, innerwear. Ye roz bikne wale items hain.</p></div>
+    <div class="panel ind"><span class="pill">20%</span><h3>₹20,000: Seasonal</h3><p>Hoodies/jackets (sardi), festive wear (Bihu, Durga Puja, Diwali). Season se 3 se 4 hafte pehle laao.</p></div>
+    <div class="panel"><span class="pill">10%</span><h3>₹10,000: Trial</h3><p>Naye designs ya trendy items ke 5 se 10 piece. Bika toh repeat, nahi toh chhota nuksan.</p></div>
+    <div class="panel"><span class="pill">15%</span><h3>₹15,000: Reserve</h3><p>Jo bika usko dobara bharne ke liye. Ye paisa kabhi khatam mat karo.</p></div>
+  </div>
+  <ul class="plain" style="margin-top:20px">
+    <li><strong>Size mix:</strong> ek pura size-set lene ki jagah apne customers ke hisaab se lo. Men's wear mein M, L, XL aksar sabse zyada bikte hain, S aur XXL kam. Pehle 2 hafte ki sale dekh ke agla order badlo.</li>
+    <li><strong>Chhote lots se shuru karo.</strong> Har naye supplier se pehle 1 chhota order (10 se 20 pieces), phir quality ke hisaab se bada.</li>
+    <li><strong>Competition ko dekho.</strong> M Baazar jaisi dukaan aur chhote sellers kya kya rakhte hain, kis rate pe bechte hain, ye apni price diary mein likho. Jo wo nahi rakhte (jaise achhi quality ke basics, ya khaas sizes) wahan aapka mauka hai.</li>
+    <li><strong>Hisaab roz likho.</strong> Kitna aaya, kitna bika, kya bacha. Ye aadat 6 mahine mein aapko bata degi ki kaunsa maal paisa banata hai.</li>
+  </ul>
+</section>
+
+<div class="gamosa" role="presentation" style="margin-top:44px"></div>
+
+<!-- CH 11 -->
+<section class="chapter" id="ladieskids">
+  <div class="ch-head"><span class="mono">Chapter 11 / 12</span><h2>Ladies, kids aur innerwear</h2></div>
+  <p>Ab tak ke tests (fabric, stitching, wash) har kapde pe lagte hain. Par ladies, kids aur innerwear mein kuch cheezein alag hain. Jab ek hi dukaan se pura parivaar kharid sake, tab customer baar-baar aata hai. Isliye in teeno ko alag se samajhna zaroori hai.</p>
+
+  <h3 style="margin-top:8px">Ladies wear: kurti aur sets</h3>
+  <div class="grid">
+    <div class="panel"><span class="pill">Print aur rang</span><h3>Print ka bleed</h3><p>Printed aur block-print kurtis mein rang nikalne ka chance zyada hota hai. Chapter 4 ka colour bleed test yahan zaroor karo.</p></div>
+    <div class="panel"><span class="pill">Sets</span><h3>Shade match</h3><p>Kurta, pant aur dupatta ek hi lot ke aur ek hi shade ke hone chahiye. Alag-alag roshni mein bhi dekho. Dupatta ke kinare silai hue ho.</p></div>
+    <div class="panel"><span class="pill">Light test</span><h3>Transparency</h3><p>Georgette ya patle rayon ko roshni ke saamne pakdo. Zyada see-through hai toh customer lining maangegi ya wapas karegi.</p></div>
+    <div class="panel"><span class="pill">Symmetry</span><h3>Neck, sleeve, hem</h3><p>Dono sleeves barabar, neckline seedhi, hem ek level pe. Kurti ko hanger pe latka ke saamne se dekho.</p></div>
+    <div class="panel"><span class="pill">Handwork</span><h3>Embroidery aur lace</h3><p>Embroidery ke dhaage latak rahe ho, sequin dheele ho ya lace khul rahi ho toh wo piece B-grade hai.</p></div>
+    <div class="panel"><span class="pill">Size</span><h3>Plus size aur size chart</h3><p>Size labels brand ke hisaab se alag hote hain. Ek piece ka bust aur length naap ke dekho aur customer ke liye size chart apni dukaan mein rakho.</p></div>
+  </div>
+  <div class="tablewrap" style="margin-top:18px"><table>
+    <thead><tr><th>Ladies item</th><th>Wholesale (₹ / piece)</th><th>Dhyan dene wali baat</th></tr></thead>
+    <tbody>
+      <tr><td>Budget cotton kurti</td><td class="num">₹180 – ₹260</td><td>Roz pehenne ke liye. GSM aur silai pe focus.</td></tr>
+      <tr><td>Printed cotton kurti-pant set</td><td class="num">₹220 – ₹380</td><td>Pant ka fabric aur size alag check karo.</td></tr>
+      <tr><td>Jaipuri / block print kurti</td><td class="num">₹280 – ₹480</td><td>Colour bleed test zaroori.</td></tr>
+      <tr><td>Anarkali kurti</td><td class="num">₹400 – ₹750</td><td>Flare, lining aur seam ka kaam dekho.</td></tr>
+      <tr><td>Georgette salwar suit (3 piece)</td><td class="num">₹420 – ₹900</td><td>Georgette fray hota hai aur snag pakadta hai.</td></tr>
+      <tr><td>Designer / embroidered kurti</td><td class="num">₹600 – ₹1,100</td><td>Handwork loose na ho.</td></tr>
+      <tr><td>Lucknowi chikankari kurti</td><td class="num">₹550 – ₹1,200</td><td>Embroidery ki density aur finishing.</td></tr>
+    </tbody>
+  </table></div>
+  <p style="margin-top:10px;font-size:.9rem;color:var(--muted)">Ye ranges ek Surat wholesale catalog site ke hain aur unme GST aur shipping shamil nahi hai. Wahi site shipping ₹30 se ₹80 per kg bataati hai. Leggings ke liye mujhe bharosemand rate range nahi mili, isliye wo local supplier se hi lo.</p>
+  <div class="callout warn"><p><strong>Catalog system ka risk:</strong> kurti zyadatar catalog set mein milti hai, yani ek design ke 6 se 12 piece ek saath. Agar wo design nahi bika toh poora set atak jaata hai. Shuruat mein kam designs ke chhote sets lo, mix size lo, aur ek design ke sab piece ek hi baar mein mat khareedo. Wahi source retail pe 2 se 2.5 guna markup suggest karta hai, par Goreswar ke bargain ke hisaab se apna tag price Tool 4 se nikaalo.</p></div>
+
+  <h3 style="margin-top:34px">Kids wear</h3>
+  <div class="grid">
+    <div class="panel red"><span class="pill">Safety pehle</span><h3>Button, dori aur decoration</h3><p>Chhote bachchon ke kapdon mein dheele button, sequin ya hard decoration gale mein atak sakte hain. Button ko khinch ke dekho. Hoodie ya jacket ki lambi dori chhote bachchon ke liye theek nahi.</p></div>
+    <div class="panel"><span class="pill">Skin</span><h3>Naram fabric</h3><p>Bachchon ke liye cotton aur andar se naram silai. Seam ya label chubhta hai toh bachcha pehenega nahi.</p></div>
+    <div class="panel"><span class="pill">Size</span><h3>Age label pe bharosa mat karo</h3><p>"2 to 3 years" kai baar chhota nikalta hai. Chest aur length naapo. Maa-baap aksar ek size upar lete hain kyunki bachche badhte hain.</p></div>
+    <div class="panel"><span class="pill">Wash</span><h3>Zyada dhulai</h3><p>Bachchon ke kapde roz dhulte hain, isliye shrinkage aur colour bleed test yahan aur bhi zaroori hai.</p></div>
+  </div>
+  <div class="tablewrap" style="margin-top:18px"><table>
+    <thead><tr><th>Kids item</th><th>Listing range (₹)</th><th>Dhyan dene wali baat</th></tr></thead>
+    <tbody>
+      <tr><td>Boys T-shirt + shorts set (cotton / blend)</td><td class="num">₹90 – ₹250</td><td>Garmi ka daily wear. Sabse zyada listings isi range mein.</td></tr>
+      <tr><td>Printed / western style sets</td><td class="num">₹350 – ₹500</td><td>Print aur silai ki quality compare karo.</td></tr>
+      <tr><td>Premium sets (jacket, cotton western)</td><td class="num">₹700 – ₹800</td><td>Chhote town mein kam bikte hain, 1 se 2 piece lo.</td></tr>
+      <tr><td>School uniform (piece / set)</td><td class="num">₹110 – ₹325</td><td>Listings mein MOQ aksar 100 se 150 piece.</td></tr>
+    </tbody>
+  </table></div>
+  <p style="margin-top:10px;font-size:.9rem;color:var(--muted)">Kids ki rates IndiaMART aur TradeIndia ki online listings se hain. Poori range ₹55 se ₹800 tak dikhi, aur school uniform ke sellers zyadatar West Bengal ke the.</p>
+  <div class="callout"><p><strong>School uniform alag business hai.</strong> Stock karne se pehle aas-paas ke schools se poochho ki unka uniform kaisa hai, kaun sa rang aur design, aur kahan se milta hai. Bina school se baat kiye uniform stock karna risk hai, kyunki design ek hi ho toh sirf wohi school kharidega. Session kab shuru hota hai ye bhi local school se pooch lo.</p></div>
+
+  <h3 style="margin-top:34px">Innerwear</h3>
+  <div class="grid">
+    <div class="panel"><span class="pill">Hygiene</span><h3>Sealed pack</h3><p>Innerwear aam taur pe wapas ya exchange nahi hota. Sealed packing wala maal lo aur known brand ya distributor se lo.</p></div>
+    <div class="panel"><span class="pill">Elastic</span><h3>Stretch ke baad shape</h3><p>Elastic ko 5 baar kheencho. Dheela ya loose ho jaaye toh reject. Waistband ki silai flat aur soft ho.</p></div>
+    <div class="panel"><span class="pill">Fabric</span><h3>Cotton aur seams</h3><p>Skin se lagne wala hissa naram cotton ho aur seams chubhein nahi. Colour bleed bhi check karo.</p></div>
+    <div class="panel"><span class="pill">Rate</span><h3>Distributor se pack rate</h3><p>Online listings ₹9 se ₹300+ tak alag-alag dikhe, aur kuch box mein hain, kuch piece mein. Isliye yahan local distributor se per-piece rate lena zyada bharosemand hai.</p></div>
+  </div>
+  <div class="callout"><p><strong>Ladies innerwear:</strong> size aur fitting ke liye privacy chahiye hoti hai. Agar abhi ladies staff ya alag counter nahi hai toh shuruat mein basic range hi rakho aur dheere-dheere badhao.</p></div>
+
+  <div class="callout"><p><strong>Budget kaise badlein:</strong> Chapter 10 ke 55% "Basics" (₹55,000) ko categories mein baant do, jaise men's ₹25,000, ladies ₹20,000 aur kids ₹10,000. Ye sirf ek example hai. Apne area ke customers dekh ke badlo.</p></div>
+</section>
+
+<div class="gamosa" role="presentation" style="margin-top:44px"></div>
+
+<!-- CH 12 -->
+<section class="chapter" id="breakeven">
+  <div class="ch-head"><span class="mono">Chapter 12 / 12</span><h2>Dukaan ka hisaab: break-even</h2></div>
+  <p>Aap maal accha kharid lo aur tag price sahi laga do, phir bhi dukaan nuksan mein ho sakti hai agar mahine ka kharcha nikalne jitni sale na ho. Is chapter mein sabse zaroori sawaal ka jawab hai: <strong>mahine mein kitni sale chahiye ki nuksan na ho?</strong> Ye number <strong>break-even point</strong> kehlata hai.</p>
+  <div class="formula">Break-even sale (₹/mahina) = mahine ka fixed kharcha ÷ margin %</div>
+  <p>Fixed kharcha wo hai jo sale ho ya na ho, har mahine dena padta hai:</p>
+  <ul class="plain">
+    <li>Dukaan ka rent</li>
+    <li>Helper ya staff ki salary</li>
+    <li>Bijli, internet, packing bags aur chhote kharche</li>
+    <li>Loan ki EMI, agar hai</li>
+    <li>Aapki khud ki minimum kamaayi (ghar chalane ke liye jitna chahiye)</li>
+  </ul>
+  <div class="callout warn"><p><strong>Aapki apni salary bhi kharcha hai.</strong> Bahut log owner ki kamaayi jodte hi nahi aur sochte hain "dukaan chal rahi hai". Neeche ke tool mein dono numbers alag dikhte hain: bina apni salary ke no-loss point, aur apni salary ke saath asli target.</p></div>
+
+  <div class="tool">
+    <h3><span class="pill">Tool 5</span>Break-even calculator</h3>
+    <p style="margin-bottom:0;font-size:.92rem;color:var(--muted)">Neeche ke numbers example hain. Apne asli kharche daalo.</p>
+    <div class="fields">
+      <label for="be_rent">Rent (₹/mahina)<input id="be_rent" type="number" min="0" value="8000" inputmode="decimal"></label>
+      <label for="be_staff">Staff salary (₹)<input id="be_staff" type="number" min="0" value="6000" inputmode="decimal"></label>
+      <label for="be_misc">Bijli, internet, packing (₹)<input id="be_misc" type="number" min="0" value="2500" inputmode="decimal"></label>
+      <label for="be_emi">Loan EMI (₹)<input id="be_emi" type="number" min="0" value="3000" inputmode="decimal"></label>
+      <label for="be_owner">Aapki minimum kamaayi (₹)<input id="be_owner" type="number" min="0" value="15000" inputmode="decimal"></label>
+      <label for="be_margin">Average margin (%)<input id="be_margin" type="number" min="1" max="90" value="28" inputmode="decimal"></label>
+      <label for="be_bill">Average bill (₹)<input id="be_bill" type="number" min="1" value="700" inputmode="decimal"></label>
+      <label for="be_conv">Har kitne walk-in pe 1 bill<input id="be_conv" type="number" min="1" value="4" inputmode="decimal"></label>
+      <label for="be_days">Dukaan ke din / mahina<input id="be_days" type="number" min="1" max="31" value="26" inputmode="decimal"></label>
+    </div>
+    <div class="tablewrap"><table style="min-width:620px">
+      <thead><tr><th>Scenario</th><th>Sale / mahina</th><th>Sale / din</th><th>Bill / din</th><th>Walk-in / din</th></tr></thead>
+      <tbody id="be_rows"></tbody>
+    </table></div>
+    <p id="be_note" style="margin:12px 0 0;font-size:.92rem"></p>
+    <p style="margin:8px 0 0;font-size:.88rem;color:var(--muted)">Margin wahi daalo jo bargain aur kharab maal ke baad bachta hai, tag price ka margin nahi. Shuruat mein 25% jaisi sachchi sankhya rakhna behtar hai. Sale GST ko chhod ke maani gayi hai.</p>
+  </div>
+  <div class="callout"><p><strong>Isse kya samajhna hai:</strong> agar aapko dikhe ki roz 25 se 30 walk-in chahiye aur aapke area mein itne log aate hi nahi, toh ya kharcha kam karo (chhoti jagah, kam staff) ya average bill badhao (set bechna, ladies aur kids bhi rakhna). Dukaan kholne se pehle ye number pata hona chahiye, baad mein nahi.</p></div>
+
+  <h3 style="margin-top:34px">GST ke basics</h3>
+  <ul class="plain">
+    <li><strong>Registration kab:</strong> goods bechne wale ko saalana turnover ek limit se upar jaane pe GST registration zaroori hota hai. Assam ke liye goods ki limit ₹40 lakh batayi gayi hai, par apne CA ya GST suvidha kendra se current limit confirm karo.</li>
+    <li><strong>Rate:</strong> readymade garments par 5% GST hai jab tak ek piece ki sale value ₹2,500 tak ho, aur uske upar 18% (22 September 2025 se). Ye sale value pe lagta hai, MRP pe nahi.</li>
+    <li><strong>Supplier se poochho:</strong> rate GST ke saath hai ya bina? Agar aap registered nahi ho toh supplier ko diya GST aapki cost ka hissa ban jaata hai. Isse landed cost mein jodna mat bhoolo.</li>
+    <li><strong>Hamesha GST bill lo.</strong> Pakka bill aapko kharab maal ya vivaad mein bhi bachata hai.</li>
+  </ul>
+
+  <h3 style="margin-top:28px">Na bike maal aur udhaar</h3>
+  <div class="two">
+    <div class="panel"><span class="pill">Dead stock</span><h3>60 se 90 din ka rule</h3><p>Jo item 2 se 3 mahine mein nahi bika, usse sale pe nikaalo. Tool 4 ki table dekho ki kitna discount dene pe bhi paisa waapas aa jaata hai. Purane maal mein phansa paisa naye bikne wale maal ka paisa rok leta hai.</p></div>
+    <div class="panel"><span class="pill">Udhaar</span><h3>Customer ka khata</h3><p>Sirf jaane-pehchaane customer ko, ek limit tak, aur tareekh likh ke. Register mein naam, rakam aur wada ki tareekh. Shuruat mein wholesaler se udhaar mat lo, aur customer ko bhi kam do.</p></div>
+  </div>
+  <div class="callout"><p><strong>Shuruaati kharch ka andaaza:</strong> ek source ke mutabik chhote town mein cloth shop kholne ka kharch ₹50,000 se ₹5 lakh ke beech aa sakta hai. Ye bahut bada farak hai, isliye pehle apne rent, furniture aur stock ka alag-alag hisaab likho, phir hi paisa lagao.</p></div>
+</section>
+
+<div class="gamosa" role="presentation" style="margin-top:36px"></div>
+
+<section class="chapter" id="cheat" style="padding-top:44px">
+  <div class="ch-head"><span class="mono">Yaad rakhne ke liye</span><h2>12 line ka cheat sheet</h2></div>
+  <ol class="cheat">
+    <li>Quality = fabric + stitching + finishing + wash. Chaaron dekho.</li>
+    <li>T-shirt ke liye 180 se 200 GSM sweet spot hai. Scale se khud naapo.</li>
+    <li>Andar se silai dekho, pull test karo, roshni mein kapda dekho.</li>
+    <li>Bade order se pehle 1 sample dhoke dekho: rang aur shrinkage.</li>
+    <li>3 "MUST" checks fail hue toh maal mat lo.</li>
+    <li>Price diary mein kam se kam 3 supplier ke same-quality rate likho.</li>
+    <li>Landed cost = rate + transport + packing. Wahi aapka asli cost hai.</li>
+    <li>Tag price = pehle bargain ki jagah, phir margin. Markup aur margin mat milao.</li>
+    <li>Pehla quote 8 se 15% neeche laao, aur walk away se mat daro.</li>
+    <li>Budget ka 15% reserve rakho, aur bina bill ke maal mat lo.</li>
+    <li>Kurti ke sets mein kurta, pant aur dupatta ek hi shade ke ho. Kids ke kapdon mein button aur dori ki safety dekho.</li>
+    <li>Mahine ka no-loss point nikaalo: kharcha ÷ margin %. Isse kam sale pe dukaan nuksan mein chalti hai.</li>
+  </ol>
+</section>
+
+<footer>
+  <div class="gamosa" role="presentation" style="margin-bottom:22px"></div>
+  <p class="mono" style="color:var(--muted)">Sources aur kitna bharosa karein</p>
+  <p style="font-size:.92rem;color:var(--muted)">Rates online wholesale listings se liye gaye indicative ranges hain (Nov 2026). Real bazaar rate har supplier aur season ke saath badalta hai. Thumb rules (shrinkage %, bargaining %, size mix, budget split) general business practice ke hisaab se diye gaye hain, aap apne local anubhav se unhe adjust karo.</p>
+  <ul>
+    <li><a href="https://blog.factori.com/2025/12/18/how-to-check-t-shirt-quality" target="_blank" rel="noopener">How to Check T-Shirt Quality (factori.com)</a></li>
+    <li><a href="https://seller.alibaba.com/blogs/2026/southeast-asia/womens-clothing/fabric-sourcing-gsm-standards-jersey-chiffon-denim-alibaba-guide" target="_blank" rel="noopener">Fabric Sourcing GSM Standards (Alibaba Seller Blog)</a></li>
+    <li><a href="https://www.wholesalecatalogz.com/guide/quality-check-guide-wholesale-ethnic-wear-surat" target="_blank" rel="noopener">5-Point Quality Check Guide (WholesaleCatalogz)</a></li>
+    <li><a href="https://www.wholesalecatalogz.com/men-wholesale-clothes" target="_blank" rel="noopener">Men's wholesale clothes price ranges (WholesaleCatalogz)</a></li>
+    <li><a href="https://m.indiamart.com/impcat/mens-wear.html" target="_blank" rel="noopener">Men Wear listings (IndiaMART)</a></li>
+    <li><a href="https://www.textileinfomedia.com/pugal-garments/men-t-shirt-at-wholesale-range" target="_blank" rel="noopener">Men T-shirt wholesale listing (TextileInfoMedia)</a></li>
+    <li><a href="https://accountune.com/footwear-shop-profit-margin" target="_blank" rel="noopener">Markup vs margin explained (Accountune)</a></li>
+    <li><a href="https://okcredit.in/blog/wholesale-markets-in-guwahati" target="_blank" rel="noopener">Wholesale Markets in Guwahati (OkCredit)</a></li>
+    <li><a href="https://business-northeast.com/fancy-bazar-market-relocation-here-s-how-traders-feel-about-assam-govt-move" target="_blank" rel="noopener">Fancy Bazar relocation report (Business North East)</a></li>
+    <li><a href="https://www.wholesalecatalogz.com/blogs/how-to-buy-wholesale-kurtis-surat-guide" target="_blank" rel="noopener">Wholesale kurti buying guide (WholesaleCatalogz)</a></li>
+    <li><a href="https://m.indiamart.com/impcat/toddler-boy-clothes.html" target="_blank" rel="noopener">Toddler boy clothes listings (IndiaMART)</a></li>
+    <li><a href="https://www.tradeindia.com/products/school-uniform-c11948817.html" target="_blank" rel="noopener">School uniform listings (TradeIndia)</a></li>
+    <li><a href="https://m.indiamart.com/impcat/undergarments.html" target="_blank" rel="noopener">Undergarments listings (IndiaMART)</a></li>
+    <li><a href="https://www.accountune.com/hsn-code-readymade-garments" target="_blank" rel="noopener">GST on readymade garments (Accountune)</a></li>
+    <li><a href="https://razorpay.com/learn/gst-registration-limits/" target="_blank" rel="noopener">GST registration limits (Razorpay)</a></li>
+    <li><a href="https://okcredit.in/blog/dos-and-donts-for-clothing-businessmen/" target="_blank" rel="noopener">Cloth business in India: capital and margins (OkCredit)</a></li>
+  </ul>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var inr=function(n){return '₹'+Math.round(n).toLocaleString('en-IN')};
+
+  /* fabric tabs */
+  var FAB=[
+    {n:'Cotton',feel:'Naram, saans leta hua, paseena sokhta hai.',pro:'Garmi aur umas mein sabse aaraamdeh. Assam ke mausam mein sabse safe bestseller.',con:'Sasta cotton jaldi sikudta hai aur shape kho deta hai. Wrinkle zyada.',test:'Paani ki boond turant sokh leta hai. Loose dhaaga jalane pe kagaz jaisa jalta hai.',tip:'100% cotton likha hai toh label aur feel dono check karo.'},
+    {n:'Polyester',feel:'Chikna, halka shiny, kabhi plastic jaisa.',pro:'Sasta, jaldi sukhta hai, wrinkle kam, rang tikaau.',con:'Garmi mein chipchipa lagta hai, paseena nahi sokhta. Plasticky feel matlab low quality.',test:'Paani ki boond bead banke ruk jaati hai. Dhaaga pighalta hai.',tip:'Sirf poly wala maal garmi mein mushkil se bikta hai. Mix zyada safe hai.'},
+    {n:'Cotton-poly blend',feel:'Cotton se thoda smooth aur firm.',pro:'Shape rakhta hai, kam sikudta hai, rate cotton se kam.',con:'Pilling (chhote gole) aa sakte hain agar poly hissa zyada ho.',test:'Haath se rago, sataha pe gole banne lagein toh reject.',tip:'Daily wear aur budget range ke liye accha mix.'},
+    {n:'Viscose / Rayon',feel:'Flowy, halka, silk jaisa girta hai.',pro:'Ladies kurti aur tops mein pasandida, sundar drape.',con:'Geele hone pe kamzor, dhone mein sikudta hai. Ghar pe dhone ka dhyan.',test:'Haath mein muthi banao, wrinkle bahut ho toh aap jaanoge.',tip:'Wash test zaroor karo, shrinkage zyada ho sakta hai.'},
+    {n:'Denim',feel:'Mota, twill buna hua, thoda sakht shuru mein.',pro:'Bahut tikaau, hamesha demand mein.',con:'Rang nikalta hai (indigo), stretch denim mein lycra jaldi dheela hota hai.',test:'Weight 340 GSM ke upar ho. Seam double stitch ho. Stretch ke baad shape wapas aaye.',tip:'Jeans ka waist aur length ek hi size ke 3 pieces mein naapo.'},
+    {n:'Fleece / Hoodie',feel:'Andar se naram, upar se smooth.',pro:'Sardi ka best seller, margin achha.',con:'Pilling jaldi aati hai, kam GSM mein patla aur thanda.',test:'Andar ki sataha pe haath rago, rua (fuzz) nikle toh pilling hogi. Cuff stretch check.',tip:'Season se 3 se 4 hafte pehle lo. Assam mein sardi chhoti, isliye zyada stock mat bharo.'}
+  ];
+  var tabs=$('fabtabs'),panel=$('fabpanel');
+  function showFab(i){
+    var f=FAB[i];
+    Array.prototype.forEach.call(tabs.children,function(b,j){b.setAttribute('aria-selected',j===i?'true':'false')});
+    panel.innerHTML='<div><h4>Haath ka feel</h4><p>'+f.feel+'</p></div><div><h4>Fayda</h4><p>'+f.pro+'</p></div><div><h4>Nuksan</h4><p>'+f.con+'</p></div><div class="test"><h4>Chhota test</h4><p>'+f.test+'</p></div><div><h4>Goreswar tip</h4><p>'+f.tip+'</p></div>';
+  }
+  FAB.forEach(function(f,i){
+    var b=document.createElement('button');b.type='button';b.className='tab';b.setAttribute('role','tab');b.textContent=f.n;
+    b.addEventListener('click',function(){showFab(i)});tabs.appendChild(b);
+  });
+  showFab(0);
+
+  /* gsm scale rows, to scale on a 0..450 axis */
+  var MAX=450;
+  var GR=[
+    ['Chiffon / georgette',0,100,'under 100','var(--indigo)'],
+    ['T-shirt (jersey)',100,170,'100–170','var(--tea)'],
+    ['T-shirt sweet spot',180,200,'180–200','var(--red)'],
+    ['Casual / light denim',170,340,'170–340','var(--indigo)'],
+    ['Fleece / hoodie',250,320,'~250–320','var(--tea)'],
+    ['Denim (heavy)',340,425,'340–400+','var(--red)']
+  ];
+  var rows=$('gsmrows');
+  GR.forEach(function(r){
+    var d=document.createElement('div');d.className='srow';
+    var l=r[1]/MAX*100,w=(r[2]-r[1])/MAX*100;
+    d.innerHTML='<span class="n">'+r[0]+'</span><div class="track"><div class="bar" style="left:'+l+'%;width:'+w+'%;background:'+r[4]+'">'+r[3]+'</div></div>';
+    rows.appendChild(d);
+  });
+  /* bar text must stay inside narrow bars: allow overflow visible for tiny ones */
+  Array.prototype.forEach.call(document.querySelectorAll('.bar'),function(b){
+    if(parseFloat(b.style.width)<11){b.style.overflow='visible';b.style.justifyContent='center';b.style.padding='0';b.firstChild;}
+  });
+
+  /* GSM tool */
+  function gsm(){
+    var w=parseFloat($('gw').value)||0,c=parseFloat($('gc').value)||0;
+    var m=w*100;$('gm').textContent=Math.round(m);
+    var diff=c>0?(m-c)/c*100:0;
+    $('gd').textContent=(diff>0?'+':'')+diff.toFixed(1)+'%';
+    var t,cl;
+    if(!c||!w){t='Dono value bharo.';cl='';}
+    else if(diff>=-5){t='Claim se match karta hai. Yahan supplier sach bol raha hai.';cl='st-ok';}
+    else if(diff>=-10){t='Thoda kam hai. Rate mein discount maango ya ek aur piece naapo.';cl='st-warn';}
+    else{t='Claim se kaafi kam. Supplier ne GSM zyada bataya, rate ya supplier badlo.';cl='st-bad';}
+    var p=$('gv');p.className=cl;p.textContent=t;
+  }
+  ['gw','gc'].forEach(function(i){$(i).addEventListener('input',gsm)});gsm();
+
+  /* shrinkage tool */
+  function shr(){
+    var b=parseFloat($('sb').value)||0,a=parseFloat($('sa').value)||0;
+    var s=b>0?(b-a)/b*100:0;$('sh').textContent=s.toFixed(1).replace('.0','')+'%';
+    var t,cl;
+    if(!b){t='Dono value bharo.';cl='';}
+    else if(s<0){t='Naap galat lag raha hai, dobara naapo.';cl='st-warn';}
+    else if(s<=3){t='Bahut accha. Shrinkage kam hai.';cl='st-ok';}
+    else if(s<=5){t='Chalega, par customer ko dhone ki salah do aur ek size upar rakho.';cl='st-warn';}
+    else{t='Bahut zyada sikudta hai. Is lot ko reject karo.';cl='st-bad';}
+    var p=$('sv');p.className=cl;p.textContent=t;
+  }
+  ['sb','sa'].forEach(function(i){$(i).addEventListener('input',shr)});shr();
+
+  /* scorecard */
+  var boxes=Array.prototype.slice.call(document.querySelectorAll('#score input[type=checkbox]'));
+  function score(){
+    var n=boxes.filter(function(b){return b.checked}).length,tot=boxes.length;
+    $('cnt').textContent=n+' / '+tot+' pass';$('mtr').style.width=(n/tot*100)+'%';
+    var miss=boxes.filter(function(b){return b.dataset.crit&&!b.checked}).map(function(b){return b.dataset.n});
+    var v=$('vd'),h,s,c;
+    if(n===0){c='';h='Verdict yahan dikhega';s='Upar ke checks karte jao.';}
+    else if(miss.length){c='bad';h='Abhi mat lo';s='Ye "MUST" check pass nahi hue ya abhi tak kiye nahi: '+miss.join(', ')+'. Inke bina maal mat lo.';}
+    else if(n>=10){c='ok';h='Maal accha hai, ab rate negotiate karo';s='Saare zaroori checks pass hain. Ab Chapter 9 ke scripts use karo.';}
+    else if(n>=8){c='warn';h='Chalega, par rate kam karwao';s='Kuch minor khaami hai. Chhota trial lot lo ya 8 se 10% discount maango.';}
+    else{c='bad';h='Skip karo';s='Bahut saari khaamiyan hain. Doosra supplier dekho.';}
+    v.className='verdict '+c;v.innerHTML='<b></b><span></span>';v.firstChild.textContent=h;v.lastChild.textContent=s;
+  }
+  boxes.forEach(function(b){b.addEventListener('change',score)});
+
+  /* tag price tool */
+  function tag(){
+    var w=parseFloat($('tr').value)||0,x=parseFloat($('te').value)||0;
+    var m=Math.min(Math.max(parseFloat($('tm').value)||0,0),90)/100;
+    var d=Math.min(Math.max(parseFloat($('tb').value)||0,0),60)/100;
+    var land=w+x,minSell=land/(1-m),tg=minSell/(1-d);
+    var rounded=Math.ceil((tg+1)/50)*50-1;
+    $('tl').textContent=inr(land);$('tf').textContent=inr(minSell);$('tt').textContent=inr(rounded);
+    var body=$('ladder');body.innerHTML='';
+    [0,5,10,15,20,25].forEach(function(disc){
+      var sp=rounded*(1-disc/100),pr=sp-land,mg=sp>0?pr/sp*100:0;
+      var cl=pr<0?'st-bad':(mg>=m*100-0.5?'st-ok':'st-warn');
+      var tr=document.createElement('tr');
+      tr.innerHTML='<td class="num">'+disc+'% off</td><td class="num">'+inr(sp)+'</td><td class="num '+cl+'">'+(pr<0?'-':'')+inr(Math.abs(pr))+'</td><td class="num '+cl+'">'+mg.toFixed(1)+'%'+(pr<0?' (nuksan)':'')+'</td>';
+      body.appendChild(tr);
+    });
+  }
+  ['tr','te','tm','tb'].forEach(function(i){$(i).addEventListener('input',tag)});tag();
+
+  /* break-even tool */
+  function be(){
+    var g=function(id){return parseFloat($(id).value)||0};
+    var rent=g('be_rent'),staff=g('be_staff'),misc=g('be_misc'),emi=g('be_emi'),owner=g('be_owner');
+    var m=g('be_margin')/100,bill=g('be_bill'),conv=g('be_conv'),days=g('be_days');
+    var shop=rent+staff+misc+emi,all=shop+owner;
+    var body=$('be_rows');body.innerHTML='';
+    var note=$('be_note');
+    if(m<=0||bill<=0||days<=0){note.textContent='Margin, bill aur din sahi daalo.';return;}
+    var out=[];
+    [['Sirf dukaan ka kharcha (apni salary ke bina)',shop],['Dukaan + aapki minimum kamaayi',all]].forEach(function(r){
+      var sales=r[1]/m,perDay=sales/days,bills=perDay/bill,walk=Math.ceil(bills*conv);
+      out.push({sales:sales,perDay:perDay,bills:bills,walk:walk});
+      var tr=document.createElement('tr');
+      tr.innerHTML='<td></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td>';
+      var c=tr.children;c[0].textContent=r[0]+' ('+inr(r[1])+')';
+      c[1].textContent=inr(sales);c[2].textContent=inr(perDay);c[3].textContent=bills.toFixed(1);c[4].textContent=walk;
+      body.appendChild(tr);
+    });
+    note.textContent='Apni minimum kamaayi ke saath aapko mahine mein lagbhag '+inr(out[1].sales)+' ki sale chahiye. Yani roz '+out[1].walk+' log dukaan mein aayein aur har '+conv+' mein se 1 kharide.';
+  }
+  ['be_rent','be_staff','be_misc','be_emi','be_owner','be_margin','be_bill','be_conv','be_days'].forEach(function(i){$(i).addEventListener('input',be)});be();
+
+  /* copy buttons */
+  Array.prototype.forEach.call(document.querySelectorAll('.copy'),function(btn){
+    btn.addEventListener('click',function(){
+      var p=btn.parentNode.querySelector('p');var text=p.textContent;
+      var done=function(){btn.textContent='Copied';setTimeout(function(){btn.textContent='Copy'},1400)};
+      var fallback=function(){
+        var r=document.createRange();r.selectNodeContents(p);var s=window.getSelection();s.removeAllRanges();s.addRange(r);
+        btn.textContent='Selected';setTimeout(function(){btn.textContent='Copy'},1400);
+      };
+      try{navigator.clipboard.writeText(text).then(done,fallback)}catch(e){fallback()}
+    });
+  });
+})();
+</script>
+
+</body></html>
