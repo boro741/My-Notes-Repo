@@ -72,15 +72,71 @@ section>h2{padding-top:16px;border-top:1px solid var(--line);margin-bottom:14px}
 :root[data-theme="dark"] .bar .c{background:#4050C8;color:#fff}
 .bar-cap{font-size:.95rem;color:var(--muted);margin:0 0 1em}
 
-/* tables */
-.tbl{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin:20px 0;overflow-x:auto}
-.tbl table{width:100%;border-collapse:collapse;font-size:1rem;font-variant-numeric:tabular-nums}
-.tbl th,.tbl td{padding:11px 16px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
-.tbl tr:last-child td{border-bottom:0}
-.tbl th{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
-.tbl .r{text-align:right;white-space:nowrap}
-.tbl tr.hl td{background:var(--gold-soft);font-weight:600}
-.tbl tr.bad td{color:var(--bad)}
+
+/* bar ladders (replace tables) */
+.lad{margin:20px 0;display:grid;gap:10px}
+.lad .cap{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:0 0 -2px}
+.lad .row{display:grid;grid-template-columns:minmax(96px,150px) 1fr auto;gap:6px 14px;align-items:center}
+.lad .lb{font-weight:600;min-width:0}
+.lad .trk{height:22px;background:var(--line);border-radius:6px;overflow:hidden}
+.lad .trk i{display:block;height:100%;background:var(--indigo)}
+.lad .vl{font-variant-numeric:tabular-nums;font-size:.98rem;text-align:right;white-space:nowrap}
+.lad .row.gold .trk i{background:var(--gold-bar)}
+.lad .row.gold .lb{color:var(--gold)}
+.lad .row.red .trk i{background:var(--bad)}
+.lad .row.red .lb{color:var(--bad)}
+@media (max-width:520px){.lad .row{grid-template-columns:1fr auto}.lad .trk{grid-column:1/-1;order:3}}
+
+/* chips */
+.chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px;margin:20px 0}
+.chips div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;min-width:0;font-variant-numeric:tabular-nums}
+.chips b{display:block;font-size:1.15rem;color:var(--indigo)}
+.chips span{display:block;color:var(--muted);font-size:.95rem}
+.chips .hl{background:var(--gold-soft);border-color:var(--gold-bar)}
+.chips .hl b{color:var(--gold)}
+
+/* stat cards */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px;margin:20px 0}
+.stats div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
+.stats small{display:block;color:var(--muted);font-size:.9rem}
+.stats b{display:block;font-family:var(--display);font-weight:400;font-size:1.9rem;line-height:1.2;color:var(--indigo);font-variant-numeric:lining-nums}
+.stats span{display:block;font-size:.92rem;color:var(--muted)}
+.stats .bad b{color:var(--bad)}
+
+/* the shop maths wheel */
+.wheel{margin:44px 0 0;min-width:0}
+.wheel-title{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:700;margin:0 0 4px}
+.wheel-sub{color:var(--muted);font-size:1rem;margin:0 0 18px}
+.nodes{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.nodes li{position:relative;padding-bottom:30px;min-width:0}
+.nodes li::after{content:"\2193";position:absolute;left:0;right:0;bottom:2px;text-align:center;font-size:1.5rem;line-height:28px;color:var(--gold)}
+.nodes li:last-child{padding-bottom:0}
+.nodes li:last-child::after{display:none}
+.node{display:block;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 18px 16px;color:var(--fg);text-decoration:none}
+.node:hover{border-color:var(--gold-bar)}
+.nh{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.nh b{width:30px;height:30px;border-radius:50%;background:var(--indigo);color:var(--bg);display:grid;place-items:center;font-size:.9rem;flex:none}
+.nh strong{font-family:var(--display);font-weight:400;font-size:1.25rem;letter-spacing:.02em}
+.nh em{font-style:normal;font-size:.8rem;color:var(--muted);margin-left:auto}
+.nf{display:block;margin-top:10px;font-weight:600;font-size:1rem;line-height:1.5;color:var(--indigo)}
+.ne{display:block;margin-top:6px;font-size:.92rem;line-height:1.5;color:var(--muted);font-variant-numeric:tabular-nums}
+.hub{background:var(--gold-soft);border-radius:16px;padding:14px 18px;margin-bottom:26px;text-align:center}
+.hub strong{display:block;font-family:var(--display);font-weight:400;font-size:1.35rem}
+.hub span{display:block;font-size:.9rem;color:var(--muted);margin-top:4px}
+.loopback{margin:14px 0 0;text-align:center;font-weight:600;color:var(--gold)}
+.ring{display:none}
+@media (min-width:1040px){
+  .wheel{position:relative;left:50%;transform:translateX(-50%);width:960px;max-width:calc(100vw - 64px)}
+  .wheel-stage{position:relative;height:880px}
+  .ring{display:block;position:absolute;inset:0;width:100%;height:100%}
+  .ring .rl{fill:none;stroke:var(--line);stroke-width:3;stroke-dasharray:3 9;stroke-linecap:round}
+  .ring .ah{fill:var(--gold-bar)}
+  .nodes{display:block;position:absolute;inset:0}
+  .nodes li{position:absolute;left:var(--x);top:var(--y);width:250px;padding:0;transform:translate(-50%,-50%)}
+  .nodes li::after{display:none}
+  .hub{position:absolute;left:50%;top:50%;width:230px;margin:0;transform:translate(-50%,-50%);border-radius:50%;aspect-ratio:1;display:flex;flex-direction:column;justify-content:center;padding:18px}
+  .loopback{display:none}
+}
 
 /* running example as a chain */
 .chain{list-style:none;margin:22px 0;padding:0;display:grid;gap:10px}
@@ -135,6 +191,34 @@ footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line);color:v
     <span class="lab">The whole guide in one line</span>
     <p>Price from your <b>landed cost</b>, decide your <b>floor price</b> before the customer walks in, never discount without checking the profit, and know the sales you need each day to cover rent.</p>
   </div>
+
+  <div class="wheel" id="wheel">
+    <p class="wheel-title">The Shop Maths loop</p>
+    <p class="wheel-sub">Read it clockwise, then start again with your real numbers. Tap a step to jump to its section.</p>
+    <div class="wheel-stage">
+      <svg class="ring" viewBox="0 0 960 880" aria-hidden="true" focusable="false">
+        <ellipse class="rl" cx="480" cy="440" rx="340" ry="330"/>
+        <polygon class="ah" points="-9,-10 13,0 -9,10" transform="translate(627.5 142.7) rotate(25.1)"/>
+        <polygon class="ah" points="-9,-10 13,0 -9,10" transform="translate(811.5 366.6) rotate(76.8)"/>
+        <polygon class="ah" points="-9,-10 13,0 -9,10" transform="translate(745.8 645.8) rotate(129.4)"/>
+        <polygon class="ah" points="-9,-10 13,0 -9,10" transform="translate(480.0 770.0) rotate(180.0)"/>
+        <polygon class="ah" points="-9,-10 13,0 -9,10" transform="translate(214.2 645.8) rotate(-129.4)"/>
+        <polygon class="ah" points="-9,-10 13,0 -9,10" transform="translate(148.5 366.6) rotate(-76.8)"/>
+        <polygon class="ah" points="-9,-10 13,0 -9,10" transform="translate(332.5 142.7) rotate(-25.1)"/>
+      </svg>
+      <div class="hub"><strong>Shop Maths</strong><span>Around the whole loop: why it matters (ch 1), first 90 days (ch 13), practice and cheat sheet (ch 15-16)</span></div>
+      <ol class="nodes" aria-label="Seven steps of shop maths, in order">
+      <li style="--x:50.00%;--y:12.50%"><a class="node" href="#margin"><span class="nh"><b>1</b><strong>LEARN</strong><em>ch 2-4</em></span><span class="nf">Margin = (SP − cost) ÷ SP<br>Markup = (SP − cost) ÷ cost</span><span class="ne">Cost 330, price 440 → margin 25%, markup 33%. Decide with margin.</span></a></li>
+      <li style="--x:77.69%;--y:26.62%"><a class="node" href="#cost"><span class="nh"><b>2</b><strong>COST</strong><em>ch 5</em></span><span class="nf">Landed cost = total spent ÷ sellable pieces</span><span class="ne">13,200 ÷ 38 = ₹347</span></a></li>
+      <li style="--x:84.53%;--y:58.34%"><a class="node" href="#bargain"><span class="nh"><b>3</b><strong>PRICE</strong><em>ch 6</em></span><span class="nf">Floor = cost ÷ (1 − min margin)<br>Tag = floor ÷ (1 − bargain)</span><span class="ne">347 ÷ 0.80 = ₹434 floor; 434 ÷ 0.80 = ₹543, tag ₹549</span></a></li>
+      <li style="--x:65.37%;--y:83.79%"><a class="node" href="#bargain"><span class="nh"><b>4</b><strong>BARGAIN</strong><em>ch 7</em></span><span class="nf">Margin on offer = (offer − cost) ÷ offer</span><span class="ne">₹450 offer → 103 ÷ 450 = 22.8%. Above floor, accept.</span></a></li>
+      <li style="--x:34.63%;--y:83.79%"><a class="node" href="#discount"><span class="nh"><b>5</b><strong>DISCOUNT</strong><em>ch 8</em></span><span class="nf">Sales needed = m ÷ (m − d)</span><span class="ne">0.30 ÷ (0.30 − 0.10) = 1.5×. 10% off needs 50% more sales.</span></a></li>
+      <li style="--x:15.47%;--y:58.34%"><a class="node" href="#breakeven"><span class="nh"><b>6</b><strong>SURVIVE</strong><em>ch 9</em></span><span class="nf">Break-even = fixed costs ÷ margin<br>Survival margin = costs ÷ sales</span><span class="ne">30,000 ÷ 0.28 = ₹1,07,143 a month, ₹4,121 a day</span></a></li>
+      <li style="--x:22.31%;--y:26.62%"><a class="node" href="#stock"><span class="nh"><b>7</b><strong>RUN</strong><em>ch 10-12, 14</em></span><span class="nf">Months of stock = pieces ÷ sold per month<br>Price before GST = price ÷ 1.05</span><span class="ne">300 ÷ 100 = 3 months; 549 ÷ 1.05 = ₹523</span></a></li>
+      </ol>
+    </div>
+    <p class="loopback">↻ Then repeat from step 1 every month</p>
+  </div>
 </header>
 
 <section id="cost">
@@ -168,16 +252,13 @@ footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line);color:v
     <p>"Keep 30% profit" on a ₹330 shirt means ₹429 if it is markup and ₹471 if it is margin. That is ₹42 apart on every shirt. Always ask "30% of what?"</p>
   </div>
   <p>The same trap catches target margins. Adding 40% to cost is a 40% markup, which gives only <b>28.57% margin</b>. To get a 40% margin on ₹1,000 cost you need ₹1,667, a 66.67% markup. Use this table at the counter:</p>
-  <div class="tbl">
-    <table>
-      <tr><th>Target margin</th><th>Markup needed</th><th class="r">₹1,000 cost becomes</th></tr>
-      <tr><td>20%</td><td>25%</td><td class="r">₹1,250</td></tr>
-      <tr><td>25%</td><td>33.33%</td><td class="r">₹1,333</td></tr>
-      <tr><td>30%</td><td>42.86%</td><td class="r">₹1,429</td></tr>
-      <tr class="hl"><td>33.33%</td><td>50%</td><td class="r">₹1,500</td></tr>
-      <tr><td>40%</td><td>66.67%</td><td class="r">₹1,667</td></tr>
-      <tr><td>50%</td><td>100%</td><td class="r">₹2,000</td></tr>
-    </table>
+  <div class="chips" aria-label="Margin to markup conversion on a ₹1,000 cost">
+    <div><b>20% margin</b><span>25% markup → ₹1,250</span></div>
+    <div><b>25% margin</b><span>33.33% markup → ₹1,333</span></div>
+    <div><b>30% margin</b><span>42.86% markup → ₹1,429</span></div>
+    <div class="hl"><b>33.33% margin</b><span>50% markup → ₹1,500</span></div>
+    <div><b>40% margin</b><span>66.67% markup → ₹1,667</span></div>
+    <div><b>50% margin</b><span>100% markup → ₹2,000</span></div>
   </div>
   <p>In short: <b>markup sets the tag</b> (you know the cost, so it is easy to work forward), and <b>margin judges the profit</b> at month end, at the counter and in break-even. Margin is always the smaller number, and it can never reach 100%. Never tell the customer either number.</p>
 </section>
@@ -195,15 +276,14 @@ footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line);color:v
     <li><span>Tag price<small>20% bargain room: 434 ÷ 0.80 = ₹543, rounded up</small></span><span class="v">₹549</span></li>
   </ul>
   <p>Now check any offer against the floor:</p>
-  <div class="tbl">
-    <table>
-      <tr><th>Customer pays</th><th class="r">Profit</th><th class="r">Margin</th></tr>
-      <tr><td>₹549 (full tag)</td><td class="r">₹202</td><td class="r">36.7%</td></tr>
-      <tr><td>₹500</td><td class="r">₹153</td><td class="r">30.5%</td></tr>
-      <tr class="hl"><td>₹434 (your floor)</td><td class="r">₹87</td><td class="r">20.0%</td></tr>
-      <tr><td>₹400</td><td class="r">₹53</td><td class="r">13.2%</td></tr>
-      <tr class="bad"><td>₹350</td><td class="r">₹3</td><td class="r">0.8%</td></tr>
-    </table>
+  <div class="lad" role="list" aria-label="Customer pays (₹549 tag, ₹347 landed cost): bar = margin">
+    <p class="cap">Customer pays (₹549 tag, ₹347 landed cost): bar = margin</p>
+    <div class="row" role="listitem"><span class="lb">₹549 full tag</span><span class="trk"><i style="width:91.8%"></i></span><span class="vl">₹202 profit · 36.7%</span></div>
+    <div class="row" role="listitem"><span class="lb">₹500</span><span class="trk"><i style="width:76.3%"></i></span><span class="vl">₹153 profit · 30.5%</span></div>
+    <div class="row" role="listitem"><span class="lb">₹450</span><span class="trk"><i style="width:57.0%"></i></span><span class="vl">₹103 profit · 22.8%</span></div>
+    <div class="row gold" role="listitem"><span class="lb">₹434 your floor</span><span class="trk"><i style="width:50.0%"></i></span><span class="vl">₹87 profit · 20.0%</span></div>
+    <div class="row" role="listitem"><span class="lb">₹400</span><span class="trk"><i style="width:33.0%"></i></span><span class="vl">₹53 profit · 13.2%</span></div>
+    <div class="row red" role="listitem"><span class="lb">₹350</span><span class="trk"><i style="width:2.0%"></i></span><span class="vl">₹3 profit · 0.8%</span></div>
   </div>
   <ul class="list">
     <li>Write the floor on the tag in a private code. Then nobody calculates at the counter.</li>
@@ -220,13 +300,10 @@ footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line);color:v
     <b>New margin</b> = (m − d) ÷ (1 − d)<br>
     <b>Sales needed</b> = m ÷ (m − d) × old sales
   </div>
-  <div class="tbl">
-    <table>
-      <tr><th>Margin now</th><th>Discount</th><th class="r">Sales needed for same profit</th></tr>
-      <tr><td>30%</td><td>10%</td><td class="r">1.5×</td></tr>
-      <tr><td>25%</td><td>10%</td><td class="r">1.67×</td></tr>
-      <tr class="bad"><td>20%</td><td>20%</td><td class="r">Never enough</td></tr>
-    </table>
+  <div class="stats" aria-label="Sales needed after a discount">
+    <div><small>30% margin, 10% off</small><b>1.5×</b><span>sales to earn the same profit</span></div>
+    <div><small>25% margin, 10% off</small><b>1.67×</b><span>sales to earn the same profit</span></div>
+    <div class="bad"><small>20% margin, 20% off</small><b>Never</b><span>the discount is your whole margin</span></div>
   </div>
   <p>Another example: jeans cost ₹1,000 and the tag is ₹1,600 (37.5% margin). The customer asks for ₹200 off and you agree. The customer got 12.5% off, but profit fell from ₹600 to ₹400, which is a third gone, and margin dropped to 28.57%. Always think of a discount as a cut in profit, not a cut in the tag.</p>
   <ul class="list">
@@ -243,22 +320,18 @@ footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line);color:v
     <b>Break-even sales per month</b> = fixed costs ÷ average margin<br>
     ₹30,000 ÷ 0.28 = <b>₹1,07,143</b> a month, about <b>₹4,121</b> a day over 26 days
   </div>
-  <div class="tbl">
-    <table>
-      <tr><th>Margin</th><th class="r">Sales to cover ₹30,000</th></tr>
-      <tr><td>20%</td><td class="r">₹1,50,000</td></tr>
-      <tr class="hl"><td>28%</td><td class="r">₹1,07,143</td></tr>
-      <tr><td>40%</td><td class="r">₹75,000</td></tr>
-    </table>
+  <div class="lad" role="list" aria-label="Sales needed to cover ₹30,000 a month: bar = sales">
+    <p class="cap">Sales needed to cover ₹30,000 a month: bar = sales</p>
+    <div class="row" role="listitem"><span class="lb">20% margin</span><span class="trk"><i style="width:100%"></i></span><span class="vl">₹1,50,000</span></div>
+    <div class="row gold" role="listitem"><span class="lb">28% margin</span><span class="trk"><i style="width:71.4%"></i></span><span class="vl">₹1,07,143</span></div>
+    <div class="row" role="listitem"><span class="lb">40% margin</span><span class="trk"><i style="width:50%"></i></span><span class="vl">₹75,000</span></div>
   </div>
   <p>Why a higher margin matters: say fixed costs are ₹60,000 a month (rent ₹20,000, salaries ₹25,000, electricity ₹5,000, other ₹10,000). Out of every ₹100 of sales at 20% margin, ₹80 goes to the supplier and only ₹20 is left to pay these. At 40% margin ₹40 is left.</p>
-  <div class="tbl">
-    <table>
-      <tr><th>Margin</th><th>₹60,000 ÷ margin</th><th class="r">Sales needed</th><th class="r">Per day (30 days)</th></tr>
-      <tr><td>20%</td><td>60,000 ÷ 0.20</td><td class="r">₹3,00,000</td><td class="r">₹10,000</td></tr>
-      <tr><td>30%</td><td>60,000 ÷ 0.30</td><td class="r">₹2,00,000</td><td class="r">₹6,667</td></tr>
-      <tr class="hl"><td>40%</td><td>60,000 ÷ 0.40</td><td class="r">₹1,50,000</td><td class="r">₹5,000</td></tr>
-    </table>
+  <div class="lad" role="list" aria-label="Sales needed to cover ₹60,000 a month: bar = sales">
+    <p class="cap">Sales needed to cover ₹60,000 a month: bar = sales</p>
+    <div class="row" role="listitem"><span class="lb">20% margin</span><span class="trk"><i style="width:100%"></i></span><span class="vl">₹3,00,000 · ₹10,000 a day</span></div>
+    <div class="row" role="listitem"><span class="lb">30% margin</span><span class="trk"><i style="width:66.7%"></i></span><span class="vl">₹2,00,000 · ₹6,667 a day</span></div>
+    <div class="row gold" role="listitem"><span class="lb">40% margin</span><span class="trk"><i style="width:50%"></i></span><span class="vl">₹1,50,000 · ₹5,000 a day</span></div>
   </div>
   <p>In shirts: on a ₹1,500 shirt with ₹500 gross profit, ₹60,000 ÷ ₹500 = <b>120 shirts a month</b>, about 4 a day, just to reach zero. To also earn ₹30,000 for yourself: <b>sales needed = (expenses + desired profit) ÷ margin</b>, so (60,000 + 30,000) ÷ 0.40 = ₹2,25,000. This is gross margin only. Tax and interest still come out.</p>
   <p>Know three margins for each item:</p>
