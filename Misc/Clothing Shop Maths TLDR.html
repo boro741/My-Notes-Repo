@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Clothing Shop Maths TLDR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Young+Serif&display=swap">
+<style>
+/* Layout: one narrow reading column, short numbered-by-meaning sections, one running example (a ₹347 shirt) carried through. */
+:root{
+  --bg:#F6F7FA; --surface:#FFFFFF; --fg:#12172B; --muted:#586079; --line:#DCE0EA;
+  --indigo:#1F2A6B; --indigo-soft:#E7EAF8;
+  --gold:#8F5300; --gold-bar:#E9A23B; --gold-soft:#FBEFD7;
+  --good:#1F7A66; --good-soft:#DDF1EA; --bad:#A8231F; --bad-soft:#FBE4E2;
+  --display:"Young Serif",Georgia,"Times New Roman",serif;
+  --body:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1122; --surface:#161A33; --fg:#ECEEF8; --muted:#A0A7C2; --line:#2B3158;
+    --indigo:#B3BDFF; --indigo-soft:#222952;
+    --gold:#F3BE6B; --gold-bar:#EDAE4F; --gold-soft:#3A2D14;
+    --good:#4FC9A9; --good-soft:#12342D; --bad:#FF8A84; --bad-soft:#3A1A1A;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1122; --surface:#161A33; --fg:#ECEEF8; --muted:#A0A7C2; --line:#2B3158;
+  --indigo:#B3BDFF; --indigo-soft:#222952;
+  --gold:#F3BE6B; --gold-bar:#EDAE4F; --gold-soft:#3A2D14;
+  --good:#4FC9A9; --good-soft:#12342D; --bad:#FF8A84; --bad-soft:#3A1A1A;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:1.125rem;line-height:1.65;
+  padding-block:48px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));-webkit-font-smoothing:antialiased}
+main{max-width:680px;margin:0 auto;min-width:0}
+h1,h2{font-family:var(--display);font-weight:400;margin:0;text-wrap:balance}
+h1{font-size:clamp(2.3rem,7vw,3.4rem);line-height:1.08;letter-spacing:-.015em}
+h2{font-size:clamp(1.5rem,4vw,1.9rem);line-height:1.2}
+p{margin:0 0 1em}
+b{font-weight:700}
+a{color:var(--indigo)}
+:focus-visible{outline:3px solid var(--gold-bar);outline-offset:3px;border-radius:4px}
+.num{font-variant-numeric:tabular-nums}
+
+.kicker{display:inline-block;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--gold);background:var(--gold-soft);padding:4px 12px;border-radius:99px;margin-bottom:20px}
+.meta{color:var(--muted);font-size:.95rem;margin:14px 0 0}
+.lead{font-size:1.25rem;color:var(--muted);margin:20px 0 0}
+
+/* one-sentence summary */
+.gist{margin:32px 0 0;padding:20px 22px;background:var(--indigo-soft);border-radius:16px}
+.gist .lab,.eg .lab{display:block;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--gold);margin-bottom:6px}
+.gist p{margin:0;font-weight:600}
+
+section{margin-top:56px}
+section>h2{padding-top:16px;border-top:1px solid var(--line);margin-bottom:14px}
+
+.formula{margin:18px 0;padding:14px 0;border-block:1px solid var(--line);font-weight:500;font-size:1.05rem;line-height:1.9;overflow-x:auto}
+.formula b{color:var(--indigo)}
+
+/* margin vs markup bar */
+.bar{display:flex;height:52px;border-radius:8px;overflow:hidden;font-weight:700;font-size:.95rem;margin:18px 0 6px}
+.bar span{display:flex;align-items:center;justify-content:center;padding:0 8px;text-align:center;line-height:1.15}
+.bar .c{flex:0 0 75%;background:var(--indigo);color:#fff}
+.bar .p{flex:0 0 25%;background:var(--gold-bar);color:#2A1A00}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .bar .c{background:#4050C8;color:#fff}}
+:root[data-theme="dark"] .bar .c{background:#4050C8;color:#fff}
+.bar-cap{font-size:.95rem;color:var(--muted);margin:0 0 1em}
+
+/* tables */
+.tbl{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin:20px 0;overflow-x:auto}
+.tbl table{width:100%;border-collapse:collapse;font-size:1rem;font-variant-numeric:tabular-nums}
+.tbl th,.tbl td{padding:11px 16px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl tr:last-child td{border-bottom:0}
+.tbl th{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.tbl .r{text-align:right;white-space:nowrap}
+.tbl tr.hl td{background:var(--gold-soft);font-weight:600}
+.tbl tr.bad td{color:var(--bad)}
+
+/* running example as a chain */
+.chain{list-style:none;margin:22px 0;padding:0;display:grid;gap:10px}
+.chain li{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:12px 16px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.chain li span:first-child{min-width:0}
+.chain small{display:block;color:var(--muted);font-size:.88rem}
+.chain .v{font-family:var(--display);font-size:1.5rem;white-space:nowrap;font-variant-numeric:lining-nums tabular-nums}
+.chain li.key{background:var(--gold-soft);border-color:var(--gold-bar)}
+.chain li.key .v{color:var(--gold)}
+
+.list{padding-left:1.2em;margin:14px 0}
+.list li{margin:8px 0}
+
+.callout{margin:24px 0;padding:14px 18px;border-radius:14px;background:var(--bad-soft)}
+.callout .lab{display:block;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--bad);margin-bottom:4px}
+.callout p:last-child{margin:0}
+.callout.ok{background:var(--good-soft)}
+.callout.ok .lab{color:var(--good)}
+
+/* mistakes */
+.mist{counter-reset:m;list-style:none;margin:16px 0;padding:0}
+.mist li{counter-increment:m;position:relative;padding:0 0 14px 44px}
+.mist li::before{content:counter(m);position:absolute;left:0;top:1px;width:30px;height:30px;border-radius:50%;background:var(--indigo);color:var(--bg);font-weight:700;font-size:.9rem;display:grid;place-items:center}
+
+/* timeline */
+.tl{margin:20px 0;display:grid;gap:0}
+.tl div{display:grid;grid-template-columns:96px 1fr;gap:16px;padding:12px 0;border-bottom:1px solid var(--line)}
+.tl div:last-child{border-bottom:0}
+.tl dt{font-weight:700;color:var(--gold)}
+.tl dd{margin:0;min-width:0}
+@media (max-width:480px){.tl div{grid-template-columns:1fr;gap:2px}}
+
+/* cheat grid */
+.cheat{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:12px;margin:20px 0}
+.cheat div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px;min-width:0}
+.cheat b{display:block;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:2px}
+.cheat code{font-family:var(--body);font-weight:600;font-size:1rem;overflow-wrap:anywhere}
+
+footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:.95rem}
+</style>
+</head>
+<body>
+<main>
+
+<header>
+  <div class="kicker">TLDR &middot; Retail maths for a new shop</div>
+  <h1>Clothing Shop Maths, in five minutes</h1>
+  <p class="lead">The full guide has 16 chapters, 5 calculators and a lot of doubts answered. This is the short version: what to know before you tag your first shirt.</p>
+  <p class="meta">Based on the guide written for a new shop in Goreswar, Assam. All rupee figures are examples. Use your own costs.</p>
+
+  <div class="gist">
+    <span class="lab">The whole guide in one line</span>
+    <p>Price from your <b>landed cost</b>, decide your <b>floor price</b> before the customer walks in, never discount without checking the profit, and know the sales you need each day to cover rent.</p>
+  </div>
+</header>
+
+<section id="cost">
+  <h2>1. Your cost is not the bill price</h2>
+  <p>The wholesaler's rate is only part of it. Add transport, loading, packing and tags. Then divide by the pieces you can actually sell, because some will be damaged or stay unsold.</p>
+  <div class="formula"><b>Landed cost</b> = total spent ÷ sellable pieces</div>
+  <ul class="chain" aria-label="Worked example: 40 shirts">
+    <li><span>40 shirts at ₹300<small>Bill price</small></span><span class="v">₹12,000</span></li>
+    <li><span>Transport, loading, packing<small>₹800 + ₹200 + ₹200</small></span><span class="v">₹1,200</span></li>
+    <li><span>Total spent</span><span class="v">₹13,200</span></li>
+    <li class="key"><span>÷ 38 sellable shirts<small>2 of 40 will not sell</small></span><span class="v">₹347</span></li>
+  </ul>
+  <p>Start every price from ₹347, not ₹300. Rent, salary and electricity are not in this number. They come in at step 5. Start with a 5% allowance for damaged or unsold pieces and adjust after a month or two.</p>
+</section>
+
+<section id="margin">
+  <h2>2. Margin and markup are the same profit, divided differently</h2>
+  <p>A shirt landed at ₹330 sells for ₹440. Profit is ₹110. The only question is what you divide it by.</p>
+  <div class="bar" role="img" aria-label="A ₹440 bar: ₹330 cost and ₹110 profit"><span class="c">Cost ₹330</span><span class="p">Profit ₹110</span></div>
+  <p class="bar-cap">Markup: 110 ÷ 330 (cost) = <b>33%</b>. Margin: 110 ÷ 440 (selling price) = <b>25%</b>.</p>
+  <ul class="list">
+    <li><b>Margin</b> answers "out of every ₹100 the customer pays, how much is mine?" Use it for floor price, bargaining, discounts and break-even.</li>
+    <li><b>Markup</b> is what suppliers quote. Convert it before you decide anything: <b>margin = markup ÷ (1 + markup)</b>. A 25% markup is a 20% margin.</li>
+    <li>Doubling your cost is a 100% markup but only a <b>50% margin</b>.</li>
+  </ul>
+  <div class="formula">
+    <b>Price from target margin</b>: SP = cost ÷ (1 − margin)<br>
+    ₹350 cost, 30% margin → 350 ÷ 0.70 = ₹500
+  </div>
+  <div class="callout"><span class="lab">Trap</span>
+    <p>"Keep 30% profit" on a ₹330 shirt means ₹429 if it is markup and ₹471 if it is margin. That is ₹42 apart on every shirt. Always ask "30% of what?"</p>
+  </div>
+  <p>The same trap catches target margins. Adding 40% to cost is a 40% markup, which gives only <b>28.57% margin</b>. To get a 40% margin on ₹1,000 cost you need ₹1,667, a 66.67% markup. Use this table at the counter:</p>
+  <div class="tbl">
+    <table>
+      <tr><th>Target margin</th><th>Markup needed</th><th class="r">₹1,000 cost becomes</th></tr>
+      <tr><td>20%</td><td>25%</td><td class="r">₹1,250</td></tr>
+      <tr><td>25%</td><td>33.33%</td><td class="r">₹1,333</td></tr>
+      <tr><td>30%</td><td>42.86%</td><td class="r">₹1,429</td></tr>
+      <tr class="hl"><td>33.33%</td><td>50%</td><td class="r">₹1,500</td></tr>
+      <tr><td>40%</td><td>66.67%</td><td class="r">₹1,667</td></tr>
+      <tr><td>50%</td><td>100%</td><td class="r">₹2,000</td></tr>
+    </table>
+  </div>
+  <p>In short: <b>markup sets the tag</b> (you know the cost, so it is easy to work forward), and <b>margin judges the profit</b> at month end, at the counter and in break-even. Margin is always the smaller number, and it can never reach 100%. Never tell the customer either number.</p>
+</section>
+
+<section id="bargain">
+  <h2>3. Price for bargaining: work backwards</h2>
+  <p>Customers in a bargaining town will ask for less. So set the tag high enough that the lowest price you accept still earns your minimum margin.</p>
+  <div class="formula">
+    <b>Floor</b> = cost ÷ (1 − minimum margin)<br>
+    <b>Tag</b> = floor ÷ (1 − biggest bargain you allow)
+  </div>
+  <ul class="chain">
+    <li><span>Landed cost</span><span class="v">₹347</span></li>
+    <li class="key"><span>Floor price<small>20% minimum margin: 347 ÷ 0.80</small></span><span class="v">₹434</span></li>
+    <li><span>Tag price<small>20% bargain room: 434 ÷ 0.80 = ₹543, rounded up</small></span><span class="v">₹549</span></li>
+  </ul>
+  <p>Now check any offer against the floor:</p>
+  <div class="tbl">
+    <table>
+      <tr><th>Customer pays</th><th class="r">Profit</th><th class="r">Margin</th></tr>
+      <tr><td>₹549 (full tag)</td><td class="r">₹202</td><td class="r">36.7%</td></tr>
+      <tr><td>₹500</td><td class="r">₹153</td><td class="r">30.5%</td></tr>
+      <tr class="hl"><td>₹434 (your floor)</td><td class="r">₹87</td><td class="r">20.0%</td></tr>
+      <tr><td>₹400</td><td class="r">₹53</td><td class="r">13.2%</td></tr>
+      <tr class="bad"><td>₹350</td><td class="r">₹3</td><td class="r">0.8%</td></tr>
+    </table>
+  </div>
+  <ul class="list">
+    <li>Write the floor on the tag in a private code. Then nobody calculates at the counter.</li>
+    <li>Come down in small steps, give a reason for each, and counter even a good first offer.</li>
+    <li>Sell more pieces instead of cutting price: "2 for ₹950". Check the floor on each piece first.</li>
+    <li>Walking away from a below-floor offer is fine. A sale near cost is a gift.</li>
+  </ul>
+</section>
+
+<section id="discount">
+  <h2>4. Discounts cost more than they look</h2>
+  <p>A discount comes out of your profit, not out of your cost. At 30% margin, a 10% discount takes the margin to 22% and cuts profit per piece by a third. To earn the same total profit you must sell <b>50% more pieces</b>.</p>
+  <div class="formula">
+    <b>New margin</b> = (m − d) ÷ (1 − d)<br>
+    <b>Sales needed</b> = m ÷ (m − d) × old sales
+  </div>
+  <div class="tbl">
+    <table>
+      <tr><th>Margin now</th><th>Discount</th><th class="r">Sales needed for same profit</th></tr>
+      <tr><td>30%</td><td>10%</td><td class="r">1.5×</td></tr>
+      <tr><td>25%</td><td>10%</td><td class="r">1.67×</td></tr>
+      <tr class="bad"><td>20%</td><td>20%</td><td class="r">Never enough</td></tr>
+    </table>
+  </div>
+  <p>Another example: jeans cost ₹1,000 and the tag is ₹1,600 (37.5% margin). The customer asks for ₹200 off and you agree. The customer got 12.5% off, but profit fell from ₹600 to ₹400, which is a third gone, and margin dropped to 28.57%. Always think of a discount as a cut in profit, not a cut in the tag.</p>
+  <ul class="list">
+    <li>Two discounts do not add. 10% then 5% off ₹1,000 is ₹855, which is 14.5% off, not 15%.</li>
+    <li>Prefer bundles or a small freebie. Clear only old stock, not new arrivals.</li>
+    <li>Do not advertise "Flat 30% off" before checking it. On the ₹549 shirt it leaves a 10% margin.</li>
+  </ul>
+</section>
+
+<section id="breakeven">
+  <h2>5. Rent comes out of your margin</h2>
+  <p>Rent, salary, electricity, loan interest and your own pay are due even on a day with no customers. They are paid from the profit on clothes, so the margin decides how much you must sell.</p>
+  <div class="formula">
+    <b>Break-even sales per month</b> = fixed costs ÷ average margin<br>
+    ₹30,000 ÷ 0.28 = <b>₹1,07,143</b> a month, about <b>₹4,121</b> a day over 26 days
+  </div>
+  <div class="tbl">
+    <table>
+      <tr><th>Margin</th><th class="r">Sales to cover ₹30,000</th></tr>
+      <tr><td>20%</td><td class="r">₹1,50,000</td></tr>
+      <tr class="hl"><td>28%</td><td class="r">₹1,07,143</td></tr>
+      <tr><td>40%</td><td class="r">₹75,000</td></tr>
+    </table>
+  </div>
+  <p>Why a higher margin matters: say fixed costs are ₹60,000 a month (rent ₹20,000, salaries ₹25,000, electricity ₹5,000, other ₹10,000). Out of every ₹100 of sales at 20% margin, ₹80 goes to the supplier and only ₹20 is left to pay these. At 40% margin ₹40 is left.</p>
+  <div class="tbl">
+    <table>
+      <tr><th>Margin</th><th>₹60,000 ÷ margin</th><th class="r">Sales needed</th><th class="r">Per day (30 days)</th></tr>
+      <tr><td>20%</td><td>60,000 ÷ 0.20</td><td class="r">₹3,00,000</td><td class="r">₹10,000</td></tr>
+      <tr><td>30%</td><td>60,000 ÷ 0.30</td><td class="r">₹2,00,000</td><td class="r">₹6,667</td></tr>
+      <tr class="hl"><td>40%</td><td>60,000 ÷ 0.40</td><td class="r">₹1,50,000</td><td class="r">₹5,000</td></tr>
+    </table>
+  </div>
+  <p>In shirts: on a ₹1,500 shirt with ₹500 gross profit, ₹60,000 ÷ ₹500 = <b>120 shirts a month</b>, about 4 a day, just to reach zero. To also earn ₹30,000 for yourself: <b>sales needed = (expenses + desired profit) ÷ margin</b>, so (60,000 + 30,000) ÷ 0.40 = ₹2,25,000. This is gross margin only. Tax and interest still come out.</p>
+  <p>Know three margins for each item:</p>
+  <ul class="list">
+    <li><b>Survival</b> = fixed costs ÷ expected sales. Below this you lose money every month.</li>
+    <li><b>Target</b> = (fixed costs + profit you want) ÷ expected sales.</li>
+    <li><b>Ceiling</b> = (market price − your cost) ÷ market price. This is what nearby shops allow.</li>
+  </ul>
+  <p>If the ceiling is below survival, the item cannot pay for itself. Renegotiate the cost or drop it. Use a slow month for expected sales, not Bihu or Puja. Include your own salary in fixed costs, and use the margin you get after bargaining.</p>
+</section>
+
+<section id="stock">
+  <h2>6. Stock is cash sitting on a shelf</h2>
+  <ul class="list">
+    <li><b>Months to sell</b> = pieces in stock ÷ pieces sold per month. Six months or more means buy less next time.</li>
+    <li>Set a markdown plan in advance: full tag for months 1 to 2, about 15 to 20% off in month 3, near cost in month 4. Cash from an old shirt buys one that earns.</li>
+    <li>First order: about 4 to 6 weeks of expected sales. Buy variety (2 or 3 pieces of many designs), then reorder only winners. Keep missing sizes first on the list.</li>
+    <li>Keep 2 to 3 months of fixed costs as cash reserve. It is the item new owners forget most.</li>
+    <li>Track margin by item, not just overall. A fast seller at 25% margin can earn more than a slow one at 50%, because the stock turns over sooner. Keep basics (innerwear, plain tees) at lower margin to bring people in, and festive and wedding wear at higher margin.</li>
+    <li>Negotiate with suppliers. Cutting cost from ₹1,000 to ₹950 on a ₹1,500 tag lifts margin from 33.3% to 36.7%. Ask for bulk, advance-payment or repeat-order rates.</li>
+    <li>Keep one simple register with each item's cost, selling price and margin. Count small costs too: packing bags, transport, alterations, UPI charges.</li>
+    <li>Keep shop money and personal money apart. Decide a fixed monthly salary and leave the rest in the business.</li>
+    <li>Do a 30-minute weekly review: top 5 and slowest 5 items, the week's margin, and cash against bills due. Write down your return and alteration policy and train staff on the floor price.</li>
+    <li>Give udhar only to people you know, with a limit, and write every amount with a date.</li>
+    <li>GST is not your profit or your cost. Work out margin on the price before tax (₹549 ÷ 1.05 = ₹523 at 5%). Rates change, so confirm with a CA in week one.</li>
+  </ul>
+</section>
+
+<section id="compete">
+  <h2>7. Competing with M Baazar and the small shops</h2>
+  <ul class="list">
+    <li>In week one, note the price and the lowest bargain price of 20 popular items at three nearby shops.</li>
+    <li>If a rival's price is under your landed cost, do not copy it. Skip the item or stock it only to draw people in.</li>
+    <li>Win on what a big shop skips: all sizes, one or two customer groups done well, alterations, easy exchange, and honest quality you can explain.</li>
+    <li>Avoid a price war. The bigger shop lasts longer. Compete only where you stay above your break-even.</li>
+  </ul>
+</section>
+
+<section id="tools">
+  <h2>8. Billing: app for bills, Excel for decisions</h2>
+  <p>Start with a free billing app from day one. It records every bill, reduces stock automatically and gives a daily sales report. Keep Excel for the price survey, margin tracker and break-even. Skip full ERP software for now. Close the cash every evening against the app's report. Prices and plan limits in the guide come from third-party sites, so check the official page before buying.</p>
+</section>
+
+<section id="plan">
+  <h2>The first 90 days</h2>
+  <dl class="tl">
+    <div><dt>Week 1</dt><dd>See a CA, survey prices, open a shop bank account and UPI QR, pick a billing app, run the break-even calculation.</dd></div>
+    <div><dt>Week 2</dt><dd>Place a small first order. Work out landed cost, floor and tag for each item group.</dd></div>
+    <div><dt>Weeks 3 to 4</dt><dd>Open. Serve customers yourself. Close cash daily. Note the price at which deals actually close.</dd></div>
+    <div><dt>Month 1 end</dt><dd>Work out real average margin after bargaining. Reorder only winners.</dd></div>
+    <div><dt>Month 2</dt><dd>Write the markdown rule. Ask the wholesaler for a better rate. Collect customer WhatsApp numbers with permission.</dd></div>
+    <div><dt>Month 3</dt><dd>Clear stock past the markdown date. If sales reach break-even, start your fixed salary. If not, look at rent, stock and margin.</dd></div>
+  </dl>
+  <p>Example startup money from the guide: ₹1,50,000 stock + ₹80,000 shop set-up + ₹15,000 licences and billing + ₹90,000 reserve = <b>₹3,35,000</b>.</p>
+</section>
+
+<section id="mistakes">
+  <h2>Six mistakes new owners make</h2>
+  <ol class="mist">
+    <li>Tagging from the bill price and forgetting transport and packing.</li>
+    <li>Doubling the cost without checking what the shop next door charges.</li>
+    <li>Having no floor price when bargaining starts.</li>
+    <li>Mixing up margin and markup.</li>
+    <li>Buying too much stock in the first order.</li>
+    <li>Mixing shop money with home money and keeping no records.</li>
+  </ol>
+</section>
+
+<section id="cheat">
+  <h2>Formulas to keep</h2>
+  <div class="cheat">
+    <div><b>Landed cost</b><code>total spent ÷ sellable pieces</code></div>
+    <div><b>Margin %</b><code>(SP − cost) ÷ SP × 100</code></div>
+    <div><b>Markup %</b><code>(SP − cost) ÷ cost × 100</code></div>
+    <div><b>Price from margin</b><code>cost ÷ (1 − margin)</code></div>
+    <div><b>Floor price</b><code>cost ÷ (1 − minimum margin)</code></div>
+    <div><b>Tag price</b><code>floor ÷ (1 − biggest bargain)</code></div>
+    <div><b>Discount %</b><code>(tag − paid) ÷ tag × 100</code></div>
+    <div><b>Sales after discount</b><code>m ÷ (m − d) × old sales</code></div>
+    <div><b>Break-even sales</b><code>fixed costs ÷ average margin</code></div>
+    <div><b>Months of stock</b><code>pieces in stock ÷ sold per month</code></div>
+  </div>
+  <div class="callout ok"><span class="lab">Seven habits that keep a shop alive</span>
+    <p>Price from landed cost. Fix the floor before the customer arrives. Ask "percent of what?" Check profit before any discount. Know your daily break-even. Mark down on a schedule. Write everything down.</p>
+  </div>
+</section>
+
+<footer>
+  <p>This is a summary, so the calculators, doubts and practice problems are in the full guide, <i>Clothing Shop Maths</i>. Keep a notebook for the first three months and put your real numbers into the price setter and break-even calculators after month one. Not tax or legal advice.</p>
+</footer>
+
+</main>
+</body>
+</html>
