@@ -103,39 +103,82 @@ section>h2{padding-top:16px;border-top:1px solid var(--line);margin-bottom:14px}
 .stats span{display:block;font-size:.92rem;color:var(--muted)}
 .stats .bad b{color:var(--bad)}
 
-/* the shop maths wheel */
-.wheel{margin:44px 0 0;min-width:0}
-.wheel-title{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:700;margin:0 0 4px}
-.wheel-sub{color:var(--muted);font-size:1rem;margin:0 0 18px}
-.nodes{list-style:none;margin:0;padding:0;display:grid;gap:0}
-.nodes li{position:relative;padding-bottom:30px;min-width:0}
-.nodes li::after{content:"\2193";position:absolute;left:0;right:0;bottom:2px;text-align:center;font-size:1.5rem;line-height:28px;color:var(--gold)}
-.nodes li:last-child{padding-bottom:0}
-.nodes li:last-child::after{display:none}
-.node{display:block;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 18px 16px;color:var(--fg);text-decoration:none}
-.node:hover{border-color:var(--gold-bar)}
-.nh{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.nh b{width:30px;height:30px;border-radius:50%;background:var(--indigo);color:var(--bg);display:grid;place-items:center;font-size:.9rem;flex:none}
-.nh strong{font-family:var(--display);font-weight:400;font-size:1.25rem;letter-spacing:.02em}
-.nh em{font-style:normal;font-size:.8rem;color:var(--muted);margin-left:auto}
-.nf{display:block;margin-top:10px;font-weight:600;font-size:1rem;line-height:1.5;color:var(--indigo)}
-.ne{display:block;margin-top:6px;font-size:.92rem;line-height:1.5;color:var(--muted);font-variant-numeric:tabular-nums}
+/* shared: wide figures that break out of the text column on desktop */
+.fig-title{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:700;margin:0 0 4px}
+.fig-sub{color:var(--muted);font-size:1rem;margin:0 0 18px;max-width:640px}
+.fig-sub b{color:var(--fg)}
+@media (min-width:1100px){.wide{position:relative;left:50%;transform:translateX(-50%);width:1000px;max-width:calc(100vw - 64px)}}
+
+/* diagram 1: shop cycle */
+.cycle{margin:44px 0 0;min-width:0}
+.stages{list-style:none;margin:0;padding:0;display:grid}
+.stages>li{position:relative;padding-bottom:30px;min-width:0}
+.stages>li::after{content:"\2193";position:absolute;left:0;right:0;bottom:2px;text-align:center;font-size:1.5rem;line-height:28px;color:var(--gold)}
+.stages>li:last-child{padding-bottom:0}
+.stages>li:last-child::after{display:none}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 16px 14px}
+.sh{display:flex;align-items:center;gap:10px}
+.sh b{width:28px;height:28px;border-radius:50%;background:var(--indigo);color:var(--bg);display:grid;place-items:center;font-size:.85rem;flex:none}
+.sh strong{font-family:var(--display);font-weight:400;font-size:1.15rem;line-height:1.2}
+.sh a{margin-left:auto;font-size:.78rem;color:var(--muted);white-space:nowrap}
+.sd{display:block;margin-top:6px;font-size:.92rem;line-height:1.45}
+.sf{display:block;margin-top:8px;font-weight:600;font-size:.92rem;line-height:1.45;color:var(--indigo)}
+.se{display:block;font-size:.86rem;line-height:1.45;color:var(--muted);font-variant-numeric:tabular-nums}
+.dec{margin-top:10px;padding:8px 10px;border-radius:10px;background:var(--gold-soft);font-size:.86rem;line-height:1.4}
+.dec+.dec{margin-top:6px}
+.dec .q{display:flex;gap:7px;font-weight:700;color:var(--gold)}
+.dec .q::before{content:"";flex:none;width:10px;height:10px;margin-top:4px;background:var(--gold-bar);transform:rotate(45deg)}
+.dec .y,.dec .n{display:block;margin-top:3px;padding-left:17px}
+.dec .y b{color:var(--good)}
+.dec .n b{color:var(--bad)}
 .hub{background:var(--gold-soft);border-radius:16px;padding:14px 18px;margin-bottom:26px;text-align:center}
-.hub strong{display:block;font-family:var(--display);font-weight:400;font-size:1.35rem}
-.hub span{display:block;font-size:.9rem;color:var(--muted);margin-top:4px}
+.hub strong{display:block;font-family:var(--display);font-weight:400;font-size:1.3rem}
+.hub span{display:block;font-size:.88rem;color:var(--muted);margin-top:4px;line-height:1.45}
+.hub a{display:inline-block;margin-top:8px;font-size:.88rem;font-weight:700}
 .loopback{margin:14px 0 0;text-align:center;font-weight:600;color:var(--gold)}
 .ring{display:none}
-@media (min-width:1040px){
-  .wheel{position:relative;left:50%;transform:translateX(-50%);width:960px;max-width:calc(100vw - 64px)}
-  .wheel-stage{position:relative;height:880px}
+@media (min-width:1100px){
+  .cycle-stage{position:relative;height:1210px}
   .ring{display:block;position:absolute;inset:0;width:100%;height:100%}
-  .ring .rl{fill:none;stroke:var(--line);stroke-width:3;stroke-dasharray:3 9;stroke-linecap:round}
+  .ring .rl{fill:none;stroke-linejoin:round;stroke:var(--gold-bar);stroke-width:3;stroke-dasharray:2 10;stroke-linecap:round;opacity:.7}
   .ring .ah{fill:var(--gold-bar)}
-  .nodes{display:block;position:absolute;inset:0}
-  .nodes li{position:absolute;left:var(--x);top:var(--y);width:250px;padding:0;transform:translate(-50%,-50%)}
-  .nodes li::after{display:none}
-  .hub{position:absolute;left:50%;top:50%;width:230px;margin:0;transform:translate(-50%,-50%);border-radius:50%;aspect-ratio:1;display:flex;flex-direction:column;justify-content:center;padding:18px}
+  .stages{display:block;position:absolute;inset:0}
+  .stages>li{position:absolute;left:var(--x);top:var(--y);width:250px;padding:0;transform:translate(-50%,-50%)}
+  .stages>li::after{display:none}
+  .hub{position:absolute;left:50%;top:var(--hy,50%);width:230px;margin:0;transform:translate(-50%,-50%);border-radius:50%;aspect-ratio:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:22px}
   .loopback{display:none}
+}
+
+/* diagram 2: profit tree */
+.ptree{margin:56px 0 0;min-width:0}
+.root{background:var(--indigo);color:var(--bg);border-radius:16px;padding:14px 18px;max-width:460px}
+.root strong{display:block;font-family:var(--display);font-weight:400;font-size:1.3rem}
+.root code{display:block;font-family:var(--body);font-weight:600;font-size:.98rem;margin-top:4px;overflow-wrap:anywhere}
+.root span{display:block;font-size:.9rem;margin-top:4px;opacity:.85}
+.branches{list-style:none;margin:0;padding:0 0 0 18px;border-left:2px solid var(--line);margin-left:22px}
+.br{position:relative;padding:18px 0 0 18px;min-width:0}
+.br::before{content:"";position:absolute;left:-18px;top:38px;width:30px;border-top:2px solid var(--line)}
+.bh{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--indigo);border-radius:14px;padding:10px 14px}
+.bh strong{display:block;font-family:var(--display);font-weight:400;font-size:1.1rem;line-height:1.25}
+.bh .q{display:flex;gap:7px;margin-top:6px;font-size:.86rem;font-weight:700;color:var(--gold);line-height:1.4}
+.bh .q::before{content:"";flex:none;width:9px;height:9px;margin-top:4px;background:var(--gold-bar);transform:rotate(45deg)}
+.bh .q i{font-style:normal;color:var(--good);margin-left:auto;white-space:nowrap}
+.leaves{list-style:none;margin:0 0 0 16px;padding:4px 0 0 16px;border-left:2px solid var(--line)}
+.leaves li{position:relative;padding:8px 0 0;font-size:.92rem;line-height:1.45}
+.leaves li::before{content:"";position:absolute;left:-16px;top:18px;width:11px;border-top:2px solid var(--line)}
+.leaves .x{display:block;color:var(--muted);font-size:.86rem;font-variant-numeric:tabular-nums}
+.rejoin{display:inline-block;margin:10px 0 0 32px;padding:2px 10px;border-radius:99px;background:var(--good-soft);color:var(--good);font-size:.8rem;font-weight:700}
+.tree-foot{margin:22px 0 0;padding:12px 16px;border-radius:14px;background:var(--good-soft);font-weight:600}
+.tree-foot a{color:var(--good)}
+@media (min-width:1100px){
+  .root{margin:0 auto;text-align:center}
+  .branches{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;border-left:0;margin:0;padding:0;position:relative;margin-top:22px;padding-top:22px}
+  .branches::before{content:"";position:absolute;top:0;left:10%;right:10%;border-top:2px solid var(--line)}
+  .branches::after{content:"";position:absolute;top:-22px;left:50%;height:22px;border-left:2px solid var(--line)}
+  .br{padding:0}
+  .br::before{left:50%;top:-22px;width:0;height:22px;border-top:0;border-left:2px solid var(--line)}
+  .leaves{margin-left:14px}
+  .rejoin{margin-left:14px}
 }
 
 /* running example as a chain */
@@ -192,32 +235,40 @@ footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line);color:v
     <p>Price from your <b>landed cost</b>, decide your <b>floor price</b> before the customer walks in, never discount without checking the profit, and know the sales you need each day to cover rent.</p>
   </div>
 
-  <div class="wheel" id="wheel">
-    <p class="wheel-title">The Shop Maths loop</p>
-    <p class="wheel-sub">Read it clockwise, then start again with your real numbers. Tap a step to jump to its section.</p>
-    <div class="wheel-stage">
-      <svg class="ring" viewBox="0 0 960 880" aria-hidden="true" focusable="false">
-        <ellipse class="rl" cx="480" cy="440" rx="340" ry="330"/>
-        <polygon class="ah" points="-9,-10 13,0 -9,10" transform="translate(627.5 142.7) rotate(25.1)"/>
-        <polygon class="ah" points="-9,-10 13,0 -9,10" transform="translate(811.5 366.6) rotate(76.8)"/>
-        <polygon class="ah" points="-9,-10 13,0 -9,10" transform="translate(745.8 645.8) rotate(129.4)"/>
-        <polygon class="ah" points="-9,-10 13,0 -9,10" transform="translate(480.0 770.0) rotate(180.0)"/>
-        <polygon class="ah" points="-9,-10 13,0 -9,10" transform="translate(214.2 645.8) rotate(-129.4)"/>
-        <polygon class="ah" points="-9,-10 13,0 -9,10" transform="translate(148.5 366.6) rotate(-76.8)"/>
-        <polygon class="ah" points="-9,-10 13,0 -9,10" transform="translate(332.5 142.7) rotate(-25.1)"/>
+  <div class="cycle wide" id="cycle">
+    <p class="fig-title">Diagram 1 · The Shop Cycle</p>
+    <p class="fig-sub">A <b>cycle diagram with decision points</b>. Follow it clockwise from the wholesale market to the customer and back. Gold boxes are decisions: <b>No</b> takes a short detour that rejoins the loop.</p>
+    <div class="cycle-stage">
+      <svg class="ring" viewBox="0 0 1000 1210" aria-hidden="true" focusable="false">
+        <polygon class="rl" points="500,140 800,300 870,650 665,1010 335,1010 132,650 190,275"/>
+        <polygon class="ah" points="-11,-12 15,0 -11,12" transform="translate(650.0 220.0) rotate(28.1)"/> <polygon class="ah" points="-11,-12 15,0 -11,12" transform="translate(841.4 506.8) rotate(78.7)"/> <polygon class="ah" points="-11,-12 15,0 -11,12" transform="translate(786.0 797.5) rotate(119.7)"/> <polygon class="ah" points="-11,-12 15,0 -11,12" transform="translate(500.0 1010.0) rotate(180.0)"/> <polygon class="ah" points="-11,-12 15,0 -11,12" transform="translate(215.6 798.2) rotate(-119.4)"/> <polygon class="ah" points="-11,-12 15,0 -11,12" transform="translate(154.9 501.8) rotate(-81.2)"/> <polygon class="ah" points="-11,-12 15,0 -11,12" transform="translate(345.0 207.5) rotate(-23.5)"/>
       </svg>
-      <div class="hub"><strong>Shop Maths</strong><span>Around the whole loop: why it matters (ch 1), first 90 days (ch 13), practice and cheat sheet (ch 15-16)</span></div>
-      <ol class="nodes" aria-label="Seven steps of shop maths, in order">
-      <li style="--x:50.00%;--y:12.50%"><a class="node" href="#margin"><span class="nh"><b>1</b><strong>LEARN</strong><em>ch 2-4</em></span><span class="nf">Margin = (SP − cost) ÷ SP<br>Markup = (SP − cost) ÷ cost</span><span class="ne">Cost 330, price 440 → margin 25%, markup 33%. Decide with margin.</span></a></li>
-      <li style="--x:77.69%;--y:26.62%"><a class="node" href="#cost"><span class="nh"><b>2</b><strong>COST</strong><em>ch 5</em></span><span class="nf">Landed cost = total spent ÷ sellable pieces</span><span class="ne">13,200 ÷ 38 = ₹347</span></a></li>
-      <li style="--x:84.53%;--y:58.34%"><a class="node" href="#bargain"><span class="nh"><b>3</b><strong>PRICE</strong><em>ch 6</em></span><span class="nf">Floor = cost ÷ (1 − min margin)<br>Tag = floor ÷ (1 − bargain)</span><span class="ne">347 ÷ 0.80 = ₹434 floor; 434 ÷ 0.80 = ₹543, tag ₹549</span></a></li>
-      <li style="--x:65.37%;--y:83.79%"><a class="node" href="#bargain"><span class="nh"><b>4</b><strong>BARGAIN</strong><em>ch 7</em></span><span class="nf">Margin on offer = (offer − cost) ÷ offer</span><span class="ne">₹450 offer → 103 ÷ 450 = 22.8%. Above floor, accept.</span></a></li>
-      <li style="--x:34.63%;--y:83.79%"><a class="node" href="#discount"><span class="nh"><b>5</b><strong>DISCOUNT</strong><em>ch 8</em></span><span class="nf">Sales needed = m ÷ (m − d)</span><span class="ne">0.30 ÷ (0.30 − 0.10) = 1.5×. 10% off needs 50% more sales.</span></a></li>
-      <li style="--x:15.47%;--y:58.34%"><a class="node" href="#breakeven"><span class="nh"><b>6</b><strong>SURVIVE</strong><em>ch 9</em></span><span class="nf">Break-even = fixed costs ÷ margin<br>Survival margin = costs ÷ sales</span><span class="ne">30,000 ÷ 0.28 = ₹1,07,143 a month, ₹4,121 a day</span></a></li>
-      <li style="--x:22.31%;--y:26.62%"><a class="node" href="#stock"><span class="nh"><b>7</b><strong>RUN</strong><em>ch 10-12, 14</em></span><span class="nf">Months of stock = pieces ÷ sold per month<br>Price before GST = price ÷ 1.05</span><span class="ne">300 ÷ 100 = 3 months; 549 ÷ 1.05 = ₹523</span></a></li>
+      <div class="hub" style="--hy:53.72%"><strong>Repeat every month</strong><span>Each loop uses real numbers from the last one. First 90 days: start small, learn, then reorder winners.</span><a href="#ptree">Profit too low? See Diagram 2</a></div>
+      <ol class="stages" aria-label="Seven stages of the shop cycle, in order">
+      <li style="--x:50.00%;--y:11.57%"><div class="stage"><span class="sh"><b>1</b><strong>Plan the buy</strong><a href="#stock">details</a></span><span class="sd">Check what sold, the coming festival or season, and cash in hand.</span><span class="sf">Months of stock = pieces ÷ sold per month</span><span class="se">300 ÷ 100 = 3 months. Over 6 means buy less.</span></div></li>
+      <li style="--x:80.00%;--y:24.79%"><div class="stage"><span class="sh"><b>2</b><strong>Buy at wholesale</strong><a href="#compete">details</a></span><span class="sd">Compare 2 or 3 suppliers, negotiate, always take a bill.</span><span class="sf">Ceiling margin = (market price − cost) ÷ market price</span><span class="se">(549 − 347) ÷ 549 = 36.8%</span><span class="dec" style="display:block"><span class="q">Does the price leave room under the market price?</span><span class="y"><b>Yes</b> → buy, go to 3</span><span class="n"><b>No</b> → negotiate, try another supplier, or skip the item. Rejoin at 2.</span></span></div></li>
+      <li style="--x:87.00%;--y:53.72%"><div class="stage"><span class="sh"><b>3</b><strong>Bring it in and cost it</strong><a href="#cost">details</a></span><span class="sd">Add transport, loading, packing and an allowance for damaged or unsold pieces.</span><span class="sf">Landed cost = total spent ÷ sellable pieces</span><span class="se">13,200 ÷ 38 = ₹347</span></div></li>
+      <li style="--x:66.50%;--y:83.47%"><div class="stage"><span class="sh"><b>4</b><strong>Price and tag</strong><a href="#bargain">details</a></span><span class="sd">Set the floor first, then a tag with bargaining room.</span><span class="sf">Floor = cost ÷ (1 − min margin)<br>Tag = floor ÷ (1 − bargain room)</span><span class="se">347 ÷ 0.80 = ₹434 floor. 434 ÷ 0.80 = ₹543, tag ₹549.</span><span class="dec" style="display:block"><span class="q">Is the ceiling margin above your survival margin?</span><span class="y"><b>Yes</b> → tag it, go to 5</span><span class="n"><b>No</b> → don't stock it, or keep it only to pull people in. Back to 1.</span></span></div></li>
+      <li style="--x:33.50%;--y:83.47%"><div class="stage"><span class="sh"><b>5</b><strong>Display and sell</strong><a href="#discount">details</a></span><span class="sd">Best sellers in front. Bundles. Bargain in small steps.</span><span class="sf">Margin on offer = (offer − cost) ÷ offer</span><span class="se">₹450 offer: 103 ÷ 450 = 22.8%. Before a discount: m ÷ (m − d) = 1.5× sales at 30% / 10%.</span><span class="dec" style="display:block"><span class="q">Is the offer at or above your floor (₹434)?</span><span class="y"><b>Yes</b> → sell, go to 6</span><span class="n"><b>No</b> → counter in small steps or let them go. Rejoin at 5.</span></span></div></li>
+      <li style="--x:13.20%;--y:53.72%"><div class="stage"><span class="sh"><b>6</b><strong>Record and close cash</strong><a href="#tools">details</a></span><span class="sd">Bill every sale, note what customers asked for, write down udhar.</span><span class="sf">Closing cash = opening + sales − expenses</span><span class="se">Match it with the billing app daily. Find a gap the same day.</span></div></li>
+      <li style="--x:19.00%;--y:22.73%"><div class="stage"><span class="sh"><b>7</b><strong>Review</strong><a href="#breakeven">details</a></span><span class="sd">Weekly: top 5 and slowest 5. Monthly: real margin vs target.</span><span class="sf">Break-even = fixed costs ÷ margin</span><span class="se">30,000 ÷ 0.28 = ₹1,07,143 a month, ₹4,121 a day</span><span class="dec" style="display:block"><span class="q">Is the item selling?</span><span class="y"><b>Yes</b> → reorder the winner</span><span class="n"><b>No</b> → mark it down on schedule. Both go back to 1.</span></span><span class="dec" style="display:block"><span class="q">Are sales above break-even?</span><span class="y"><b>Yes</b> → back to 1</span><span class="n"><b>No</b> → use the Profit Tree below, then back to 1.</span></span></div></li>
       </ol>
     </div>
-    <p class="loopback">↻ Then repeat from step 1 every month</p>
+    <p class="loopback">↻ Back to 1 with your real numbers</p>
+  </div>
+
+  <div class="ptree wide" id="ptree">
+    <p class="fig-title">Diagram 2 · The Profit Tree</p>
+    <p class="fig-sub">A <b>profit tree</b> (also called a driver tree). The formula at the top has only a few parts, and each branch changes one of them. Answer the question on a branch; if it is <b>Yes</b>, try its actions.</p>
+    <div class="root"><strong>Profit too low?</strong><code>Profit = (price − cost) × pieces sold − fixed costs</code><span>Pull one or two of these five levers</span></div>
+    <ul class="branches">
+        <li class="br"><div class="bh"><strong>Raise the price you get</strong><span class="q">Is the market ceiling above your tag?<i>Yes ↓</i></span></div><ul class="leaves"><li>Raise the tag where nearby shops allow<span class="x">₹549 → ₹579: margin 36.8% → 40.1%</span></li><li>Bargain in smaller steps and hold the floor</li><li>Add value you can explain: fit, fabric, free alteration</li><li>Stock more festive and wedding wear, where margins are higher</li></ul><span class="rejoin">→ back to 7, Review</span></li>
+        <li class="br"><div class="bh"><strong>Cut the cost, keep the price</strong><span class="q">Can the cost per piece come down?<i>Yes ↓</i></span></div><ul class="leaves"><li>Negotiate bulk, advance or repeat-order rates<span class="x">₹347 → ₹330 on a ₹549 tag: margin 36.8% → 39.9%</span></li><li>Compare or switch suppliers for the same item</li><li>Bring bigger lots per trip so transport per piece falls</li><li>Check pieces before paying to cut damaged stock</li></ul><span class="rejoin">→ back to 7, Review</span></li>
+        <li class="br"><div class="bh"><strong>Sell more pieces</strong><span class="q">Is footfall or conversion low?<i>Yes ↓</i></span></div><ul class="leaves"><li>Bundles instead of discounts<span class="x">"2 for ₹950"</span></li><li>Message repeat customers on WhatsApp before festivals</li><li>Fill missing sizes first</li><li>Cheap basics up front to pull people in</li></ul><span class="rejoin">→ back to 7, Review</span></li>
+        <li class="br"><div class="bh"><strong>Cut fixed costs</strong><span class="q">Is break-even sales out of reach?<i>Yes ↓</i></span></div><ul class="leaves"><li>Every ₹1,000 cut lowers break-even sales<span class="x">₹1,000 ÷ 0.28 = ₹3,571 less to sell each month</span></li><li>Review rent, electricity and staff hours</li><li>Use a free billing app before a paid plan</li><li>Pay yourself a fixed salary, never from the till</li></ul><span class="rejoin">→ back to 7, Review</span></li>
+        <li class="br"><div class="bh"><strong>Free up cash</strong><span class="q">Is cash stuck in stock or udhar?<i>Yes ↓</i></span></div><ul class="leaves"><li>Mark down on schedule<span class="x">Month 3: 15–20% off. Month 4: near cost.</span></li><li>Reorder only winners</li><li>Udhar only with a limit, written with a date</li><li>Keep 2 to 3 months of fixed costs as reserve</li></ul><span class="rejoin">→ back to 7, Review</span></li>
+    </ul>
+    <p class="tree-foot">Try one or two levers for a month, then check again at step 7 (Review) in <a href="#cycle">the Shop Cycle</a>.</p>
   </div>
 </header>
 
