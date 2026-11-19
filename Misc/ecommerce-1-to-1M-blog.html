@@ -1,0 +1,1375 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ecommerce 1 to 1M Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#fff8e7; --card:#ffffff; --ink:#1b1b2f; --muted:#555a6e;
+  --yellow:#ffd93d; --red:#ff4d4d; --blue:#3a86ff; --green:#2ec27e; --purple:#8e5cf7;
+  --code-bg:#1b1b2f; --code-fg:#f7f1dc; --dots:rgba(27,27,47,.09); --shadow:#1b1b2f; --soft:rgba(127,127,127,.18);
+}
+:root[data-theme="dark"]{
+  --paper:#14142a; --card:#1f1f3d; --ink:#f4efe0; --muted:#b4b8cf;
+  --yellow:#ffd93d; --red:#ff6b6b; --blue:#5b9bff; --green:#3ddc97; --purple:#a98bff;
+  --code-bg:#0c0c1c; --code-fg:#f7f1dc; --dots:rgba(255,255,255,.06); --shadow:#000;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:20px;-webkit-text-size-adjust:100%;text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:'Comic Neue','Comic Sans MS',cursive;font-weight:700;font-size:21px;line-height:1.6;color:var(--ink);background:var(--paper);
+  background-image:radial-gradient(var(--dots) 1.4px,transparent 1.6px);background-size:16px 16px}
+h1,h2,h3,.bang{font-family:'Bangers','Comic Neue',cursive;font-weight:400;letter-spacing:.04em;line-height:1.1}
+a{color:var(--blue)}
+code{font-family:'JetBrains Mono',monospace;font-size:.85em;background:var(--yellow);color:#1b1b2f;padding:1px 7px;border-radius:6px;border:2px solid #1b1b2f;font-weight:700;white-space:nowrap}
+pre code{background:none;border:0;padding:0;color:inherit;white-space:pre;font-size:16px}
+#progress{position:fixed;top:0;left:0;height:8px;width:0;background:linear-gradient(90deg,var(--red),var(--yellow),var(--blue));z-index:100;border-bottom:3px solid #1b1b2f}
+.shell{display:grid;grid-template-columns:270px minmax(0,1fr);min-height:100vh}
+nav.side{position:sticky;top:0;height:100vh;height:100dvh;overflow:auto;padding:26px 18px;background:var(--yellow);border-right:5px solid #1b1b2f;color:#1b1b2f}
+nav.side .logo{font-family:'Bangers';font-size:32px;line-height:1;margin-bottom:4px;text-shadow:3px 3px 0 #fff}
+nav.side small{display:block;margin-bottom:14px;font-size:15px}
+nav.side a{display:flex;gap:10px;align-items:center;padding:6px 12px;margin:6px 0;border:3px solid #1b1b2f;border-radius:12px;background:#fff;color:#1b1b2f;text-decoration:none;font-size:16.5px;line-height:1.25;box-shadow:3px 3px 0 #1b1b2f;transition:transform .15s}
+nav.side a:hover{transform:translate(-2px,-2px)}
+nav.side a.active{background:var(--red);color:#fff}
+nav.side a .n{font-family:'Bangers';font-size:20px;min-width:24px}
+nav.side a.done::after{content:"✔";margin-left:auto;color:var(--green);font-size:18px}
+nav.side a.active.done::after{color:#fff}
+.tools{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.btn{font-family:'Bangers';letter-spacing:.05em;font-size:18px;padding:6px 14px;border:3px solid #1b1b2f;border-radius:12px;background:var(--red);color:#fff;cursor:pointer;box-shadow:3px 3px 0 #1b1b2f}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #1b1b2f}
+.btn.blue{background:var(--blue)} .btn.green{background:var(--green);color:#1b1b2f} .btn.yellow{background:var(--yellow);color:#1b1b2f} .btn.purple{background:var(--purple)} .btn.small{font-size:15px;padding:3px 10px}
+.btn.sel{outline:4px solid var(--ink);outline-offset:2px}
+#menu{display:none}
+main{padding:0 clamp(16px,4vw,56px) 80px;max-width:1060px;width:100%;min-width:0;overflow-wrap:break-word}
+img,svg,video{max-width:100%}
+#backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:85}
+#backdrop.show{display:block}
+.hero{margin:36px 0 10px;padding:34px clamp(18px,4vw,44px);border:5px solid #1b1b2f;border-radius:22px;background:var(--blue);color:#fff;box-shadow:10px 10px 0 var(--shadow);position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(rgba(255,255,255,.25) 2px,transparent 2.4px);background-size:14px 14px;opacity:.6;pointer-events:none}
+.hero h1{font-size:clamp(38px,7vw,74px);margin:0;text-shadow:5px 5px 0 #1b1b2f;position:relative}
+.hero p{position:relative;font-size:20px;max-width:640px}
+.hero .pow{position:absolute;right:20px;top:20px;font-family:'Bangers';font-size:60px;color:var(--yellow);-webkit-text-stroke:3px #1b1b2f;transform:rotate(12deg);animation:pulse 2s infinite}
+@keyframes pulse{50%{transform:rotate(12deg) scale(1.12)}}
+section.part{margin-top:64px}
+.part-head{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.part-num{font-family:'Bangers';font-size:52px;background:var(--red);color:#fff;border:4px solid #1b1b2f;border-radius:50%;width:84px;height:84px;display:grid;place-items:center;box-shadow:5px 5px 0 var(--shadow);flex:none}
+.part h2{font-size:clamp(30px,5vw,46px);margin:0;text-shadow:3px 3px 0 var(--yellow)}
+:root[data-theme="dark"] .part h2{text-shadow:3px 3px 0 #000}
+.part h3{font-size:28px;margin:34px 0 8px;color:var(--red)}
+.card{background:var(--card);border:4px solid #1b1b2f;border-radius:18px;padding:20px 24px;margin:18px 0;box-shadow:6px 6px 0 var(--shadow)}
+.card>:first-child{margin-top:0}.card>:last-child{margin-bottom:0}
+.tldr{background:var(--yellow);color:#1b1b2f;position:relative;padding-top:30px;margin-top:30px}
+.tldr::before{content:"IN ONE LINE!";position:absolute;top:-18px;left:18px;font-family:'Bangers';font-size:22px;background:var(--red);color:#fff;padding:2px 14px;border:3px solid #1b1b2f;border-radius:10px;transform:rotate(-3deg)}
+.bubble{position:relative;background:#fff;color:#1b1b2f;border:4px solid #1b1b2f;border-radius:24px;padding:14px 20px;margin:20px 0 30px 6px;max-width:700px}
+.bubble::after{content:"";position:absolute;left:36px;bottom:-22px;border:12px solid transparent;border-top:18px solid #1b1b2f}
+.bubble::before{content:"";position:absolute;left:40px;bottom:-14px;border:8px solid transparent;border-top:13px solid #fff;z-index:1}
+.note{border-left:10px solid var(--green)} .warn{border-left:10px solid var(--red)} .tip{border-left:10px solid var(--purple)}
+.label{font-family:'Bangers';font-size:22px;letter-spacing:.05em}
+.note .label{color:var(--green)} .warn .label{color:var(--red)} .tip .label{color:var(--purple)}
+.jargon{border:4px dashed var(--blue)} .jargon .label{color:var(--blue)}
+dl.terms{margin:8px 0 0} dl.terms dt{font-family:'Bangers';font-size:22px;color:var(--red);margin-top:10px} dl.terms dd{margin:0}
+ul.checks{list-style:none;padding:0} ul.checks li{padding:6px 0 6px 38px;position:relative}
+ul.checks li::before{content:"✔";position:absolute;left:4px;top:2px;font-size:22px;color:var(--green)}
+ul.cons{list-style:none;padding:0} ul.cons li{padding:6px 0 6px 38px;position:relative}
+ul.cons li::before{content:"✘";position:absolute;left:6px;top:2px;font-size:22px;color:var(--red)}
+ol.steps{counter-reset:s;list-style:none;padding:0}
+ol.steps li{counter-increment:s;padding:8px 0 8px 54px;position:relative}
+ol.steps li::before{content:counter(s);position:absolute;left:0;top:4px;width:38px;height:38px;border-radius:50%;background:var(--blue);color:#fff;border:3px solid #1b1b2f;display:grid;place-items:center;font-family:'Bangers';font-size:22px}
+.code{position:relative;margin:14px 0}
+.code .cap{display:inline-block;font-family:'Bangers';letter-spacing:.05em;background:var(--blue);color:#fff;border:3px solid #1b1b2f;border-bottom:0;border-radius:10px 10px 0 0;padding:2px 14px;font-size:17px}
+pre{margin:0;background:var(--code-bg);color:var(--code-fg);border:4px solid #1b1b2f;border-radius:0 14px 14px 14px;padding:16px 18px;overflow:auto;box-shadow:5px 5px 0 var(--shadow);line-height:1.5}
+.copy{position:absolute;right:10px;top:34px;font-family:'Bangers';font-size:15px;padding:2px 10px;border:2px solid #1b1b2f;border-radius:8px;background:var(--yellow);cursor:pointer;color:#1b1b2f}
+table{border-collapse:separate;border-spacing:0;width:100%;border:4px solid #1b1b2f;border-radius:14px;overflow:hidden;background:var(--card);font-size:18px;box-shadow:5px 5px 0 var(--shadow)}
+th{background:var(--red);color:#fff;font-family:'Bangers';letter-spacing:.05em;font-size:20px;font-weight:400;text-align:left}
+th,td{padding:9px 12px;border-bottom:2px solid #1b1b2f;vertical-align:top}
+tr:last-child td{border-bottom:0}
+.scroll{overflow-x:auto}
+/* demos */
+.demo{background:var(--card);border:4px solid #1b1b2f;border-radius:18px;padding:22px;margin:26px 0;box-shadow:6px 6px 0 var(--shadow);position:relative}
+.demo .tag{position:absolute;top:-16px;right:18px;background:var(--purple);color:#fff;font-family:'Bangers';font-size:20px;padding:1px 14px;border:3px solid #1b1b2f;border-radius:10px;transform:rotate(2deg)}
+.demo h4{margin:0 0 8px;font-family:'Bangers';font-size:24px;letter-spacing:.04em}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.out{background:var(--soft);border:3px dashed var(--ink);border-radius:12px;padding:8px 12px;min-height:46px;font-size:18px;margin-top:10px}
+.bar-row{display:grid;grid-template-columns:150px 1fr 100px;gap:10px;align-items:center;margin:8px 0;font-size:17px}
+.track{height:28px;background:var(--soft);border:3px solid #1b1b2f;border-radius:10px;overflow:hidden}
+.fill{height:100%;width:0;border-radius:6px 0 0 6px;transition:width .9s cubic-bezier(.2,.8,.2,1);background:var(--blue)}
+.fill.r{background:var(--red)}.fill.g{background:var(--green)}.fill.y{background:var(--yellow)}.fill.p{background:var(--purple)}
+.bar-row b{font-family:'Bangers';font-size:19px;font-weight:400;letter-spacing:.04em}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.pill{display:inline-block;border:3px solid #1b1b2f;border-radius:999px;padding:1px 12px;font-size:17px;background:var(--yellow);color:#1b1b2f;margin:2px}
+.pill.r{background:var(--red);color:#fff}.pill.g{background:var(--green)}.pill.b{background:var(--blue);color:#fff}
+input[type=range]{accent-color:var(--red);width:200px;max-width:100%}
+input[type=number],select{font:inherit;font-weight:700;padding:3px 8px;border:3px solid #1b1b2f;border-radius:8px;background:var(--card);color:var(--ink);width:110px}
+select{width:auto}
+label.inl{display:inline-flex;gap:6px;align-items:center;font-size:18px}
+/* svg diagrams */
+figure{margin:20px 0;background:var(--card);border:4px solid #1b1b2f;border-radius:18px;padding:14px;box-shadow:6px 6px 0 var(--shadow)}
+figure svg{display:block;width:100%;height:auto;margin:0 auto}
+figcaption{font-size:17px;color:var(--muted);margin-top:8px;text-align:center}
+svg text{font-family:'Comic Neue',sans-serif;font-weight:700;font-size:15px;fill:var(--ink)}
+svg .big{font-size:18px} svg .sm{font-size:13px} svg .bang{font-family:'Bangers';font-size:18px;font-weight:400;letter-spacing:.04em}
+svg .nb{fill:var(--card);stroke:var(--ink);stroke-width:2.6}
+svg .node rect,svg .node circle,svg .node ellipse{fill:var(--card);stroke:var(--ink);stroke-width:2.6;transition:fill .3s}
+svg .node.on rect,svg .node.on circle,svg .node.on ellipse{fill:var(--yellow)} svg .node.on text{fill:#1b1b2f}
+svg .node.bad rect,svg .node.bad circle{fill:var(--red)} svg .node.bad text{fill:#fff}
+svg .node.good rect,svg .node.good circle{fill:var(--green)} svg .node.good text{fill:#1b1b2f}
+svg .node.blue rect{fill:var(--blue)} svg .node.blue text{fill:#fff}
+svg .node.dim{opacity:.35}
+svg .node{cursor:default} svg .node.click{cursor:pointer}
+svg .ar{stroke:var(--ink);stroke-width:2.5;fill:none;marker-end:url(#arw)}
+svg .ar.red{stroke:var(--red);marker-end:url(#arwr)} svg .ar.blue{stroke:var(--blue);marker-end:url(#arwb)} svg .ar.green{stroke:var(--green);marker-end:url(#arwg)}
+svg .ar.dash{stroke-dasharray:6 5} svg .ar.dim{opacity:.25} svg .ar.on{stroke-width:4}
+svg .ln{stroke:var(--ink);stroke-width:2;fill:none} svg .zone{fill:none;stroke:var(--ink);stroke-width:2;stroke-dasharray:7 5;opacity:.6}
+svg .dot{fill:var(--red);stroke:var(--ink);stroke-width:2}
+#arw path{fill:var(--ink)} #arwr path{fill:var(--red)} #arwb path{fill:var(--blue)} #arwg path{fill:var(--green)}
+.flow-dot{animation:flow 2.4s linear infinite}
+@keyframes flow{0%{offset-distance:0%}100%{offset-distance:100%}}
+.dashmove{stroke-dasharray:8 6;animation:dm 1s linear infinite}
+@keyframes dm{to{stroke-dashoffset:-28}}
+/* quiz */
+.quiz{border:4px solid #1b1b2f;border-radius:18px;background:var(--card);padding:18px 22px;margin:30px 0 10px;box-shadow:6px 6px 0 var(--shadow)}
+.quiz h4{margin:0 0 6px;font-family:'Bangers';font-size:26px;color:var(--purple)}
+.quiz .q{margin:14px 0 4px}
+.quiz .opt{display:block;width:100%;text-align:left;margin:6px 0;padding:6px 12px;font:inherit;font-weight:700;font-size:18px;border:3px solid #1b1b2f;border-radius:10px;background:var(--card);color:var(--ink);cursor:pointer}
+.quiz .opt:hover{background:var(--soft)}
+.quiz .opt.right{background:var(--green);color:#1b1b2f}.quiz .opt.wrong{background:var(--red);color:#fff}
+.quiz .why{font-size:17px;color:var(--muted);margin:2px 0 0;display:none}.quiz .why.show{display:block}
+.donebar{display:flex;align-items:center;gap:12px;margin-top:22px;flex-wrap:wrap}
+.donemsg{font-family:'Bangers';font-size:24px;color:var(--green);opacity:0;transition:opacity .3s}
+.donemsg.show{opacity:1}
+footer{margin-top:80px;text-align:center;font-size:15px;color:var(--muted)}
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr}
+  nav.side{position:fixed;left:0;top:0;width:290px;max-width:85vw;z-index:90;transform:translateX(-105%);transition:transform .25s}
+  nav.side.open{transform:none}
+  #menu{display:block;position:fixed;top:14px;right:14px;z-index:80}
+  .two,.three{grid-template-columns:1fr}
+  .bar-row{grid-template-columns:100px 1fr 70px}
+  .hero .pow{font-size:40px}
+  figure{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  figure svg{min-width:760px}
+  figure svg#rg-svg{min-width:0}
+  figure::before{content:"← swipe the diagram →";display:block;font-size:14px;color:var(--muted);text-align:center}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<marker id="arw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z"/></marker>
+<marker id="arwr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z"/></marker>
+<marker id="arwb" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z"/></marker>
+<marker id="arwg" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z"/></marker>
+</defs></svg>
+<div id="progress"></div>
+<div id="backdrop"></div>
+<button class="btn" id="menu">☰ Menu</button>
+<div class="shell">
+<nav class="side" id="side">
+  <div class="logo">1 → 1M<br>GUIDE</div>
+  <small>Build an ecommerce app, step by step</small>
+  <a href="#p0"><span class="n">0</span>Welcome</a>
+  <a href="#p1"><span class="n">1</span>Requirements &amp; APIs</a>
+  <a href="#p2"><span class="n">2</span>Hosting</a>
+  <a href="#p3"><span class="n">3</span>CDN, DNS &amp; Database</a>
+  <a href="#p4"><span class="n">4</span>Logs, Monitoring, SPOF</a>
+  <a href="#p5"><span class="n">5</span>Tech Choices &amp; Cost</a>
+  <a href="#p6"><span class="n">6</span>Capacity Estimation</a>
+  <a href="#p7"><span class="n">7</span>Load Balancing</a>
+  <a href="#p8"><span class="n">8</span>Caching &amp; Hash Ring</a>
+  <a href="#p9"><span class="n">9</span>Cache Writes &amp; Eviction</a>
+  <a href="#p10"><span class="n">10</span>Spikes &amp; Rate Limits</a>
+  <a href="#p11"><span class="n">11</span>Microservices &amp; Contracts</a>
+  <a href="#p12"><span class="n">12</span>Analytics Pipelines</a>
+  <a href="#p13"><span class="n">13</span>Recap &amp; Cheat Sheet</a>
+  <a href="#gloss"><span class="n">A-Z</span>Glossary</a>
+  <div class="tools"><button class="btn blue small" id="theme">🌙 Dark</button><button class="btn small" id="reset">Reset</button></div>
+</nav>
+<main>
+
+<header class="hero" id="p0">
+  <div class="pow">BOOM!</div>
+  <h1>FROM 1 TO 1 MILLION USERS</h1>
+  <p>Follow one T-shirt shop as it grows from 100 sales a day to a 70-engineer company. Every problem it hits teaches one big idea in system design.</p>
+</header>
+
+<section class="part" id="p0b">
+<div class="card tldr"><p>We solve problems <b>one at a time</b>. Each time the business hurts, we add the <b>simplest fix</b> that works, then move on. That is all system design is.</p></div>
+
+<h3>The story so far</h3>
+<div class="bubble">A friend sells T-shirts on social media. They want to sell online. You are the engineer they call. Let's go!</div>
+
+<figure>
+<svg viewBox="0 0 960 250" role="img" aria-label="Timeline of the shop growing from Shopify at 100 sales a day to a data pipeline with 70 engineers">
+  <line class="ln" x1="40" y1="120" x2="920" y2="120"/>
+  <g class="node on"><rect x="30" y="60" width="130" height="120" rx="12"/><text class="bang" x="95" y="90" text-anchor="middle">DAY 1</text><text class="sm" x="95" y="112" text-anchor="middle">Shopify store</text><text class="sm" x="95" y="130" text-anchor="middle">100 sales/day</text><text class="sm" x="95" y="148" text-anchor="middle">Parts 1-4</text></g>
+  <g class="node"><rect x="190" y="60" width="130" height="120" rx="12"/><text class="bang" x="255" y="90" text-anchor="middle">MONTH 3</text><text class="sm" x="255" y="112" text-anchor="middle">Own servers</text><text class="sm" x="255" y="130" text-anchor="middle">Big cloud bill</text><text class="sm" x="255" y="148" text-anchor="middle">Parts 5-7</text></g>
+  <g class="node"><rect x="350" y="60" width="130" height="120" rx="12"/><text class="bang" x="415" y="90" text-anchor="middle">MONTH 6</text><text class="sm" x="415" y="112" text-anchor="middle">Slow pages</text><text class="sm" x="415" y="130" text-anchor="middle">Caching</text><text class="sm" x="415" y="148" text-anchor="middle">Parts 8-9</text></g>
+  <g class="node"><rect x="510" y="60" width="130" height="120" rx="12"/><text class="bang" x="575" y="90" text-anchor="middle">FLASH SALE</text><text class="sm" x="575" y="112" text-anchor="middle">1M requests</text><text class="sm" x="575" y="130" text-anchor="middle">Rate limits</text><text class="sm" x="575" y="148" text-anchor="middle">Part 10</text></g>
+  <g class="node"><rect x="670" y="60" width="130" height="120" rx="12"/><text class="bang" x="735" y="90" text-anchor="middle">15 PEOPLE</text><text class="sm" x="735" y="112" text-anchor="middle">Team too big</text><text class="sm" x="735" y="130" text-anchor="middle">Microservices</text><text class="sm" x="735" y="148" text-anchor="middle">Part 11</text></g>
+  <g class="node"><rect x="830" y="60" width="110" height="120" rx="12"/><text class="bang" x="885" y="90" text-anchor="middle">70 PEOPLE</text><text class="sm" x="885" y="112" text-anchor="middle">Need data</text><text class="sm" x="885" y="130" text-anchor="middle">Analytics</text><text class="sm" x="885" y="148" text-anchor="middle">Part 12</text></g>
+  <circle class="dot" id="tl-dot" cx="95" cy="205" r="9"/>
+  <text class="sm" x="480" y="238" text-anchor="middle">The story moves from left to right</text>
+</svg>
+<figcaption>The whole course on one line: each stage adds one idea.</figcaption>
+</figure>
+
+<h3>Three questions to judge every design</h3>
+<p>The instructor uses the same three yardsticks again and again. Keep them in your pocket.</p>
+<div class="three">
+  <div class="card"><span class="label" style="color:var(--blue)">1. Simplicity</span><p>Can people understand it and change it easily?</p></div>
+  <div class="card"><span class="label" style="color:var(--green)">2. Fidelity</span><p>Does it really do what the business asked for?</p></div>
+  <div class="card"><span class="label" style="color:var(--red)">3. Cost</span><p>Can we afford to build it and run it?</p></div>
+</div>
+<div class="card tip"><span class="label">Golden rule</span><p>Solve the <b>business</b> problem, not the technical one. If a tool already solves it, use the tool.</p></div>
+<div class="card note"><span class="label">About these notes</span><p>These notes cover 14 lecture files (parts 1 to 12). One reading file, "Distributed systems and scaling", was empty, so nothing from it is included. A few numbers in the lectures had small slips. Where that happened, these notes use the corrected math and say so.</p></div>
+<div class="donebar"><button class="btn green done-btn" data-p="p0">Mark part done ✔</button><span class="donemsg">Part 0 done! 🎉</span></div>
+</section>
+
+<!-- ================= PART 1 ================= -->
+<section class="part" id="p1">
+<div class="part-head"><div class="part-num">1</div><h2>Requirements &amp; APIs</h2></div>
+<div class="card tldr"><p>Do not build everything yourself. Use <b>Shopify</b> for the store, then add a small layer of your own code only where Shopify cannot help.</p></div>
+
+<h3>The problem</h3>
+<div class="bubble">Hi! I sell T-shirts. I want an online shop. Should I use Amazon?</div>
+<table>
+<tr><th>Option</th><th>Good</th><th>Bad</th></tr>
+<tr><td>Amazon</td><td>Huge reach</td><td>You cannot change the look. Its recommendations may push other sellers.</td></tr>
+<tr><td>Shopify</td><td>Your own page. Ready-made payment and delivery add-ons.</td><td>You depend on Shopify's limits.</td></tr>
+</table>
+<p>The founder picks <b>Shopify</b>. Three months later the shop makes about <b>100 sales a day</b>. Two things hurt:</p>
+<ul class="cons">
+<li><b>No delivery tracking.</b> Support staff must log in to a portal, check the status, and tell the customer by hand.</li>
+<li><b>International cards fail.</b> The payment gateway rejects foreign cards and currencies. About 10 to 20 percent of sales are lost.</li>
+</ul>
+<p>Shopify cannot fix this and a support ticket already failed. So now we write code. This is where system design starts.</p>
+
+<h3>The fix: a thin wrapper around Shopify</h3>
+<p>Shopify keeps a link that sends the customer to <i>your</i> payment page. A second link opens <i>your</i> tracking page. Both pages talk to your own server, which stores the payment and delivery status.</p>
+<figure>
+<svg viewBox="0 0 900 290" role="img" aria-label="Customer buys on Shopify, is redirected to a custom payment page or tracking page, both call the API server which stores data in a database">
+  <g class="node"><rect x="20" y="122" width="130" height="56" rx="12"/><text x="85" y="155" text-anchor="middle">Customer</text></g>
+  <g class="node on"><rect x="210" y="122" width="130" height="56" rx="12"/><text x="275" y="155" text-anchor="middle">Shopify store</text></g>
+  <g class="node blue"><rect x="410" y="40" width="130" height="56" rx="12"/><text x="475" y="64" text-anchor="middle">Payment page</text><text class="sm" x="475" y="82" text-anchor="middle">(yours)</text></g>
+  <g class="node blue"><rect x="410" y="204" width="130" height="56" rx="12"/><text x="475" y="228" text-anchor="middle">Tracking page</text><text class="sm" x="475" y="246" text-anchor="middle">(yours)</text></g>
+  <g class="node good"><rect x="600" y="122" width="120" height="56" rx="12"/><text x="660" y="146" text-anchor="middle">API server</text><text class="sm" x="660" y="164" text-anchor="middle">your code</text></g>
+  <g class="node"><rect x="790" y="122" width="90" height="56" rx="12"/><text x="835" y="155" text-anchor="middle">Database</text></g>
+  <g class="node"><rect x="600" y="14" width="280" height="40" rx="12"/><text class="sm" x="740" y="39" text-anchor="middle">Razorpay · PayPal · Stripe</text></g>
+  <path class="ar dashmove" d="M150 150H208"/><text class="sm" x="180" y="140" text-anchor="middle">buys</text>
+  <path class="ar blue dashmove" d="M340 135L408 80"/><text class="sm" x="352" y="94">redirect</text>
+  <path class="ar blue dashmove" d="M340 165L408 222"/><text class="sm" x="352" y="216">redirect</text>
+  <path class="ar dashmove" d="M540 80L598 132"/><path class="ar dashmove" d="M540 224L598 168"/>
+  <text class="sm" x="590" y="205" text-anchor="end">asks status</text>
+  <path class="ar dashmove" d="M720 150H788"/><text class="sm" x="754" y="140" text-anchor="middle">saves</text>
+  <path class="ar dashmove" d="M540 56L598 40"/>
+</svg>
+<figcaption>Shopify stays in the middle. Two redirect links hand the customer to your pages, and your API server remembers the status.</figcaption>
+</figure>
+
+<div class="card jargon"><span class="label">Jargon Buster</span><dl class="terms">
+<dt>Black box</dt><dd>A tool you use without knowing its insides (Shopify, Stripe). You only learn how to talk to it.</dd>
+<dt>API</dt><dd>An agreed way for one program to ask another for something. Same input format in, same output format out.</dd>
+</dl></div>
+
+<div class="demo"><span class="tag">TRY IT</span>
+<h4>An API is just a function</h4>
+<p>Send the order ID. Get the payment status back. That is the whole contract.</p>
+<div class="row"><button class="btn blue" id="api-pay">POST /payment-status</button><button class="btn purple" id="api-del">POST /delivery-status</button></div>
+<div class="two"><div class="code"><span class="cap">Request</span><pre><code id="api-req">{ "order_id": "A-1021" }</code></pre></div>
+<div class="code"><span class="cap">Response</span><pre><code id="api-out">click a button...</code></pre></div></div>
+</div>
+
+<div class="demo"><span class="tag">SCORECARD</span>
+<h4>Score each option on the 3 yardsticks</h4>
+<div class="row"><button class="btn sel" data-sc="amazon">Amazon</button><button class="btn" data-sc="shopify">Shopify only</button><button class="btn" data-sc="wrap">Shopify + wrapper</button></div>
+<div class="bar-row"><span>Simplicity</span><div class="track"><div class="fill" id="sc-sim"></div></div><b id="sc-sim-n"></b></div>
+<div class="bar-row"><span>Fidelity</span><div class="track"><div class="fill g" id="sc-fid"></div></div><b id="sc-fid-n"></b></div>
+<div class="bar-row"><span>Cost fit</span><div class="track"><div class="fill y" id="sc-cost"></div></div><b id="sc-cost-n"></b></div>
+<div class="out" id="sc-out"></div>
+<p style="font-size:16px;color:var(--muted)">These scores are a teaching aid made up for these notes, not numbers from the course.</p>
+</div>
+
+<div class="quiz" data-q="p1"></div>
+<div class="donebar"><button class="btn green done-btn" data-p="p1">Mark part done ✔</button><span class="donemsg">Part 1 done! 🎉</span></div>
+</section>
+
+<!-- ================= PART 2 ================= -->
+<section class="part" id="p2">
+<div class="part-head"><div class="part-num">2</div><h2>Hosting: Server or Serverless?</h2></div>
+<div class="card tldr"><p>Where does your code run? At the start, pick <b>serverless</b>. It is the easiest. Switch later when the bill or the traffic grows.</p></div>
+
+<h3>Why not a laptop at home?</h3>
+<p>A spare laptop can answer requests. But hardware breaks, power goes out, and you might be locked out of the house. A cloud company can replace a broken machine in minutes. A hobby site can live with downtime. A real business cannot.</p>
+
+<h3>Two cloud choices</h3>
+<div class="two">
+<div class="card"><span class="label" style="color:var(--blue)">Managed server</span><p>The cloud company looks after the machine and the operating system. <b>You</b> deploy the code and restart it if it crashes.</p></div>
+<div class="card"><span class="label" style="color:var(--purple)">Serverless</span><p>You only write code and hand it to AWS. You do not even know if a server exists. You just need answers fast enough.</p></div>
+</div>
+<div class="scroll"><table>
+<tr><th></th><th>Own laptop</th><th>Managed server</th><th>Serverless</th></tr>
+<tr><td>Who fixes hardware?</td><td>You</td><td>Cloud</td><td>Cloud</td></tr>
+<tr><td>Who installs and updates the OS?</td><td>You</td><td>Cloud</td><td>Cloud</td></tr>
+<tr><td>Who deploys code?</td><td>You</td><td>You</td><td>You</td></tr>
+<tr><td>Who scales up and down?</td><td>You, by hand</td><td>You, by hand</td><td>Automatic</td></tr>
+<tr><td>Cost at big scale</td><td>Hidden costs</td><td>Usually lower</td><td>Higher</td></tr>
+</table></div>
+
+<h3>Cost vs. spikes</h3>
+<p>The lecture gives a simple example: 10,000 requests might cost about $10 on serverless and about $5 on a managed machine. Serverless is also slower to react. It adds capacity only <i>after</i> requests arrive, so early customers may wait. With a managed fleet you can book extra machines before a big sale, such as Diwali or New Year.</p>
+<p>But serverless has a great side: after the sale you stop paying for the extra capacity. At low volume it is cheaper, and you do almost no work.</p>
+
+<figure>
+<svg viewBox="0 0 540 270" role="img" aria-label="Cost against requests: serverless starts cheaper but climbs faster and crosses the managed server line">
+  <line class="ln" x1="50" y1="230" x2="510" y2="230"/><line class="ln" x1="50" y1="230" x2="50" y2="20"/>
+  <line x1="60" y1="210" x2="500" y2="45" stroke="var(--purple)" stroke-width="5"/>
+  <line x1="60" y1="150" x2="500" y2="110" stroke="var(--blue)" stroke-width="5"/>
+  <circle class="dot" cx="270" cy="130" r="8"/>
+  <text x="275" y="160">crossover</text>
+  <text x="440" y="36" fill="var(--purple)" style="fill:var(--purple)">Serverless</text>
+  <text x="400" y="132" style="fill:var(--blue)">Managed server</text>
+  <text class="sm" x="280" y="254" text-anchor="middle">Requests per month →</text>
+  <text class="sm" x="20" y="130" transform="rotate(-90 20 130)" text-anchor="middle">Monthly cost →</text>
+</svg>
+<figcaption>Illustrative shape only. Serverless wins when traffic is small. Managed servers win once traffic is large and steady.</figcaption>
+</figure>
+
+<div class="demo"><span class="tag">SPIKE RACE</span>
+<h4>A sale starts. Who is ready?</h4>
+<div class="row"><button class="btn" id="spike-btn">▶ Start the sale</button></div>
+<div class="bar-row"><span>Customers waiting</span><div class="track"><div class="fill r" id="sp-need"></div></div><b>demand</b></div>
+<div class="bar-row"><span>Serverless</span><div class="track"><div class="fill p" id="sp-serv"></div></div><b id="sp-serv-n">-</b></div>
+<div class="bar-row"><span>Pre-booked fleet</span><div class="track"><div class="fill" id="sp-man"></div></div><b id="sp-man-n">-</b></div>
+<div class="out" id="sp-out">Serverless reacts after demand shows up. A pre-booked fleet is already there, but you paid for it in advance.</div>
+</div>
+
+<div class="card warn"><span class="label">Decision</span><p>Serverless wins on <b>ease</b>. Its weak points (cost and slow reaction) are tiny now and only get big later. So we start serverless. Scaling managed servers comes in Part 7.</p></div>
+
+<div class="quiz" data-q="p2"></div>
+<div class="donebar"><button class="btn green done-btn" data-p="p2">Mark part done ✔</button><span class="donemsg">Part 2 done! 🎉</span></div>
+</section>
+
+<!-- ================= PART 3 ================= -->
+<section class="part" id="p3">
+<div class="part-head"><div class="part-num">3</div><h2>CDN, DNS &amp; Database</h2></div>
+<div class="card tldr"><p>Put <b>pages and images</b> on a CDN so they load from a nearby server. Keep <b>changing data</b> (like stock) on your own server. DNS turns a name into an address.</p></div>
+
+<h3>Web pages are just files</h3>
+<p>A page is HTML, CSS and JavaScript files. They have to live somewhere. You could serve them from your server. Better: store them in <b>S3</b> and let a <b>CDN</b> copy them to many places around the world.</p>
+<div class="card jargon"><span class="label">Jargon Buster</span><dl class="terms">
+<dt>CDN</dt><dd>A network of servers spread across the world. You connect to the nearest one. Examples: CloudFront, Akamai, Cloudflare.</dd>
+<dt>S3</dt><dd>Amazon's storage for files. The CDN watches it and copies new files out.</dd>
+<dt>Edge</dt><dd>One CDN server close to users.</dd>
+</dl></div>
+
+<figure>
+<svg viewBox="0 0 900 310" role="img" aria-label="S3 pushes files to CDN edge servers in four regions and each user fetches from the nearest edge">
+  <g class="node good"><rect x="380" y="8" width="140" height="46" rx="12"/><text x="450" y="36" text-anchor="middle">S3 bucket</text></g>
+  <g class="node" id="edge-mum"><rect x="60" y="130" width="150" height="46" rx="12"/><text x="135" y="158" text-anchor="middle">Edge: Mumbai</text></g>
+  <g class="node" id="edge-eu"><rect x="270" y="130" width="150" height="46" rx="12"/><text x="345" y="158" text-anchor="middle">Edge: Europe</text></g>
+  <g class="node" id="edge-usw"><rect x="480" y="130" width="150" height="46" rx="12"/><text x="555" y="158" text-anchor="middle">Edge: US West</text></g>
+  <g class="node" id="edge-use"><rect x="690" y="130" width="150" height="46" rx="12"/><text x="765" y="158" text-anchor="middle">Edge: US East</text></g>
+  <path class="ar green dashmove" d="M420 54L150 128"/><path class="ar green dashmove" d="M440 54L345 128"/><path class="ar green dashmove" d="M460 54L555 128"/><path class="ar green dashmove" d="M480 54L750 128"/>
+  <text class="sm" x="300" y="80" text-anchor="middle">pushes new files</text>
+  <g class="node" id="user-mum"><circle cx="135" cy="260" r="26"/><text class="sm" x="135" y="264" text-anchor="middle">Mumbai</text></g>
+  <g class="node" id="user-eu"><circle cx="345" cy="260" r="26"/><text class="sm" x="345" y="264" text-anchor="middle">London</text></g>
+  <g class="node" id="user-usw"><circle cx="555" cy="260" r="26"/><text class="sm" x="555" y="264" text-anchor="middle">SF</text></g>
+  <g class="node" id="user-use"><circle cx="765" cy="260" r="26"/><text class="sm" x="765" y="264" text-anchor="middle">NYC</text></g>
+  <path class="ar blue" d="M135 232V180"/><path class="ar blue" d="M345 232V180"/><path class="ar blue" d="M555 232V180"/><path class="ar blue" d="M765 232V180"/>
+  <text class="sm" x="150" y="210">fetch</text>
+</svg>
+<figcaption>Each shopper is served by the closest edge, so pages load fast. The edges get their files from one place.</figcaption>
+</figure>
+<div class="demo"><span class="tag">TRY IT</span>
+<h4>Pick a shopper</h4>
+<div class="row"><button class="btn small" data-cdn="mum">Mumbai</button><button class="btn small" data-cdn="eu">London</button><button class="btn small" data-cdn="usw">San Francisco</button><button class="btn small" data-cdn="use">New York</button></div>
+<div class="out" id="cdn-out">Click a city. See which edge answers.</div></div>
+
+<h3>Never cache things that change</h3>
+<p>Static things go on the CDN: banners, images, product descriptions, videos. Changing things stay on your server and database, which is the <b>single source of truth</b>.</p>
+<p>Why? Say a T-shirt has 50 left. Two edge copies both say "50 left". The US sells 40. India sells 11. Total: 51 sold, but only 50 existed.</p>
+<div class="demo"><span class="tag">OVERSELL</span>
+<h4>The stock race</h4>
+<div class="two">
+<div class="card" style="text-align:center"><span class="label">US edge says</span><div class="bang" style="font-size:44px" id="os-us">50</div></div>
+<div class="card" style="text-align:center"><span class="label">India edge says</span><div class="bang" style="font-size:44px" id="os-in">50</div></div>
+</div>
+<div class="row"><button class="btn" id="os-sell">US sells 40, India sells 11</button><button class="btn green" id="os-fix">Ask the server instead</button><button class="btn yellow small" id="os-reset">Reset</button></div>
+<div class="out" id="os-out">Both copies start at 50.</div></div>
+
+<h3>DNS: the phone book of the internet</h3>
+<p>You type <code>fancytshirts.io</code>. Your browser needs an IP address. DNS is a giant map from names to addresses. Here is the walk:</p>
+<figure>
+<svg data-stepsvg="dns" viewBox="0 0 900 250" role="img" aria-label="Browser asks the ISP, the ISP asks the DNS servers, the IP address returns, then the browser requests the page from the CloudFront edge">
+  <g class="node" id="dns-browser"><rect x="20" y="80" width="120" height="56" rx="12"/><text x="80" y="113" text-anchor="middle">Browser</text></g>
+  <g class="node" id="dns-isp"><rect x="200" y="80" width="130" height="56" rx="12"/><text x="265" y="105" text-anchor="middle">Router + ISP</text><text class="sm" x="265" y="123" text-anchor="middle">asks DNS</text></g>
+  <g class="node" id="dns-ns"><rect x="400" y="70" width="170" height="76" rx="12"/><text x="485" y="96" text-anchor="middle">DNS servers</text><text class="sm" x="485" y="115" text-anchor="middle">GoDaddy → Route 53</text><text class="sm" x="485" y="132" text-anchor="middle">name → IP</text></g>
+  <g class="node" id="dns-cdn"><rect x="690" y="80" width="150" height="56" rx="12"/><text x="765" y="105" text-anchor="middle">CloudFront</text><text class="sm" x="765" y="123" text-anchor="middle">returns HTML</text></g>
+  <path class="ar" id="ar-1" d="M140 100H198"/><path class="ar" id="ar-2" d="M330 100H398"/>
+  <path class="ar red dash" id="ar-3" d="M398 126H332"/>
+  <path class="ar blue" id="ar-4" d="M80 138V210H765V140"/>
+  <text class="sm" x="170" y="92" text-anchor="middle">domain?</text><text class="sm" x="365" y="90" text-anchor="middle">domain?</text><text class="sm" x="365" y="146" text-anchor="middle">IP</text>
+  <text class="sm" x="420" y="204" text-anchor="middle">GET page using that IP</text>
+</svg>
+<figcaption>First the name becomes an address. Then the browser talks to that address.</figcaption>
+</figure>
+<div class="row"><button class="btn small" data-step="dns">Next step ▶</button><button class="btn small yellow" data-reset="dns">Restart</button></div>
+<div class="out" id="dns-out">Press "Next step".</div>
+<p>The page also calls your API (for register and login), so the API address needs its own DNS entry too.</p>
+
+<h3>Which database? Do not overthink it.</h3>
+<p>Some startups lose three or four days comparing databases. Pick one your team knows. If unsure, pick <b>SQL</b>. It is mature, easy to hire for, easy to analyze, and answers to questions are easy to find online. You can change later. Judge it with the same three yardsticks.</p>
+
+<div class="quiz" data-q="p3"></div>
+<div class="donebar"><button class="btn green done-btn" data-p="p3">Mark part done ✔</button><span class="donemsg">Part 3 done! 🎉</span></div>
+</section>
+
+<!-- ================= PART 4 ================= -->
+<section class="part" id="p4">
+<div class="part-head"><div class="part-num">4</div><h2>Logs, Monitoring &amp; Single Points of Failure</h2></div>
+<div class="card tldr"><p>When something breaks you must be able to <b>find out why fast</b> (logs), <b>notice it early</b> (dashboards), and make sure <b>no single part can bring everything down</b>.</p></div>
+
+<h3>The problem</h3>
+<div class="bubble">Many orders failed at payment this week! Is the payment company broken?</div>
+<p>The payment gateway promises about 98 percent success. Your numbers show 2 percent failures. So the gateway is fine. The <b>real</b> problem: your team cannot find the cause quickly.</p>
+
+<h3>Trace one request from start to finish</h3>
+<p>Give every request an ID. Write a log line when it arrives, before each risky step (a database write, a call to another system), and when you answer. Then support can search by order ID.</p>
+<figure>
+<svg data-stepsvg="trace" viewBox="0 0 900 190" role="img" aria-label="One request with one ID passes through the API, database write and payment gateway, writing a log line at each step">
+  <g class="node" id="tr-cust"><rect x="20" y="60" width="120" height="56" rx="12"/><text x="80" y="93" text-anchor="middle">Customer</text></g>
+  <g class="node" id="tr-api"><rect x="220" y="60" width="130" height="56" rx="12"/><text x="285" y="85" text-anchor="middle">Orders API</text><text class="sm" x="285" y="103" text-anchor="middle">req-7781</text></g>
+  <g class="node" id="tr-db"><rect x="430" y="10" width="130" height="50" rx="12"/><text x="495" y="40" text-anchor="middle">Database</text></g>
+  <g class="node" id="tr-gw"><rect x="430" y="120" width="130" height="50" rx="12"/><text x="495" y="150" text-anchor="middle">Payment gateway</text></g>
+  <g class="node" id="tr-log"><rect x="670" y="60" width="200" height="56" rx="12"/><text x="770" y="85" text-anchor="middle">CloudWatch logs</text><text class="sm" x="770" y="103" text-anchor="middle">search by order ID</text></g>
+  <path class="ar" id="tr-a1" d="M140 88H218"/><path class="ar" id="tr-a2" d="M350 75L428 42"/><path class="ar" id="tr-a3" d="M350 100L428 142"/><path class="ar blue dash" id="tr-a4" d="M350 88C500 88 560 88 668 88"/>
+</svg>
+<figcaption>Every hop writes a log line carrying the same request ID. That ID is the thread to pull.</figcaption>
+</figure>
+<div class="row"><button class="btn small" data-step="trace">Next step ▶</button><button class="btn small yellow" data-reset="trace">Restart</button></div>
+<div class="out" id="trace-out">Press "Next step".</div>
+<div class="card note"><span class="label">Support workflow</span><ol class="steps"><li>Customer gives their email.</li><li>Look up the order ID in the database.</li><li>Search the logs for that order ID (a pattern search works).</li><li>Read the story of that request and find the failing step.</li></ol></div>
+<p>The first tool to suggest is <b>Amazon CloudWatch</b>. It keeps all logs in one place and lets you search them. GCP and Azure have similar tools.</p>
+
+<h3>Observability: see how healthy you are</h3>
+<p>The founder expects about 100 sales a day. If sales fall to 10, you must know quickly. Build a dashboard of <b>sales, visits and registrations</b> so a person can spot a strange drop. (Automatic anomaly alerts come in a later chapter.) For a startup, <b>Google Analytics</b> is free and usually enough. Power BI and Tableau are paid options.</p>
+
+<h3>Single points of failure (SPOF)</h3>
+<p>A SPOF is a part which, if it fails, breaks everything. Ask of each box and each wire: "If this vanishes, what happens?" Click the boxes below.</p>
+<figure>
+<svg id="spof" viewBox="0 0 900 250" role="img" aria-label="Architecture where each box can be clicked to simulate failure">
+  <g class="node click" data-spof="cust"><rect x="10" y="95" width="110" height="52" rx="12"/><text x="65" y="126" text-anchor="middle">Customer</text></g>
+  <g class="node click" data-spof="cdn"><rect x="170" y="95" width="110" height="52" rx="12"/><text x="225" y="126" text-anchor="middle">CDN + S3</text></g>
+  <g class="node click" data-spof="shop"><rect x="330" y="95" width="110" height="52" rx="12"/><text x="385" y="126" text-anchor="middle">Shopify</text></g>
+  <g class="node click" data-spof="srv"><rect x="490" y="95" width="110" height="52" rx="12"/><text x="545" y="126" text-anchor="middle">Server</text></g>
+  <g class="node click" data-spof="db"><rect x="650" y="20" width="110" height="52" rx="12"/><text x="705" y="51" text-anchor="middle">Database</text></g>
+  <g class="node click" data-spof="pp"><rect x="650" y="95" width="110" height="52" rx="12"/><text x="705" y="126" text-anchor="middle">PayPal</text></g>
+  <g class="node click" data-spof="st"><rect x="650" y="170" width="110" height="52" rx="12"/><text x="705" y="201" text-anchor="middle">Stripe (backup)</text></g>
+  <path class="ar" d="M120 121H168"/><path class="ar" d="M280 121H328"/><path class="ar" d="M440 121H488"/>
+  <path class="ar" d="M600 110L648 55"/><path class="ar" d="M600 121H648"/><path class="ar dash" d="M600 132L648 190"/>
+</svg>
+<figcaption>Click a box to "break" it. Click again to repair it.</figcaption>
+</figure>
+<div class="out" id="spof-out">Click a box. Red means broken.</div>
+<h3>Failover in action</h3>
+<figure>
+<svg viewBox="0 0 700 170" role="img" aria-label="Checkout normally uses PayPal; when PayPal fails traffic switches to Stripe">
+  <g class="node"><rect x="20" y="58" width="130" height="52" rx="12"/><text x="85" y="89" text-anchor="middle">Checkout</text></g>
+  <g class="node good" id="fo-pp"><rect x="360" y="14" width="130" height="52" rx="12"/><text x="425" y="45" text-anchor="middle">PayPal</text></g>
+  <g class="node" id="fo-st"><rect x="360" y="104" width="130" height="52" rx="12"/><text x="425" y="135" text-anchor="middle">Stripe</text></g>
+  <path class="ar green" id="fo-a1" d="M150 76L358 44"/><path class="ar dim" id="fo-a2" d="M150 92L358 128"/>
+  <text class="sm" x="560" y="44">primary</text><text class="sm" x="560" y="134">standby</text>
+</svg>
+<figcaption>With a second payment provider, one failure does not stop sales.</figcaption>
+</figure>
+<div class="row"><button class="btn" id="fo-fail">PayPal goes down</button><button class="btn yellow small" id="fo-fix">Repair</button></div>
+<div class="out" id="fo-out">PayPal is handling payments.</div>
+<ul class="checks">
+<li>Keep a <b>backup database</b>.</li>
+<li>Use <b>managed services</b> from one provider. Reliability is their job.</li>
+<li>Offer <b>more than one payment provider</b> (Stripe, Razorpay, PhonePe).</li>
+<li>Show a <b>friendly banner</b> when a dependency fails: "We cannot serve you right now. We will fix it soon." This is <b>graceful degradation</b>. Like a bridge that survives losing one support.</li>
+<li>Pass along readable errors, such as "database failing, try later", so support can act on them.</li>
+</ul>
+<div class="card warn"><span class="label">Trade-off</span><p>More backups mean more work to build and maintain. Shopify itself is a real SPOF, but having several order takers is costly. Choose based on the business risk. Microservices are not worth it yet.</p></div>
+
+<div class="quiz" data-q="p4"></div>
+<div class="donebar"><button class="btn green done-btn" data-p="p4">Mark part done ✔</button><span class="donemsg">Part 4 done! 🎉</span></div>
+</section>
+
+<!-- ================= PART 5 ================= -->
+<section class="part" id="p5">
+<div class="part-head"><div class="part-num">5</div><h2>Tech Choices &amp; Cost Estimation</h2></div>
+<div class="card tldr"><p>When the boss asks "should we use X?", answer with <b>benefits, drawbacks and numbers</b>, not opinions.</p></div>
+
+<div class="bubble">I heard microservices are fast. Node.js seems slow. And can customers try shirts on with their camera?</div>
+<h3>Question 1: Microservices?</h3>
+<p>Not yet. With fewer than 10 to 15 engineers in one place, one codebase is simpler. (Part 11 shows when this changes.)</p>
+<h3>Question 2: Is Node.js or Python too slow?</h3>
+<p>For heavy CPU work, Node.js may be 2 to 4 times slower than Java or Go. That means more servers or a higher serverless bill. But compare that against:</p>
+<ul class="checks"><li>How much cheaper it is to hire and train people in the current language.</li><li>The <b>time to migrate</b>, which is a real cost too.</li></ul>
+<p>For a small company, a rewrite is usually not worth it.</p>
+
+<div class="demo"><span class="tag">BALANCE</span>
+<h4>Is the language switch worth it?</h4>
+<div class="row"><label class="inl">Extra server cost / month ($)<input type="number" id="lg-extra" value="400"></label>
+<label class="inl">Hiring + training savings / month ($)<input type="number" id="lg-save" value="900"></label>
+<label class="inl">One-time migration cost ($)<input type="number" id="lg-mig" value="30000"></label></div>
+<div class="out" id="lg-out"></div>
+<p style="font-size:16px;color:var(--muted)">These starting numbers are examples only. Plug in your own.</p></div>
+
+<h3>Question 3: The camera try-on feature</h3>
+<p>Price it before you promise it. Here is the lecture's math:</p>
+<figure>
+<svg viewBox="0 0 900 150" role="img" aria-label="Funnel: 10,000 visitors, 10 percent reach checkout and use the camera giving 1,000 API calls a day, times 30 days is the monthly bill, plus 1 GB a day of storage">
+  <g class="node"><rect x="10" y="30" width="170" height="70" rx="12"/><text x="95" y="60" text-anchor="middle">10,000</text><text class="sm" x="95" y="80" text-anchor="middle">visitors a day</text></g>
+  <g class="node on"><rect x="240" y="30" width="170" height="70" rx="12"/><text x="325" y="60" text-anchor="middle">1,000</text><text class="sm" x="325" y="80" text-anchor="middle">use camera (10%)</text></g>
+  <g class="node on"><rect x="470" y="30" width="170" height="70" rx="12"/><text x="555" y="60" text-anchor="middle">1,000 calls/day</text><text class="sm" x="555" y="80" text-anchor="middle">× 30 = 30,000/mo</text></g>
+  <g class="node bad"><rect x="700" y="30" width="190" height="70" rx="12"/><text x="795" y="60" text-anchor="middle">Monthly bill</text><text class="sm" x="795" y="80" text-anchor="middle">calls × price per call</text></g>
+  <path class="ar" d="M180 65H238"/><path class="ar" d="M410 65H468"/><path class="ar" d="M640 65H698"/>
+  <text class="sm" x="450" y="132" text-anchor="middle">Storage too: 1,000 clips × 1 MB = 1 GB added every day</text>
+</svg>
+<figcaption>Each product choice changes the bill. A 5-second clip is far cheaper than live video.</figcaption>
+</figure>
+<div class="demo"><span class="tag">CALCULATOR</span>
+<h4>Try-on feature cost</h4>
+<div class="row"><label class="inl">Visitors/day<input type="number" id="cc-vis" value="10000"></label><label class="inl">% who use camera<input type="number" id="cc-pct" value="10"></label><label class="inl">Price per call ($)<input type="number" id="cc-price" value="0.02" step="0.01"></label><label class="inl">File size (MB)<input type="number" id="cc-mb" value="1"></label></div>
+<div class="out" id="cc-out"></div>
+<p style="font-size:16px;color:var(--muted)">The price per call is a made-up example. Use your real vendor price.</p></div>
+<div class="card tip"><span class="label">Engineer's order of priority</span><ol class="steps"><li>Meet the requirements.</li><li>Keep it simple.</li><li>Then cut cost.</li></ol></div>
+<p>One more tip: how you <i>write</i> code matters less than how you <i>expose</i> it. A messy third-party API (the lecture's example is PayPal) slows developers and confuses new hires. Part 11 returns to this.</p>
+
+<div class="quiz" data-q="p5"></div>
+<div class="donebar"><button class="btn green done-btn" data-p="p5">Mark part done ✔</button><span class="donemsg">Part 5 done! 🎉</span></div>
+</section>
+
+<!-- ================= PART 6 ================= -->
+<section class="part" id="p6">
+<div class="part-head"><div class="part-num">6</div><h2>Capacity Planning &amp; Estimation</h2></div>
+<div class="card tldr"><p>Estimate big numbers with <b>simple steps and stated assumptions</b>. Being 10x off is fine. Being 1,000x off means a mistake.</p></div>
+
+<h3>Question: How much does YouTube store each day?</h3>
+<p>This lecture is a stand-alone interview example. Press the button and watch the chain build up.</p>
+<div class="demo"><span class="tag">ESTIMATE</span>
+<div class="row"><button class="btn" data-reveal="est">▶ Build it</button></div>
+<div class="chain" id="est">
+<div class="link"><b>1 billion</b> users<br><small>assumption</small></div>
+<div class="link x">1 in 1,000 upload</div>
+<div class="link"><b>1 million</b> videos/day</div>
+<div class="link x">× 10 min each</div>
+<div class="link"><b>10⁷ minutes</b>/day</div>
+<div class="link x">× ~3 MB per minute</div>
+<div class="link"><b>30 TB</b> (1 copy)</div>
+<div class="link x">× 3 copies</div>
+<div class="link"><b>90 TB</b></div>
+<div class="link x">× ~2 for resolutions</div>
+<div class="link big"><b>≈ 180 TB/day</b><br>about 0.2 PB</div>
+</div></div>
+<style>
+.chain{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin-top:10px}
+.chain>.link{border:3px solid #1b1b2f;border-radius:12px;padding:6px 12px;background:var(--card);font-size:17px;text-align:center;opacity:0;transform:translateY(12px);transition:.4s;line-height:1.3}
+.chain>.link.x{background:var(--yellow);color:#1b1b2f}
+.chain>.link.big{background:var(--red);color:#fff}
+.chain>.link.show{opacity:1;transform:none}
+.chain small{font-weight:400;opacity:.8}
+</style>
+<h3>Why resolutions double the size</h3>
+<p>Each lower quality is about half the size of the one above. 1 + ½ + ¼ + ⅛ + 1/16 is close to 2. So "all resolutions" is roughly <b>2 times</b> the biggest one.</p>
+<div class="demo"><span class="tag">BARS</span>
+<div class="row"><button class="btn small" data-bars="res">▶ Replay</button></div>
+<div id="res">
+<div class="bar-row"><span>720p (X)</span><div class="track"><div class="fill" data-w="100"></div></div><b>X</b></div>
+<div class="bar-row"><span>480p</span><div class="track"><div class="fill" data-w="50"></div></div><b>X/2</b></div>
+<div class="bar-row"><span>360p</span><div class="track"><div class="fill" data-w="25"></div></div><b>X/4</b></div>
+<div class="bar-row"><span>240p</span><div class="track"><div class="fill" data-w="12.5"></div></div><b>X/8</b></div>
+<div class="bar-row"><span>144p</span><div class="track"><div class="fill" data-w="6.25"></div></div><b>X/16</b></div>
+</div><div class="out">Total ≈ 1.94 X, so we say about 2 X.</div></div>
+
+<div class="card warn"><span class="label">Why assumptions matter</span><p>If you wrongly use 4 GB per 2-hour movie without compression, the answer jumps 10 times to about 2 PB. A bottom-up guess (1 MB per frame × 25 fps) gives 1.5 GB per minute, which is wildly different. More pieces mean more guesses. State your assumptions, and ask the interviewer for real numbers.</p></div>
+
+<h3>Sizing a cache for thumbnails</h3>
+<p>Cache only popular videos: the last 90 days. A thumbnail shrinks to about 10 KB. So: 90 days × 1M videos × 10 KB ≈ <b>0.9 TB, about 1 TB</b> in memory. Use small 16 GB machines so you can scale by adding more.</p>
+<div class="demo"><span class="tag">CLUSTER</span>
+<h4>Cache machines needed</h4>
+<div class="row"><label class="inl">Run each node at<select id="cs-util"><option value="1">100% full</option><option value="0.5" selected>50% full</option></select></label><button class="btn" id="cs-fail">💥 One node dies</button><button class="btn yellow small" id="cs-reset">Reset</button></div>
+<div id="cs-grid" style="display:flex;flex-wrap:wrap;gap:3px;margin:10px 0"></div>
+<div class="out" id="cs-out"></div></div>
+<div class="card note"><span class="label">Corrected math</span><p>The lecture says about 500 nodes at 50 percent. Doing the math: 1,000 GB ÷ 16 GB ≈ 63 nodes (call it 64), and doubling for 50 percent gives about <b>125 to 128</b>. Also, 30 TB a day is about 350 MB per second, not 40. With the lecture's ×10 for formats and data centres and 50 ms of work per MB, you need roughly <b>175</b> processors, not 20.</p></div>
+<div class="card jargon"><span class="label">Jargon Buster</span><dl class="terms"><dt>Back-of-the-envelope</dt><dd>A fast, rough calculation to check that a design is the right size.</dd><dt>Replication</dt><dd>Keeping several copies of data so one failure loses nothing and users get a nearby copy.</dd></dl></div>
+
+<div class="quiz" data-q="p6"></div>
+<div class="donebar"><button class="btn green done-btn" data-p="p6">Mark part done ✔</button><span class="donemsg">Part 6 done! 🎉</span></div>
+</section>
+
+<!-- ================= PART 7 ================= -->
+<section class="part" id="p7">
+<div class="part-head"><div class="part-num">7</div><h2>Scaling Servers &amp; Load Balancing</h2></div>
+<div class="card tldr"><p>When one big machine is not enough, use <b>many small machines behind a load balancer</b>. The balancer spreads requests and skips dead servers.</p></div>
+
+<h3>Step 1: The bill is too big</h3>
+<div class="bubble">Serverless is costing about $1,000 a month. Can we cut it?</div>
+<p>Credits are used up and the code is already tuned. So you move to a <b>reserved instance</b>: rent a server for a whole year at a discount. Serverless charges extra for managing servers for you. Now <b>you</b> start, stop and deploy. The bill drops to about <b>$500</b>.</p>
+<p>The request path now: <code>api.fancytshirts.io/purchase?id=...</code> → DNS (Route 53) gives the server's IP → the server picks the <code>/purchase</code> function → the values after <code>?</code> become the function's arguments. Deploying means: push to GitHub → pull on the server → restart. A restart wipes anything kept in memory.</p>
+
+<h3>Step 2: Vertical or horizontal?</h3>
+<p>Users report crashes. Memory really is high. The quick fix is a bigger machine: large, XL, XXL, 4XL. The founder is on a yacht asking for upgrades. That cannot go on.</p>
+<figure>
+<svg viewBox="0 0 900 300" role="img" aria-label="Left: one machine growing bigger with a single point of failure. Right: many small machines behind a load balancer">
+  <text class="bang" x="190" y="26" text-anchor="middle">VERTICAL: one bigger box</text>
+  <g class="node"><rect x="40" y="200" width="60" height="40" rx="8"/><text class="sm" x="70" y="225" text-anchor="middle">L</text></g>
+  <g class="node"><rect x="120" y="160" width="80" height="80" rx="8"/><text class="sm" x="160" y="205" text-anchor="middle">XL</text></g>
+  <g class="node bad"><rect x="220" y="90" width="130" height="150" rx="8"/><text x="285" y="160" text-anchor="middle">4XL</text><text class="sm" x="285" y="180" text-anchor="middle">if it dies,</text><text class="sm" x="285" y="196" text-anchor="middle">everything dies</text></g>
+  <path class="ar" d="M102 220H118"/><path class="ar" d="M202 210H218"/>
+  <line class="ln" x1="450" y1="20" x2="450" y2="290" stroke-dasharray="6 6"/>
+  <text class="bang" x="680" y="26" text-anchor="middle">HORIZONTAL: many small boxes</text>
+  <g class="node on"><rect x="490" y="130" width="100" height="56" rx="12"/><text x="540" y="154" text-anchor="middle">Load</text><text x="540" y="172" text-anchor="middle">balancer</text></g>
+  <g class="node good"><rect x="680" y="50" width="90" height="44" rx="10"/><text x="725" y="78" text-anchor="middle">Server 1</text></g>
+  <g class="node good"><rect x="680" y="136" width="90" height="44" rx="10"/><text x="725" y="164" text-anchor="middle">Server 2</text></g>
+  <g class="node good"><rect x="680" y="222" width="90" height="44" rx="10"/><text x="725" y="250" text-anchor="middle">Server 3</text></g>
+  <path class="ar" d="M592 150L678 74"/><path class="ar" d="M592 158H678"/><path class="ar" d="M592 166L678 244"/>
+  <text class="sm" x="800" y="160">lose one:</text><text class="sm" x="800" y="176">others cope</text>
+</svg>
+<figcaption>Vertical keeps one point of failure and wastes money at quiet times. Horizontal spreads risk and cost.</figcaption>
+</figure>
+<div class="two">
+<div class="card"><span class="label" style="color:var(--red)">Vertical scaling</span><ul class="checks"><li>Simple: one box.</li></ul><ul class="cons"><li>Single point of failure.</li><li>Hard to reserve well: you outgrow it.</li><li>Idle at night (maybe 10% used), short at peaks.</li><li>Bigger machines cost more per unit of compute.</li></ul></div>
+<div class="card"><span class="label" style="color:var(--green)">Horizontal scaling</span><ul class="checks"><li>Survives a failure.</li><li>More compute per dollar. 32 small machines with 2 virtual CPUs each handle 64 requests at once, but one huge machine for the same money handles about 32.</li><li>Load is spread.</li></ul><ul class="cons"><li>Needs a load balancer.</li><li>More moving parts.</li></ul></div>
+</div>
+<div class="card tip"><span class="label">Practical advice</span><p>Nobody buys a supercomputer. Start going horizontal around a "large" instance. Use medium machines with weighted balancing, not one XXL.</p></div>
+
+<h3>Why use a load balancer?</h3>
+<ul class="checks"><li><b>High availability:</b> no server is overworked, and spikes are absorbed.</li><li><b>Flexibility:</b> add or remove servers any time.</li><li><b>Lower response time:</b> servers are not choked.</li></ul>
+<p>On AWS this is the Elastic Load Balancer (ELB). It has built-in algorithms and lets you add your own. DNS can also balance: one name can hold several IPs (India and US), pick the nearest, and fall back to the other region on failure with higher delay.</p>
+
+<h3>The algorithms</h3>
+<div class="scroll"><table>
+<tr><th>Algorithm</th><th>How it picks</th><th>Watch out</th></tr>
+<tr><td>Random</td><td>Any server</td><td>Can be uneven by luck</td></tr>
+<tr><td>Round robin</td><td>1, 2, 3, 1, 2, 3...</td><td>Assumes equal servers</td></tr>
+<tr><td>Weighted round robin</td><td>Bigger server appears more often</td><td>Needs weights set by hand</td></tr>
+<tr><td>Least connections</td><td>Server with fewest active requests</td><td>Must keep counts (stateful)</td></tr>
+<tr><td>Weighted least connections</td><td>Fewest connections, tie goes to larger weight</td><td>Most complex</td></tr>
+<tr><td>Geo-based</td><td>Nearest region</td><td>A failed region sends users far away</td></tr>
+<tr><td>Simple hashing</td><td>hash(client) % N: same client, same server</td><td>Adding a server remaps most clients</td></tr>
+</table></div>
+<p><b>Stateless</b> algorithms need no memory (round robin). <b>Stateful</b> ones (least connections) remember what is happening, so they are smarter but costlier. The lecture also calls them static and dynamic.</p>
+<div class="card note"><span class="label">Worked example</span><p>Weights X=4, Y=1, Z=2 and 15 requests. One cycle is 7 requests. Two full cycles give X 8, Y 2, Z 4. The 15th request goes to X. (The lecture's example sheet was garbled here, so this is the corrected count.)</p></div>
+
+<div class="demo"><span class="tag">RACE</span>
+<h4>Send traffic to 3 servers</h4>
+<p>Server C is twice as big (weight 2). Connections finish after a second or two.</p>
+<div class="row"><label class="inl">Algorithm<select id="lb-alg"><option value="rr">Round robin</option><option value="wrr">Weighted round robin</option><option value="lc">Least connections</option><option value="hash">Simple hashing</option><option value="rand">Random</option></select></label>
+<button class="btn" id="lb-1">Send 1</button><button class="btn blue" id="lb-10">Send 10</button><button class="btn purple" id="lb-crash">Crash server B</button><button class="btn yellow small" id="lb-reset">Reset</button></div>
+<div id="lb-servers"></div>
+<div class="out" id="lb-out">Pick an algorithm and send requests.</div></div>
+
+<div class="quiz" data-q="p7"></div>
+<div class="donebar"><button class="btn green done-btn" data-p="p7">Mark part done ✔</button><span class="donemsg">Part 7 done! 🎉</span></div>
+</section>
+
+<!-- ================= PART 8 ================= -->
+<section class="part" id="p8">
+<div class="part-head"><div class="part-num">8</div><h2>Caching &amp; Consistent Hashing</h2></div>
+<div class="card tldr"><p>A <b>cache</b> keeps a copy of data close by so it loads fast. <b>Consistent hashing</b> lets you add or remove cache machines without reshuffling everything.</p></div>
+
+<h3>The problem</h3>
+<div class="bubble">Your shop feels slow!</div>
+<p>You check the CDN (CloudFront). Pages are fine. The browser's network tab shows the call that fetches the T-shirt list is slow. Images are not the problem.</p>
+<h3>Fix 1: prefetch in the browser</h3>
+<p>When someone lands on the homepage, quietly call the products API in the background and keep the answer in the browser. The browser is making a calculated guess: nobody buys a shirt in the next 10 to 15 seconds, so slightly old data is fine.</p>
+<figure>
+<svg data-stepsvg="pf" viewBox="0 0 900 200" role="img" aria-label="Browser lands on the homepage, prefetches products in the background, stores them, and the products page then loads from the browser copy and CDN images">
+  <g class="node" id="pf-home"><rect x="20" y="70" width="150" height="56" rx="12"/><text x="95" y="103" text-anchor="middle">Homepage opens</text></g>
+  <g class="node" id="pf-api"><rect x="350" y="10" width="160" height="56" rx="12"/><text x="430" y="43" text-anchor="middle">Products API</text></g>
+  <g class="node" id="pf-store"><rect x="350" y="130" width="160" height="56" rx="12"/><text x="430" y="152" text-anchor="middle">Browser cache</text><text class="sm" x="430" y="170" text-anchor="middle">product list saved</text></g>
+  <g class="node" id="pf-page"><rect x="690" y="70" width="190" height="56" rx="12"/><text x="785" y="95" text-anchor="middle">Products page</text><text class="sm" x="785" y="113" text-anchor="middle">instant!</text></g>
+  <path class="ar blue dash" id="pf-a1" d="M170 85L348 42"/><path class="ar blue dash" id="pf-a2" d="M430 68V128"/><path class="ar" id="pf-a3" d="M512 158L690 112"/>
+  <text class="sm" x="230" y="52">background call</text><text class="sm" x="440" y="102">save</text><text class="sm" x="590" y="152">read</text>
+</svg>
+<figcaption>The slow call happens before the user needs it.</figcaption>
+</figure>
+<div class="row"><button class="btn small" data-step="pf">Next step ▶</button><button class="btn small yellow" data-reset="pf">Restart</button></div>
+<div class="out" id="pf-out">Press "Next step".</div>
+<h3>Fix 2: also cache on the server</h3>
+<p>Even if someone opens the products page directly, the server answers from a cache instead of the database. But where should that cache live?</p>
+
+<h3>Where to put the cache</h3>
+<div class="two">
+<div class="card"><span class="label" style="color:var(--blue)">In-memory (inside each server)</span><ul class="checks"><li>Microsecond fast: a function call.</li><li>Simple. Libraries exist everywhere.</li></ul><ul class="cons"><li>A restart empties it.</li><li>Copies go stale.</li><li>The same data is stored N times.</li></ul></div>
+<div class="card"><span class="label" style="color:var(--purple)">Global cache (Redis or Memcached)</span><ul class="checks"><li>One copy of the data.</li><li>Scales on its own. Can be owned by another team.</li></ul><ul class="cons"><li>Extra network hop that can fail.</li><li>More architecture.</li></ul></div>
+</div>
+<div class="demo"><span class="tag">STALE!</span>
+<h4>Three servers, one T-shirt</h4>
+<div class="row"><button class="btn sel" data-cp="local">In-memory copies</button><button class="btn" data-cp="global">One global cache</button><button class="btn green" id="cp-buy">Buy 1 shirt on server 1</button><button class="btn yellow small" id="cp-reset">Reset</button></div>
+<div class="three" id="cp-grid"></div>
+<div class="out" id="cp-out"></div></div>
+<p>For this shop the decision is a <b>global Redis cache</b>. The product list is small, and ultra-low latency is not the main need.</p>
+
+<h3>Sharding: split the data</h3>
+<p>One cache machine may not fit everything. <b>Sharding</b> splits data by a property: by country (India shirts here, US shirts there), by ID range (users 1 to 100, 100 to 200), or most often by <b>hashing</b>: <code>hash(tshirtId) % numberOfCaches</code>. The same shirt always goes to the same cache. There is no duplication.</p>
+<div class="card warn"><span class="label">The catch</span><p>Change the number of caches (a machine dies, or you autoscale) and <b>almost every key moves</b>. Going from 3 to 4 caches, only about 1 in 4 keys stay. The rest must be loaded fresh from the database. Warming a big cache can take hours (the lecture cites Facebook's Memcached). The lecture's "1/12 stay" figure undercounts. Counting all remainders gives 3/12 = 1/4.</p></div>
+
+<h3>Consistent hashing: the ring</h3>
+<ol class="steps"><li>Bend the hash number line (0 to 2<sup>64</sup>) into a <b>ring</b>.</li><li>Hash each <b>server</b> onto the ring.</li><li>Hash each <b>key</b> onto the ring. Walk <b>clockwise</b> to the first server. That server owns the key.</li><li><b>Add</b> a server: it takes over only the arc just before it.</li><li><b>Remove</b> a server: its keys pass to the next server clockwise.</li></ol>
+<p>The rule never mentions how many servers there are. That is why little moves. Adding one server to N moves about 1/(N+1) of keys. Removing one moves about 1/N.</p>
+<p><b>Virtual nodes:</b> with few servers the arcs are uneven. Give each server many points on the ring (the notes use 20, a bigger system may use 200). Loads even out, and a dead server's keys spread over many neighbours instead of one.</p>
+<div class="demo"><span class="tag">THE RING</span>
+<h4>Modulo vs. ring: how many keys move?</h4>
+<p>40 keys (small dots) are owned by servers (big dots). Change the fleet and watch the "moved" counter.</p>
+<div class="row"><label class="inl">Method<select id="rg-mode"><option value="ring">Consistent hashing</option><option value="mod">Hash % N</option></select></label>
+<label class="inl">Points per server <input type="range" id="rg-v" min="1" max="20" value="1"><b id="rg-vn">1</b></label></div>
+<div class="row"><button class="btn green" id="rg-add">+ Add server</button><button class="btn" id="rg-del">− Remove last server</button></div>
+<svg id="rg-svg" viewBox="0 0 360 360" role="img" aria-label="A ring with servers and keys; adding or removing a server shows how many keys change owner" style="max-width:380px;margin:0 auto;display:block"></svg>
+<div class="out" id="rg-out"></div></div>
+<div class="card tip"><span class="label">Where it is used</span><p>DynamoDB uses it to cut data migration. Redis offers it as a way to spread data. One honest limit: virtual nodes even out how many <i>keys</i> each server holds, not how much <i>traffic</i>. One very hot key can still get 20% of requests.</p></div>
+
+<div class="quiz" data-q="p8"></div>
+<div class="donebar"><button class="btn green done-btn" data-p="p8">Mark part done ✔</button><span class="donemsg">Part 8 done! 🎉</span></div>
+</section>
+
+<!-- ================= PART 9 ================= -->
+<section class="part" id="p9">
+<div class="part-head"><div class="part-num">9</div><h2>Cache Writes &amp; Eviction</h2></div>
+<div class="card tldr"><p>A cache only helps if you use it right. Store <b>light data</b>, choose how <b>writes</b> flow, and decide what to <b>throw out</b> when it is full.</p></div>
+
+<div class="bubble">Redis costs $2,000 a month! That is too much for us.</div>
+<p>That bill means the tool is being misused. You look at what is cached. Three kinds of queries: most popular shirts ever, recently added shirts, and each user's recently viewed shirts. Two problems appear:</p>
+<ul class="cons"><li>The "popular shirts" query runs on the <b>database</b>, not the cache. The team feared the two might disagree.</li><li>The per-user cache holds <b>heavy shirt objects</b> (all the details) under the user ID.</li></ul>
+<p>Filling a cache from the database on every read and then reading it defeats the point. You might as well read the database.</p>
+
+<h3>Fix 1: cache light things</h3>
+<p>Store only shirt <b>IDs</b> per user, like <code>[D, C, B, A]</code> (newest first). Keep the shirt details once in a shared cache. Fetch IDs, fetch details, merge. B, C and D are no longer stored twice.</p>
+<div class="demo"><span class="tag">MEMORY</span>
+<h4>Heavy vs. light cache entries</h4>
+<div class="row"><label class="inl">Users in cache<select id="hl-users"><option value="1000">1,000</option><option value="100000">100,000</option><option value="1000000" selected>1,000,000</option></select></label></div>
+<div class="bar-row"><span>Heavy objects</span><div class="track"><div class="fill r" id="hl-h"></div></div><b id="hl-hn"></b></div>
+<div class="bar-row"><span>IDs + shared</span><div class="track"><div class="fill g" id="hl-l"></div></div><b id="hl-ln"></b></div>
+<p style="font-size:16px;color:var(--muted)">Example sizes: 10 shirts per user, 2 KB per full object, 200 shirts in the catalog. These sizes are made up to show the shape.</p></div>
+
+<h3>Fix 2: let data be a little old</h3>
+<p>Give entries a <b>TTL</b> (time to live). Popular shirts can be an hour or six hours old. A top-10 list that swaps places 10 and 11 hurts nobody. <b>How stale is okay is a product decision, not a technical one.</b> Ask the business.</p>
+
+<h3>Keeping the cache and database in step: write policies</h3>
+<div class="two">
+<div class="card"><span class="label" style="color:var(--blue)">Write-through</span><ol class="steps"><li>Update the database.</li><li>Update the cache.</li><li>Reply.</li></ol><p>Always fresh. More database load. Use for <b>payments</b>.</p></div>
+<div class="card"><span class="label" style="color:var(--purple)">Write-back</span><ol class="steps"><li>Update the cache only.</li><li>Later, flush to the database (on expiry or eviction).</li></ol><p>Few database writes, but a crash loses data. Fine for <b>view counts</b>.</p></div>
+</div>
+<div class="demo"><span class="tag">COMPARE</span>
+<h4>One shirt gets 15, then 20, then 30 views</h4>
+<div class="row"><button class="btn" id="wp-send">▶ Send 3 view updates</button><button class="btn green" id="wp-flush">Evict / expire (flush)</button><button class="btn purple" id="wp-crash">💥 Redis crashes</button><button class="btn yellow small" id="wp-reset">Reset</button></div>
+<div class="two">
+<div class="card"><span class="label">Write-through</span><p>Cache: <b id="wt-c">0</b> · DB: <b id="wt-d">0</b> · DB writes: <b id="wt-w">0</b></p></div>
+<div class="card"><span class="label">Write-back</span><p>Cache: <b id="wb-c">0</b> · DB: <b id="wb-d">0</b> · DB writes: <b id="wb-w">0</b></p></div>
+</div>
+<div class="out" id="wp-out">Send the updates, then try the crash before flushing.</div></div>
+<p><b>Look-aside</b> vs <b>read-through</b>: with look-aside (Facebook's Memcached style) your code checks the cache and, if empty, queries the database itself. With read-through (Redis style) the cache fetches from the database for you. Look-aside gives more control but needs more code. A third pattern, write-around, is rarely used.</p>
+
+<h3>Eviction: who gets thrown out?</h3>
+<p>A million users means a million entries. Cache only active users (say the top 1,000 or top 10 percent). When it is full, a rule picks who leaves. <b>LRU</b> removes the least <i>recently</i> used. <b>LFU</b> removes the least <i>frequently</i> used. For activity on a social-style site the lecture prefers LRU: old heavy users from "last Christmas" should not outrank people who came today. With LFU a new entry starts at a count of 1 against hundreds, so it may never get in.</p>
+<div class="demo"><span class="tag">EVICTION</span>
+<h4>Cache of 4 users. Same stream, two rules.</h4>
+<p>Stream: <b>E, A, E, F, E, E</b>. (LFU here follows the lecture: a newcomer with count 1 is not admitted while others have more.)</p>
+<div class="row"><button class="btn" id="ev-next">Next login ▶</button><button class="btn yellow small" id="ev-reset">Restart</button></div>
+<div class="two"><div class="card"><span class="label" style="color:var(--blue)">LRU</span><div id="ev-lru"></div><p>hits <b id="ev-lru-h">0</b> · misses <b id="ev-lru-m">0</b></p></div>
+<div class="card"><span class="label" style="color:var(--purple)">LFU</span><div id="ev-lfu"></div><p>hits <b id="ev-lfu-h">0</b> · misses <b id="ev-lfu-m">0</b></p></div></div>
+<div class="out" id="ev-out">Press "Next login".</div></div>
+
+<div class="card note"><span class="label">The 4 choices in cache design</span><ol class="steps"><li><b>Placement:</b> browser, server memory, or a global cache.</li><li><b>Distribution:</b> how data is split (sharding, hash ring).</li><li><b>Consistency:</b> the write policy.</li><li><b>Eviction:</b> LRU, LFU and expiry.</li></ol></div>
+
+<div class="quiz" data-q="p9"></div>
+<div class="donebar"><button class="btn green done-btn" data-p="p9">Mark part done ✔</button><span class="donemsg">Part 9 done! 🎉</span></div>
+</section>
+
+<!-- ================= PART 10 ================= -->
+<section class="part" id="p10">
+<div class="part-head"><div class="part-num">10</div><h2>Traffic Spikes &amp; Rate Limiting</h2></div>
+<div class="card tldr"><p>When too much traffic arrives, you cannot serve everyone. <b>Serve some people well</b> instead of everyone badly. Limit, shed and protect.</p></div>
+
+<h3>The flash sale story</h3>
+<div class="bubble">Let's run a 50% off sale for 2 hours!</div>
+<p>You size it first. The founder has 20k social followers, 50k emails, 1M ad views, and about 2,000 sales a day. They guess 10x: <b>20,000 sales in the 2 hours</b>. Making the system ready for 10x is a <b>business choice</b>: pre-scaling is costly but smooth, a smaller buffer is cheaper but gives a worse experience if you are wrong. Ask about profit margin and tolerance.</p>
+<p>Your plan: scale up a day (or a few hours) before, cache the shirt list on the server and CDN, and load test. Sale day comes. About <b>1 million</b> concurrent requests hit. Far past 10x. The system collapses. Queues grow, users refresh and retry, and support calls buyers by hand.</p>
+<p>The post-mortem finds the same user IDs sending thousands of requests in seconds from many IPs. It looks like a (distributed) denial-of-service attack. A rival, a prankster, or an innocent test, nobody knows.</p>
+<p>A week later the sale runs again with new defences. Result: <b>10,000 T-shirts sold</b>. A success. Here are the defences.</p>
+
+<h3>Defence 1: look at each request type</h3>
+<p>The list of shirts on sale is the same for everyone and rarely changes. Cache it on the server and the CDN. The CDN can hold more than files: pages, data, even a list of shirt IDs. Payments, order status and support are <b>per-user and critical</b>, so they need other protection. Load test by raising load step by step to find one server's limit. (Example: 20,000 requests at about 100 ms means one server handles 20k, so 40k needs two.)</p>
+
+<h3>Defence 2: layers that fail gracefully</h3>
+<figure>
+<svg data-stepsvg="def" viewBox="0 0 900 250" role="img" aria-label="Request path through CDN and WAF, gateway, server, cache and database, with a slow database triggering short circuit and back pressure">
+  <g class="node" id="def-client"><rect x="10" y="95" width="100" height="56" rx="12"/><text x="60" y="128" text-anchor="middle">Client</text></g>
+  <g class="node" id="def-waf"><rect x="160" y="95" width="120" height="56" rx="12"/><text x="220" y="119" text-anchor="middle">CDN + WAF</text><text class="sm" x="220" y="137" text-anchor="middle">blocks bots</text></g>
+  <g class="node" id="def-gw"><rect x="330" y="95" width="120" height="56" rx="12"/><text x="390" y="119" text-anchor="middle">Gateway</text><text class="sm" x="390" y="137" text-anchor="middle">rate limit</text></g>
+  <g class="node" id="def-srv"><rect x="500" y="95" width="110" height="56" rx="12"/><text x="555" y="128" text-anchor="middle">Server</text></g>
+  <g class="node" id="def-cache"><rect x="690" y="30" width="110" height="50" rx="12"/><text x="745" y="60" text-anchor="middle">Cache</text></g>
+  <g class="node" id="def-db"><rect x="690" y="165" width="110" height="50" rx="12"/><text x="745" y="195" text-anchor="middle">Database</text></g>
+  <path class="ar" d="M110 123H158"/><path class="ar" d="M280 123H328"/><path class="ar" d="M450 123H498"/>
+  <path class="ar" id="def-a-cache" d="M610 110L688 62"/><path class="ar" id="def-a-db" d="M610 140L688 188"/>
+  <path class="ar red dash" id="def-back" d="M498 160C400 225 200 225 62 156"/>
+  <text class="sm" x="280" y="238" text-anchor="middle">back pressure: "busy, retry in 60 s"</text>
+</svg>
+<figcaption>Each layer protects the next one. When the database slows down, the server stops calling it and tells clients to wait.</figcaption>
+</figure>
+<div class="row"><button class="btn small" data-step="def">Next step ▶</button><button class="btn small yellow" data-reset="def">Restart</button></div>
+<div class="out" id="def-out">Press "Next step".</div>
+<div class="card jargon"><span class="label">Jargon Buster</span><dl class="terms">
+<dt>WAF</dt><dd>Web application firewall (Cloudflare, AWS WAF). It inspects requests and blocks bad ones. At the CDN it stops bots eating bandwidth. At the server side you can write rules on headers and parameters. It adds a little delay and cost.</dd>
+<dt>Request priority</dt><dd>Payments, order status and support rank highest. "Show shirts I viewed" ranks lower. (WhatsApp on New Year's Eve: sending matters more than read receipts.)</dd>
+<dt>Short circuit (client side)</dt><dd>If the cache or database is slow, stop calling it and fail fast. Calling it only makes the overload worse and would time out anyway. This is the circuit-breaker idea.</dd>
+<dt>Back pressure (server side)</dt><dd>An overloaded service rejects new requests on arrival so it can finish the ones it has. The error should say "temporary, retry soon" so smart clients wait.</dd>
+<dt>Graceful degradation</dt><dd>Show something useful when things fail: a retry message, popular items, or a "heavy load" notice.</dd>
+</dl></div>
+<div class="card tip"><span class="label">Guiding rule</span><p>Making some customers happy is more useful than making all of them unhappy. If you can handle 100 and get 1,000, drop 900. You cannot add servers in milliseconds, and the other servers are probably overloaded too.</p></div>
+
+<h3>Defence 3: head-of-line blocking</h3>
+<p>With one first-come-first-served line, one slow request (a heavy database query) makes everyone behind it wait. Picture one luggage counter with one slow customer. Three fixes:</p>
+<ul class="checks"><li><b>Parallelism:</b> more lines (more machines or cores).</li><li><b>Concurrency:</b> threads. A slow request steps aside while it waits on input/output, and fast requests go ahead.</li><li><b>Protocol:</b> gRPC multiplexes streams so requests can finish out of order.</li></ul>
+<div class="demo"><span class="tag">LUGGAGE</span>
+<h4>Five requests: one takes 10 time units, four take 1 each</h4>
+<div class="row"><button class="btn" id="hol-run">▶ Run all three</button></div>
+<div id="hol-bars"></div>
+<div class="out" id="hol-out">Lower average finish time is better.</div></div>
+
+<h3>Defence 4: rate limiting</h3>
+<p>Rate limiting keeps the work being processed at the maximum level, even when load goes above it.</p>
+<div class="two">
+<div class="card"><span class="label" style="color:var(--blue)">Token bucket</span><p>A counter (say 1,000 tokens). Each request takes one. At 0, the next request waits or is rejected. When a request finishes, its token returns. If each takes about 100 ms, at most 1,000 run at once. You always know the maximum in flight.</p></div>
+<div class="card"><span class="label" style="color:var(--purple)">Leaky bucket</span><p>One request is let through every fixed interval (say every 100 ms), like a steady drip. The outflow is perfectly smooth. But 1,000 queued requests take 100 seconds, so many time out, and it wastes capacity if you could do more.</p></div>
+</div>
+<div class="demo"><span class="tag">BUCKETS</span>
+<h4>Throw 8 requests at both</h4>
+<p>Token bucket: 3 tokens, each request holds one for 2.5 seconds. Leaky bucket: one request let through every second.</p>
+<div class="row"><button class="btn" id="bk-send">Send 8 requests</button><button class="btn yellow small" id="bk-reset">Reset</button></div>
+<div class="two">
+<div class="card"><span class="label">Token bucket</span><div id="bk-tok" style="font-size:28px;min-height:36px"></div><p>Waiting: <b id="bk-tw">0</b> · Done: <b id="bk-td">0</b></p></div>
+<div class="card"><span class="label">Leaky bucket</span><div id="bk-leak" style="font-size:28px;min-height:36px"></div><p>Queued: <b id="bk-lw">0</b> · Done: <b id="bk-ld">0</b></p></div>
+</div></div>
+
+<h3>Local or central limiter?</h3>
+<p><b>Local:</b> each server decides alone. It is fast and simple, and "99% of the time I have seen", it is what is used. <b>Central:</b> one limiter keeps a global counter and every server asks it first. Accurate, but it adds a hop and needs coordination.</p>
+<div class="demo"><span class="tag">80 vs 100</span>
+<h4>Global limit 100 requests/sec across 5 servers. Server 5 is idle.</h4>
+<div class="row"><button class="btn sel" data-lim="local">Local: 20 each</button><button class="btn" data-lim="central">Central limiter</button></div>
+<div id="lim-bars"></div>
+<div class="out" id="lim-out"></div></div>
+
+<div class="quiz" data-q="p10"></div>
+<div class="donebar"><button class="btn green done-btn" data-p="p10">Mark part done ✔</button><span class="donemsg">Part 10 done! 🎉</span></div>
+</section>
+
+<!-- ================= PART 11 ================= -->
+<section class="part" id="p11">
+<div class="part-head"><div class="part-num">11</div><h2>Microservices &amp; API Contracts</h2></div>
+<div class="card tldr"><p>When too many people share one codebase, <b>split the teams first, then the code</b>. Let services talk through <b>versioned contracts</b> so changes fail at build time, not in production.</p></div>
+
+<h3>The pain</h3>
+<div class="bubble">The company is doing well. Hire up! (From 5 engineers to 15 in two months. The business also wants accessories and T-shirt subscriptions.)</div>
+<ul class="cons"><li>Stand-ups are long and full of updates that do not overlap.</li><li>Development is slower. Deploys are rare.</li><li>New hires need heavy hand-holding. Reading all the code takes forever.</li><li>Nobody owns payments: 15 commits from 15 people. You "right-click, git blame" to find someone.</li></ul>
+<p>The lecture calls this <b>coupling and a lack of isolation of concerns</b>. "Everybody manages everything, so nobody is an expert at anything." Code mirrors the shape of the organization. So split the teams, then split the code.</p>
+
+<figure>
+<svg viewBox="0 0 900 330" role="img" aria-label="Toggle between one monolith with 15 engineers and three separate services each owned by one team">
+  <g id="ms-b">
+    <g class="node bad"><rect x="150" y="30" width="600" height="250" rx="16"/><text class="bang" x="450" y="66" text-anchor="middle" style="fill:#fff">ONE MONOLITH · 15 ENGINEERS</text></g>
+    <g id="ms-dots"></g>
+    <text x="450" y="300" text-anchor="middle">Everyone touches everything. One deploy for all.</text>
+  </g>
+  <g id="ms-a" style="display:none">
+    <g class="node good"><rect x="30" y="50" width="240" height="130" rx="16"/><text class="bang" x="150" y="80" text-anchor="middle">ORDERS + PAYMENTS</text><text x="150" y="108" text-anchor="middle">5 engineers</text><text class="sm" x="150" y="130" text-anchor="middle">own deploy · own scaling</text></g>
+    <g class="node good"><rect x="330" y="50" width="240" height="130" rx="16"/><text class="bang" x="450" y="80" text-anchor="middle">INVENTORY</text><text x="450" y="108" text-anchor="middle">6 engineers</text><text class="sm" x="450" y="130" text-anchor="middle">own deploy · own scaling</text></g>
+    <g class="node good"><rect x="630" y="50" width="240" height="130" rx="16"/><text class="bang" x="750" y="80" text-anchor="middle">COMMUNICATIONS</text><text x="750" y="108" text-anchor="middle">4 engineers</text><text class="sm" x="750" y="130" text-anchor="middle">emails + dashboards</text></g>
+    <path class="ar blue" d="M272 100H328"/><path class="ar blue" d="M572 100H628"/><path class="ar blue dash" d="M450 182V232"/>
+    <text class="sm" x="300" y="92" text-anchor="middle">API call</text><text class="sm" x="600" y="92" text-anchor="middle">API call</text>
+    <g class="node"><rect x="330" y="236" width="240" height="60" rx="16" style="stroke-dasharray:7 5"/><text x="450" y="262" text-anchor="middle">Reviews feature?</text><text class="sm" x="450" y="282" text-anchor="middle">fits nowhere. Decide below.</text></g>
+    <text class="sm" x="700" y="230" text-anchor="middle">Calls cross the network now,</text><text class="sm" x="700" y="246" text-anchor="middle">so they are slower than function calls.</text>
+  </g>
+</svg>
+<figcaption>Before: one box, 15 people. After: three small "companies" that talk through APIs.</figcaption>
+</figure>
+<div class="row"><button class="btn sel" id="ms-bef">Before</button><button class="btn green" id="ms-aft">After the split</button></div>
+<div class="three">
+<div class="card"><span class="label" style="color:var(--green)">Wins</span><ul class="checks"><li>Short stand-ups</li><li>Each feature goes to one team</li><li>Independent deploys</li><li>Independent scaling</li><li>Own tech choices</li></ul></div>
+<div class="card"><span class="label" style="color:var(--red)">Costs</span><ul class="cons"><li>Teams lose shared context</li><li>Common work done twice (logging, caching)</li><li>Network calls are slower</li></ul></div>
+<div class="card"><span class="label" style="color:var(--purple)">Guardrails</span><ul class="checks"><li>One language and one database type org-wide</li><li>Engineers do DevOps at 15 people. At 50 to 100, a platform team.</li></ul></div>
+</div>
+<p>The lecture's honest summary: you trade <b>code efficiency for organization efficiency</b>.</p>
+
+<h3>Where does a new feature go?</h3>
+<p>Reviews do not fit inventory, payments or communications. Do not rush to build a new service. Young tech leads often create <b>nanoservices</b>: more projects than people, or one person owning two services. Use this path:</p>
+<figure>
+<svg viewBox="0 0 900 200" role="img" aria-label="Decision flow: new feature, does it fit a team, if not is there enough work for a new team, else put it with the nearest team and split later">
+  <g class="node on"><rect x="10" y="70" width="120" height="56" rx="12"/><text x="70" y="103" text-anchor="middle">New feature</text></g>
+  <g class="node"><rect x="190" y="60" width="170" height="76" rx="12"/><text x="275" y="94" text-anchor="middle">Fits an existing</text><text x="275" y="112" text-anchor="middle">team?</text></g>
+  <g class="node good"><rect x="190" y="150" width="170" height="40" rx="12"/><text x="275" y="176" text-anchor="middle">Add it there</text></g>
+  <g class="node"><rect x="470" y="60" width="170" height="76" rx="12"/><text x="555" y="94" text-anchor="middle">Enough work for</text><text x="555" y="112" text-anchor="middle">a whole team?</text></g>
+  <g class="node good"><rect x="720" y="60" width="160" height="76" rx="12"/><text x="800" y="94" text-anchor="middle">New service</text><text x="800" y="112" text-anchor="middle">+ new team</text></g>
+  <g class="node on"><rect x="470" y="150" width="170" height="40" rx="12"/><text x="555" y="176" text-anchor="middle">Nearest team, split later</text></g>
+  <path class="ar" d="M130 98H188"/><path class="ar" d="M275 138V148"/><path class="ar" d="M360 98H468"/><path class="ar" d="M640 98H718"/><path class="ar" d="M555 138V148"/>
+  <text class="sm" x="290" y="147">yes</text><text class="sm" x="410" y="90">no</text><text class="sm" x="680" y="90">yes</text><text class="sm" x="565" y="146">no</text>
+</svg>
+<figcaption>Split late, not early. If "reviews" only ever talks to communications, merge them and rename the service.</figcaption>
+</figure>
+<p>Talking across teams is expensive. Decisions need writing down (diagrams, emails). Count how often two services talk. A very heavy link suggests they should be one.</p>
+
+<h3>API contracts</h3>
+<p>An <b>API contract</b> is a public description of a function: its name, inputs, outputs and error codes. It says what it does, not how. Keep all contracts in <b>one repository</b> so everyone can check they use the latest. Without this, a changed API is not a compile error. You find out after deploy.</p>
+<p>Each service publishes a <b>client library</b> with a version number. When the contract changes, consumers upgrade and the build tells them what broke.</p>
+<div class="two">
+<div class="code"><span class="cap">Order contract v1.2</span><pre><code>createOrder(tshirtId, qty)</code></pre></div>
+<div class="code"><span class="cap">Order contract v1.3</span><pre><code>createOrder(itemId, itemType, qty)</code></pre></div>
+</div>
+<figure>
+<svg viewBox="0 0 900 180" role="img" aria-label="Order service publishes a new contract version to a repository; the consumer build turns red when the contract breaks and green after a fix or a backward compatible default">
+  <g class="node blue" id="ct-order"><rect x="20" y="60" width="170" height="60" rx="12"/><text x="105" y="86" text-anchor="middle">Order service</text><text class="sm" x="105" y="105" text-anchor="middle" id="ct-ver">publishes v1.2</text></g>
+  <g class="node on" id="ct-repo"><rect x="350" y="60" width="170" height="60" rx="12"/><text x="435" y="86" text-anchor="middle">Contract repo</text><text class="sm" x="435" y="105" text-anchor="middle">one source of truth</text></g>
+  <g class="node good" id="ct-cons"><rect x="680" y="60" width="190" height="60" rx="12"/><text x="775" y="86" text-anchor="middle">Consumer build</text><text class="sm" x="775" y="105" text-anchor="middle" id="ct-state">GREEN</text></g>
+  <path class="ar" d="M192 90H348"/><path class="ar" d="M522 90H678"/>
+  <text class="sm" x="270" y="82" text-anchor="middle">publish</text><text class="sm" x="600" y="82" text-anchor="middle">upgrade</text>
+</svg>
+<figcaption>The failure shows up on a developer's machine at build time, not for a customer.</figcaption>
+</figure>
+<div class="row"><button class="btn" id="ct-break">Publish v1.3 (breaking)</button><button class="btn green" id="ct-fix">Consumer upgrades &amp; fixes</button><button class="btn purple" id="ct-compat">Make it backward compatible</button><button class="btn yellow small" id="ct-reset">Reset</button></div>
+<div class="out" id="ct-out">All consumers are on v1.2 and happy.</div>
+<div class="card tip"><span class="label">Backward compatible change</span><p>Add a default: <code>if itemType == null, assume T-shirt</code>. Old clients keep working and move over slowly. New clients use the new fields.</p></div>
+
+<div class="quiz" data-q="p11"></div>
+<div class="donebar"><button class="btn green done-btn" data-p="p11">Mark part done ✔</button><span class="donemsg">Part 11 done! 🎉</span></div>
+</section>
+
+<!-- ================= PART 12 ================= -->
+<section class="part" id="p12">
+<div class="part-head"><div class="part-num">12</div><h2>Analytics &amp; Data Pipelines</h2></div>
+<div class="card tldr"><p>Do not let business people query the live database. <b>Stream a copy of every team's data into one store</b> that anyone can query, so production stays fast.</p></div>
+
+<h3>The pain</h3>
+<div class="bubble">You are the CTO of 50 to 70 engineers in 10 to 12 teams. The managers are upset with each other.</div>
+<p>You call a board meeting and gather feedback. The business pain points:</p>
+<ol class="steps"><li>Engineers are slow to run data queries. Insights come late, and chances are lost.</li><li>Cross-team questions need coordination. Example: "people who buy a shirt at least 3 days after signing up". Sign-up is in the profile team's data, the order in the orders team's, and receipt in the delivery team's. Someone then merges it all in Excel.</li><li>Product managers want to slice and dice data and download CSV files regularly.</li><li>The operations chief wants <b>daily dashboards</b> (sales, sign-ups, pending and done deliveries) without asking engineers or getting database passwords.</li></ol>
+<p>The core diagnosis: business teams are tightly <b>coupled</b> to tech teams for data, in time and in knowing whom to ask.</p>
+
+<figure>
+<svg viewBox="0 0 900 300" role="img" aria-label="Toggle between a before view where a manager asks three teams and merges in Excel, and an after view where one SQL query on a shared data store answers it">
+  <g id="an-b">
+    <g class="node on"><rect x="20" y="115" width="140" height="60" rx="12"/><text x="90" y="141" text-anchor="middle">Sales manager</text><text class="sm" x="90" y="160" text-anchor="middle">"3 days after signup?"</text></g>
+    <g class="node"><rect x="320" y="20" width="170" height="56" rx="12"/><text x="405" y="54" text-anchor="middle">Profile team (sign-ups)</text></g>
+    <g class="node"><rect x="320" y="122" width="170" height="56" rx="12"/><text x="405" y="156" text-anchor="middle">Orders team (orders)</text></g>
+    <g class="node"><rect x="320" y="224" width="170" height="56" rx="12"/><text x="405" y="258" text-anchor="middle">Delivery team (receipts)</text></g>
+    <g class="node bad"><rect x="670" y="115" width="200" height="60" rx="12"/><text x="770" y="141" text-anchor="middle">Excel merge by hand</text><text class="sm" x="770" y="160" text-anchor="middle">days of waiting</text></g>
+    <path class="ar red" d="M162 135L318 56"/><path class="ar red" d="M162 145L318 150"/><path class="ar red" d="M162 160L318 246"/>
+    <path class="ar red" d="M492 50L668 128"/><path class="ar red" d="M492 150H668"/><path class="ar red" d="M492 252L668 162"/>
+    <text class="sm" x="240" y="86">ask</text><text class="sm" x="580" y="108">3 CSVs</text>
+  </g>
+  <g id="an-a" style="display:none">
+    <g class="node on"><rect x="20" y="115" width="140" height="60" rx="12"/><text x="90" y="141" text-anchor="middle">Sales manager</text><text class="sm" x="90" y="160" text-anchor="middle">writes one query</text></g>
+    <g class="node good"><rect x="320" y="105" width="210" height="80" rx="12"/><text x="425" y="136" text-anchor="middle">One data store</text><text class="sm" x="425" y="156" text-anchor="middle">profile + orders + delivery</text></g>
+    <g class="node good"><rect x="690" y="115" width="180" height="60" rx="12"/><text x="780" y="141" text-anchor="middle">Answer in minutes</text><text class="sm" x="780" y="160" text-anchor="middle">a single SQL join</text></g>
+    <path class="ar green" d="M162 145H318"/><path class="ar green" d="M532 145H688"/>
+    <text class="sm" x="240" y="136" text-anchor="middle">SQL</text><text class="sm" x="610" y="136" text-anchor="middle">result</text>
+  </g>
+</svg>
+<figcaption>Same question. Before, three teams and a spreadsheet. After, one query on one shared copy.</figcaption>
+</figure>
+<div class="row"><button class="btn sel" id="an-bef">Before</button><button class="btn green" id="an-aft">After</button></div>
+
+<h3>The design: two worlds</h3>
+<p>Each of the 12 teams has its own production Postgres database. Collect all of them into <b>one large copy</b>. Business users query and chart the copy. Heavy analytics queries no longer lock or slow the live databases. The system splits into two halves: the <b>live serving system</b>, and the <b>collected data store</b> people can query any time. (Data people call these OLTP and OLAP. The lecturer does not use those words.)</p>
+<figure>
+<svg data-stepsvg="an" viewBox="0 0 900 330" role="img" aria-label="Production services with their own databases send events through a stream into one data store, which feeds dashboards and a SQL interface">
+  <rect class="zone" x="10" y="10" width="330" height="310" rx="16"/><text class="bang" x="175" y="34" text-anchor="middle">LIVE PRODUCTION</text>
+  <g class="node" id="an-pay"><rect x="30" y="60" width="130" height="50" rx="12"/><text x="95" y="90" text-anchor="middle">Payment service</text></g>
+  <g class="node" id="an-ord"><rect x="30" y="130" width="130" height="50" rx="12"/><text x="95" y="160" text-anchor="middle">Orders service</text></g>
+  <g class="node" id="an-prof"><rect x="30" y="200" width="130" height="50" rx="12"/><text x="95" y="230" text-anchor="middle">Profile service</text></g>
+  <g class="node"><rect x="200" y="60" width="120" height="190" rx="12"/><text x="260" y="150" text-anchor="middle">Their own</text><text x="260" y="168" text-anchor="middle">Postgres DBs</text></g>
+  <path class="ar" d="M162 85H198"/><path class="ar" d="M162 155H198"/><path class="ar" d="M162 225H198"/>
+  <g class="node" id="an-stream"><rect x="400" y="130" width="110" height="60" rx="12"/><text x="455" y="156" text-anchor="middle">Event stream</text><text class="sm" x="455" y="174" text-anchor="middle" id="an-t1">Kafka</text></g>
+  <g class="node" id="an-store"><rect x="570" y="130" width="120" height="60" rx="12"/><text x="630" y="156" text-anchor="middle">Data store</text><text class="sm" x="630" y="174" text-anchor="middle" id="an-t2">S3 / HDFS</text></g>
+  <g class="node" id="an-q"><rect x="740" y="60" width="140" height="56" rx="12"/><text x="810" y="86" text-anchor="middle">Query engine</text><text class="sm" x="810" y="104" text-anchor="middle" id="an-t3">Spark</text></g>
+  <g class="node" id="an-dash"><rect x="740" y="210" width="140" height="70" rx="12"/><text x="810" y="236" text-anchor="middle">Dashboards</text><text class="sm" x="810" y="256" text-anchor="middle">daily sales, sign-ups</text></g>
+  <path class="ar" id="an-a1" d="M322 150C350 150 370 160 398 160"/><path class="ar" id="an-a2" d="M512 160H568"/><path class="ar" id="an-a3" d="M692 150L738 100"/><path class="ar" id="an-a4" d="M810 118V208"/>
+  <text class="sm" x="350" y="140" text-anchor="middle">events</text>
+  <text class="bang" x="620" y="34" text-anchor="middle">COPY YOU CAN QUERY ANY TIME</text>
+</svg>
+<figcaption>Services only publish events. Everything on the right is new and does not touch the live databases.</figcaption>
+</figure>
+<div class="row"><button class="btn small" data-step="an">Send a payment event ▶</button><button class="btn small yellow" data-reset="an">Restart</button></div>
+<div class="out" id="an-out">Press the button to follow one payment event.</div>
+
+<h3>Dashboards and custom queries</h3>
+<p>Dashboards need UI engineers plus server engineers who expose APIs that run the common queries on the copy. Daily sales count and total:</p>
+<div class="code"><span class="cap">SQL</span><button class="copy">Copy</button><pre><code>SELECT date, COUNT(*) AS orders, SUM(amount) AS total
+FROM payments
+GROUP BY date;</code></pre></div>
+<p>For custom questions, give a SQL interface with documented tables. Product teams can hire an analyst, learn SQL, or ask an AI assistant. "You are enabling many teams instead of just solving that problem."</p>
+
+<h3>Which tools? A fair debate</h3>
+<p>The AWS option: <b>Kinesis</b> streams the data and <b>Athena</b> queries it. Kinesis is very cheap, and Athena charges for the data scanned, not for storage. The product team counters with <b>open source</b>: easier hiring and training, and no vendor lock-in (moving from AWS to GCP could hurt). The CTO accepts. It is a bit more complex, but the ops and product teams carry that complexity.</p>
+<div class="demo"><span class="tag">TOOLS</span>
+<div class="row"><button class="btn" id="tl-aws">AWS-managed</button><button class="btn sel purple" id="tl-oss">Open source (chosen)</button></div>
+<div class="three">
+<div class="card"><span class="label">Stream</span><p id="tl-s">Apache Kafka</p></div>
+<div class="card"><span class="label">Store</span><p id="tl-st">S3 or HDFS files</p></div>
+<div class="card"><span class="label">Query</span><p id="tl-q">Apache Spark (queries, transforms, ML)</p></div>
+</div>
+<div class="out" id="tl-out">Open source: easier hiring, no lock-in. Costs can't be known without capacity estimation, but it should be affordable.</div></div>
+<div class="card note"><span class="label">Good news for engineers</span><p>Existing microservices need <b>no change</b>. They only publish events. Also, requirements are written first as business needs, confirmed with stakeholders, then handed to engineering. Engineers see the business effect of their code.</p></div>
+<div class="card warn"><span class="label">What was not covered</span><p>The lecture streams events as they happen. It does not compare batch and streaming pipelines, so these notes do not either.</p></div>
+
+<div class="quiz" data-q="p12"></div>
+<div class="donebar"><button class="btn green done-btn" data-p="p12">Mark part done ✔</button><span class="donemsg">Part 12 done! 🎉</span></div>
+</section>
+
+<!-- ================= PART 13 ================= -->
+<section class="part" id="p13">
+<div class="part-head"><div class="part-num">13</div><h2>Recap &amp; Cheat Sheet</h2></div>
+<div class="card tldr"><p>Every part followed the same loop: <b>a business pain → a diagnosis → one simple idea → the next problem</b>.</p></div>
+
+<h3>The final picture</h3>
+<p>Here is everything together. Press the button to follow one customer request, then the data it leaves behind.</p>
+<figure>
+<svg data-stepsvg="all" viewBox="0 0 920 380" role="img" aria-label="Full architecture: customer, DNS, CDN and WAF, load balancer with rate limiting, microservices, cache, databases, and an event stream into a data store and dashboards, with logs beside the services">
+  <g class="node" id="all-cust"><rect x="10" y="150" width="100" height="50" rx="12"/><text x="60" y="180" text-anchor="middle">Customer</text></g>
+  <g class="node" id="all-dns"><rect x="10" y="40" width="100" height="44" rx="12"/><text x="60" y="68" text-anchor="middle">DNS</text></g>
+  <g class="node" id="all-cdn"><rect x="150" y="40" width="130" height="44" rx="12"/><text x="215" y="68" text-anchor="middle">CDN + WAF</text></g>
+  <g class="node" id="all-lb"><rect x="170" y="150" width="130" height="50" rx="12"/><text x="235" y="172" text-anchor="middle">Load balancer</text><text class="sm" x="235" y="189" text-anchor="middle">+ rate limit</text></g>
+  <g class="node" id="all-svc"><rect x="360" y="90" width="190" height="160" rx="14"/><text class="bang" x="455" y="112" text-anchor="middle">MICROSERVICES</text><text class="sm" x="455" y="148" text-anchor="middle">Orders + Payments</text><text class="sm" x="455" y="180" text-anchor="middle">Inventory</text><text class="sm" x="455" y="212" text-anchor="middle">Comms + Reviews</text></g>
+  <g class="node" id="all-cache"><rect x="610" y="90" width="120" height="44" rx="12"/><text x="670" y="118" text-anchor="middle">Redis cache</text></g>
+  <g class="node" id="all-db"><rect x="610" y="190" width="120" height="44" rx="12"/><text x="670" y="218" text-anchor="middle">Databases</text></g>
+  <g class="node" id="all-stream"><rect x="780" y="120" width="130" height="44" rx="12"/><text x="845" y="148" text-anchor="middle">Event stream</text></g>
+  <g class="node" id="all-store"><rect x="780" y="196" width="130" height="44" rx="12"/><text x="845" y="224" text-anchor="middle">Data store</text></g>
+  <g class="node" id="all-dash"><rect x="780" y="272" width="130" height="44" rx="12"/><text x="845" y="300" text-anchor="middle">Dashboards</text></g>
+  <g class="node" id="all-log"><rect x="360" y="300" width="190" height="44" rx="12"/><text x="455" y="328" text-anchor="middle">CloudWatch logs</text></g>
+  <path class="ar" id="all-a1" d="M60 148V86"/><path class="ar" id="all-a2" d="M112 62H148"/><path class="ar" id="all-a3" d="M112 175H168"/><path class="ar" id="all-a4" d="M302 175H358"/>
+  <path class="ar" id="all-a5" d="M552 112H608"/><path class="ar" id="all-a6" d="M552 212H608"/><path class="ar" id="all-a7" d="M732 212L778 150"/>
+  <path class="ar" id="all-a8" d="M845 166V194"/><path class="ar" id="all-a9" d="M845 242V270"/><path class="ar" id="all-a10" d="M455 252V298"/>
+  <text class="sm" x="68" y="120">name → IP</text><text class="sm" x="130" y="54">static</text><text class="sm" x="236" y="140">API call</text>
+</svg>
+<figcaption>Static files come from the CDN. API calls pass the load balancer, reach a service, hit the cache first, then the database. Events flow out to the data store.</figcaption>
+</figure>
+<div class="row"><button class="btn small" data-step="all">Next step ▶</button><button class="btn small yellow" data-reset="all">Restart</button></div>
+<div class="out" id="all-out">Press "Next step".</div>
+
+<h3>Cheat sheet</h3>
+<div class="scroll"><table><thead><tr><th>Part</th><th>Problem</th><th>Fix</th></tr></thead><tbody id="cheat-body"></tbody></table></div>
+
+<h3>What to remember</h3>
+<ul class="checks">
+<li>Judge every design by <b>simplicity, fidelity and cost</b>.</li>
+<li>Reuse tools. Add custom code only where needed.</li>
+<li>Estimate with numbers and state your assumptions.</li>
+<li>Find single points of failure. Degrade gracefully.</li>
+<li>Scale out. Cache light data. Choose write and eviction rules on purpose.</li>
+<li>Under overload, protect the important requests. Shed the rest.</li>
+<li>Split teams before code. Version every contract.</li>
+<li>Keep analytics on a separate copy of the data.</li>
+</ul>
+<div class="card note"><span class="label">Coming next in the course</span><p>Deeper chapters on databases, networks and other topics. You can now sketch a simple distributed system, name the common patterns, and talk about them in business meetings.</p></div>
+<div class="donebar"><button class="btn green done-btn" data-p="p13">Mark part done ✔</button><span class="donemsg">All done! 🎉</span></div>
+</section>
+
+<section class="part" id="gloss">
+<div class="part-head"><div class="part-num" style="font-size:34px">A-Z</div><h2>Glossary</h2></div>
+<div class="card jargon"><span class="label">Every term in one place</span><dl class="terms" id="gloss-list"></dl></div>
+</section>
+
+<footer>Notes written from 14 course transcripts. Diagrams and demos are teaching aids. Numbers marked as examples are made up to show the idea.</footer>
+</main>
+</div>
+<script>
+const QUIZ={"p1": [{"q": "What are the three yardsticks used to judge a design?", "options": ["Speed, size, and price", "Simplicity, Fidelity, and Cost effectiveness", "Security, uptime, and color", "Code, tests, and docs"], "answer": 1, "why": "The three yardsticks are Simplicity, Fidelity (meets the requirements), and Cost effectiveness."}, {"q": "Why did Fancy T-Shirts choose Shopify over Amazon?", "options": ["Amazon gave them full control of the store look", "Shopify gave them control of the look and their own recommendations", "Shopify removed the need for any custom code", "Amazon accepted all international cards"], "answer": 1, "why": "Shopify let the shop control its look and run its own recommendations."}, {"q": "What is an API?", "options": ["A type of database index", "A cloud server type", "A caching rule", "A contract where an agreed input format gives an agreed output format"], "answer": 3, "why": "An API works like a function: the input and output formats are agreed in advance."}], "p2": [{"q": "Which hosting option is easiest for an early-stage shop?", "options": ["Your own laptop", "A managed server that you deploy yourself", "Serverless", "A home router"], "answer": 2, "why": "Serverless means you only write code, and it scales on its own, so it is easiest early on."}, {"q": "Why is a personal laptop a poor choice for hosting a shop?", "options": ["It is too fast", "It cannot run any code", "It is unreliable because of power and hardware problems", "It is too expensive to run"], "answer": 2, "why": "Power cuts and hardware failures can take the shop offline."}, {"q": "Which option is usually cheaper at large, steady scale?", "options": ["Serverless", "Managed server", "Your own laptop", "A CDN"], "answer": 1, "why": "Managed servers cost less at scale, while serverless costs more as usage grows."}], "p3": [{"q": "Why put static web files on a CDN?", "options": ["So users load the files from the nearest server", "So stock counts stay exact", "So DNS is no longer needed", "So the database runs faster"], "answer": 0, "why": "A CDN stores copies near users, so pages load faster."}, {"q": "Why should changing data, such as stock counts, not be placed on a CDN?", "options": ["CDNs are too slow for any data", "CDNs cannot store numbers", "Storing numbers on a CDN costs too much", "Cached copies can go stale and cause overselling"], "answer": 3, "why": "If 50 shirts are left but stale copies show more, the shop can sell more than it has."}, {"q": "What does DNS do?", "options": ["Stores customer orders", "Runs the payment step", "Compresses images", "Maps domain names to IP addresses"], "answer": 3, "why": "DNS is a giant map from a domain name to the IP address of a server."}], "p4": [{"q": "What is a single point of failure?", "options": ["A component whose failure breaks everything", "A bug in one line of code", "A server with low memory", "A slow database query"], "answer": 0, "why": "If that one component fails, the whole system stops working."}, {"q": "The payment gateway succeeded about 98% of the time. What was the real problem?", "options": ["The gateway was broken", "Visits were too high", "The CDN was failing", "Debugging was slow"], "answer": 3, "why": "The gateway was fine, but the team needed too long to find and fix problems."}, {"q": "What should logs for one request share so you can trace it?", "options": ["The same color", "The same server name", "The same date only", "The same request ID"], "answer": 3, "why": "A shared request ID lets you search the request, its risky steps, and its response by order ID."}], "p5": [{"q": "For a team of about how many engineers are microservices usually not needed?", "options": ["2", "Over 100", "Exactly 5", "Under about 10 to 15"], "answer": 3, "why": "Small teams can move fast without the extra work microservices bring."}, {"q": "Node or Python may be 2 to 4 times slower than Java or Go on CPU work. What should you compare this against?", "options": ["Only the color of the logo", "Hiring and training cost plus migration time", "The number of visitors on Sunday", "Nothing, because speed always wins"], "answer": 1, "why": "The real cost includes people and time, not only raw speed."}, {"q": "10,000 visitors, 10% use the camera at checkout, and each use stores 1 MB. About how much storage is needed per day?", "options": ["1 MB per day", "1 GB per day", "10 GB per day", "1 TB per day"], "answer": 1, "why": "1,000 uses times 1 MB equals 1 GB per day."}], "p6": [{"q": "In the YouTube example, 1 billion users with 1 in 1,000 uploading each day gives how many videos per day?", "options": ["1 thousand", "1 billion", "1 trillion", "1 million"], "answer": 3, "why": "1 billion divided by 1,000 is 1 million videos per day."}, {"q": "Using 10^7 minutes of video per day at about 3 MB per minute, what is the daily storage?", "options": ["3 TB", "300 TB", "30 TB", "30 GB"], "answer": 2, "why": "10^7 minutes times 3 MB is about 30 TB."}, {"q": "Why multiply by about 2 to store several resolutions?", "options": ["Each video has two titles", "Users need two accounts", "The sum 1 + 1/2 + 1/4 + 1/8 + 1/16 is about 2", "Videos are always stored in two regions"], "answer": 2, "why": "The smaller resolutions add up to roughly one more copy of the original size."}], "p7": [{"q": "What is horizontal scaling?", "options": ["Making one machine bigger", "Deleting servers at night", "Making DNS faster", "Adding more machines behind a load balancer"], "answer": 3, "why": "Horizontal scaling spreads the work across many machines."}, {"q": "Which load balancing algorithm sends more traffic to bigger servers?", "options": ["Random", "Round robin", "Simple hashing", "Weighted round robin"], "answer": 3, "why": "Weighted round robin gives each server a share that matches its size."}, {"q": "Which algorithm is stateful and picks the server with the fewest active connections?", "options": ["Least connections", "Round robin", "Random", "Geo-based"], "answer": 0, "why": "Least connections tracks active connections, so it needs state."}], "p8": [{"q": "Why use consistent hashing instead of hash(key) % N?", "options": ["It is faster to compute", "It removes the need for a cache", "Adding a server moves only about 1/N of the keys", "It stores data in the browser"], "answer": 2, "why": "Plain modulo hashing remaps almost every key when the server count changes."}, {"q": "What is the main drawback of an in-memory cache in each server?", "options": ["It is too slow", "It uses no memory at all", "It cannot store text", "It is lost on restart and copies can go stale"], "answer": 3, "why": "Each server keeps its own copy, so the copies can disagree and are lost on restart."}, {"q": "Which problem do virtual nodes NOT fix?", "options": ["Uneven load across servers", "Spreading a dead server's keys across others", "A single hot key", "Uneven key distribution"], "answer": 2, "why": "Virtual nodes spread keys, but one very busy key still lands on one server."}], "p9": [{"q": "Which write policy is the best choice for payments?", "options": ["Write-back", "LFU", "Look-aside only", "Write-through"], "answer": 3, "why": "Write-through updates the database first, so a payment is not lost in the cache."}, {"q": "What is the main risk of write-back?", "options": ["The cache is too slow", "It writes to the database too rarely to be useful", "A crash can lose data that was not yet written to the database", "It cannot work with Redis"], "answer": 2, "why": "Write-back saves changes in the cache first, so a crash before the flush loses them."}, {"q": "Which eviction policy removes the least recently used item?", "options": ["LFU", "LRU", "TTL", "WAF"], "answer": 1, "why": "LRU evicts the item that has not been used for the longest time."}], "p10": [{"q": "A token bucket starts with 1,000 tokens, and each request takes one until it is done. What does this limit?", "options": ["The number of requests per second only", "The size of each request", "The number of servers", "The max number of requests in flight at one time"], "answer": 3, "why": "Tokens return when a request finishes, so the number in flight stays capped."}, {"q": "What is back pressure?", "options": ["A server rejects extra work with a 'retry later' reply", "A client keeps retrying forever", "A CDN stores the page for longer", "A server adds machines on its own"], "answer": 0, "why": "The overloaded server says no early, so it does not fail slowly under the load."}, {"q": "The limit is 100 requests per second, split as 5 servers with 20 each. If one server is idle, how many requests are served?", "options": ["100", "120", "20", "80"], "answer": 3, "why": "The idle server's 20 slots are wasted, so only 4 servers x 20 = 80 are served."}], "p11": [{"q": "Which symptom appeared when the team grew from 5 to 15 people?", "options": ["Long standups and slow shipping", "Faster deploys", "Clear owners for every part of the code", "Easy onboarding for new hires"], "answer": 0, "why": "A bigger team made meetings long and releases slow."}, {"q": "Which is a drawback of splitting into microservices?", "options": ["Independent deploys", "Better scaling of each part", "Lost shared context and slower network calls", "Free choice of tools for each team"], "answer": 2, "why": "Network calls are slower than function calls, and teams lose shared knowledge."}, {"q": "What makes a breaking API change fail at build time instead of in production?", "options": ["Adding a cache layer", "Using a bigger server", "Removing the logs", "Publishing a versioned client library"], "answer": 3, "why": "A versioned client library lets the build catch breaking changes early."}], "p12": [{"q": "Why copy each team's production database into one analytics store?", "options": ["So analysts do not slow down production", "So payments run faster", "So DNS lookups are cached", "So the CDN stores more pages"], "answer": 0, "why": "Analysts query the copy, so production stays fast."}, {"q": "Which AWS pair is given as the option for streaming and querying data?", "options": ["Kinesis and Athena", "Route 53 and CloudFront", "S3 and Redis", "Kafka and Redis"], "answer": 0, "why": "Kinesis streams the events and Athena runs the queries."}, {"q": "Why did the shop choose Kafka with S3 or HDFS and Spark?", "options": ["It needs no engineers at all", "It works only on one cloud", "It removes the need for events", "It is portable with no vendor lock-in and easier to hire for"], "answer": 3, "why": "The open-source stack can run anywhere and has many engineers who know it."}]};
+const GLOSS=[{"term": "API", "meaning": "A contract for how software talks. You send an agreed input and get an agreed output back."}, {"term": "Athena", "meaning": "An AWS tool that runs SQL queries on data stored in S3."}, {"term": "Back pressure", "meaning": "An overloaded server rejects extra work with a 'retry later' reply instead of failing slowly."}, {"term": "CDN", "meaning": "A network of servers around the world that keeps copies of static files close to users. Examples: CloudFront, Akamai, Cloudflare."}, {"term": "CloudWatch", "meaning": "An AWS service that collects, stores, and searches logs and metrics."}, {"term": "Consistent hashing", "meaning": "A way to map keys to servers on a ring. Adding or removing a server moves only about 1/N of the keys."}, {"term": "Contract (API contract)", "meaning": "A public description of an API's function name, inputs, responses, and errors."}, {"term": "DNS", "meaning": "The internet's giant map from domain names to IP addresses. Browsers cache the answers."}, {"term": "Eviction", "meaning": "Removing items from a cache to make room for new ones. LRU and LFU are common rules."}, {"term": "Fidelity", "meaning": "How well a design meets the stated requirements."}, {"term": "Global cache", "meaning": "One shared cache, such as Redis or Memcached, that all servers use. It adds a network hop."}, {"term": "Graceful degradation", "meaning": "Keeping the system working with fewer features and a friendly message when part of it fails."}, {"term": "gRPC", "meaning": "A remote call protocol that the course lists as one fix for head-of-line blocking."}, {"term": "Head-of-line blocking", "meaning": "One slow request stalls every request queued behind it."}, {"term": "Horizontal scaling", "meaning": "Adding more machines behind a load balancer to share the work."}, {"term": "Hot key", "meaning": "One key that gets far more traffic than the others. Virtual nodes do not fix it."}, {"term": "Kafka", "meaning": "An open-source event stream tool. It can carry copies of data from many services."}, {"term": "Kinesis", "meaning": "An AWS event stream service that moves data from producers to consumers."}, {"term": "Leaky bucket", "meaning": "A rate limit that admits one request per fixed interval. It is smooth but can waste capacity."}, {"term": "Least connections", "meaning": "A load balancing method that picks the server with the fewest active connections. It is stateful."}, {"term": "LFU", "meaning": "Least Frequently Used. Evicts the item used least often. New items can struggle to get in."}, {"term": "Load balancer", "meaning": "A component that spreads incoming requests across many servers."}, {"term": "Look-aside cache", "meaning": "The app checks the cache first and reads the database itself when the cache misses."}, {"term": "LRU", "meaning": "Least Recently Used. Evicts the item that has not been used for the longest time."}, {"term": "Managed server", "meaning": "A cloud server that you deploy and run yourself. Cheaper than serverless at large scale."}, {"term": "Memcached", "meaning": "An in-memory cache system often used as a global cache."}, {"term": "Microservice", "meaning": "A small service owned by one team. It has its own code and can be deployed on its own."}, {"term": "Observability", "meaning": "Tools such as logs and dashboards that show what the system is doing."}, {"term": "Payment gateway", "meaning": "An outside service that processes card payments for the shop."}, {"term": "Read-through cache", "meaning": "The cache fetches missing data from the database itself, so the app talks only to the cache."}, {"term": "Redis", "meaning": "An in-memory data store often used as a global cache."}, {"term": "Request ID", "meaning": "A unique ID written into every log line for one request, so its logs can be found together."}, {"term": "Reserved instance", "meaning": "A cloud server you rent for a year at a lower price than on-demand."}, {"term": "Round robin", "meaning": "A load balancing method that sends each new request to the next server in turn."}, {"term": "Route 53", "meaning": "The AWS DNS service."}, {"term": "S3", "meaning": "AWS object storage. Static web files such as HTML, CSS, and JS are stored here."}, {"term": "Serverless", "meaning": "A cloud model where you only write code. It scales on its own but costs more at large scale."}, {"term": "Shard", "meaning": "One part of a dataset split across servers. The key's hash decides which part it goes to."}, {"term": "Short circuit", "meaning": "A client stops calling a slow dependency for a while, so it does not wait on it."}, {"term": "Single point of failure (SPOF)", "meaning": "A component whose failure breaks the whole system."}, {"term": "Spark", "meaning": "An open-source engine for processing large amounts of data."}, {"term": "Stateful", "meaning": "Keeps information about past requests or connections. Least connections is stateful."}, {"term": "Stateless", "meaning": "Keeps no memory of past requests. Each request carries everything it needs."}, {"term": "Token bucket", "meaning": "A rate limit with a fixed number of tokens. Each request takes one and returns it when done."}, {"term": "TTL", "meaning": "Time to live. How long cached data can stay before it expires."}, {"term": "Vertical scaling", "meaning": "Making one machine bigger. It is costly and is a single point of failure."}, {"term": "Virtual node", "meaning": "Many points on the hash ring for each server. It evens out load and spreads a dead server's keys."}, {"term": "WAF", "meaning": "Web Application Firewall. It blocks bot and attack traffic before it reaches the app."}, {"term": "Weighted round robin", "meaning": "Round robin where bigger servers get a larger share of requests."}, {"term": "Write-back", "meaning": "Update the cache now and the database later. Fewer database writes, but a crash can lose data."}, {"term": "Write-through", "meaning": "Update the database first, then the cache. Safe, so use it for payments."}];
+const CHEAT=[{"part": 1, "problem": "Shopify cannot track delivery or take international cards", "fix": "Add a small custom layer: own payment page and tracking page."}, {"part": 2, "problem": "A laptop at home is unreliable for hosting", "fix": "Rent cloud hosting. Start serverless for ease."}, {"part": 3, "problem": "Pages load slowly from far away; changing data cached on a CDN oversells", "fix": "Put static files on a CDN. Keep changing data on your server."}, {"part": 4, "problem": "Slow debugging; one provider or server failure breaks everything", "fix": "Use request IDs, dashboards, backups, multiple providers, graceful degradation."}, {"part": 5, "problem": "Boss asks about microservices, languages and new features", "fix": "Answer with benefits, drawbacks and numbers; keep it simple."}, {"part": 6, "problem": "Capacity estimates off by 1000x", "fix": "State assumptions; convert per day to per second; 10x error is acceptable."}, {"part": 7, "problem": "One big server; high bill; single point of failure", "fix": "Scale out behind a load balancer; use reserved instances to save."}, {"part": 8, "problem": "hash(id) % N remaps almost every key when servers change", "fix": "Use consistent hashing with virtual nodes."}, {"part": 9, "problem": "Redis bill too high; cache stores full objects", "fix": "Store light IDs; set TTLs; use write-through for payments."}, {"part": 10, "problem": "Flash sale traffic spike collapsed the system", "fix": "Pre-scale, cache lists on CDN, add WAF, rate limit, apply back pressure."}, {"part": 11, "problem": "Team grew from 5 to 15; slow shipping; unclear ownership", "fix": "Split teams and code into services with versioned API contracts."}, {"part": 12, "problem": "Business teams wait on engineers for data", "fix": "Stream every database into one analytics store; analysts query the copy."}];
+const $=id=>document.getElementById(id);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const REDUCED=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- theme, menu ---------- */
+const root=document.documentElement;
+function setTheme(t){root.dataset.theme=t;$('theme').textContent=t==='dark'?'☀️ Light':'🌙 Dark';store.set('ec1m-theme',t)}
+setTheme(store.get('ec1m-theme')||'light');
+$('theme').onclick=()=>setTheme(root.dataset.theme==='dark'?'light':'dark');
+const side=$('side'),bd=$('backdrop');
+function menu(o){side.classList.toggle('open',o);bd.classList.toggle('show',o)}
+$('menu').onclick=()=>menu(!side.classList.contains('open'));bd.onclick=()=>menu(false);
+$$('nav.side a').forEach(a=>a.addEventListener('click',()=>menu(false)));
+
+/* ---------- progress + active nav + done ---------- */
+let done=new Set();try{done=new Set(JSON.parse(store.get('ec1m-done')||'[]'))}catch(e){}
+function paintDone(){
+  $$('nav.side a').forEach(a=>a.classList.toggle('done',done.has(a.getAttribute('href').slice(1))));
+  $$('.done-btn').forEach(b=>{const on=done.has(b.dataset.p);b.textContent=on?'Done ✔ (click to undo)':'Mark part done ✔';b.parentElement.querySelector('.donemsg').classList.toggle('show',on)});
+}
+$$('.done-btn').forEach(b=>b.onclick=()=>{const p=b.dataset.p;done.has(p)?done.delete(p):done.add(p);store.set('ec1m-done',JSON.stringify([...done]));paintDone()});
+$('reset').onclick=()=>{done.clear();store.set('ec1m-done','[]');paintDone()};
+paintDone();
+const secs=$$('header.hero, section.part');
+function onScroll(){
+  const h=document.documentElement;const max=h.scrollHeight-h.clientHeight;
+  $('progress').style.width=(max>0?h.scrollTop/max*100:0)+'%';
+  let cur=secs[0];secs.forEach(s=>{if(s.getBoundingClientRect().top<160)cur=s});
+  const id=cur.id==='p0b'?'p0':cur.id;
+  $$('nav.side a').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+id));
+}
+addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+/* ---------- copy buttons ---------- */
+$$('.copy').forEach(b=>b.onclick=()=>{const t=b.parentElement.querySelector('pre').innerText;
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{b.textContent='Copied!';setTimeout(()=>b.textContent='Copy',1200)}).catch(()=>{b.textContent='Select + copy';setTimeout(()=>b.textContent='Copy',1500)})});
+
+/* ---------- quizzes, glossary, cheat sheet ---------- */
+$$('.quiz[data-q]').forEach(box=>{
+  const qs=QUIZ[box.dataset.q]||[];
+  box.innerHTML='<h4>Quick Quiz</h4>';
+  qs.forEach((q,qi)=>{
+    const d=document.createElement('div');d.innerHTML='<p class="q">'+(qi+1)+'. '+q.q+'</p>';
+    const why=document.createElement('p');why.className='why';why.textContent=q.why;
+    q.options.forEach((o,oi)=>{
+      const b=document.createElement('button');b.className='opt';b.textContent=o;
+      b.onclick=()=>{$$('.opt',d).forEach(x=>x.disabled=true);b.classList.add(oi===q.answer?'right':'wrong');
+        if(oi!==q.answer)$$('.opt',d)[q.answer].classList.add('right');why.classList.add('show')};
+      d.appendChild(b)});
+    d.appendChild(why);box.appendChild(d)});
+});
+$('gloss-list').innerHTML=GLOSS.map(g=>'<dt>'+g.term+'</dt><dd>'+g.meaning+'</dd>').join('');
+$('cheat-body').innerHTML=CHEAT.map(c=>'<tr><td><b>'+c.part+'</b></td><td>'+c.problem+'</td><td>'+c.fix+'</td></tr>').join('');
+
+/* ---------- generic stepper for svg flows ---------- */
+const STEPS={
+dns:[
+ {t:'You type fancytshirts.io. The browser needs an IP address. It checks its own memory first. Not there.',on:['dns-browser']},
+ {t:'The browser asks the router, which asks your internet provider (ISP).',on:['dns-browser','ar-1','dns-isp']},
+ {t:'The ISP asks the DNS servers. GoDaddy points to Route 53, which knows the answer.',on:['dns-isp','ar-2','dns-ns']},
+ {t:'The IP comes back. The browser saves it, so it does not need to ask again.',on:['dns-ns','ar-3','dns-isp']},
+ {t:'Now the browser calls that IP. It is a CloudFront server, which returns the HTML page.',on:['dns-browser','ar-4','dns-cdn']}],
+trace:[
+ {t:'LOG  req-7781  received  POST /purchase  order A-1021',on:['tr-cust','tr-a1','tr-api']},
+ {t:'LOG  req-7781  writing order to database ... ok',on:['tr-api','tr-a2','tr-db']},
+ {t:'LOG  req-7781  calling payment gateway ... ERROR: international card declined',on:['tr-api','tr-a3'],bad:['tr-gw']},
+ {t:'Support searches the logs for order A-1021 and sees all three lines. Cause found in a minute: a declined international card, not a broken gateway. (Log lines here are illustrative.)',on:['tr-api','tr-a4','tr-log']}],
+pf:[
+ {t:'The user lands on the homepage.',on:['pf-home']},
+ {t:'Without waiting, the page calls the products API in the background.',on:['pf-home','pf-a1','pf-api']},
+ {t:'The answer is saved in the browser.',on:['pf-api','pf-a2','pf-store']},
+ {t:'The user opens the products page. The data is already there and only CDN images load. It feels instant.',on:['pf-store','pf-a3','pf-page']}],
+def:[
+ {t:'Bots are blocked at the edge by the WAF. Real customers pass.',on:['def-client','def-waf']},
+ {t:'The gateway applies rate limits. Payment and order-status requests get priority. "Recently viewed" can wait.',on:['def-gw','def-srv']},
+ {t:'The popular-shirt list comes from the cache. Fast.',on:['def-srv','def-a-cache','def-cache']},
+ {t:'Trouble: the database becomes slow (2 seconds instead of 100 ms).',on:['def-srv','def-a-db'],bad:['def-db']},
+ {t:'Short circuit: the server stops calling the slow database. Back pressure: it answers "busy, retry in 60 s" instead of piling up work. The cache and critical requests keep working.',on:['def-srv','def-back','def-client'],bad:['def-db']}],
+an:[
+ {t:'A customer pays. The payment service saves it in its own database, as always.',on:['an-pay']},
+ {t:'It also publishes an event such as "payment, 499, today". Nothing else about the service changes.',on:['an-pay','an-a1','an-stream']},
+ {t:'The stream adds the event to the big data store, next to events from every other team.',on:['an-stream','an-a2','an-store']},
+ {t:'A dashboard or analyst runs a query here. The live databases never feel it.',on:['an-store','an-a3','an-q']},
+ {t:'The operations chief sees today\'s sales on a dashboard without asking an engineer.',on:['an-q','an-a4','an-dash']}],
+all:[
+ {t:'The browser looks up the name with DNS.',on:['all-cust','all-a1','all-dns']},
+ {t:'Pages, images and scripts come from the nearest CDN edge. The WAF blocks bots.',on:['all-dns','all-a2','all-cdn']},
+ {t:'An API call (buy a shirt) goes to the load balancer. It picks a healthy server and rate-limits floods.',on:['all-cust','all-a3','all-lb']},
+ {t:'The right team\'s service handles it. Versioned contracts keep services compatible.',on:['all-lb','all-a4','all-svc']},
+ {t:'Reads are served from the Redis cache when possible.',on:['all-svc','all-a5','all-cache']},
+ {t:'On a cache miss, or for payments (write-through), the service uses its own database.',on:['all-svc','all-a6','all-db']},
+ {t:'Every step writes a log line with the request ID, so support can trace it.',on:['all-svc','all-a10','all-log']},
+ {t:'The change is published as an event and copied to the data store.',on:['all-db','all-a7','all-stream','all-a8','all-store']},
+ {t:'Business teams query the copy and see dashboards. Production stays fast.',on:['all-store','all-a9','all-dash']}]
+};
+$$('[data-step]').forEach(btn=>{
+  const k=btn.dataset.step,svg=document.querySelector('svg[data-stepsvg="'+k+'"]'),out=$(k+'-out'),steps=STEPS[k];let i=0;
+  const clear=()=>$$('.node,.ar',svg).forEach(e=>e.classList.remove('on','bad'));
+  btn.onclick=()=>{
+    if(i>=steps.length){out.textContent='That is the whole trip. Press Restart to watch again.';return}
+    const s=steps[i];clear();(s.on||[]).forEach(id=>{const e=svg.querySelector('#'+id);e&&e.classList.add('on')});
+    (s.bad||[]).forEach(id=>{const e=svg.querySelector('#'+id);e&&(e.classList.remove('on'),e.classList.add('bad'))});
+    out.textContent='Step '+(i+1)+' of '+steps.length+': '+s.t;i++;
+  };
+  const rb=document.querySelector('[data-reset="'+k+'"]');
+  rb.onclick=()=>{i=0;clear();out.textContent='Press "Next step".'};
+});
+
+/* ---------- reveal chain + bars ---------- */
+function runReveal(id){const items=$$('#'+id+' .link');items.forEach(x=>x.classList.remove('show'));items.forEach((x,i)=>setTimeout(()=>x.classList.add('show'),REDUCED?0:i*420))}
+$$('[data-reveal]').forEach(b=>b.onclick=()=>runReveal(b.dataset.reveal));
+function runBars(id){const f=$$('#'+id+' .fill');f.forEach(x=>x.style.width='0');setTimeout(()=>f.forEach((x,i)=>setTimeout(()=>x.style.width=x.dataset.w+'%',i*250)),60)}
+$$('[data-bars]').forEach(b=>b.onclick=()=>runBars(b.dataset.bars));
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){io.unobserve(e.target);if(e.target.id==='est')runReveal('est');if(e.target.id==='res')runBars('res')}}),{threshold:.4});
+['est','res'].forEach(id=>io.observe($(id)));
+
+/* ---------- part 0: moving dot ---------- */
+(function(){const d=$('tl-dot');if(!d||REDUCED)return;const t0=performance.now();
+ (function f(t){const p=((t-t0)%7000)/7000;d.setAttribute('cx',95+p*790);requestAnimationFrame(f)})(t0)})();
+
+/* ---------- part 1 ---------- */
+$('api-pay').onclick=()=>{$('api-req').textContent='{ "order_id": "A-1021" }';$('api-out').textContent='{ "order_id": "A-1021",\n  "payment": "SUCCESS",\n  "gateway": "Razorpay" }'};
+$('api-del').onclick=()=>{$('api-req').textContent='{ "order_id": "A-1021" }';$('api-out').textContent='{ "order_id": "A-1021",\n  "delivery": "OUT_FOR_DELIVERY",\n  "eta": "tomorrow" }'};
+const SC={amazon:[85,25,70,'Easy to start, but the founder cannot control the look or the recommendations. Fails fidelity.'],shopify:[85,55,75,'Simple and cheap, but delivery tracking and international payments are missing. Fidelity is still low.'],wrap:[65,90,65,'A bit more to build, but it meets every requirement at a fair cost. This is the winner.']};
+function score(k){const s=SC[k];[['sim',0],['fid',1],['cost',2]].forEach(([n,i])=>{$('sc-'+n).style.width=s[i]+'%';$('sc-'+n+'-n').textContent=s[i]+'/100'});$('sc-out').textContent=s[3];
+ $$('[data-sc]').forEach(b=>b.classList.toggle('sel',b.dataset.sc===k))}
+$$('[data-sc]').forEach(b=>b.onclick=()=>score(b.dataset.sc));setTimeout(()=>score('amazon'),300);
+
+/* ---------- part 2: spike race ---------- */
+let spT=null;
+$('spike-btn').onclick=()=>{
+  clearInterval(spT);let t=0;const need=$('sp-need'),sv=$('sp-serv'),mn=$('sp-man');[need,sv,mn].forEach(e=>e.style.transition='width .1s linear');
+  spT=setInterval(()=>{t+=.1;const d=Math.min(100,t*25),c=Math.min(100,Math.max(0,(t-1.2)*25));
+    need.style.width=d+'%';sv.style.width=Math.min(d,c)+'%';mn.style.width=d+'%';
+    $('sp-serv-n').textContent=c<d?'waiting':'caught up';$('sp-man-n').textContent='ready';
+    if(t>=5){clearInterval(spT);$('sp-out').textContent='Serverless made early customers wait about a second before it caught up. The pre-booked fleet never lagged, but you paid for it before the sale started.'}},100)};
+
+/* ---------- part 3 ---------- */
+const CDN={mum:'Mumbai shopper → Edge: Mumbai. The closest server, so the page arrives fast.',eu:'London shopper → Edge: Europe. One European edge can serve many countries.',usw:'San Francisco shopper → Edge: US West.',use:'New York shopper → Edge: US East.'};
+$$('[data-cdn]').forEach(b=>b.onclick=()=>{const k=b.dataset.cdn;['mum','eu','usw','use'].forEach(x=>{$('edge-'+x).classList.toggle('on',x===k);$('user-'+x).classList.toggle('on',x===k);$('edge-'+x).classList.toggle('dim',x!==k);$('user-'+x).classList.toggle('dim',x!==k)});$('cdn-out').textContent=CDN[k]});
+$('os-sell').onclick=()=>{$('os-us').textContent='10';$('os-in').textContent='39';$('os-out').textContent='Each edge sold from its own copy. 40 + 11 = 51 sold, but only 50 shirts existed. Oversold by one!'};
+$('os-fix').onclick=()=>{$('os-us').textContent='0';$('os-in').textContent='0';$('os-out').textContent='With one server as the single source of truth, the count goes 50 → 10 → 0. Order 51 is told "Sold out". No oversell.'};
+$('os-reset').onclick=()=>{$('os-us').textContent='50';$('os-in').textContent='50';$('os-out').textContent='Both copies start at 50.'};
+
+/* ---------- part 4: SPOF + failover ---------- */
+const SP={cust:'One customer\'s phone failing affects only that customer. Not a SPOF.',cdn:'No CDN means no pages, so no orders. A SPOF! Fix: use a managed CDN such as CloudFront. Reliability is its job.',shop:'Shopify down means no store and no orders. A real SPOF. Several order takers are possible but costly.',srv:'Server crash: every API call fails. Serverless or several servers lowers this risk.',db:'Database down: orders cannot be saved. Fix: keep a backup database.',pp:'PayPal down: Stripe takes over. Not a SPOF, because there is a backup.',st:'The backup provider is down. Sales still work through PayPal, but your safety net is gone.'};
+$$('#spof .node').forEach(n=>n.onclick=()=>{const bad=n.classList.toggle('bad');$('spof-out').textContent=bad?SP[n.dataset.spof]:'Repaired. All normal again.'});
+$('fo-fail').onclick=()=>{$('fo-pp').classList.remove('good');$('fo-pp').classList.add('bad');$('fo-a1').classList.add('dim');$('fo-st').classList.add('good');$('fo-a2').classList.remove('dim');$('fo-a2').classList.add('green');$('fo-out').textContent='PayPal failed. Checkout switched to Stripe. Customers barely notice.'};
+$('fo-fix').onclick=()=>{$('fo-pp').classList.remove('bad');$('fo-pp').classList.add('good');$('fo-a1').classList.remove('dim');$('fo-st').classList.remove('good');$('fo-a2').classList.add('dim');$('fo-a2').classList.remove('green');$('fo-out').textContent='PayPal is handling payments.'};
+
+/* ---------- part 5 calculators ---------- */
+function lg(){const e=+$('lg-extra').value,s=+$('lg-save').value,m=+$('lg-mig').value,n=s-e;
+  $('lg-out').textContent=n<=0?'The savings ($'+s+') are not bigger than the extra server cost ($'+e+'). It never pays back. Do not migrate.':'Net gain $'+n+'/month. The migration pays back in '+(m/n).toFixed(1)+' months'+(m/n>36?'. That is a long wait. For a small company, probably not worth it.':'.')}
+['lg-extra','lg-save','lg-mig'].forEach(i=>$(i).oninput=lg);lg();
+function cc(){const v=+$('cc-vis').value,p=+$('cc-pct').value,pr=+$('cc-price').value,mb=+$('cc-mb').value;
+  const calls=v*p/100,mo=calls*30,gb=calls*mb/1000;
+  $('cc-out').textContent=calls.toLocaleString()+' calls/day → '+mo.toLocaleString()+' calls/month → $'+(mo*pr).toLocaleString(undefined,{maximumFractionDigits:0})+'/month. Storage grows '+gb.toLocaleString()+' GB/day ('+(gb*30).toLocaleString()+' GB/month).'}
+['cc-vis','cc-pct','cc-price','cc-mb'].forEach(i=>$(i).oninput=cc);cc();
+
+/* ---------- part 6: cluster sizing ---------- */
+let csFailed=false;
+function cs(){const u=+$('cs-util').value,n=Math.ceil(1000/(16*u));const g=$('cs-grid');g.innerHTML='';
+  for(let i=0;i<n;i++){const d=document.createElement('div');d.style.cssText='width:12px;height:12px;border:2px solid #1b1b2f;border-radius:3px;background:'+(csFailed&&i===0?'var(--red)':'var(--green)');g.appendChild(d)}
+  let msg='1,000 GB of thumbnails ÷ (16 GB × '+(u*100)+'% usable) = about '+n+' nodes.';
+  if(csFailed){const load=u*n/(n-1)*100;msg+=load>100?' One node died. The rest must now hold '+load.toFixed(1)+'% of their size. Over capacity! Data spills and the cascade begins.':' One node died. The rest rise to '+load.toFixed(1)+'% full. Easily absorbed.'}
+  $('cs-out').textContent=msg}
+$('cs-util').onchange=()=>{csFailed=false;cs()};$('cs-fail').onclick=()=>{csFailed=true;cs()};$('cs-reset').onclick=()=>{csFailed=false;cs()};cs();
+
+/* ---------- part 7: load balancer race ---------- */
+const LB=[{n:'A',w:1},{n:'B',w:1},{n:'C',w:2}];let lbS,lbRR=0,lbWI=0,lbGen=0;
+function lbInit(){lbGen++;lbS=LB.map(s=>({...s,conn:0,total:0,alive:true}));lbRR=0;lbWI=0;$('lb-crash').textContent='Crash server B';lbDraw();$('lb-out').textContent='Pick an algorithm and send requests.'}
+function lbDraw(){$('lb-servers').innerHTML=lbS.map(s=>'<div class="bar-row"><span>Server '+s.n+' (w'+s.w+')'+(s.alive?'':' ✘')+'</span><div class="track"><div class="fill '+(s.alive?'':'r')+'" style="width:'+(s.alive?Math.min(100,s.conn*20):100)+'%"></div></div><b>'+(s.alive?s.total+' served':'DOWN')+'</b></div>').join('')}
+function lbSend(){
+  const alive=lbS.filter(s=>s.alive);if(!alive.length){$('lb-out').textContent='No servers left!';return}
+  const alg=$('lb-alg').value;let s,why='';
+  if(alg==='rr'){s=alive[lbRR++%alive.length];why='round robin: next in the cycle'}
+  else if(alg==='wrr'){const seq=alive.flatMap(x=>Array(x.w).fill(x));s=seq[lbWI++%seq.length];why='weighted round robin: C appears twice per cycle'}
+  else if(alg==='lc'){s=alive.reduce((a,b)=>b.conn<a.conn?b:a);why='least connections: it had the fewest ('+s.conn+')'}
+  else if(alg==='hash'){const id=Math.floor(Math.random()*1000);s=alive[id%alive.length];why='client #'+id+' → '+id+' % '+alive.length+' = '+(id%alive.length)}
+  else{s=alive[Math.floor(Math.random()*alive.length)];why='random pick'}
+  s.conn++;s.total++;const g=lbGen;setTimeout(()=>{if(g===lbGen){s.conn=Math.max(0,s.conn-1);lbDraw()}},1200+Math.random()*1800);
+  $('lb-out').textContent='→ Server '+s.n+' ('+why+')';lbDraw()}
+$('lb-1').onclick=lbSend;$('lb-10').onclick=()=>{for(let i=0;i<10;i++)setTimeout(lbSend,i*120)};
+$('lb-crash').onclick=()=>{const b=lbS[1];b.alive=!b.alive;b.conn=0;$('lb-crash').textContent=b.alive?'Crash server B':'Revive server B';$('lb-out').textContent=b.alive?'Server B is back.':'Server B crashed. The balancer skips it. Traffic spreads over the rest.';lbDraw()};
+$('lb-reset').onclick=lbInit;$('lb-alg').onchange=()=>{lbRR=0;lbWI=0};lbInit();
+
+/* ---------- part 8: cache placement ---------- */
+let cpMode='local',cpN=0;
+function cpDraw(){const truth=5-cpN;$('cp-grid').innerHTML=[1,2,3].map(i=>{const v=cpMode==='local'?(i===1?truth:5):truth;const stale=v!==truth;
+  return '<div class="card" style="text-align:center;margin:0'+(stale?';background:var(--red);color:#fff':'')+'"><span class="label">Server '+i+'</span><div class="bang" style="font-size:40px">'+v+'</div><small>'+(cpMode==='local'?'own copy':'reads Redis')+(stale?' · STALE':'')+'</small></div>'}).join('');
+  $('cp-out').textContent=cpMode==='local'?(cpN?'Server 1 updated its own copy. Servers 2 and 3 still say 5. The same shirt shows different counts.':'Each server keeps its own copy of "5 shirts left". Press "Buy".'):(cpN?'One copy in Redis. Everyone sees '+truth+'. But every read is a network hop.':'One shared Redis holds a single copy. Press "Buy".')}
+$$('[data-cp]').forEach(b=>b.onclick=()=>{cpMode=b.dataset.cp;cpN=0;$$('[data-cp]').forEach(x=>x.classList.toggle('sel',x===b));cpDraw()});
+$('cp-buy').onclick=()=>{if(cpN<5)cpN++;cpDraw()};$('cp-reset').onclick=()=>{cpN=0;cpDraw()};cpDraw();
+
+/* ---------- part 8: ring ---------- */
+function hs(s){let h1=0xdeadbeef,h2=0x41c6ce57;for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);h1=Math.imul(h1^c,2654435761);h2=Math.imul(h2^c,1597334677)}
+ h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);return h1>>>0}
+const RC=['#ff4d4d','#3a86ff','#2ec27e','#8e5cf7','#ff9e1b','#00b8d9','#e83e8c','#7a8b99'];
+const KEYS=Array.from({length:40},(_,i)=>hs('key'+i));
+let rgS=['S1','S2','S3'],rgPrev=null;
+function rgOwners(){const vn=+$('rg-v').value,mode=$('rg-mode').value;
+  if(mode==='mod')return KEYS.map(k=>rgS[k%rgS.length]);
+  const pts=rgS.flatMap(s=>Array.from({length:vn},(_,j)=>({s,a:hs(s+'#'+j)}))).sort((a,b)=>a.a-b.a);
+  return KEYS.map(k=>{const p=pts.find(p=>p.a>=k)||pts[0];return p.s})}
+function rgDraw(note){
+  const vn=+$('rg-v').value,mode=$('rg-mode').value,own=rgOwners(),svg=$('rg-svg'),C=180,R=130;let h='<circle cx="'+C+'" cy="'+C+'" r="'+R+'" fill="none" stroke="currentColor" stroke-width="2" opacity=".5"/>';
+  const pt=(a,r)=>{const t=a/4294967296*2*Math.PI-Math.PI/2;return [C+r*Math.cos(t),C+r*Math.sin(t)]};
+  const col=s=>RC[(+s.slice(1)-1)%RC.length];
+  if(mode==='ring')rgS.forEach(s=>{for(let j=0;j<vn;j++){const [x,y]=pt(hs(s+'#'+j),R);h+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+(vn>1?6:9)+'" fill="'+col(s)+'" stroke="currentColor" stroke-width="2"/>'}});
+  KEYS.forEach((k,i)=>{const [x,y]=pt(k,R-26);h+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="4.5" fill="'+col(own[i])+'" stroke="currentColor" stroke-width="1"/>'});
+  h+='<text x="180" y="176" text-anchor="middle" class="big">'+rgS.length+' servers</text><text x="180" y="196" text-anchor="middle" class="sm">'+(mode==='ring'?'keys walk clockwise':'key % '+rgS.length)+'</text>';
+  svg.innerHTML=h;
+  const cnt={};rgS.forEach(s=>cnt[s]=0);own.forEach(o=>cnt[o]++);
+  let msg=note||'';msg+=(msg?' ':'')+'Keys per server: '+rgS.map(s=>s+'='+cnt[s]).join(', ')+'.';$('rg-out').textContent=msg;rgPrev=own}
+function rgChange(label){const before=rgPrev;const own=rgOwners();let moved=0;own.forEach((o,i)=>{if(o!==before[i])moved++});
+  rgDraw(label+': '+moved+' of 40 keys moved.')}
+$('rg-add').onclick=()=>{if(rgS.length>=8)return;rgS.push('S'+(rgS.length+1));rgChange('Added a server')};
+$('rg-del').onclick=()=>{if(rgS.length<=2)return;const r=rgS.pop();rgChange('Removed '+r)};
+$('rg-mode').onchange=()=>{rgDraw('Method changed.')};
+$('rg-v').oninput=()=>{$('rg-vn').textContent=$('rg-v').value;rgDraw('Points per server: '+$('rg-v').value+'.')};
+rgPrev=rgOwners();rgDraw();
+
+/* ---------- part 9 ---------- */
+function fmtKB(k){return k>=1e6?(k/1e6).toFixed(1)+' GB':k>=1e3?(k/1e3).toFixed(1)+' MB':k.toFixed(0)+' KB'}
+function hl(){const u=+$('hl-users').value,hv=u*10*2,lt=u*10*.01+200*2;$('hl-h').style.width='100%';$('hl-l').style.width=Math.max(2,lt/hv*100)+'%';$('hl-hn').textContent=fmtKB(hv);$('hl-ln').textContent=fmtKB(lt)}
+$('hl-users').onchange=hl;setTimeout(hl,300);
+let wp,wpT=[];
+function wpInit(){wpT.forEach(clearTimeout);wpT=[];wp={wt:{c:0,d:0,w:0},wb:{c:0,d:0,w:0,dirty:0}};wpDraw();$('wp-out').textContent='Send the updates, then try the crash before flushing.'}
+function wpDraw(){$('wt-c').textContent=wp.wt.c;$('wt-d').textContent=wp.wt.d;$('wt-w').textContent=wp.wt.w;$('wb-c').textContent=wp.wb.c;$('wb-d').textContent=wp.wb.d;$('wb-w').textContent=wp.wb.w}
+$('wp-send').onclick=()=>{[15,20,30].forEach((v,i)=>wpT.push(setTimeout(()=>{wp.wt.d+=v;wp.wt.w++;wp.wt.c+=v;wp.wb.c+=v;wp.wb.dirty+=v;wpDraw();$('wp-out').textContent='+'+v+' views. Write-through hit the database again. Write-back only touched the cache.'},i*800)))};
+$('wp-flush').onclick=()=>{if(wp.wb.dirty>0){wp.wb.d+=wp.wb.dirty;wp.wb.w++;$('wp-out').textContent='Flush! Write-back wrote '+wp.wb.dirty+' to the database in ONE write. Write-through needed 3.';wp.wb.dirty=0}else $('wp-out').textContent='Nothing waiting to flush.';wpDraw()};
+$('wp-crash').onclick=()=>{const lost=wp.wb.dirty;wp.wt.c=0;wp.wb.c=0;wp.wb.dirty=0;wpDraw();$('wp-out').textContent=lost?'Redis crashed. Write-back lost '+lost+' views that only lived in the cache. Write-through lost nothing. That is why payments use write-through and view counts can use write-back.':'Redis crashed, but nothing was waiting in the cache, so nothing was lost.'};
+$('wp-reset').onclick=wpInit;wpInit();
+const EV_STREAM=['E','A','E','F','E','E'];let ev,evI=0,evT=5;
+function evInit(){const mk=()=>({items:[{id:'A',count:9,last:1},{id:'B',count:5,last:4},{id:'C',count:3,last:3},{id:'D',count:2,last:2}],h:0,m:0});ev={lru:mk(),lfu:mk()};evI=0;evT=5;evDraw();$('ev-out').textContent='Press "Next login".'}
+function evDraw(){['lru','lfu'].forEach(k=>{$('ev-'+k).innerHTML=ev[k].items.map(x=>'<span class="pill b">'+x.id+' · used '+x.count+'×</span>').join('');$('ev-'+k+'-h').textContent=ev[k].h;$('ev-'+k+'-m').textContent=ev[k].m})}
+function evAccess(c,id,pol,t){const f=c.items.find(x=>x.id===id);if(f){f.count++;f.last=t;c.h++;return 'hit'}
+  c.m++;if(pol==='lru'){const v=c.items.reduce((a,b)=>a.last<=b.last?a:b);c.items=c.items.filter(x=>x!==v);c.items.push({id,count:1,last:t});return 'miss, evicted '+v.id}
+  const v=c.items.reduce((a,b)=>a.count<=b.count?a:b);return 'miss, not admitted (count 1 vs '+v.id+' with '+v.count+')'}
+$('ev-next').onclick=()=>{if(evI>=EV_STREAM.length){$('ev-out').textContent='Stream finished. LRU welcomed the newcomers, so E got hits. LFU kept its old favourites and E missed almost every time.';return}
+  const id=EV_STREAM[evI++];const a=evAccess(ev.lru,id,'lru',evT),b=evAccess(ev.lfu,id,'lfu',evT);evT++;evDraw();$('ev-out').textContent='User '+id+' logs in. LRU: '+a+'. LFU: '+b+'.'};
+$('ev-reset').onclick=evInit;evInit();
+
+/* ---------- part 10 ---------- */
+function holSim(){const d=[10,1,1,1,1];
+  let t=0;const fifo=d.map(x=>t+=x);
+  const free=[0,0],par=d.map(x=>{const i=free[0]<=free[1]?0:1;free[i]+=x;return free[i]});
+  const rem=d.slice(),fin=[],q=d.map((_,i)=>i);let tm=0;while(q.length){const i=q.shift(),s=Math.min(2,rem[i]);tm+=s;rem[i]-=s;if(rem[i]>0)q.push(i);else fin[i]=tm}
+  return [['One line (FIFO)',fifo,'r'],['Two lines (parallel)',par,'g'],['Step aside (time slices)',fin,'p']]}
+$('hol-run').onclick=()=>{const r=holSim(),avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
+  $('hol-bars').innerHTML=r.map(x=>'<div class="bar-row"><span>'+x[0]+'</span><div class="track"><div class="fill '+x[2]+'" data-w="'+(avg(x[1])/12*100)+'"></div></div><b>avg '+avg(x[1]).toFixed(1)+'</b></div>').join('');
+  setTimeout(()=>$$('#hol-bars .fill').forEach(f=>f.style.width=f.dataset.w+'%'),50);
+  $('hol-out').textContent='Finish times for requests 1 to 5. One line: '+r[0][1].join(', ')+'. Two lines: '+r[1][1].join(', ')+'. Time slices: '+r[2][1].join(', ')+'. The slow request hurts everyone in one line, but only itself in the other two.'};
+let bk={tok:3,fly:0,wait:0,tdone:0,leak:0,ldone:0},bkT=[],bkI=null;
+function bkDraw(){$('bk-tok').textContent='🪙'.repeat(bk.tok)+' '+'⚙️'.repeat(bk.fly);$('bk-leak').textContent='⏳'.repeat(bk.leak);$('bk-tw').textContent=bk.wait;$('bk-td').textContent=bk.tdone;$('bk-lw').textContent=bk.leak;$('bk-ld').textContent=bk.ldone}
+function bkStart(){bk.tok--;bk.fly++;bkT.push(setTimeout(()=>{bk.fly--;bk.tok++;bk.tdone++;if(bk.wait>0){bk.wait--;bkStart()}bkDraw()},2500))}
+function bkReset(){bkT.forEach(clearTimeout);bkT=[];clearInterval(bkI);bkI=null;bk={tok:3,fly:0,wait:0,tdone:0,leak:0,ldone:0};bkDraw()}
+$('bk-send').onclick=()=>{bkReset();for(let i=0;i<8;i++){if(bk.tok>0)bkStart();else bk.wait++}bk.leak=8;bkDraw();bkI=setInterval(()=>{if(bk.leak>0){bk.leak--;bk.ldone++}else{clearInterval(bkI);bkI=null}bkDraw()},1000)};
+$('bk-reset').onclick=bkReset;bkDraw();
+function limDraw(m){const v=m==='local'?[20,20,20,20,0]:[25,25,25,25,0];
+  $('lim-bars').innerHTML=v.map((x,i)=>'<div class="bar-row"><span>Server '+(i+1)+(i===4?' (idle)':'')+'</span><div class="track"><div class="fill '+(i===4?'r':'g')+'" style="width:'+(x/25*100)+'%"></div></div><b>'+x+'/s</b></div>').join('');
+  $('lim-out').textContent=m==='local'?'Each server enforces its own cap of 20. Server 5 gets no traffic, so only 80 requests/sec are served. The others could have taken 25 but do not know server 5 is idle.':'The central limiter holds the global counter of 100. The four busy servers may use the idle capacity, so the full 100 requests/sec are served. The price: an extra hop for every check.';
+  $$('[data-lim]').forEach(b=>b.classList.toggle('sel',b.dataset.lim===m))}
+$$('[data-lim]').forEach(b=>b.onclick=()=>limDraw(b.dataset.lim));limDraw('local');
+
+/* ---------- part 11 ---------- */
+(function(){let h='';const P=[];for(let r=0;r<3;r++)for(let c=0;c<5;c++)P.push([220+c*115+Math.sin(r*5+c*3)*22,115+r*52+Math.cos(c*4+r)*10]);
+ for(let i=0;i<15;i++){const j=(i*7+3)%15,k=(i*4+1)%15;[j,k].forEach(t=>h+='<line x1="'+P[i][0].toFixed(0)+'" y1="'+P[i][1].toFixed(0)+'" x2="'+P[t][0].toFixed(0)+'" y2="'+P[t][1].toFixed(0)+'" stroke="#fff" stroke-width="1.5" opacity=".55"/>')}
+ P.forEach(p=>h+='<circle cx="'+p[0].toFixed(0)+'" cy="'+p[1].toFixed(0)+'" r="11" fill="#ffd93d" stroke="#1b1b2f" stroke-width="2"/>');$('ms-dots').innerHTML=h})();
+function ms(a){$('ms-b').style.display=a?'none':'';$('ms-a').style.display=a?'':'none';$('ms-bef').classList.toggle('sel',!a);$('ms-aft').classList.toggle('sel',a)}
+$('ms-bef').onclick=()=>ms(false);$('ms-aft').onclick=()=>ms(true);
+function ct(ver,state,cls,msg){$('ct-ver').textContent=ver;$('ct-state').textContent=state;const n=$('ct-cons');n.classList.remove('good','bad','on');n.classList.add(cls);$('ct-out').textContent=msg}
+$('ct-break').onclick=()=>ct('publishes v1.3','RED: build fails','bad','The order service replaced tshirtId with itemId + itemType. The consumer still uses the old call, so its build fails right away. Annoying, but safe: it is found before release.');
+$('ct-fix').onclick=()=>ct('publishes v1.3','GREEN (moved to v1.3)','good','The consumer team upgrades and edits one line. The build is green. Nothing broke in production.');
+$('ct-compat').onclick=()=>ct('v1.3 (itemType optional)','GREEN','good','itemType defaults to T-shirt when missing. Old clients still build and run. New clients use the new fields. Everyone migrates gradually.');
+$('ct-reset').onclick=()=>ct('publishes v1.2','GREEN','good','All consumers are on v1.2 and happy.');
+
+/* ---------- part 12 ---------- */
+function an(a){$('an-b').style.display=a?'none':'';$('an-a').style.display=a?'':'none';$('an-bef').classList.toggle('sel',!a);$('an-aft').classList.toggle('sel',a)}
+$('an-bef').onclick=()=>an(false);$('an-aft').onclick=()=>an(true);
+function tools(aws){$('tl-aws').classList.toggle('sel',aws);$('tl-oss').classList.toggle('sel',!aws);
+ $('tl-s').textContent=aws?'Amazon Kinesis (very cheap)':'Apache Kafka';$('tl-st').textContent=aws?'S3-based store':'S3 or HDFS files';$('tl-q').textContent=aws?'Amazon Athena (charged by data scanned)':'Apache Spark (queries, transforms, ML)';
+ $('an-t1').textContent=aws?'Kinesis':'Kafka';$('an-t2').textContent=aws?'S3':'S3 / HDFS';$('an-t3').textContent=aws?'Athena':'Spark';
+ $('tl-out').textContent=aws?'AWS-managed: simpler and low cost, but you are tied to AWS. Moving to GCP later could be painful.':'Open source: easier hiring and training, no vendor lock-in. Costs cannot be known without capacity estimation, but it should be affordable.'}
+$('tl-aws').onclick=()=>tools(true);$('tl-oss').onclick=()=>tools(false);
+</script>
+</body>
+</html>
